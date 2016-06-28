@@ -1,0 +1,43 @@
+<div id="metadata" style="padding: 10px 0 0 10px;">
+    <p style="font-size:16px">Metadata Overview</p>
+    <ul class="nav nav-tabs">
+
+        <li class="active"><a data-toggle="tab" ng-click="reflow()" href="#per" aria-controls="per" role="tab">Persons</a></li>
+        <li><a data-toggle="tab"  ng-click="reflow()" href="#loc" aria-controls="loc" role="tab">Locations</a></li>
+        <li><a data-toggle="tab" ng-click="reflow()" href="#org" aria-controls="org" role="tab">Organisations</a></li>
+        <li><a data-toggle="tab" ng-click="reflow()" href="#misc" aria-controls="misc" role="tab">Misc</a></li>
+
+
+    </ul>
+
+    <div id="metadata-overview" class="tab-content">
+
+        <div role="tabpanel" id="per" class="tab-pane fade in active meta-chart-container">
+
+            <div class="scroll-chart">
+                <div id="chart_per" config="personChart" class="meta-chart" ></div>
+            </div>
+        </div>
+        <div role="tabpanel" id="loc" class="tab-pane fade meta-chart-container">
+            <div class="scroll-chart">
+                <div id="chart_loc" config="locationChart" class="meta-chart" ></div>
+            </div>
+        </div>
+
+        <div role="tabpanel" id="org" class="tab-pane fade meta-chart-container">
+
+            <div class="scroll-chart">
+                <div id="chart_org" config="orgChart" class="meta-chart" ></div>
+            </div>
+        </div>
+
+        <div role="tabpanel" id="misc" class="tab-pane fade meta-chart-container">
+            <div class="scroll-chart">
+                <div id="chart_misc" config="miscChart" class="meta-chart" ></div>
+            </div>
+        </div>
+
+
+    </div>
+
+</div>

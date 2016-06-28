@@ -1,0 +1,15 @@
+{
+  "name": "newsleak",
+  "private": true,
+  "version": "0.0.1",
+  "description": "",
+  "repository": "",
+  "license": "Apache Licence 2.0",
+  "devDependencies": {
+    "bower": "^1.4.1"
+  },
+  "scripts": {
+    "postinstall": "./node_modules/bower/bin/bower install",
+    "prestart": "npm update"
+  }
+}

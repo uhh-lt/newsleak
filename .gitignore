@@ -1,0 +1,36 @@
+!.gitignore
+*.aux
+*.fdb_latexmk
+*.log
+*.synctex.gz
+*.toc
+*.out
+*.len
+*.nav
+*.pdf
+*.snm
+*.fls
+*.mp4
+*~
+!public/manual.pdf
+
+lib/
+*.class
+
+# sbt specific
+.cache
+.history
+.lib/
+dist/*
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+
+# Scala-IDE specific
+.idea/
+
+node_modules/*
+
+app/assets/javascripts/libs/*

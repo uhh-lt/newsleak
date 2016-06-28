@@ -1,0 +1,44 @@
+package controllers
+
+import play.api.mvc.{Action, Results}
+import model.{Entity, Tag}
+import play.api.libs.json.{JsArray, JsObject, Json, Writes}
+
+/**
+  * Created by patrick on 19.04.16.
+  */
+object SearchController
+{
+	// http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
+	implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[Tuple2[A, B]] = new Writes[Tuple2[A, B]] {
+		def writes(tuple: Tuple2[A, B]) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2)))
+	}
+
+	// http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
+	implicit def tuple3Writes[A, B, C](implicit a: Writes[A], b: Writes[B], c: Writes[C]): Writes[Tuple3[A, B, C]] = new Writes[Tuple3[A, B, C]] {
+		def writes(tuple: Tuple3[A, B, C]) = JsArray(Seq(a.writes(tuple._1),
+			b.writes(tuple._2),
+			c.writes(tuple._3)))
+	}
+
+	/**
+	  * get the autocomplete tags to this query
+	  * @param query the query to get the autocomplete
+	  *              tags for
+	  * @param limit maximum number of items to send
+	  *              to the client
+	  * @return
+	  *         an array of entity names and entity types
+	  *         combined
+	  */
+	def getAutocomplete(query: String/*, limit:Int*/) = Action{
+		val entities:List[Entity] = Entity.getByNamePattern(query)
+
+		val labels:List[(Long, String, String)] = entities.map(entity => (entity.id, entity.name, entity.entityType.toString))
+
+		println(labels)
+
+		val result = new JsObject(Map(("entities", Json.toJson(labels))))
+		Results.Ok(Json.toJson(result)).as("application/json")
+	}
+}

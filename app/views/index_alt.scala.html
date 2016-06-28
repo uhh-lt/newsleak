@@ -1,0 +1,109 @@
+<!--
+  Copyright 2016 Technische Universitaet Darmstadt
+ 
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+ 
+      http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <link rel="shortcut icon" href="./assets/images/favicon.ico" type="image/x-icon" />
+        <link rel="icon" href="./assets/images/favicon.ico" type="image/x-icon" />
+
+        <title>new/s/leak</title>
+
+        <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/bootstrap/dist/css/bootstrap.min.css")">
+        <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/sc-date-time/dist/sc-date-time.css")">
+        <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/font-awesome/css/font-awesome.min.css")">
+        <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/angular-ui-layout/src/ui-layout.css")" />
+        <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/angular-awesome-slider/dist/css/angular-awesome-slider.min.css")">
+        <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/angular-toggle-switch/angular-toggle-switch.css")">
+        <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/ng-tags-input/ng-tags-input.css")">
+        <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/ng-tags-input/ng-tags-input.bootstrap.min.css")">
+        <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.css")">
+        <link type="text/css" rel="stylesheet" href="@routes.Assets.at("stylesheets/style.css")">
+    </head>
+
+    <body ng-controller="AppController as app" ngsf-fullscreen>
+        <script data-main="@routes.Assets.at("javascripts/main.js")" type="text/javascript" src="@routes.Assets.at("javascripts/libs/requirejs/require.js")"></script>
+
+        <div ui-layout="{dividerSize: '0'}">
+
+                <!-- header -->
+            <div ui-layout-container size="61px" min-size="61px" max-size="61px">
+                <div ui-view="header"></div>
+            </div>
+
+
+
+                <!-- everything except header -->
+            <div ui-layout-container>
+                <div ui-layout style="overflow-y: hidden;">
+                        <!-- history -->
+                    <div ui-layout-container size="40px">
+                        <div ui-view="history" style="overflow-y: hidden;"></div>
+                    </div>
+                    <div ui-layout-container>
+                        <div ui-layout="{flow : 'column'}">
+
+                                <!-- left side -->
+                            <div ui-layout-container="{dividerSize: '0'}" size="25%">
+                                <div ui-view="documentlist"></div>
+                            </div>
+
+                                <!-- network/maps view -->
+                            <div id="network-maps-container" ui-layout-container="central">
+                                    <!-- Nav tabs -->
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <li role="presentation" class="active"><a href="#network" aria-controls="network" role="tab" data-toggle="tab">Network</a></li>
+                                    <li role="presentation"><a href="#map" aria-controls="map" role="tab" data-toggle="tab">Map</a></li>
+                                </ul>
+                                    <!-- Tab panes -->
+                                <div class="tab-content">
+                                    <div role="tabpanel" class="tab-pane active" id="network" ng-controller="NetworkController">
+                                        <div ng-include=" 'assets/partials/network.html' " onload="loaded()"></div>
+                                    </div>
+                                    <div role="tabpanel" class="tab-pane" id="map" ng-controller="MapController">
+                                        <div ng-include=" 'assets/partials/map.html' " onload="loaded()"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                                <!-- right side -->
+                            <div ui-layout-container size="25%">
+                                <div ui-layout="{flow: 'row'}">
+                                    <div ui-layout-container>
+                                        <div ui-view="filter"></div>
+                                    </div>
+                                    <div ui-layout-container>
+                                        <div ui-view="metadata" style="height: 100%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                        <!-- chart view -->
+                    <div ui-layout-container size="200px">
+                        <div ui-view="chart"></div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </body>
+</html>

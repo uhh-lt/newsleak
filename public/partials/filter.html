@@ -1,0 +1,36 @@
+<div style="padding: 10px;">
+	<p style="font-size:16px">Filter Overview</p>
+
+	<button
+			type="button"
+			id="SaveButton"
+			class="btn btn-small btn-primary"
+			ng-click="saveFilters()"
+			ng-disabled="filterShared.wordFilters.length == 0"
+	>
+		<i class="glyphicon glyphicon-save"></i>
+		Save
+	</button>
+	<button
+			type="button"
+			id="LoadButton"
+			class="btn btn-small btn-primary"
+			ng-click="loadFilters()"
+	>
+		<i class="glyphicon glyphicon-open"></i>
+		Load
+	</button>
+
+	<div class="alert alert-info" ng-show="filterShared.wordFilters.length == 0">
+		<p>No filter has been loaded</p>
+	</div>
+
+	<ul id="filterList">
+		<li class="filterListItem" ng-repeat="filter in filterShared.wordFilters">
+			<button class="btn btn-small btn-primary" ng-click="deleteWordFilter(filter)">
+				<i class="glyphicon glyphicon-remove"></i>
+			</button>
+			{{filter.data.name}}
+		</li>
+	</ul>
+</div>

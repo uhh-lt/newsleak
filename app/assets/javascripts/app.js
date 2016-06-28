@@ -1,0 +1,165 @@
+/*
+ * Copyright 2016 Technische Universitaet Darmstadt
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+define([
+    'angular',
+    'angularMoment',
+    './factory/chart/ChartFactory',
+    './factory/filter/FilterFactory',
+    './factory/metadata/MetaFactory',
+    './factory/source/SourceFactory',
+    './factory/source/HighlightFactory',
+    './factory/source/TagSelectFactory',
+    './components/sources/SourceController',
+    './components/network/NetworkController',
+    './components/network/TextModalController',
+    './components/network/MergeModalController',
+    './components/network/EditModalController',
+    './components/metadata/MetadataController',
+    './components/filter/FilterController',
+    './components/history/HistoryController',
+    './components/map/MapController',
+    './components/chart/ChartController',
+    './services/playRoutes',
+    './services/ObserverService',
+    './factory/appData',
+    './factory/util',
+    './services/underscore-module',
+    'ui-layout',
+    'ui-router',
+    'ui-bootstrap',
+    'ng-tags-input',
+    'angularResizable',
+    'ngMaterial'
+], function (angular) {
+    'use strict';
+
+    var app = angular.module('myApp',
+        [
+            'ui.layout', 'ui.router', 'ui.bootstrap', 'ngTagsInput', 'play.routing','angularResizable','ngMaterial',
+            'angularMoment', 'underscore', 'myApp.data', 'myApp.observer', 'myApp.util', 'myApp.filter', 'myApp.history',
+            'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal',
+            'myApp.network', 'myApp.metadata', 'myApp.map', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
+            'myApp.tagselectfactory', 'myApp.filterfactory','myApp.metafactory',
+            'myApp.chart', 'myApp.chartconfig'
+        ]
+    );
+
+    app.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
+        $stateProvider
+        .state('layout', {
+            views: {
+                'header': {
+                    templateUrl: 'assets/partials/header.html'
+                },
+                'documentlist': {
+                    templateUrl: 'assets/partials/document_list.html',
+                    controller: 'SourceController'
+                },
+                'network': {
+                    templateUrl: 'assets/partials/network.html',
+                    controller: 'NetworkController'
+                },
+                'source': {
+                    templateUrl: 'assets/partials/source.html',
+                    controller: 'SourceController'
+                },
+                'chart': {
+                    templateUrl: 'assets/partials/chart.html',
+                    controller: 'ChartController'
+                },
+                'map': {
+                    templateUrl: 'assets/partials/map.html',
+                    controller: 'MapController'
+                },
+                'metadata': {
+                    templateUrl: 'assets/partials/metadata.html',
+                    controller: 'MetadataController'
+                },
+                'filter': {
+                	templateUrl: 'assets/partials/filter.html',
+                	controller: 'FilterController'
+                },
+                'history': {
+                    templateUrl: 'assets/partials/history.html',
+                    controller: 'HistoryController'
+                }
+            }
+        });
+        $urlRouterProvider.otherwise('/');
+
+    }]);
+
+    app.factory('uiShareService', function() {
+        var uiProperties = {
+            mainContainerHeight: -1,
+            mainContainerWidth: -1,
+            footerHeight: -1
+        };
+        return uiProperties;
+    });
+
+    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', 'moment', 'appData', 'uiShareService',
+        function ($scope, $state, $timeout, $window, moment, appData, uiShareService) {
+
+            init();
+
+            function init() {
+                $state.go('layout');
+                // $timeout in order to have the right values right from the beginning on
+                $timeout(function() {
+                    setUILayoutProperties(parseInt($('#network-maps-container').css('width')), parseInt($('#network-maps-container').css('height'))-96);
+                }, 100);
+            };
+
+            //TODO: WHEN USING THIS FOR WATCH NO DEEP COPY IS NEEDED!!!!
+            $scope.$watch(function () {
+                return appData.getDate();
+            }, function (newVal, oldVal) {
+                if (!angular.equals(newVal, oldVal)) {
+                    $scope.date = newVal;
+                }
+            });
+
+            $scope.$on("angular-resizable.resizeEnd", function (event, args) {
+                if(args.id == 'center-box') setUILayoutProperties(args.width, false);
+                if(args.id == 'footer') setUILayoutProperties(false, parseInt($('#network-maps-container').css('height'))-96);
+                $("#chartBarchart").highcharts().reflow();
+            });
+
+            angular.element($window).bind('resize', function () {
+                setUILayoutProperties(parseInt($('#network-maps-container').css('width')), parseInt($('#network-maps-container').css('height'))-96);
+            });
+
+            /**
+             * This function sets properties that describe the dimensions of the UI layout.
+             */
+            function setUILayoutProperties(mainWidth, mainHeight) {
+                if(mainHeight != false) uiShareService.mainContainerHeight = mainHeight;
+                if(mainWidth != false) uiShareService.mainContainerWidth = mainWidth;
+                // NaN check is necessary because when loading the page the bar chart isn't rendered yet
+                uiShareService.footerHeight = parseInt($('#chartBarchart').css('height'));
+            }
+
+            // On change event of the UI layout
+            $scope.$on('ui.layout.resize', function (e, beforeContainer, afterContainer) {
+                //setUILayoutProperties();
+            });
+
+        }]);
+
+    return app;
+});

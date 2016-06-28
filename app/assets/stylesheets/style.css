@@ -1,0 +1,513 @@
+/*
+ * Copyright 2016 Technische Universitaet Darmstadt
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+/*
+    ======================================
+    RESET
+    ======================================
+*/
+* {
+    margin: 0;
+    padding: 0;
+}
+html, body {
+    height: 100%;
+    width: 100%;
+}
+/*
+    ======================================
+    Header
+    ======================================
+*/
+
+/* For the links to facebook and NLP group */
+.links {
+    margin-right: 3px;
+}
+
+/* The whole header itself */
+.titlebar {
+    margin-bottom: 0;
+    border-radius: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: #2759AC;
+    border-color: #2759AC;
+}
+
+/* Format the title that is on the left hand side of the header */
+.title {
+    font-size: 300%;
+    font-family: "American Typeriter"
+}
+
+.navbar-inverse .navbar-brand {
+    color: #fafafa;
+}
+
+/*
+    ======================================
+    Network Graph
+    ======================================
+*/
+
+line {
+    /* Should be the same as edgeLegend#fill */
+    stroke: #696969;
+}
+
+.dropdown-button-menu
+{
+	padding: 0px 0px 0px 0px;
+}
+
+.node circle {
+    stroke: #000;
+    stroke-width: 1.5px;
+}
+
+.node text {
+    pointer-events: none;
+}
+
+#network-graph {
+    width: 100%;
+    height: calc(100% - 96px);
+    position: absolute;
+}
+
+#merge-node
+{
+	width: 200px;
+	height: 200px;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: 150px;
+    padding: 2px;
+    font: 12px sans-serif;
+    color: white;
+    background: black;
+    border: 1px;
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+#network-graph .glyphicon {
+    position: static;
+}
+#network-graph body {
+    position: static;
+}
+
+.tooltipImportantText {
+    color: #FFA836;
+}
+
+/* The containers that hold the slider elements */
+.slider-container {
+    margin-bottom: 10px;
+    margin-left: 20px;
+    margin-top: 10px;
+    margin-right: 10px;
+}
+
+.collapse {
+    margin: 20px;
+}
+
+.loading-network-image {
+    margin: auto;
+    width: 300px;
+}
+
+/*
+    ======================================
+    Network Legend
+    ======================================
+*/
+
+/* Hide the legend initially */
+#legend-content {
+    display: none;
+}
+
+.edgeLegend {
+    /* should be the same as line.stroke */
+    fill: #696969;
+}
+
+.popover {
+    z-index: 1000;
+}
+
+.legend-heading {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.legend-color-box {
+    float: left;
+    width: 13px;
+    height: 13px;
+    margin-top: 4px;
+    margin-right: 5px;
+}
+
+.legend-color-box-person {
+    background-color: #bebada;
+}
+
+.legend-color-box-location {
+    background-color: #8dd3c7;
+}
+
+.legend-color-box-organization {
+    background-color: #fb8072;
+}
+
+.legend-color-box-misc {
+    background-color: #ffffb3;
+}
+
+.popover-content > .legend-actual-content {
+    overflow-y: auto;
+}
+
+#legend-content svg {
+    display: block;
+    margin: auto;
+}
+
+/*
+    ======================================
+    Map
+    ======================================
+*/
+
+#map-container {
+    margin: 0 10px;
+}
+
+/*
+    ======================================
+    UI Layout
+    ======================================
+*/
+
+.ui-layout-row > .ui-splitbar {
+    background: #2759AC;
+    z-index: 500;
+}
+
+.ui-layout-column > .ui-splitbar {
+    background: #2759AC;
+    z-index: 500;
+}
+
+.ui-splitbar-icon {
+    color: #fafafa;
+}
+
+.ui-splitbar-icon-down, .ui-splitbar-icon-up {
+    margin-bottom: 3px;
+}
+
+/*
+    ======================================
+    Angular Material UI Layout
+    ======================================
+*/
+#wrapper {
+
+    height: 100%;
+    width: 100%;
+}
+#flex-body {
+
+}
+main {
+    width: 50%;
+}
+#document {
+    width: 250px;
+}
+#document, #right-side {
+    width: 25%;
+}
+#metadata-view, #filter-view {
+    height: 50%;
+}
+footer {
+    height: 200px;
+}
+footer > div, footer > div #chartBarchart {
+    height: 100%;
+}
+
+.rg-bottom, .rg-left, .rg-right, .rg-top {
+    background-color: #2759AC;
+}
+
+.rg-top, .rg-bottom {
+    height: 10px;
+}
+
+.rg-left, .rg-right {
+    width: 10px;
+}
+.rg-top span, .rg-bottom  span{
+    border-width: 1px 0;
+    left: 50%;
+    margin: 2.5px 0 0 -10px;
+    width: 20px;
+    height: 3px;
+}
+
+.rg-left span, .rg-right span {
+    border-width: 0 1px;
+    top: 50%;
+    margin:  -10px 0 0  2.5px;
+    height: 20px;
+    width: 3px;
+}
+
+.rg-bottom {
+    margin-bottom: -10px;
+}
+
+.rg-top {
+    margin-top: -10px;
+}
+
+.rg-left {
+    margin-left: -10px;
+}
+
+.rg-right {
+    margin-right: -10px;
+}
+
+/*
+    ======================================
+    The tabs as well as the tab containers
+    ======================================
+*/
+.nav-tabs .closeTab {
+    margin-left: 5px;
+    margin-top: -3px;
+}
+
+.document-source-content {
+    height: calc(100% - 71px);
+    padding-left: 15px;
+    padding-top: 10px;
+}
+
+#network-maps-container {
+    height: 100%;
+}
+
+/* Give us more space between the tabs and the tab content */
+#network-maps-container .tab-content {
+    height: calc(100% - 42px);
+    padding-top: 20px;
+}
+
+#network-maps-container .tab-content .tab-pane {
+    height: 100%;
+}
+
+/*
+    ======================================
+    Source Documents
+    ======================================
+*/
+
+.highlight-general {
+    font-weight: bold;
+}
+
+.toggle-switch .switch-left {
+    background: #337ab7;
+}
+
+.source-buttons-area {
+    padding: 15px;
+}
+
+.toggle-switch {
+    top: 11px;
+    position: relative;
+}
+
+/*
+    ======================================
+    Document List
+    ======================================
+*/
+#documents-view .suggestion-item {
+    border-bottom: 1px solid #d7d7d7;
+}
+#documents-view #search-group {
+
+}
+
+#documents-view #autocomplete {
+    height: calc(100% - 104px);
+    width: calc(100% - 30px);
+    overflow: auto;
+    position: absolute;
+    top: 81px;
+    border-bottom: 1px solid #ddd;
+    z-index: -1;
+}
+
+#documents-view #autocomplete .list-group-item {
+    padding: 5px 10px;
+}
+#documents-view .search-item-container{
+    height: 32px;
+}
+#documents-view .search-item-container > span {
+    position: relative;
+    top: -8px;
+    left: 5px;
+}
+.autocomplete-left {
+	float: left;
+}
+#document div#documents-view, #document > div:first-child {
+    height: 100%;
+}
+#document div#documents-view div.docs-ul {
+    height: calc(100% - 107px);
+    overflow: auto;
+}
+
+#document-list {
+    padding-left: 30px;
+
+}
+
+#document-list li.doc-list-highlight {
+    font-weight: bold;
+    list-style-image: url("assets/../../images/folder-opened-icon.png");
+}
+
+#document-list li.doc-list-no-highlight {
+    font-weight: normal;
+    list-style-image: url("assets/../../images/folder-closed-icon.png");
+}
+
+#document-list li a:hover {
+    text-decoration: none;
+}
+
+/* Vertically scrollable containers */
+#document-list, .tab-content > .tab-pane > .document-source-content {
+    overflow-y: auto;
+}
+
+.load-more-button {
+    width: 100%;
+
+}
+
+/*
+    ======================================
+    Bar Chart
+    ======================================
+*/
+
+.chartBarchart-popover {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+#chartBarchart .stack-label {
+    text-decoration: underline;
+}
+
+/*
+    ======================================
+    Filters
+    ======================================
+*/
+
+#filter-view > div:first-child{
+    height: 100%;
+}
+#filterList
+{
+	padding: 5px 5px;
+	list-style-type: none;
+    height: 80%;
+}
+
+.filterListItem
+{
+	margin: 0 2px 2px 0;
+	font-weight: normal;
+}
+
+/*
+    ======================================
+    Metadata
+    ======================================
+*/
+#metadata {
+    height: 100%;
+}
+#metadata-overview {
+    height: calc(100% - 74px);
+}
+#metadata-overview .meta-chart-container {
+    height: 100%;
+    overflow: hidden;
+}
+#metadata-overview .scroll-chart {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.meta-chart-container .meta-chart {
+    height: 1000px;
+}
+
+@media(max-width: 1500px){
+    .nav-tabs>li>a {
+        font-size: 12px;
+    }
+}
+@media(max-width: 1400px){
+    .nav-tabs>li>a {
+        font-size: 10px;
+    }
+}
+
+/*
+    ======================================
+    Generic
+    ======================================
+*/
+
+.btn-small {
+    padding: 4px 6px;
+}

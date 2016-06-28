@@ -1,0 +1,48 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# PAGES                                                                                         #
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+GET         /                                                controllers.Application.index
+
+#comment for alternate index page
+#GET         /alt                                                controllers.Application.index_alt
+
+#GET         /internal                                        controllers.Application.index
+# Play routes serving HTML to AngularJS start with /partials
+#GET			/partials/*file						                 controllers.Application.loadPublicHTML(file)
+
+GET    /docById           		controllers.DocumentController.getDocById(id: Int)
+GET    /getDocs           		controllers.DocumentController.getDocs(fullText: Option[String], facets: Map[String, List[String]])
+GET    /frequencySeries			controllers.DocumentController.getFrequencySeries
+GET    /docsByDate           	controllers.DocumentController.getDocsByDate(date: Long)
+GET    /getDocsForMonth         controllers.DocumentController.getDocsForMonth(year: Int, month: Int, startIndex: Int, offset: Int)
+GET    /getDocsForYearRange      controllers.DocumentController.getDocsForYearRange(fromYear: Int, toYear: Int, startIndex: Int, offset: Int)
+GET    /getGraphData         	controllers.NetworkController.getGraphData(leastOrMostFrequent: Int, amount: List[Int], minEdgeFreq: Int, maxEdgeFreq: Int)
+GET    /docsByCountry         	controllers.MapController.getDocsForCountry(countryCode: String)
+GET    /getEgoNetworkData       controllers.NetworkController.getEgoNetworkData(leastOrMostFrequent: Int, id: Long, amountOfType: List[Int], existingNodes: List[Long])
+GET    /getIdsByName             controllers.NetworkController.getIdsByName(name: String)
+GET    /deleteEntityById		controllers.NetworkController.deleteEntityById(id: Long)
+GET	   /mergeEntitiesById		controllers.NetworkController.mergeEntitiesById(focalid: Int, ids: List[Long])
+GET    /changeEntityNameById	controllers.NetworkController.changeEntityNameById(id: Long, newName: String)
+GET    /changeEntityTypeById	controllers.NetworkController.changeEntityTypeById(id: Long, newType: String)
+GET    /getAutocomplete		controllers.SearchController.getAutocomplete(query: String)
+GET    /getEntities		controllers.EntityController.getEntities(fullText: Option[String], facets: Map[String, List[String]])
+GET    /getEntitiesByType		controllers.EntityController.getEntitiesByType(entityType: String)
+GET    /getEntitiesWithOffset		controllers.EntityController.getEntitiesWithOffset(entityType: String, offset: Int)
+GET    /getEntitiesDocCount		controllers.EntityController.getEntitiesDocCount(entityType: String)
+GET    /getEntitiesDocCountWithOffset		controllers.EntityController.getEntitiesDocCountWithOffset(entityType: String, offset: Int)
+GET    /getEntitiesDocCountWithFilter		controllers.EntityController.getEntitiesDocCountWithFilter(filter: List[Long])
+GET   /getMetadata     controllers.MetadataController.getMetadata(fullText: Option[String], facets: Map[String, List[String]])
+GET   /getKeywords     controllers.MetadataController.getKeywords(fullText: Option[String], facets: Map[String, List[String]])
+GET   /getMetadataTypes       controllers.MetadataController.getMetadataTypes
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# JS ROUTING AND RESOURCES                                                                      #
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+GET     	  /assets/javascripts/jsroutes.js  		     controllers.Application.jsRoutes()
+GET         /vassets/*file          				         controllers.Assets.versioned(path="/public", file: Asset)
+GET         /assets/*file                            controllers.Assets.at(path="/public", file)

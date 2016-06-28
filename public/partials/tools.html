@@ -1,0 +1,65 @@
+<!--
+  Copyright 2016 Technische Universitaet Darmstadt
+ 
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+ 
+      http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+
+<md-content layout="row">
+  <div layout-align="right" layout="column">
+    <md-button class="md-primary md-fab" ng-click="tool.merge = !tool.merge">
+      <md-tooltip>
+        Merge Tool
+      </md-tooltip>
+      <md-icon md-svg-src="assets/images/swap.svg"></md-icon>
+    </md-button>
+
+    <!--<div flex></div>
+    <md-button class="md-primary md-fab" ng-click="">
+    </md-button>
+  </div>
+
+  <div layout-align="right" layout="column">
+    <md-button class="md-primary md-fab" ng-click="">
+    </md-button>
+    
+    <div flex></div>
+    <md-button class="md-primary md-fab" ng-click="">
+    </md-button>
+  </div>-->
+</md-content>
+
+<md-content class="md-padding" ng-if="tool.merge">
+  <md-list>
+    <md-list class="fixedRows">
+    <md-subheader class="md-no-sticky">Selected</md-subheader>
+    <md-list-item class="md-2-line contact-item" ng-repeat="entity in selected">
+      <img ng-src="{{ entity.image }}" class="md-avatar" alt="{{ entity.name}} " />
+      <div class="md-list-item-text compact">
+        <h3>{{ entity.name }}</h3>
+        <p>{{ entity.name }}</p>
+      </div>
+    </md-list-item>
+  </md-list>
+  <form ng-submit="" name="mergeForm">
+      <md-input-container>
+        <label>Merge to</label>
+        <md-select name="mergeto" ng-model="mergeto" required>
+          <md-option value="{{ entity.name }}" ng-repeat="entity in selected">{{ entity.name }}</md-option>
+        </md-select>
+        <div ng-messages="mergeForm.mergeto.$error">
+            <div ng-message="required">Required</div>
+        </div>
+      </md-input-container>
+    <md-button class="md-raised" ng-click="merge()" type="submit">Merge</md-button>
+  </form>
+</md-content>
