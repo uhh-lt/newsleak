@@ -16,6 +16,8 @@
 
 package controllers
 
+import javax.inject.Inject
+
 import model.Document
 import model.faceted.search.FacetedSearch
 import play.api.libs.json.{JsArray, Json, Writes}
@@ -25,7 +27,7 @@ import scalikejdbc._
 /*
     This class provides operations pertaining documents.
 */
-object DocumentController extends Controller {
+class DocumentController @Inject() extends Controller {
   private implicit val session = AutoSession
 
   // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple

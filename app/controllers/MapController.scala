@@ -16,27 +16,26 @@
 
 package controllers
 
-import model.Document
+import javax.inject.Inject
 
+import model.Document
 import play.api.Play.current
 import play.api.Logger
 import play.api.mvc.{Action, Controller}
 import play.api.db._
-
 import play.api.libs.json.Json
 import play.api.libs.json.JsArray
 import play.api.libs.json.Json._
 import play.api.libs.json.Format
 import play.api.libs.json.JsSuccess
 import play.api.libs.json.Writes
-
 import scalikejdbc.AutoSession
 
 /*
     This class contains all those methods that are related
     to the map and its features.
 */
-object MapController extends Controller {
+class MapController @Inject() extends Controller {
     private implicit val session = AutoSession
 
     /**

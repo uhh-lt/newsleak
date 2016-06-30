@@ -18,12 +18,10 @@ package controllers
 
 // to read files
 import scala.io.Source._
-
 import play.api.Play.current
 import play.api.Logger
 import play.api.mvc.{Action, Controller}
 import play.api.db._
-
 import play.api.libs.json.Json
 import play.api.libs.json.JsArray
 import play.api.libs.json.JsObject
@@ -31,14 +29,14 @@ import play.api.libs.json.Json._
 import play.api.libs.json.Format
 import play.api.libs.json.JsSuccess
 import play.api.libs.json.Writes
-
 import java.util.StringJoiner
+import javax.inject.Inject
 
 /*
     This class encapsulates all functionality for the
     network graph.
 */
-object NetworkController extends Controller {
+class NetworkController @Inject() extends Controller {
 
     /**
      * this implicit writes allows us to serialize tuple4
