@@ -77,7 +77,6 @@ object DocumentController extends Controller {
         .map(rs => (rs.long("id"), rs.string("value")))
         .list()
         .apply()
-
     Ok(Json.toJson(rs)).as("application/json")
   }
 
@@ -141,8 +140,6 @@ object DocumentController extends Controller {
         .map(rs => (rs.long("id"), rs.string("value")))
         .list()
         .apply()
-
-
     Ok(Json.toJson(rs)).as("application/json")
   }
 

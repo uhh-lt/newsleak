@@ -4,7 +4,6 @@ import model.faceted.search.{FacetedSearch, MetaDataBucket}
 import model.{Document, Entity, EntityType}
 import play.api.libs.json.{JsArray, JsObject, Json, Writes}
 import play.api.mvc.{Action, Controller, Results}
-import scalikejdbc._
 
 /**
   * Created by f. zouhar on 26.05.16.

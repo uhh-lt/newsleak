@@ -32,13 +32,6 @@ object SearchController
 	  *         combined
 	  */
 	def getAutocomplete(query: String/*, limit:Int*/) = Action{
-		val entities:List[Entity] = Entity.getByNamePattern(query)
-
-		val labels:List[(Long, String, String)] = entities.map(entity => (entity.id, entity.name, entity.entityType.toString))
-
-		println(labels)
-
-		val result = new JsObject(Map(("entities", Json.toJson(labels))))
-		Results.Ok(Json.toJson(result)).as("application/json")
+		Results.Ok(Json.obj("entities" ->  Entity.getByNamePattern(query).map(entity => (entity.id, entity.name, entity.entityType.toString)))).as("application/json")
 	}
 }

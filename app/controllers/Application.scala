@@ -19,7 +19,6 @@ package controllers
 
 import play.api.Logger
 import play.api.mvc.{Action, Controller}
-import play.mvc.Result
 import org.apache.commons.codec.binary.{Base64, Hex, StringUtils}
 
 import scala.util.Random
@@ -60,16 +59,16 @@ object Application extends Controller {
 			var login = request.headers
 				.get("Authorization")
 				.toString
-				.split(" ")(1);
+				.split(" ")(1)
 
-			login = StringUtils.newStringUtf8(Base64.decodeBase64(login));
+			login = StringUtils.newStringUtf8(Base64.decodeBase64(login))
 
 			if (login.matches("(.*):(.*)"))
 			{
-				val password = login.substring(login.indexOf(":") + 1);
+				val password = login.substring(login.indexOf(":") + 1)
 				if(password == "shakti")
 				{
-					authorized = true;
+					authorized = true
 				}
 			}
 		}
@@ -79,7 +78,7 @@ object Application extends Controller {
 		{
 			//send a login request
 			Unauthorized(views.html.defaultpages.unauthorized())
-				.withHeaders("WWW-Authenticate" -> "Basic realm=\"new/s/leak\"");
+				.withHeaders("WWW-Authenticate" -> "Basic realm=\"new/s/leak\"")
 		}
 		else
 		{
@@ -109,10 +108,10 @@ object Application extends Controller {
 			controllers.routes.javascript.NetworkController.changeEntityNameById,
 			controllers.routes.javascript.EntityController.getEntities,
 			controllers.routes.javascript.EntityController.getEntitiesByType,
-            controllers.routes.javascript.EntityController.getEntitiesWithOffset,
-            controllers.routes.javascript.EntityController.getEntitiesDocCount,
-            controllers.routes.javascript.EntityController.getEntitiesDocCountWithOffset,
-            controllers.routes.javascript.EntityController.getEntitiesDocCountWithFilter,
+      controllers.routes.javascript.EntityController.getEntitiesWithOffset,
+      controllers.routes.javascript.EntityController.getEntitiesDocCount,
+      controllers.routes.javascript.EntityController.getEntitiesDocCountWithOffset,
+      controllers.routes.javascript.EntityController.getEntitiesDocCountWithFilter,
 			controllers.routes.javascript.NetworkController.changeEntityTypeById,
 			controllers.routes.javascript.MetadataController.getMetadata,
 			controllers.routes.javascript.MetadataController.getKeywords,
