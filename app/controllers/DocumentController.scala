@@ -27,7 +27,7 @@ import scalikejdbc._
 /*
     This class provides operations pertaining documents.
 */
-class DocumentController @Inject() extends Controller {
+class DocumentController @Inject extends Controller {
   private implicit val session = AutoSession
 
   // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple

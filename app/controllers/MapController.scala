@@ -35,7 +35,7 @@ import scalikejdbc.AutoSession
     This class contains all those methods that are related
     to the map and its features.
 */
-class MapController @Inject() extends Controller {
+class MapController @Inject extends Controller {
     private implicit val session = AutoSession
 
     /**

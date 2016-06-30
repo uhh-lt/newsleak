@@ -36,7 +36,7 @@ import javax.inject.Inject
     This class encapsulates all functionality for the
     network graph.
 */
-class NetworkController @Inject() extends Controller {
+class NetworkController @Inject extends Controller {
 
     /**
      * this implicit writes allows us to serialize tuple4

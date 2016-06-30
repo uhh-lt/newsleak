@@ -29,7 +29,7 @@ import scala.util.Random
   This class define which URL patterns match which views as well as
   which play routes exist and where they point at.
 */
-class Application @Inject() extends Controller {
+class Application @Inject extends Controller {
 
 	/**
 	 * Serves the login page.

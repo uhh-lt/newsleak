@@ -11,7 +11,7 @@ import scalikejdbc._
 /**
   * Created by flo on 6/20/2016.
   */
-class EntityController @Inject() extends Controller {
+class EntityController @Inject extends Controller {
   implicit val session = AutoSession
 
   /**
