@@ -107,6 +107,7 @@ object Application extends Controller {
 			controllers.routes.javascript.NetworkController.mergeEntitiesById,
 			controllers.routes.javascript.NetworkController.changeEntityNameById,
 			controllers.routes.javascript.EntityController.getEntities,
+			controllers.routes.javascript.EntityController.getEntityTypes,
 			controllers.routes.javascript.EntityController.getEntitiesByType,
       controllers.routes.javascript.EntityController.getEntitiesWithOffset,
       controllers.routes.javascript.EntityController.getEntitiesDocCount,

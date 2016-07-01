@@ -26,6 +26,14 @@ object EntityController extends Controller {
   }
 
   /**
+    * Get all entity types
+    * @return list of entity types
+    */
+  def getEntityTypes = Action {
+    Results.Ok(Json.toJson(Entity.getTypes().map(_.toString))).as("application/json")
+  }
+
+  /**
     * Gets document counts for entities corresponding to their id's matching the query
     * @param fullText Full text search term
     * @param facets mapping of metadata key and a list of corresponding tags
