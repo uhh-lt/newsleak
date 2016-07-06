@@ -20,6 +20,9 @@ GET    /frequencySeries			controllers.DocumentController.getFrequencySeries
 GET    /docsByDate           	controllers.DocumentController.getDocsByDate(date: Long)
 GET    /getDocsForMonth         controllers.DocumentController.getDocsForMonth(year: Int, month: Int, startIndex: Int, offset: Int)
 GET    /getDocsForYearRange      controllers.DocumentController.getDocsForYearRange(fromYear: Int, toYear: Int, startIndex: Int, offset: Int)
+
+GET    /getGuidanceNodes        controllers.NetworkController.getGuidanceNodes(focusId: Long)
+
 GET    /getGraphData         	controllers.NetworkController.getGraphData(leastOrMostFrequent: Int, amount: List[Int], minEdgeFreq: Int, maxEdgeFreq: Int)
 GET    /docsByCountry         	controllers.MapController.getDocsForCountry(countryCode: String)
 GET    /getEgoNetworkData       controllers.NetworkController.getEgoNetworkData(leastOrMostFrequent: Int, id: Long, amountOfType: List[Int], existingNodes: List[Long])

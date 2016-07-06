@@ -630,6 +630,10 @@ define([
                 var sliderEdgeMaxFreq   = $scope.sliderEdgeFrequency.value.split(";")[1];
                 var leastOrMostFrequent = Number($scope.freqSorting.least);
 
+                //902475 = USA
+                playRoutes.controllers.NetworkController.getGuidanceNodes(902475).get().then(function(response) {
+                    console.log(response.data);
+                });
                 playRoutes.controllers.NetworkController.getGraphData(leastOrMostFrequent, sliderValue, sliderEdgeMinFreq, sliderEdgeMaxFreq).get().then(function(response) {
                     var data = response.data;
 
