@@ -50,7 +50,10 @@ define([
                     $scope.metaCharts = [];
                     $scope.chartConfig = metaShareService.chartConfig;
 
+
                     $scope.observer = ObserverService;
+
+                    $scope.observer.getEntityTypes().then(function(types) {$scope.metadataTypes  = types});
 
                     $scope.observer_subscribe = function(items) { $scope.filterItems = items};
                     $scope.observer.subscribeItems($scope.observer_subscribe, "entity");
@@ -59,70 +62,76 @@ define([
                     $('#metadata .nav-tabs a').on('shown.bs.tab', function (event) {
                         $(event.target.hash).find(".meta-chart").highcharts().reflow();
                     });
-                    $scope.initOverview = function () {
+                    $scope.updateEntityCharts = function () {
+                        $scope.observer.getEntityTypes().then(function(types) {
+                            types.forEach(function (x) {
+                                $scope.chartConfigs[x] = angular.copy($scope.chartConfig);
 
-                        $scope.metaShareService.metaTypes.forEach(function (x) {
-                            $scope.chartConfigs[x] = angular.copy($scope.chartConfig);
+                                playRoutes.controllers.EntityController.getEntitiesByType(x).get().then(
+                                    function (result) {
 
-                            playRoutes.controllers.EntityController.getEntitiesByType(x).get().then(
-                                function (result) {
-
-                                    $scope.frequencies[x] = [];
-                                    $scope.labels[x] = [];
-                                    $scope.ids[x] = [];
-                                    result.data.forEach(function (entity) {
-                                        $scope.frequencies[x].push(entity.freq);
-                                        $scope.labels[x].push(entity.name);
-                                        $scope.ids[x].push(entity.id);
-                                    });
+                                        $scope.frequencies[x] = [];
+                                        $scope.labels[x] = [];
+                                        $scope.ids[x] = [];
+                                        result.data.forEach(function (entity) {
+                                            $scope.frequencies[x].push(entity.freq);
+                                            $scope.labels[x].push(entity.name);
+                                            $scope.ids[x].push(entity.id);
+                                        });
 
 
-                                    $scope.chartConfigs[x].xAxis["categories"] = $scope.labels[x];
-                                    $scope.chartConfigs[x]["series"] = [{
-                                        name: 'Total',
-                                        data: $scope.frequencies[x],
-                                        cursor: 'pointer',
-                                        point: {
-                                            events: {
-                                                click: function () {
-                                                    $scope.filters = [];
-                                                    $scope.filterItems.forEach(function(x) {
-                                                       $scope.filters.push(x.data.id);
-                                                    });
-                                                    $scope.filters.push($scope.ids[x][$scope.labels[x].indexOf(this.category)]);
-                                                    $scope.observer.addItem({
-                                                        type: 'entity',
-                                                        data: {
-                                                            id: $scope.ids[x][$scope.labels[x].indexOf(this.category)],
-                                                            name: this.category,
-                                                            type: x
-                                                        }
-                                                    });
-                                                    console.log('Category: ' + this.category + ', id:' + $scope.ids[x][$scope.labels[x].indexOf(this.category)]+', value: ' + this.y + ', filters: ' + $scope.filters);
-                                                    playRoutes.controllers.EntityController
-                                                        .getEntitiesDocCountWithFilter($scope.filters).get().then(function (res) {
-                                                        console.log(res.data);
-                                                        //TODO: entity filter series currently not available through ES
-                                                        //$scope.metaCharts[x].addSeries({
-                                                        //    name: 'Filter',
-                                                        //    data: [res.data],
-                                                        //    color: 'black'
-                                                        //});
-                                                    })
+                                        $scope.chartConfigs[x].xAxis["categories"] = $scope.labels[x];
+                                        $scope.chartConfigs[x]["series"] = [{
+                                            name: 'Total',
+                                            data: $scope.frequencies[x],
+                                            cursor: 'pointer',
+                                            point: {
+                                                events: {
+                                                    click: function () {
+                                                        $scope.filters = [];
+                                                        $scope.filterItems.forEach(function(x) {
+                                                            $scope.filters.push(x.data.id);
+                                                        });
+                                                        $scope.filters.push($scope.ids[x][$scope.labels[x].indexOf(this.category)]);
+                                                        $scope.observer.addItem({
+                                                            type: 'entity',
+                                                            data: {
+                                                                id: $scope.ids[x][$scope.labels[x].indexOf(this.category)],
+                                                                name: this.category,
+                                                                type: x
+                                                            }
+                                                        });
+                                                        console.log('Category: ' + this.category + ', id:' + $scope.ids[x][$scope.labels[x].indexOf(this.category)]+', value: ' + this.y + ', filters: ' + $scope.filters);
+                                                        playRoutes.controllers.EntityController
+                                                            .getEntitiesDocCountWithFilter($scope.filters).get().then(function (res) {
+                                                            console.log(res.data);
+                                                            //TODO: entity filter series currently not available through ES
+                                                            //$scope.metaCharts[x].addSeries({
+                                                            //    name: 'Filter',
+                                                            //    data: [res.data],
+                                                            //    color: 'black'
+                                                            //});
+                                                        })
+                                                    }
                                                 }
                                             }
-                                        }
-                                    }];
-                                    $scope.chartConfigs[x].chart.renderTo = "chart_" + x.toLowerCase();
+                                        }];
+                                        $scope.chartConfigs[x].chart.renderTo = "chart_" + x.toLowerCase();
 
-                                    $scope.metaCharts[x] = new Highcharts.Chart($scope.chartConfigs[x]);
-                                });
+                                        $scope.metaCharts[x] = new Highcharts.Chart($scope.chartConfigs[x]);
+                                    });
 
-                        });
-
+                            });
+                        }
+                        )
 
                     };
 
+                    $scope.updateMetadataView = function() {
+                        $scope.updateEntityCharts();
+                    };
+
+                    $scope.observer.registerObserverCallback($scope.updateMetadataView);
                     //load another 50 entities for specific metadata
                     $scope.loadMore = function (ele) {
                         if (ele.mcs.top != 0) {
@@ -130,6 +139,14 @@ define([
                             console.log('load more metadata: ' + type);
 
                         }
+                    };
+
+
+                    $scope.updateMetadataView();
+
+                    $scope.reflow = function() {
+                       //TODO: reflow on bart charts visible
+
                     };
 
                     /** entry point here **/
@@ -143,9 +160,6 @@ define([
                     //console.log($scope.tabHeight);
                     //console.log(sourceShareService);
                     //console.log(filterShareService);
-
-                    $scope.initOverview();
-
 
                 }
             ]

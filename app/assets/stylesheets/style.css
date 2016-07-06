@@ -481,13 +481,16 @@ footer > div, footer > div #chartBarchart {
     height: 100%;
     overflow: hidden;
 }
+#metadata-overview .tab-content, #metadata-overview .tab-pane {
+    height: 100%;
+}
 #metadata-overview .scroll-chart {
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
 }
 
-.meta-chart-container .meta-chart {
+#metadata-overview .meta-chart {
     height: 1000px;
 }
 

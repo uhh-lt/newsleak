@@ -28,8 +28,6 @@ define([
             {
                 var metaShareService =
                 {
-					metaTypes: ["PER", "MISC", "ORG", "LOC"],
-
                     //Global Metadata bar chart config
                     chartConfig : {
                     chart: {

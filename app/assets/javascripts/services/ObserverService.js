@@ -25,7 +25,7 @@ define([
 
     angular.module("myApp.observer", ['play.routing', 'angularMoment']);
     angular.module("myApp.observer")
-        .factory('ObserverService', ['playRoutes', function(playRoutes) {
+        .factory('ObserverService', ['playRoutes', '$q', function(playRoutes, $q) {
             //holds all observer functions
             var observerCallbacks = [];
             //all items in order
@@ -35,23 +35,51 @@ define([
             //types of tracked items
             var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate"];
             var metadataTypes = [];
+            var entityTypes = [];
             types.forEach(function(type) {
                 items[type] = [];
             });
             items[types[1]] = metadataTypes;
+
             //fetch metadata Types dynamically
-            playRoutes.controllers.MetadataController.getMetadataTypes().get().then(function(response) {
-               metadataTypes =  response.data;
-                angular.forEach(metadataTypes, function(type) {
-                    items['metadata'].push(type);
-                    items['metadata'][type] = [];
+            function updateMetadataTypes() {
+                var deferred = $q.defer();
+                playRoutes.controllers.MetadataController.getMetadataTypes().get().then(function (response) {
+                    metadataTypes = angular.copy(response.data);
+                    angular.forEach(metadataTypes, function (type) {
+                        items['metadata'].push(type);
+                        items['metadata'][type] = [];
+                    });
+                    deferred.resolve('success');
+                    //TODO: how to add metadata filter
+                    //items['metadata']['Tags'].push('PREF');
                 });
-                //TODO: how to add metadata filter
-                //items['metadata']['Tags'].push('PREF');
-            });
+                return deferred.promise;
+            }
+            //fetch metadata Types dynamically
+            function updateEntityTypes() {
+                var deferred = $q.defer();
+                playRoutes.controllers.EntityController.getEntityTypes().get().then(function (response) {
+                    entityTypes = angular.copy(response.data);
+                    deferred.resolve(entityTypes);
+                    //angular.forEach(metadataTypes, function(type) {
+                    //    items['metadata'].push(type);
+                    //    items['metadata'][type] = [];
+                    //});
+                    //TODO: how to add metadata filter
+                    //items['metadata']['Tags'].push('PREF');
+                });
+                return deferred.promise;
+            }
 
             var lastAdded = -1;
             var lastRemoved = -1;
+
+            //promises.then() waits for factory ready to use
+            var promiseMetadata = updateMetadataTypes();
+            var promiseEntities = updateEntityTypes();
+
+            //var promise = $q.all([updateMetadataTypes(), updateEntityTypes()]);
 
             return {
                 /**
@@ -76,16 +104,19 @@ define([
                     var  isDup =false;
                     var action = "added";
                     switch(item.type) {
+                        //entity
                         case types[0]:
                             history.forEach(function(x) {
                                 if (item.data.id == x.data.id) isDup = true;
                             });
                             break;
+                        //metadata
                         case types[1]:
                             history.forEach(function(x) {
                                 if (item.data.id == x.data.id) isDup = true;
                             });
                             break;
+                        //time filter
                         case types[2]:
                             if(items[item.type].length > 0) action = "replaced";
                             break;
@@ -99,7 +130,23 @@ define([
 
                     history.push(item);
                     //if(items.indexOf(item.type) == -1) items[item.type] = [];
-                    items[item.type].push(item);
+                    //adding item structured
+                    switch(item.type) {
+                        //entity
+                        case types[0]:
+                            items[item.type].push(item);
+                            break;
+                        //metadata
+                        case types[1]:
+                            items[item.type][item.data.type].push(item);
+                            break;
+                        //time filter
+                        case types[2]:
+                            items[item.type].push(item);
+                            break;
+                    }
+
+
                     this.notifyObservers();
                     console.log("added to history: " + item.data.name);
                     return (lastAdded);
@@ -139,8 +186,20 @@ define([
                 getTypes: function() {
                     return types;
                 },
+
+                /**
+                 * after async type load, you get the types (promise.then(function(types) [}))
+                 * @returns promise types are fetched
+                 */
                 getMetadataTypes: function() {
-                    return metadataTypes;
+                    return promiseMetadata;
+                },
+                /**
+                 * after async type load, you get the types (promise.then(function(types) [}))
+                 * @returns promise types are fetched
+                 */
+                getEntityTypes: function() {
+                    return promiseEntities;
                 }
             }
         }]);
