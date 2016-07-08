@@ -20,6 +20,7 @@ package controllers
 import play.api.Logger
 import play.api.mvc.{Action, Controller}
 import org.apache.commons.codec.binary.{Base64, Hex, StringUtils}
+import javax.inject.Inject
 
 import scala.util.Random
 
@@ -27,7 +28,7 @@ import scala.util.Random
   This class define which URL patterns match which views as well as
   which play routes exist and where they point at.
 */
-object Application extends Controller {
+class Application @Inject extends Controller {
 
 	/**
 	 * Serves the login page.

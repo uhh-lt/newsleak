@@ -26,7 +26,7 @@ import scalikejdbc._
     This class encapsulates all functionality for the
     network graph.
 */
-object NetworkController extends Controller {
+class NetworkController @Inject extends Controller {
   implicit val session = AutoSession
 
   /**
@@ -258,45 +258,45 @@ object NetworkController extends Controller {
       .list()
       .apply()
 
-        // IF the relation list IS NOT empty
-        if(relations.nonEmpty ){
-          val relationConcat = relations.map(_._2) ++ relations.map(_._3)
-          entities = sql"""SELECT id, name, type, frequency
+    // IF the relation list IS NOT empty
+    if(relations.nonEmpty ){
+      val relationConcat = relations.map(_._2) ++ relations.map(_._3)
+      entities = sql"""SELECT id, name, type, frequency
                            FROM entity
                            WHERE id IN (${relationConcat})"""
-            .map(rs => (rs.long("id"), rs.string("name"),  rs.int("frequency"), rs.string("type")))
-            .list()
-            .apply()
+        .map(rs => (rs.long("id"), rs.string("name"),  rs.int("frequency"), rs.string("type")))
+        .list()
+        .apply()
 
-        }
-        // Get the neighborRelCount most/least relevant relations between neighbors of the node with the id "id".
-        relations = List.concat(relations, getNeighborRelations(sorting, entities, neighborRelCount, id))
-
-        val result = new JsObject(Map(("nodes", Json.toJson(entities)) , ("links", Json.toJson(relations))))
-
-        Ok(Json.toJson(result)).as("application/json")
     }
+    // Get the neighborRelCount most/least relevant relations between neighbors of the node with the id "id".
+    relations = List.concat(relations, getNeighborRelations(sorting, entities, neighborRelCount, id))
 
-    /**
-     * Returns a list with "amount" relations between neighbors of the node with the id "id".
-     */
-    private def getNeighborRelations(sorting: SQLSyntax,
-                                    entities : List[(Long, String, Int, String)],
-                                    amount: Int, 
-                                    id: Long) : List[(Long, Long, Long, Int)] = {
-      if(entities.nonEmpty){
-          val relations: List[(Long, Long, Long, Int)] = sql"""SELECT DISTINCT ON(id, frequency) id, entity1, entity2, frequency
+    val result = new JsObject(Map(("nodes", Json.toJson(entities)) , ("links", Json.toJson(relations))))
+
+    Ok(Json.toJson(result)).as("application/json")
+  }
+
+  /**
+    * Returns a list with "amount" relations between neighbors of the node with the id "id".
+    */
+  private def getNeighborRelations(sorting: SQLSyntax,
+                                   entities : List[(Long, String, Int, String)],
+                                   amount: Int,
+                                   id: Long) : List[(Long, Long, Long, Int)] = {
+    if(entities.nonEmpty){
+      val relations: List[(Long, Long, Long, Int)] = sql"""SELECT DISTINCT ON(id, frequency) id, entity1, entity2, frequency
           FROM relationship
           WHERE entity1 IN (${entities.map(_._1)})
           AND entity2 IN (${entities.map(_._1)})
           ORDER BY frequency ${sorting}
           LIMIT ${amount}"""
-      .map(rs => (rs.long("id"), rs.long("entity1"), rs.long("entity2"), rs.int("frequency")))
-      .list // single, list, traversable
-      .apply()
-    return relations
+        .map(rs => (rs.long("id"), rs.long("entity1"), rs.long("entity2"), rs.int("frequency")))
+        .list // single, list, traversable
+        .apply()
+      return relations
+    }
+    List()
   }
-  List()
-}
 
 }

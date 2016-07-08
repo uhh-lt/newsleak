@@ -9,7 +9,9 @@ new/s/leak
 ## 1. Build Instructions
 
 
-Make sure you have the build tool `sbt` installed. It can be downloaded [here](http://www.scala-sbt.org/). As minimum sbt 0.13.9 and scala 2.11 are required
+Make sure you have the build tool `sbt` installed. It can be downloaded [here](http://www.scala-sbt.org/). As minimum sbt 0.13.11 and scala 2.11 are required.
+
+The Application is running on Play Framework 2.5
 
 Also [nodeJS](https://nodejs.org/) and npm (comes with nodejs or linux package manager) needs to be installed.
 

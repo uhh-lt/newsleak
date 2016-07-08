@@ -2,7 +2,7 @@ name := "new/s/leak"
 
 version := "1.0.2"
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.11.7"
 
 scalacOptions += "-feature"
 
@@ -19,6 +19,8 @@ libraryDependencies ++= Seq(
 )
 
 routesImport += "util.Binders._"
+
+routesGenerator := InjectedRoutesGenerator
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala, SbtWeb)
 

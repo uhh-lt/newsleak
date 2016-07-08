@@ -1,5 +1,7 @@
 package controllers
 
+import javax.inject.Inject
+
 import model.faceted.search.{FacetedSearch, MetaDataBucket, NodeBucket}
 import model.{Document, Entity, EntityType}
 import play.api.libs.json.{JsObject, Json}
@@ -9,7 +11,7 @@ import scalikejdbc._
 /**
   * Created by flo on 6/20/2016.
   */
-object EntityController extends Controller {
+class EntityController @Inject extends Controller {
   implicit val session = AutoSession
 
   /**

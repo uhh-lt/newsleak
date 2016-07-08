@@ -1,14 +1,16 @@
 package controllers
 
-import play.api.mvc.{Action, Results}
+import play.api.mvc.{Action, Results, Controller}
 import model.{Entity, Tag}
 import play.api.libs.json.{JsArray, JsObject, Json, Writes}
+import javax.inject.Inject
+
+
 
 /**
   * Created by patrick on 19.04.16.
   */
-object SearchController
-{
+class SearchController @Inject extends Controller {
 	// http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
 	implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[Tuple2[A, B]] = new Writes[Tuple2[A, B]] {
 		def writes(tuple: Tuple2[A, B]) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2)))
