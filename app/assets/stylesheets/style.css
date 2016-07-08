@@ -484,6 +484,12 @@ footer > div, footer > div #chartBarchart {
 #metadata-overview .tab-content, #metadata-overview .tab-pane {
     height: 100%;
 }
+#metadata_tabs {
+    height: calc(100% - 50px);
+}
+#metadata_tabs .tab-pane {
+    height: 100%;
+}
 #metadata-overview .scroll-chart {
     height: 100%;
     overflow-y: auto;
