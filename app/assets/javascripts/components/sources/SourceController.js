@@ -112,7 +112,13 @@ define([
                         var facets = [];
                         if($scope.metadataFilters.length > 0) {
                             angular.forEach($scope.metadataFilters, function(metaType) {
-                                if($scope.metadataFilters[metaType].length > 0) facets.push({key: metaType, data: $scope.metadataFilters[metaType]});
+                                if($scope.metadataFilters[metaType].length > 0) {
+                                    var keys = [];
+                                    angular.forEach($scope.metadataFilters[metaType], function(x) {
+                                        keys.push(x.data.name);
+                                    });
+                                    facets.push({key: metaType, data: keys});
+                                }
                             });
                             if(facets == 0) facets = [{'key':'dummy','data': []}];
 

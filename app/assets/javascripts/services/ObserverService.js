@@ -50,7 +50,7 @@ define([
                         items['metadata'].push(type);
                         items['metadata'][type] = [];
                     });
-                    deferred.resolve('success');
+                    deferred.resolve(metadataTypes);
                     //TODO: how to add metadata filter
                     //items['metadata']['Tags'].push('PREF');
                 });
@@ -112,9 +112,9 @@ define([
                             break;
                         //metadata
                         case types[1]:
-                            history.forEach(function(x) {
-                                if (item.data.id == x.data.id) isDup = true;
-                            });
+                            //history.forEach(function(x) {
+                            //    if (item.data.id == x.data.id) isDup = true;
+                            //});
                             break;
                         //time filter
                         case types[2]:
