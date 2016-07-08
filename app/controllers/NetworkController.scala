@@ -17,6 +17,8 @@
 package controllers
 
 
+import javax.inject.Inject
+
 import model.EntityType
 import play.api.libs.json.{JsArray, JsObject, Json, Writes}
 import play.api.mvc.{Action, Controller}
