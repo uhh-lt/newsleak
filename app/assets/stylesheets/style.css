@@ -474,14 +474,14 @@ footer > div, footer > div #chartBarchart {
 #metadata {
     height: 100%;
 }
-#metadata-overview {
+#metadata-overview, #metadata_tabs, #metadata-overview2 {
     height: calc(100% - 74px);
 }
-#metadata-overview .meta-chart-container {
+#metadata_tabs .meta-chart-container {
     height: 100%;
     overflow: hidden;
 }
-#metadata-overview .tab-content, #metadata-overview .tab-pane {
+#metadata_tabs .tab-content, #metadata-overview .tab-pane {
     height: 100%;
 }
 #metadata_tabs {
@@ -490,13 +490,13 @@ footer > div, footer > div #chartBarchart {
 #metadata_tabs .tab-pane {
     height: 100%;
 }
-#metadata-overview .scroll-chart {
+#metadata_tabs .scroll-chart {
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
 }
 
-#metadata-overview .meta-chart {
+#metadata_tabs .meta-chart {
     height: 1000px;
 }
 
