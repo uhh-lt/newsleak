@@ -37,29 +37,83 @@ define([
                 'ObserverService',
                 function ($scope, $timeout, playRoutes, appData, metaShareService, sourceShareService, filterShareService, ObserverService) {
 
-                    //broadcast reflow on highcharts
-                    /*$scope.reflow = function() {
-                     $scope.$broadcast('highchartsng.reflow');
-
-                     };*/
-
                     $scope.frequencies = [];
                     $scope.labels = [];
                     $scope.ids = [];
                     $scope.chartConfigs = [];
                     $scope.metaCharts = [];
                     $scope.chartConfig = metaShareService.chartConfig;
-
-
                     $scope.observer = ObserverService;
 
                     $scope.observer.getEntityTypes().then(function(types) {$scope.entityTypes  = types});
                     $scope.observer.getMetadataTypes().then(function(types) {$scope.metadataTypes  = types});
 
-                    $scope.observer_subscribe = function(items) { $scope.filterItems = items};
-                    $scope.observer.subscribeItems($scope.observer_subscribe, "entity");
+                    /**
+                     * subscribe entity and metadata filters
+                     */
+                    $scope.observer_subscribe_entity = function(items) { $scope.entityFilters = items};
+                    $scope.observer_subscribe_metadata = function(items) { $scope.metadataFilters = items};
+                    $scope.observer.subscribeItems($scope.observer_subscribe_entity,"entity");
+                    $scope.observer.subscribeItems($scope.observer_subscribe_metadata,"metadata");
 
                     $scope.updateEntityCharts = function () {
+
+                    };
+
+                    $scope.updateMetadataCharts = function() {
+                        var fulltext = "";
+                        angular.forEach($scope.entityFilters, function(item) {
+                            fulltext += item.data.name + " ";
+                        });
+                        var facets = [];
+                        if($scope.metadataFilters.length > 0) {
+                            angular.forEach($scope.metadataFilters, function(metaType) {
+                                if($scope.metadataFilters[metaType].length > 0) {
+                                    var keys = [];
+                                    angular.forEach($scope.metadataFilters[metaType], function(x) {
+                                        keys.push(x.data.name);
+                                    });
+                                    facets.push({key: metaType, data: keys});
+                                }
+                            });
+                            if(facets == 0) facets = [{'key':'dummy','data': []}];
+
+                        } else {
+                            facets = [{'key':'dummy','data': []}];
+                        }
+                        //TODO: on adding fulltext filter doc count grows
+                        fulltext = "";
+                        playRoutes.controllers.MetadataController.getMetadata(fulltext,facets).get().then(
+                            function (result) {
+                                angular.forEach(result.data, function(obj) {
+                                    $.each(obj, function(key, value) {
+                                        var data = [];
+                                        angular.forEach(value, function(x) {
+                                            data.push(x.count);
+                                        });
+                                        var newBase = [];
+                                        $.each($scope.chartConfigs[key].series[0].data, function(index, value) {
+                                            if(data[index] == undefined)
+                                                newBase.push($scope.chartConfigs[key].series[0].data[index]);
+                                            else
+                                                newBase.push($scope.chartConfigs[key].series[0].data[index] - data[index]);
+                                        });
+                                        $scope.metaCharts[key].series[0].setData(newBase);
+                                        if($scope.metaCharts[key].series[1] == undefined) {
+                                            $scope.metaCharts[key].addSeries({
+                                                name: 'Filter',
+                                                data: data,
+                                                color: 'black'
+                                            });
+                                        } else {
+                                            $scope.metaCharts[key].series[1].setData(data);
+                                        }
+                                    });
+                                });
+                            });
+                    };
+
+                    $scope.initEntityCharts = function () {
                         $scope.observer.getEntityTypes().then(function(types) {
                             types.forEach(function (x) {
                                 $scope.chartConfigs[x] = angular.copy($scope.chartConfig);
@@ -86,7 +140,7 @@ define([
                                                 events: {
                                                     click: function () {
                                                         $scope.filters = [];
-                                                        $scope.filterItems.forEach(function(x) {
+                                                        $scope.entityFilters.forEach(function(x) {
                                                             $scope.filters.push(x.data.id);
                                                         });
                                                         $scope.filters.push($scope.ids[x][$scope.labels[x].indexOf(this.category)]);
@@ -124,7 +178,7 @@ define([
 
                     };
 
-                    $scope.updateMetadataCharts = function () {
+                    $scope.initMetadataCharts = function () {
                         $scope.observer.getMetadataTypes().then(function(types) {
 
 
@@ -196,6 +250,11 @@ define([
                         $scope.updateMetadataCharts();
                     };
 
+                    $scope.initMetadataView = function() {
+                        $scope.initEntityCharts();
+                        $scope.initMetadataCharts();
+                    };
+
                     $scope.observer.registerObserverCallback($scope.updateMetadataView);
                     //load another 50 entities for specific metadata
                     $scope.loadMore = function (ele) {
@@ -206,8 +265,7 @@ define([
                         }
                     };
 
-
-                    $scope.updateMetadataView();
+                    $scope.initMetadataView();
 
                     $scope.reflow = function(type) {
                         $timeout(function() {

@@ -56,7 +56,7 @@ define([
                 });
                 return deferred.promise;
             }
-            //fetch metadata Types dynamically
+            //fetch entity Types dynamically
             function updateEntityTypes() {
                 var deferred = $q.defer();
                 playRoutes.controllers.EntityController.getEntityTypes().get().then(function (response) {
@@ -170,7 +170,7 @@ define([
 
 
 
-                
+                //TODO: replace type by array to more then one type can be subscribed in a merged item array
                 subscribeItems: function (_subscriber, type) {
                     _subscriber(items[type]);
                 },
