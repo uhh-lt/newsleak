@@ -16,12 +16,17 @@ class MetadataController @Inject extends Controller {
     def writes(tuple: Tuple2[A, B]) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2)))
   }
 
+
+  //TODO: hardcoded types because we need only 4 in overview
+  val types = List(("Origin","String"), ("Tags","String"), ("SignedBy","String"),("Classification","String"))
+
   /**
     * Get all metadata types
     * @return list of metadata types
     */
   def getMetadataTypes =  Action {
-    Results.Ok(Json.toJson(Document.getMetadataKeysAndTypes().map(x => x._1))).as("application/json")
+    Results.Ok(Json.toJson(types.map(x => x._1))).as("application/json")
+    //Results.Ok(Json.toJson(Document.getMetadataKeysAndTypes().map(x => x._1))).as("application/json")
   }
 
   /**
@@ -31,7 +36,7 @@ class MetadataController @Inject extends Controller {
     * @return list of matching metadata keys and document count
     */
   def getMetadata(fullText: Option[String], facets: Map[String, List[String]]) = Action {
-    val types = Document.getMetadataKeysAndTypes()
+    //val types = Document.getMetadataKeysAndTypes()
     var res: List[JsObject] = List()
     types.foreach(metadataType => {
       val agg = FacetedSearch.aggregate(fullText, facets, metadataType._1, 50)
