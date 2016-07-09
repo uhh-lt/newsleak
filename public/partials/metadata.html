@@ -11,7 +11,7 @@
         <uib-tab ng-repeat="entityType in entityTypes"
                 heading="{{entityType}}"
                  classes="fade in meta-chart-container"
-                 ng-click="reflow()"
+                 select="reflow(entityType)"
                 >
 
                 <div class="scroll-chart">
@@ -27,11 +27,11 @@
                 <uib-tab ng-repeat="metaType in metadataTypes"
                          heading="{{metaType}}"
                          classes="fade in meta-chart-container"
-                         ng-click="reflow()"
+                         select="reflow(metaType)"
                 >
 
                     <div class="scroll-chart">
-                        <div id="chart_meta_{{metaType| lowercase}}" class="meta-chart" ></div>
+                        <div id="chart_{{metaType| lowercase}}" class="meta-chart" ></div>
                     </div>
 
 

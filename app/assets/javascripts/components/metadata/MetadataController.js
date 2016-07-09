@@ -59,10 +59,6 @@ define([
                     $scope.observer_subscribe = function(items) { $scope.filterItems = items};
                     $scope.observer.subscribeItems($scope.observer_subscribe, "entity");
 
-                    //need to reflow the chart using bootstrap tabs
-                    $('#metadata .nav-tabs a').on('shown.bs.tab', function (event) {
-                        $(event.target.hash).find(".meta-chart").highcharts().reflow();
-                    });
                     $scope.updateEntityCharts = function () {
                         $scope.observer.getEntityTypes().then(function(types) {
                             types.forEach(function (x) {
@@ -184,7 +180,7 @@ define([
                                             }
 
                                         }];
-                                        $scope.chartConfigs[key].chart.renderTo = "chart_meta_" + key.toLowerCase();
+                                        $scope.chartConfigs[key].chart.renderTo = "chart_" + key.toLowerCase();
 
                                         $scope.metaCharts[key] = new Highcharts.Chart($scope.chartConfigs[key]);
                                             });
@@ -213,9 +209,10 @@ define([
 
                     $scope.updateMetadataView();
 
-                    $scope.reflow = function() {
-                       //TODO: reflow on bart charts visible
-
+                    $scope.reflow = function(type) {
+                        $timeout(function() {
+                            $("#chart_" + type.toLowerCase()).highcharts().reflow();
+                        }, 100);
                     };
 
                     /** entry point here **/
@@ -224,7 +221,7 @@ define([
                     $scope.filterShareService = filterShareService;
 
 
-                    //TODO: ui-view height -> scroll bar
+                    //TODO: calc height on bar count -> scroll bar
                     $scope.tabHeight = $("#metadata").height() - 100;
                     //console.log($scope.tabHeight);
                     //console.log(sourceShareService);
