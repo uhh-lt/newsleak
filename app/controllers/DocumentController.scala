@@ -67,7 +67,7 @@ class DocumentController @Inject extends Controller {
     val from = if (timeRange.isEmpty) None else Some(LocalDateTime.parse(timeRange.split("-")(0), DateTimeFormat.forPattern("yyyy")))
     val to = if (timeRange.isEmpty) None else Some(LocalDateTime.parse(timeRange.split("-")(1), DateTimeFormat.forPattern("yyyy")))
 
-    val facets = Facets(fullText, generic, List(), from, to)
+    val facets = Facets(fullText, generic, entities, from, to)
     var pageCounter = 0
     val metadataKey = "Subject"
     val hitIterator = FacetedSearch.searchDocuments(facets, defaultPageSize)
