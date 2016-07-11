@@ -19,7 +19,7 @@ package controllers
 import javax.inject.Inject
 
 import model.Document
-import model.faceted.search.FacetedSearch
+import model.faceted.search.{ FacetedSearch, Facets }
 import play.api.libs.json.{ JsArray, Json, Writes }
 import play.api.mvc.{ Action, Controller }
 import scalikejdbc._
@@ -29,6 +29,8 @@ import scalikejdbc._
 */
 class DocumentController @Inject extends Controller {
   private implicit val session = AutoSession
+
+  private val defaultPageSize = 50
 
   // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
   implicit def tuple3Writes[A, B, C](implicit a: Writes[A], b: Writes[B], c: Writes[C]): Writes[Tuple3[A, B, C]] = new Writes[Tuple3[A, B, C]] {
@@ -55,16 +57,17 @@ class DocumentController @Inject extends Controller {
    * Search for Dcoument by fulltext term and faceted search map via elastic search
    *
    * @param fullText Full text search term
-   * @param facets   mapping of metadata key and a list of corresponding tags
+   * @param generic   mapping of metadata key and a list of corresponding tags
+   * @param entities list of entity ids to filter
    * @return list of matching document id's
    */
-  def getDocs(fullText: Option[String], facets: Map[String, List[String]]) = Action {
-    val pageSize = 50
+  def getDocs(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long]) = Action {
+    val facets = Facets(fullText, generic, List(), None, None)
     var pageCounter = 0
     val metadataKey = "Subject"
-    val hitIterator = FacetedSearch.searchDocuments(fullText, facets, pageSize)
+    val hitIterator = FacetedSearch.searchDocuments(facets, defaultPageSize)
     var docIds: List[Long] = List()
-    while (hitIterator.hasNext && pageCounter <= pageSize) {
+    while (hitIterator.hasNext && pageCounter <= defaultPageSize) {
       docIds ::= hitIterator.next()
       pageCounter += 1
     }

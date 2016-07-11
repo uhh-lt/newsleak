@@ -18,7 +18,7 @@ package controllers
 
 import javax.inject.Inject
 
-import model.faceted.search.{ FacetedSearch, MetaDataBucket }
+import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket }
 import model.{ Document, Entity, EntityType }
 import play.api.libs.json.{ JsArray, JsObject, Json, Writes }
 import play.api.mvc.{ Action, Controller, Results }
@@ -48,14 +48,16 @@ class MetadataController @Inject extends Controller {
   /**
    * Gets document counts for all metadata types corresponding to their keys
    * @param fullText Full text search term
-   * @param facets mapping of metadata key and a list of corresponding tags
+   * @param generic mapping of metadata key and a list of corresponding tags
+   * @param entities list of entity ids to filter
    * @return list of matching metadata keys and document count
    */
-  def getMetadata(fullText: Option[String], facets: Map[String, List[String]]) = Action {
+  def getMetadata(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long]) = Action {
     // val types = Document.getMetadataKeysAndTypes()
     var res: List[JsObject] = List()
+    val facets = Facets(fullText, generic, entities, None, None)
     types.foreach(metadataType => {
-      val agg = FacetedSearch.aggregate(fullText, facets, metadataType._1, defaultFetchSize)
+      val agg = FacetedSearch.aggregate(facets, metadataType._1, defaultFetchSize)
       res ::= Json.obj(metadataType._1 -> agg.get.buckets.map(x => x match {
         case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
         case _ => Json.obj()
@@ -68,11 +70,13 @@ class MetadataController @Inject extends Controller {
   /**
    * Gets document counts for keywords
    * @param fullText Full text search term
-   * @param facets mapping of metadata key and a list of corresponding tags
+   * @param generic mapping of metadata key and a list of corresponding tags
+   * @param entities list of entity ids to filter
    * @return list of matching keywords and document count
    */
-  def getKeywords(fullText: Option[String], facets: Map[String, List[String]]) = Action {
-    val res = FacetedSearch.aggregateKeywords(fullText, facets, defaultFetchSize).buckets.map(x => x match {
+  def getKeywords(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long]) = Action {
+    val facets = Facets(fullText, generic, entities, None, None)
+    val res = FacetedSearch.aggregateKeywords(facets, defaultFetchSize).buckets.map(x => x match {
       case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
       case _ => Json.obj()
     })

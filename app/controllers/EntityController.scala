@@ -18,7 +18,7 @@ package controllers
 
 import javax.inject.Inject
 
-import model.faceted.search.{ FacetedSearch, MetaDataBucket, NodeBucket }
+import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket, NodeBucket }
 import model.{ Document, Entity, EntityType }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller, Results }
@@ -57,11 +57,12 @@ class EntityController @Inject extends Controller {
   /**
    * Gets document counts for entities corresponding to their id's matching the query
    * @param fullText Full text search term
-   * @param facets mapping of metadata key and a list of corresponding tags
+   * @param generic mapping of metadata key and a list of corresponding tags
    * @return list of matching entity id's and document count
    */
-  def getEntities(fullText: Option[String], facets: Map[String, List[String]]) = Action {
-    val res = FacetedSearch.aggregateEntities(None, Map(), defaultFetchSize).buckets.map(x => x match {
+  def getEntities(fullText: Option[String], generic: Map[String, List[String]]) = Action {
+    val facets = Facets(fullText, generic, List(), None, None)
+    val res = FacetedSearch.aggregateEntities(facets, defaultFetchSize).buckets.map(x => x match {
       case NodeBucket(id, count) => Json.obj("key" -> id, "count" -> count)
       case _ => Json.obj()
     })
