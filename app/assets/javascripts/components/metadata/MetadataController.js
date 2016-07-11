@@ -61,9 +61,10 @@ define([
                     };
 
                     $scope.updateMetadataCharts = function() {
-                        var fulltext = "";
+                        var fulltext = undefined;
+                        var entities = [];
                         angular.forEach($scope.entityFilters, function(item) {
-                            fulltext += item.data.name + " ";
+                            entities.push(item.data.id);
                         });
                         var facets = [];
                         if($scope.metadataFilters.length > 0) {
@@ -82,8 +83,7 @@ define([
                             facets = [{'key':'dummy','data': []}];
                         }
                         //TODO: on adding fulltext filter doc count grows
-                        fulltext = "";
-                        playRoutes.controllers.MetadataController.getMetadata(fulltext,facets).get().then(
+                        playRoutes.controllers.MetadataController.getMetadata(fulltext,facets,entities).get().then(
                             function (result) {
                                 angular.forEach(result.data, function(obj) {
                                     $.each(obj, function(key, value) {
@@ -183,7 +183,7 @@ define([
 
 
 
-                                playRoutes.controllers.MetadataController.getMetadata('',[{'key':'dummy','data': []}]).get().then(
+                                playRoutes.controllers.MetadataController.getMetadata(undefined,[{'key':'dummy','data': []}]).get().then(
                                     function (result) {
 
                                         $.each(result.data,function() {

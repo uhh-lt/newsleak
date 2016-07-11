@@ -105,9 +105,10 @@ define([
                      */
                     $scope.updateDocumentList = function() {
                         console.log("reload doc list");
-                        var fulltext = "";
+                        var fulltext = undefined;
+                        var entities = [];
                         angular.forEach($scope.entityFilters, function(item) {
-                            fulltext += item.data.name + " ";
+                            entities.push(item.data.id);
                         });
                         var facets = [];
                         if($scope.metadataFilters.length > 0) {
@@ -125,7 +126,7 @@ define([
                         } else {
                             facets = [{'key':'dummy','data': []}];
                         }
-                        playRoutes.controllers.DocumentController.getDocs(fulltext,facets).get().then(function(x) {
+                        playRoutes.controllers.DocumentController.getDocs(fulltext,facets,entities).get().then(function(x) {
                             // console.log(x.data);
                             $scope.sourceShared.reset(0);
                             $scope.sourceShared.addDocs(x.data);
