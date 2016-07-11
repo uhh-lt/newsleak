@@ -15,7 +15,7 @@ GET         /                                                controllers.Applica
 #GET			/partials/*file						                 controllers.Application.loadPublicHTML(file)
 
 GET    /docById           		controllers.DocumentController.getDocById(id: Int)
-GET    /getDocs           		controllers.DocumentController.getDocs(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long])
+GET    /getDocs           		controllers.DocumentController.getDocs(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
 GET    /frequencySeries			controllers.DocumentController.getFrequencySeries
 GET    /docsByDate           	controllers.DocumentController.getDocsByDate(date: Long)
 GET    /getDocsForMonth         controllers.DocumentController.getDocsForMonth(year: Int, month: Int, startIndex: Int, offset: Int)

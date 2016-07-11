@@ -200,6 +200,10 @@ define([
                  */
                 getEntityTypes: function() {
                     return promiseEntities;
+                },
+
+                getTimeRange: function() {
+                    if(items["time"].length == 0) return ""; else return items["time"][items["time"].length-1].data.name;
                 }
             }
         }]);

@@ -126,7 +126,7 @@ define([
                         } else {
                             facets = [{'key':'dummy','data': []}];
                         }
-                        playRoutes.controllers.DocumentController.getDocs(fulltext,facets,entities).get().then(function(x) {
+                        playRoutes.controllers.DocumentController.getDocs(fulltext,facets,entities,$scope.observer.getTimeRange()).get().then(function(x) {
                             // console.log(x.data);
                             $scope.sourceShared.reset(0);
                             $scope.sourceShared.addDocs(x.data);

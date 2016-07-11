@@ -20,6 +20,8 @@ import javax.inject.Inject
 
 import model.Document
 import model.faceted.search.{ FacetedSearch, Facets }
+import org.joda.time.LocalDateTime
+import org.joda.time.format.DateTimeFormat
 import play.api.libs.json.{ JsArray, Json, Writes }
 import play.api.mvc.{ Action, Controller }
 import scalikejdbc._
@@ -61,8 +63,11 @@ class DocumentController @Inject extends Controller {
    * @param entities list of entity ids to filter
    * @return list of matching document id's
    */
-  def getDocs(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long]) = Action {
-    val facets = Facets(fullText, generic, List(), None, None)
+  def getDocs(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
+    val from = if (timeRange.isEmpty) None else Some(LocalDateTime.parse(timeRange.split("-")(0), DateTimeFormat.forPattern("yyyy")))
+    val to = if (timeRange.isEmpty) None else Some(LocalDateTime.parse(timeRange.split("-")(1), DateTimeFormat.forPattern("yyyy")))
+
+    val facets = Facets(fullText, generic, List(), from, to)
     var pageCounter = 0
     val metadataKey = "Subject"
     val hitIterator = FacetedSearch.searchDocuments(facets, defaultPageSize)

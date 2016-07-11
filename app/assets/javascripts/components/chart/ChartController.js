@@ -76,21 +76,21 @@ define([
                 var yearRexExp = new RegExp('^[0-9]{4}$');
                 var monthRexExp = new RegExp('^([a-zA-Z0-9_-]){3,5} [0-9]{4}$');
                 var dayRexExp = new RegExp('^[0-9]{1,2}.[0-9]{1,2}.[0-9]{4}$');
-                sourceShareService.documentListInfo = 'Documents for ' + range;
+                // sourceShareService.documentListInfo = 'Documents for ' + range;
                 // Check if a decade was clicked
                 if (range.match(decadeRexExp)) {
                     sourceShareService.fromYear = parseInt(range.substring(0, 4));
                     sourceShareService.toYear = parseInt(range.substring(5, 9));
                     // Retrieve the documents. First, however, reset the sourceShareService
                     sourceShareService.reset(sourceShareService.CATEGORY_DECADE);
-                    sourceShareService.fetchNextDocs();
+                    //sourceShareService.fetchNextDocs();
                 }
                 // Check if a year was clicked
                 else if (range.match(yearRexExp)) {
                     sourceShareService.fromYear = range.match(yearRexExp)[0];
                     // Retrieve the documents
                     sourceShareService.reset(sourceShareService.CATEGORY_YEAR);
-                    sourceShareService.fetchNextDocs();
+                    //sourceShareService.fetchNextDocs();
                 }
                 // Check if a month was clicked
                 else if (range.match(monthRexExp)) {
@@ -101,7 +101,7 @@ define([
                     sourceShareService.month = monthAbbreviations.indexOf(monthAbbreviation) + 1;
                     // Retrieve the documents
                     sourceShareService.reset(sourceShareService.CATEGORY_MONTH);
-                    sourceShareService.fetchNextDocs();
+                    //sourceShareService.fetchNextDocs();
                 }
                 // Check if a day was clicked
                 else if (range.match(dayRexExp)) {
@@ -109,7 +109,7 @@ define([
                     var day = moment(range + " 12", "D.M.YYYY H").unix();
                     sourceShareService.day = day;
                     sourceShareService.reset(sourceShareService.CATEGORY_DAY);
-                    sourceShareService.fetchNextDocs();
+                    //sourceShareService.fetchNextDocs();
                 }
 
                 //put click to history
