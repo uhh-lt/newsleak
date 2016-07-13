@@ -54,65 +54,18 @@ define([
                     if (x !== UNDEFINED) {
                         p.call(this, hold, x);
                     } else {
-                        fetchDocumentsForRange(this.options.drilldown.toString());
+                        addTimeFilter(this.options.drilldown.toString());
                     }
                 });
             })(Highcharts);
 
             /**
-             * This function is used for initially fetching the first n documents which belong to
-             * the selected time range. All further document fetching will be done in the document
-             * list via the corresponding button.
+             * Add time range filter to observer
              *
              * @param range - The range delivers the information for which time frame data
              * shall be loaded (e. g. can be values like '1970-1979', '1970', 'Jan 1980').
              */
-            function fetchDocumentsForRange(range) {
-                /*
-                 First, identify, whether a decade, a year or a month bar was clicked
-                 and build the criterion on the fly.
-                 */
-                var decadeRexExp = new RegExp('^[0-9]{4}-[0-9]{4}$');
-                var yearRexExp = new RegExp('^[0-9]{4}$');
-                var monthRexExp = new RegExp('^([a-zA-Z0-9_-]){3,5} [0-9]{4}$');
-                var dayRexExp = new RegExp('^[0-9]{1,2}.[0-9]{1,2}.[0-9]{4}$');
-                // sourceShareService.documentListInfo = 'Documents for ' + range;
-                // Check if a decade was clicked
-                if (range.match(decadeRexExp)) {
-                    sourceShareService.fromYear = parseInt(range.substring(0, 4));
-                    sourceShareService.toYear = parseInt(range.substring(5, 9));
-                    // Retrieve the documents. First, however, reset the sourceShareService
-                    sourceShareService.reset(sourceShareService.CATEGORY_DECADE);
-                    //sourceShareService.fetchNextDocs();
-                }
-                // Check if a year was clicked
-                else if (range.match(yearRexExp)) {
-                    sourceShareService.fromYear = range.match(yearRexExp)[0];
-                    // Retrieve the documents
-                    sourceShareService.reset(sourceShareService.CATEGORY_YEAR);
-                    //sourceShareService.fetchNextDocs();
-                }
-                // Check if a month was clicked
-                else if (range.match(monthRexExp)) {
-                    var posOfSpace = range.indexOf(' ');
-                    var monthAbbreviation = range.substring(0, posOfSpace);
-                    sourceShareService.fromYear = range.substring(posOfSpace + 1, range.length);
-                    // +1 because the backend expects January to be 1
-                    sourceShareService.month = monthAbbreviations.indexOf(monthAbbreviation) + 1;
-                    // Retrieve the documents
-                    sourceShareService.reset(sourceShareService.CATEGORY_MONTH);
-                    //sourceShareService.fetchNextDocs();
-                }
-                // Check if a day was clicked
-                else if (range.match(dayRexExp)) {
-                    // This is a hack to get the right day out of moment; without the "12", DST breaks the date
-                    var day = moment(range + " 12", "D.M.YYYY H").unix();
-                    sourceShareService.day = day;
-                    sourceShareService.reset(sourceShareService.CATEGORY_DAY);
-                    //sourceShareService.fetchNextDocs();
-                }
-
-                //put click to history
+            function addTimeFilter(range) {
                 $scope.observer.addItem({
                     type: 'time',
                     data: {
@@ -140,7 +93,7 @@ define([
                 else {
                     range = range.innerHTML;
                 }
-                fetchDocumentsForRange(range);
+                addTimeFilter(range);
 
 
             });
@@ -229,7 +182,7 @@ define([
                                 point: {
                                     events: {
                                         click: function () {
-                                            fetchDocumentsForRange(this.series.data[this.x].name);
+                                            addTimeFilter(this.series.data[this.x].name);
                                         },
                                     }
                                 }
