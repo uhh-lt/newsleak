@@ -32,8 +32,7 @@ class MetadataController @Inject extends Controller {
     def writes(tuple: Tuple2[A, B]) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2)))
   }
 
-  // TODO: hardcoded types because we need only 4 in overview
-  private val types = List(("Origin", "String"), ("Tags", "String"), ("SignedBy", "String"), ("Classification", "String"))
+  private val defaultExcludeTypes = List("Subject", "Header", "ReferenceId", "References", "Keywords", "Entities", "Created", "EventTimes")
   private val defaultFetchSize = 50
 
   /**
@@ -41,8 +40,7 @@ class MetadataController @Inject extends Controller {
    * @return list of metadata types
    */
   def getMetadataTypes = Action {
-    Results.Ok(Json.toJson(types.map(x => x._1))).as("application/json")
-    // Results.Ok(Json.toJson(Document.getMetadataKeysAndTypes().map(x => x._1))).as("application/json")
+    Results.Ok(Json.toJson(Document.getMetadataKeysAndTypes().map(x => x._1).filter(!defaultExcludeTypes.contains(_)))).as("application/json")
   }
 
   /**
@@ -53,17 +51,12 @@ class MetadataController @Inject extends Controller {
    * @return list of matching metadata keys and document count
    */
   def getMetadata(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long]) = Action {
-    // val types = Document.getMetadataKeysAndTypes()
-    var res: List[JsObject] = List()
     val facets = Facets(fullText, generic, entities, None, None)
-    types.foreach(metadataType => {
-      val agg = FacetedSearch.aggregate(facets, metadataType._1, defaultFetchSize)
-      res ::= Json.obj(metadataType._1 -> agg.get.buckets.map(x => x match {
+    val res = FacetedSearch.aggregateAll(facets, defaultFetchSize, defaultExcludeTypes)
+      .map(agg => Json.obj(agg.key -> agg.buckets.map(x => x match {
         case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
         case _ => Json.obj()
-      }))
-    })
-
+      })))
     Results.Ok(Json.toJson(res)).as("application/json")
   }
 
