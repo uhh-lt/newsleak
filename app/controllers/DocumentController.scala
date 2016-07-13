@@ -25,6 +25,7 @@ import org.joda.time.format.DateTimeFormat
 import play.api.libs.json.{ JsArray, Json, Writes }
 import play.api.mvc.{ Action, Controller }
 import scalikejdbc._
+import util.TimeRangeParser
 
 /*
     This class provides operations pertaining documents.
@@ -64,10 +65,8 @@ class DocumentController @Inject extends Controller {
    * @return list of matching document id's
    */
   def getDocs(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
-    val from = if (timeRange.isEmpty) None else Some(LocalDateTime.parse(timeRange.split("-")(0), DateTimeFormat.forPattern("yyyy")))
-    val to = if (timeRange.isEmpty) None else Some(LocalDateTime.parse(timeRange.split("-")(1), DateTimeFormat.forPattern("yyyy")))
-
-    val facets = Facets(fullText, generic, entities, from, to)
+    val times = TimeRangeParser.parseTimeRange(timeRange)
+    val facets = Facets(fullText, generic, entities, times.from, times.to)
     var pageCounter = 0
     val metadataKey = "Subject"
     val hitIterator = FacetedSearch.searchDocuments(facets, defaultPageSize)
