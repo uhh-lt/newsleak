@@ -50,7 +50,7 @@ define([
                 ],
                 monthAbbreviations: [
                     'Jan', 'Feb', 'March', 'Apr', 'May', 'June',
-                    'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dez'
+                    'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'
                 ],
                 // Highcharts options
                 highchartsOptions: {
