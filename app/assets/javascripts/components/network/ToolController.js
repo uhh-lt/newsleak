@@ -102,6 +102,32 @@ define([
                 }
             }
 
+            $scope.getEgoNetwork = function()
+            {
+                var listener = toolShareService.getEgoNetworkListener
+
+                listener.forEach
+                (
+                    function(l)
+                    {
+                        l(toolShareService.getSelectedNodes()[0]);
+                    }
+                )
+            }
+
+            $scope.hide = function()
+            {
+                var listener = toolShareService.editNameListener
+
+                listener.forEach
+                (
+                    function(l)
+                    {
+                        l(toolShareService.getSelectedNodes());
+                    }
+                )
+            }
+
             $scope.editOpen = function()
             {
             	var modal = $uibModal.open(

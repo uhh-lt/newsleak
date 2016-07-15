@@ -37,6 +37,10 @@ define([
                     editTypeListener: [],
                     //(focalNode, Nodes)
                     mergeListener: [],
+                    //(node)
+                    getEgoNetworkListener: [],
+                    //(nodeArray)
+                    hideListener: [],
 
                     freqSortingLeast: false,
                     isViewLoading: function(){return true;},

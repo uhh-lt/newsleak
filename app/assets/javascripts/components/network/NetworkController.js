@@ -129,7 +129,11 @@ define([
 
             toolShareService.mergeListener.push(merge);
 
-            toolShareService.deleteListener.push(remove)
+            toolShareService.deleteListener.push(remove);
+
+            toolShareService.getEgoNetworkListener.push(getEgoNetwork);
+
+            toolShareService.hideListener.push(hideSelected);
 
             toolShareService.updateGraph = getGraph;
             toolShareService.isViewLoading = function(){return $scope.isViewLoading};
@@ -1221,7 +1225,7 @@ define([
             /**
              * Loads the ego network for the selected node.
              */
-            $scope.getEgoNetwork = function(){
+            function getEgoNetwork(){
                 if(selectedNodes.length != 0){  // If a node is selected.
                     // Get the id of the newest selected node.
                     var id = selectedNodes[selectedNodes.length-1].id;
@@ -1284,7 +1288,7 @@ define([
              * Hide the currently selected nodes/edges from the graph. The data
              * will still be in the database.
              */
-            $scope.hideSelected = function (){
+            function hideSelected(){
                 // Remove selected nodes.
                 selectedNodes.forEach(function(d){
                     // Remove the selected node name from the words that get highlighted
