@@ -71,6 +71,7 @@ define([
             'uiShareService',
             'tagSelectShareService',
             'filterShareService',
+            'toolShareService',
             'ObserverService',
         function (
             $scope,
@@ -85,6 +86,7 @@ define([
             uiShareService,
             tagSelectShareService,
             filterShareService,
+            toolShareService,
             ObserverService
             )
         {
@@ -117,119 +119,21 @@ define([
             var selectedEdges = new Array();
             var selectionColor = '#2A2AFF';
 
-            $scope.merge={node: ""};
+            toolShareService.getSelectedNodes = function(){return selectedNodes;};
+            toolShareService.getSelectedElementsText = selectedElementsText;
 
+            toolShareService.editNameListener.push(editName);
+            toolShareService.editNameListener.push(sendEditedName);
 
-            // A slider for choosing the amount of displayed nodes from the type contries/cities.
-            $scope.sliderCountriesCitiesAmount = {
-                value: "3",
-                options: {
-                    from: 1,
-                    to: 100,
-                    step: 1,
-                    dimension: " countries/cities",
-                    limits: false,
-                    scale: [1, 100],
-                    css: {
-                        background: {"background-color": "silver"},
-                        before: {"background-color": "#7CB5EC"},
-                        default: {"background-color": "silver"},
-                        after: {"background-color": "#7CB5EC"},
-                        pointer: {"background-color": "#2759AC"}
-                    },
-                    callback: function(value, released){
-                        getGraph();
-                    }
-                }
-            }
-            // A slider for choosing the amount of displayed nodes from the type organization.
-            $scope.sliderOrganizationsAmount = {
-                value: "3",
-                options: {
-                    from: 1,
-                    to: 100,
-                    step: 1,
-                    dimension: " organizations",
-                    limits: false,
-                    scale: [1, 100],
-                    css: {
-                        background: {"background-color": "silver"},
-                        before: {"background-color": "#7CB5EC"},
-                        default: {"background-color": "silver"},
-                        after: {"background-color": "#7CB5EC"},
-                        pointer: {"background-color": "#2759AC"}
-                    },
-                    callback: function(value, released){
-                        getGraph();
-                    }
-                }
-            }
-            // A slider for choosing the amount of displayed nodes from the type person.
-            $scope.sliderPersonsAmount = {
-                value: "3",
-                options: {
-                    from: 1,
-                    to: 100,
-                    step: 1,
-                    dimension: " persons",
-                    limits: false,
-                    scale: [1, 100],
-                    css: {
-                        background: {"background-color": "silver"},
-                        before: {"background-color": "#7CB5EC"},
-                        default: {"background-color": "silver"},
-                        after: {"background-color": "#7CB5EC"},
-                        pointer: {"background-color": "#2759AC"}
-                    },
-                    callback: function(value, released){
-                        getGraph();
-                    }
-                }
-            }
-            // A slider for choosing the amount of displayed nodes from the type miscellaneous.
-            $scope.sliderMiscellaneousAmount = {
-                value: "3",
-                options: {
-                    from: 1,
-                    to: 100,
-                    step: 1,
-                    dimension: " miscellaneous",
-                    limits: false,
-                    scale: [1, 100],
-                    css: {
-                        background: {"background-color": "silver"},
-                        before: {"background-color": "#7CB5EC"},
-                        default: {"background-color": "silver"},
-                        after: {"background-color": "#7CB5EC"},
-                        pointer: {"background-color": "#2759AC"}
-                    },
-                    callback: function(value, released){
-                        getGraph();
-                    }
-                }
-            }
-            // A slider for choosing the minimum and maximum frequency of a displayed edge.
-            $scope.sliderEdgeFrequency = {
-                value: "1500;"+$scope.maxEdgeFreq,
-                options: {
-                    from: 1,
-                    to: $scope.maxEdgeFreq,
-                    step: 1,
-                    dimension: " Connections between entities",
-                    limits: false,
-                    scale: [1, $scope.maxEdgeFreq],
-                    css: {
-                        background: {"background-color": "silver"},
-                        range: {"background-color": "#7CB5EC"},
-                        default: {"background-color": "silver"},
-                        after: {"background-color": "#7CB5EC"},
-                        pointer: {"background-color": "#2759AC"}
-                    },
-                    callback: function(value, released){
-                        getGraph();
-                    }
-                }
-            }
+            toolShareService.annotateListener.push(addAnnotation);
+
+            toolShareService.mergeListener.push(merge);
+
+            toolShareService.deleteListener.push(remove)
+
+            toolShareService.updateGraph = getGraph;
+            toolShareService.isViewLoading = function(){return $scope.isViewLoading};
+            toolShareService.enableOrDisableButtons = enableOrDisableButtons;
 
             // create a graph here
             // when the data changes, the graph remains the same,
@@ -280,7 +184,7 @@ define([
             /**
              * This function updates the text with the name of the selected elements.
              */
-            $scope.selectedElementsText = function (){
+            function selectedElementsText(){
                 var selectedElements = "";
                 for(var i=0; i<selectedNodes.length; i++){
                     selectedElements += selectedNodes[i].name;
@@ -622,13 +526,13 @@ define([
             function getGraph(){
                 $scope.isViewLoading    = true;
                 var sliderValue         = [];
-                sliderValue.push(parseInt($scope.sliderCountriesCitiesAmount.value));
-                sliderValue.push(parseInt($scope.sliderOrganizationsAmount.value));
-                sliderValue.push(parseInt($scope.sliderPersonsAmount.value));
-                sliderValue.push(parseInt($scope.sliderMiscellaneousAmount.value));
-                var sliderEdgeMinFreq   = $scope.sliderEdgeFrequency.value.split(";")[0];
-                var sliderEdgeMaxFreq   = $scope.sliderEdgeFrequency.value.split(";")[1];
-                var leastOrMostFrequent = Number($scope.freqSorting.least);
+                sliderValue.push(parseInt(toolShareService.sliderLocationsValue()));
+                sliderValue.push(parseInt(toolShareService.sliderOrganizationsValue()));
+                sliderValue.push(parseInt(toolShareService.sliderPersonsValue()));
+                sliderValue.push(parseInt(toolShareService.sliderMiscellaneousValue()));
+                var sliderEdgeMinFreq   = toolShareService.sliderEdgeMinFreq();
+                var sliderEdgeMaxFreq   = toolShareService.sliderEdgeMaxFreq();
+                var leastOrMostFrequent = Number(toolShareService.freqSortingLeast);
 
                 playRoutes.controllers.NetworkController.getGraphData(leastOrMostFrequent, sliderValue, sliderEdgeMinFreq, sliderEdgeMaxFreq).get().then(function(response) {
                     var data = response.data;
@@ -826,7 +730,7 @@ define([
                                     var nodeValue = d.name;
                                     var categoryIndex = $scope.graphShared.getIndexOfCategory(d.type);
                                     if(index == -1){  // The node is not selected, so select it.
-                                        selectedNodes.push(d);
+                                        selectNode(d);
                                         d3.select(this)
                                         	.style('stroke-width', 5)
                                             .style('stroke', selectionColor);
@@ -838,7 +742,7 @@ define([
                                         }
                                     }
                                     else{  // The node is already selected, so unselect it.
-                                        selectedNodes.splice(index, 1);  // Remove the node from the list.
+                                        unselectNode(d);  // Remove the node from the list.
                                         d3.select(this).style('stroke-width', 1.5)
                                                        .style('stroke', '#000000');
                                         // Remove the selected node name from the words that get highlighted
@@ -1420,8 +1324,9 @@ define([
                 getGraph();
             }
 
-            $scope.editOpen = function()
+            /*$scope.editOpen = function()
             {
+                console.log(selectedNodes);
             	var modal = $uibModal.open(
             		{
             			animation: true,
@@ -1464,9 +1369,9 @@ define([
                     editType(result.node, result.type);
                     editName(result.node, result.text);
             	});
-            }
+            }*/
 
-            $scope.annotateOpen = function()
+            /*$scope.annotateOpen = function()
             {
               	var modal = $uibModal.open(
                 	{
@@ -1486,9 +1391,9 @@ define([
                 {
                 	addAnnotation(result.node, result.text);
                 });
-            }
+            }*/
 
-            $scope.mergeOpen = function()
+            /*$scope.mergeOpen = function()
             {
             	var modal = $uibModal.open(
                 	{
@@ -1508,18 +1413,19 @@ define([
                 	var focalNode = getNodeById(Number(result.focalNode));
                 	merge(focalNode, result.nodes);
                 });
-            }
+            }*/
 
 
             /**
              * Hide the currently selected nodes/edges from the graph. The data
              * will still be in the database.
              */
-            $scope.removeSelected = function (){
+            function remove(nodes)
+            {
 
                 //playRoutes.controllers.NetworkController.deleteEntityById(selectedNodes[0].id).get().then(function(result){alert(result)});
 
-				selectedNodes.forEach(
+				nodes.forEach(
 					function(n,i,a){
 
 						d3.select("#node_" + n.id).remove();
@@ -1546,6 +1452,8 @@ define([
              */
             function merge(focalNode, nodes)
             {
+                focalNode = getNodeById(Number(focalNode));
+
 				var entityids = [];
 				var freqsum = 0
 
@@ -1691,6 +1599,26 @@ define([
                 	else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
                 		return d.name.substring(0, r/3 - 3) + "...";
                 });
+            }
+
+            /**
+             *  send to the server a message, that the name of the node
+             *  was edited
+             *
+             *  @param node
+             *      the node with the edited name
+             */
+            function sendEditedName(node)
+            {
+                playRoutes.controllers.NetworkController.changeEntityNameById(node.id, node.name).get().then(
+                    function(result)
+                    {
+                        if(result.result == false)
+                        {
+                            alert("Error while editing Entity")
+                        }
+                    }
+                );
             }
 
             /**
