@@ -27,7 +27,7 @@ case class TimeRange(from: Option[LocalDateTime], to: Option[LocalDateTime])
 
 object TimeRangeParser {
   private val YearRange = "(\\d{4})-(\\d{4})".r
-  private val Year = "(\\d{4})".r
+  private val Year = "^(\\d{4})$".r
   private val Month = "([A-Z][a-z]*) (\\d{4})".r
   private val Date = "(\\d{1,2}).(\\d{1,2}).(\\d{4})".r
 
@@ -35,7 +35,8 @@ object TimeRangeParser {
     case YearRange(from, to) =>
       TimeRange(Some(LocalDateTime.parse(from, DateTimeFormat.forPattern("yyyy"))), Some(LocalDateTime.parse(s"31.12.${to}", DateTimeFormat.forPattern("dd.MM.yyyy"))))
     case Year(year) =>
-      TimeRange(Some(LocalDateTime.parse(year, DateTimeFormat.forPattern("yyyy"))), Some(LocalDateTime.parse(s"31.12.${year}", DateTimeFormat.forPattern("dd.MM.yyyy"))))
+      val yearTimestamp = LocalDateTime.parse(year, DateTimeFormat.forPattern("yyyy"))
+      TimeRange(Some(yearTimestamp), Some(yearTimestamp.dayOfYear().withMaximumValue()))
     case Month(month, year) =>
       val monthYear = LocalDateTime.parse(s"$month-$year", DateTimeFormat.forPattern("MMMMM-yyyy"))
       TimeRange(Some(monthYear), Some(monthYear.dayOfMonth().withMaximumValue()))
