@@ -303,6 +303,21 @@ footer > div, footer > div #chartBarchart {
     margin-right: -10px;
 }
 
+flex-resizer {
+    -ms-flex: 0 0 8px;
+    flex: 0 0 8px;
+    background: #2759AC;
+    z-index: 1000;
+}
+
+.h > flex-resizer {
+    cursor: ew-resize;
+}
+
+.v > flex-resizer {
+    cursor: ns-resize;
+}
+
 /*
     ======================================
     The tabs as well as the tab containers

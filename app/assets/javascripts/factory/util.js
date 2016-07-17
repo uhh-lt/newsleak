@@ -101,4 +101,87 @@ define(['angular'], function (angular) {
 
         return utilService;
     });
+
+        mod.directive('flexResizer', function() {
+
+            return {
+                scope: {
+                    resizeDirection: '@'
+                },
+                link: function(scope, element, attr) {
+                    var jElement = angular.element(element);
+                    var prev = $(jElement).prev();
+                    var next = $(jElement).next();
+                    console.log(prev);
+                    console.log(next);
+                    var parent = $(jElement).parent();
+                    var sizeProp = 'height';
+                    var posProp = 'pageY';
+                    var prevSize = $(prev).height();
+                    var nextSize = $(next).height();
+                    var parentSize =  $(parent).height();
+                    if (scope.resizeDirection == 'horizontal') {
+                        prevSize = $(prev).width();
+                        nextSize = $(next).width();
+                        var parentSize =  $(parent).width();
+                        sizeProp = 'width';
+                        posProp = 'pageX';
+                    }
+                    var lastPos = 0;
+
+                    var dragging = function(e) {
+
+                        var pos = e[posProp];
+
+                        var d = pos - lastPos;
+                        prevSize += d;
+                        nextSize -= d;
+
+                        if (prevSize < 0) {
+                            nextSize += prevSize;
+                            pos -= prevSize;
+                            prevSize = 0;
+                        }
+                        if (nextSize < 0) {
+                            prevSize += nextSize;
+                            pos += nextSize;
+                            nextSize = 0;
+                        }
+                        console.log(prevSize);
+                        console.log(parentSize);
+                        var prevGrowNew =  (prevSize / parentSize)*100;
+                        var nextGrowNew =  (nextSize / parentSize)*100;
+                        console.log(prevGrowNew);
+                        $(prev).css('flex-basis', prevGrowNew + '%');
+                        $(next).css('flex-basis', nextGrowNew + '%');
+
+                        lastPos = pos;
+
+                    };
+                    var dragEnd = function(e) {
+                        console.log("end");
+                        $(window).off("mousemove");
+                    };
+                    var dragStart = function(e, direction) {
+                        console.log("start");
+
+                        prevSize = $(prev).height();
+                        nextSize = $(next).height();
+                        parentSize = $(parent).height();
+                        if (scope.resizeDirection == 'horizontal') {
+                            prevSize = $(prev).width();
+                            nextSize = $(next).width();
+                            parentSize = $(parent).width();
+                        }
+                        lastPos = e[posProp];
+                        $(window).mousemove(dragging);
+                        $(window).mouseup(dragEnd);
+                    };
+
+                    $(jElement).mousedown(dragStart);
+
+
+                }
+            };
+        });
 });

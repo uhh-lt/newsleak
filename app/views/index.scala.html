@@ -51,15 +51,15 @@
 
     <body ng-controller="AppController as app" ngsf-fullscreen>
 
-        <div id="wrapper" layout="column" ng-cloak layout-fill>
+        <div id="wrapper" class="v" layout="column" ng-cloak layout-fill>
             <header><div ui-view="header"></div></header>
-            <div id="history" resizable r-directions="['bottom']" r-flex="true"><div ui-view="history" style="overflow-y: hidden;"></div></div>
-            <div id="flex-body" flex="auto" class="flex-row" layout="row">
-                <nav id="document" flex="initial" resizable r-directions="['right']" r-flex="true">
+            <div id="history"><div ui-view="history" style="overflow-y: hidden;"></div></div>
+            <div id="flex-body" flex="70" class="flex-row h" layout="row">
+                <nav id="document" flex="initial">
                     <div ui-view="documentlist"></div>
                 </nav>
-
-                <main id="center-box" resizable r-directions="['right']" r-flex="true" flex="none">
+                <flex-resizer resize-direction="horizontal"></flex-resizer>
+                <main id="center-box" flex="initial">
                     <div id="network-maps-container">
                             <!-- Nav tabs -->
                         <ul class="nav nav-tabs" role="tablist">
@@ -69,7 +69,7 @@
                             <!-- Tab panes -->
                         <div class="tab-content">
                             <div role="tabpanel" class="tab-pane active" id="network" ng-controller="NetworkController">
-                                <div ng-include=" 'assets/partials/network.html' " onload="loaded()"></div>
+                                <div ui-view="network" onload="loaded()"></div>
                             </div>
                             <!--<div role="tabpanel" class="tab-pane" id="map" ng-controller="MapController">
                                 <div ng-include=" 'assets/partials/map.html' " onload="loaded()"></div>
@@ -78,14 +78,16 @@
                     </div>
 
                 </main>
-
-                <aside id="right-side" flex="" layout="column">
-                    <div id="filter-view" ui-view="filter" flex="none" resizable r-directions="['bottom']" r-flex="true"></div>
-                    <div id="metadata-view" ui-view="metadata" flex></div>
-                </aside>
+                <flex-resizer resize-direction="horizontal"></flex-resizer>
+                <div id="right-side" class="v" flex="" layout="column">
+                    <div id="filter-view" ui-view="filter" flex="50"></div>
+                    <flex-resizer resize-direction="vertical"></flex-resizer>
+                    <div id="metadata-view" ui-view="metadata" flex=""></div>
+                </div>
 
             </div>
-            <footer id="footer" flex="none" resizable r-directions="['top']" r-flex="true">
+            <flex-resizer resize-direction="vertical"></flex-resizer>
+            <footer id="footer" flex>
                 <div ui-view="chart"></div>
             </footer>
         </div>
