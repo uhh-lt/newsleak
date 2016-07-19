@@ -52,7 +52,7 @@
     <!-- Show sliders -->
     <div class="col-md-10">
       <div class="btn-group">
-        <div class="btn-group">
+        <div class="btn-group btn-block-dropdown">
           <button
                   type="button"
                   class="btn btn-default dropdown-toggle"
@@ -64,24 +64,24 @@
             <span class="caret"></span>
           </button>
           <div class="dropdown-menu dropdown-button-menu">
-            <div class="btn-group-vertical">
+            <div class="btn btn-block btn-group-vertical dropdown-button-menu">
 
-              <button type="button" id="AnnotateButton" class="btn btn-small btn-primary btn-block" ng-show="!isViewLoading" ng-disabled="toolShareService.getSelectedNodes().length != 1"
+              <button type="button" id="AnnotateButton" class="btn btn-small btn-primary btn-block-dropdown" ng-show="!isViewLoading" ng-disabled="toolShareService.getSelectedNodes().length != 1"
                       ng-click="annotateOpen()" title="Select one node or edge and click on this button for annotating the selected node or edge.">
                 <i class="glyphicon glyphicon-comment"></i>
                 Annotate
               </button>
-              <button type="button" id="EditButton" class="btn btn-small btn-primary btn-block" ng-show="!isViewLoading" ng-disabled="toolShareService.getSelectedNodes().length != 1"
+              <button type="button" id="EditButton" class="btn btn-small btn-primary btn-block-dropdown" ng-show="!isViewLoading" ng-disabled="toolShareService.getSelectedNodes().length != 1"
                       ng-click="editOpen()" title="Select one node or edge and click on this button for editing the selected node or edge.">
                 <i class="glyphicon glyphicon-pencil"></i>
                 Edit
               </button>
-              <button type="button" id="MergeButton" class="btn btn-small btn-primary btn-block" ng-show="!isViewLoading" ng-disabled="toolShareService.getSelectedNodes().length < 2"
+              <button type="button" id="MergeButton" class="btn btn-small btn-primary btn-block-dropdown" ng-show="!isViewLoading" ng-disabled="toolShareService.getSelectedNodes().length < 2"
                       ng-click="mergeOpen()" title="Select at least two nodes and click on this button to merge the selected nodes into a single node.">
                 <i class="glyphicon glyphicon-resize-small"></i>
                 Merge
               </button>
-              <button type="button" id="DeleteButton" class="btn btn-small btn-primary btn-block" ng-show="!isViewLoading" ng-disabled="toolShareService.getSelectedNodes().length == 0"
+              <button type="button" id="DeleteButton" class="btn btn-small btn-primary btn-block-dropdown" ng-show="!isViewLoading" ng-disabled="toolShareService.getSelectedNodes().length == 0"
                       ng-click="deleteOpen()" title="Click on this button to delete all the selected nodes and edges.">
                 <i class="glyphicon glyphicon-remove"></i>
                 Delete
