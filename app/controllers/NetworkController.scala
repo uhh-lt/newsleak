@@ -25,8 +25,10 @@ import play.api.db._
 import play.api.libs.json.Writes._
 import play.api.libs.json.{JsArray, JsObject, Json, Writes}
 import play.api.mvc.{Action, Controller}
+//import scalikejdbc._
 
 import scala.collection.mutable
+
 
 /*
     This class encapsulates all functionality for the
@@ -44,6 +46,12 @@ object NetworkController extends Controller {
                                                             c.writes(tuple._3),
                                                             d.writes(tuple._4)))
     }
+
+  implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[(A, B)] = new Writes[(A, B)] {
+    def writes(tuple: (A, B)) = JsArray(Seq(a.writes(tuple._1),
+      b.writes(tuple._2)))
+  }
+
 
   /**
      * the strings for different types
@@ -77,6 +85,11 @@ object NetworkController extends Controller {
      * Map cacht Knoten deren DoI-Wert schonmal berechnet wurden. Wird mit dem Beginn jedes Guidance-Schrittes zurückgesetzt.
      */
     var cachedDoIValues: mutable.HashMap[(Long,Long),Double] = new mutable.HashMap[(Long,Long),Double] () ;
+
+    var cachedDistanceValues: mutable.HashMap[Long,Int] = new mutable.HashMap[Long,Int] () ;
+
+    //var lastFound : List[(Long,Long)] = List()
+    //var distToFocus = 0
 
   /**
      * If leastOrMostFrequent == 0:
@@ -416,74 +429,13 @@ object NetworkController extends Controller {
         return relations
     }
 
-  /**
-    *
-    * @param edgeId Kante
-    * @return Distanz der Kante zum Fokusknoten (-1 kann nicht zurückgegeben werden)
-    */
-  def getDistance(edgeId: (Long, Long)): Int = {
-    var queue = new mutable.Queue[(Long, Int)]();//Queue mit KnotenId und Entferung zur Ausgangskante
-    //TODO Knoten die schon besucht wurden nicht nochmal suchen
-    //Breitensuche nach Fokusknoten
-    queue += ((edgeId._1,0))
-    queue += ((edgeId._2,0))
-    DB.withConnection { implicit connection =>
-      val stmt = connection.createStatement
-      while (queue.nonEmpty){
-        val node = queue.dequeue()
-        Logger.info("gD SQL: SELECT entity2 From relationship WHERE entity1 = " + node._1)
-        val rs = stmt.executeQuery("SELECT entity2 From relationship WHERE entity1 = " + node._1)
-        while (rs.next()) {
-          if (rs.getLong("entity2") == focusId)
-            return node._2 + 1
-          else
-            queue += ((rs.getLong("entity2"),node._2 +1 ))
-        }
-      }
-    }
-    -1
-  }
-
 /**
     *
     * @param edgeId Kante, Tuple der Form (source,target)
     * @return the computed degree of interest value of a given edge
     */
   def doI(edgeId: (Long,Long)): Double = {
-    cachedDoIValues.getOrElseUpdate(edgeId,{
-      val alpha = 1
-      val beta = 1
-      val gamma = 0
-      var API : Double = 0
-      var D : Double = 0
-      var UI : Double = 0
-
-      var edgeFrequency : Long = 0
-      var nodeFrequency = 0
-
-
-      DB.withConnection { implicit connection =>
-        val stmt = connection.createStatement
-        Logger.info("doI SQL: SELECT frequency From entity WHERE id = "+edgeId._1+" OR id="+edgeId._2)
-        var rs = stmt.executeQuery( "SELECT frequency From entity WHERE id = "+edgeId._1+" OR id="+edgeId._2)
-        var nodeFrequency = 1
-        while(rs.next()){
-          nodeFrequency *= rs.getInt("frequency")
-        }
-        Logger.info("doI SQL: SELECT frequency From relationship WHERE entity1 = "+edgeId._1+" AND entity2="+edgeId._2)
-        rs = stmt.executeQuery( "SELECT frequency From relationship WHERE entity1 = "+edgeId._1+" AND entity2="+edgeId._2)
-        while(rs.next()){
-          edgeFrequency = rs.getInt("frequency")
-        }
-        val pmi = scala.math.log(edgeFrequency/nodeFrequency) //pointwise mutual information
-        val npmiPlus = (pmi / -scala.math.log(edgeFrequency)+1)/2 //normalized pointwise mutual information plus
-
-        API = npmiPlus
-        D = -scala.math.pow(0.5,getDistance(edgeId)*npmiPlus)
-      }
-
-    API*alpha+D*beta+UI*gamma
-    })
+  cachedDoIValues.get(edgeId).get
   }
 
   /**
@@ -495,23 +447,23 @@ object NetworkController extends Controller {
     Logger.info("start guidance")
     this.focusId=focusId
     cachedDoIValues.clear()
-    val k = 5
-    var edgeArr =new Array[(Long,Long,Long,Int)](k) //(id, source, target, frequency)
+    val k = 25
+    var edgeArr =new Array[(Long,Long)](k) //(id, source, target, frequency)
     var usedNodes = new mutable.HashSet[Long]()
     usedNodes += focusId
 
-    var pq = mutable.PriorityQueue[(Long,Long,Long,Int)]()(Ordering.by[(Long, Long, Long, Int),Double]((x) => doI(x._2,x._3)))
+    var pq = mutable.PriorityQueue[(Long,Long)]()(Ordering.by[(Long, Long),Double]((x) => doI(x._1,x._2)))
     pq ++= getEdges(focusId)
 
-    for (i <- 0 to k){//edgeArr.map ??
+    for (i <- 0 until k){//edgeArr.map ??
       val edge = pq.dequeue()
       edgeArr(i)=edge
-      if ( ! usedNodes.contains(edge._2)){
+      if ( ! usedNodes.contains(edge._1)){
+        usedNodes += edge._1
+        pq ++= getEdges(edge._1)
+      } else if ( ! usedNodes.contains(edge._2)){
         usedNodes += edge._2
         pq ++= getEdges(edge._2)
-      } else {
-        usedNodes += edge._3
-        pq ++= getEdges(edge._3)
       }
       Logger.info(edgeArr.toString)
     }
@@ -532,7 +484,7 @@ object NetworkController extends Controller {
       }
     }
 
-    val result = new JsObject(Map(("nodes", Json.toJson(nodeArr)), ("links", Json.toJson(edgeArr))))
+    val result = new JsObject(Map(("nodes", Json.toJson(nodeArr)), ("links", Json.toJson(edgeArr))))//TODO Kantenattribute müssen auch zurückgegeben werden
 
     Ok(Json.toJson(result)).as("application/json")
   }
@@ -542,18 +494,34 @@ object NetworkController extends Controller {
     * @param nodeId Knoten
     * @return die an den Knoten angrenzenden Kanten in einer Liste
     */
-  private def getEdges(nodeId : Long) : mutable.MutableList[(Long, Long, Long, Int)] = {
-    var result = new mutable.MutableList[(Long,Long,Long,Int)]()
-    DB.withConnection { implicit connection =>
-      val stmt = connection.createStatement
-      Logger.info("gE SQL: SELECT id,entity1,entity2,frequency From relationship WHERE entity1 = "+nodeId)
-      val rs = stmt.executeQuery( "SELECT id,entity1,entity2,frequency From relationship WHERE entity1 = "+nodeId)
-      while(rs.next()){
-        result += ((rs.getLong("id"),rs.getLong("entity1"),rs.getLong("entity2"),rs.getInt("frequency")))
-      }
-      result
-    }
+  private def getEdges(nodeId : Long) : List[(Long, Long)] = {
+    import scalikejdbc._
+    implicit val session = AutoSession
+
+    var distToFocus = cachedDistanceValues.getOrElse(nodeId,0)//Wenn der Knoten nicht in der Map liegt, muss es sich um dem Fokus handeln, also dist=0
+      distToFocus += 1
+      val result = sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq
+          FROM relationship LEFT JOIN entity AS et1 ON et1.id = relationship.entity1
+          LEFT JOIN entity AS et2 ON et2.id = relationship.entity2 WHERE entity1 = $nodeId"""
+        .map(rs => {
+          ((rs.long(1), rs.long(2)), (scala.math.log(rs.int(3)/(rs.int(4)+rs.int(5))) / -scala.math.log(rs.int(3))+1)/2)
+        }).toList().apply().filter(x => cachedDistanceValues.getOrElse(x._1._2, distToFocus+1)>distToFocus) //TODO Optimierung: npmi-plus nur berechnen wenn er wirklich gebraucht wird (also nach dem Filtern)
+      cachedDistanceValues ++= result.map(x=>(x._1._2, distToFocus))
+      cachedDoIValues ++= result.map(x=>(x._1,{
+        val alpha = 1
+        val beta = 1
+        val gamma = 0
+
+        val API = x._2
+        val D = -scala.math.pow(0.5,distToFocus*x._2) //TODO macht diese Berechnung Sinn?
+        val UI = 0
+        API*alpha+D*beta+UI*gamma
+      }))
+
+      result.map(_._1)
   }
 
 
 }
+
+
