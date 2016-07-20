@@ -27,6 +27,29 @@ define([
 
     angular.module("myApp.history", ['play.routing', 'angularMoment', 'ngFileSaver']);
     angular.module("myApp.history")
+        .factory('historyFactory', [
+            function() {
+                return {
+                    icons: {
+                        'entity' : 'filter',
+                        'metadata': 'filter',
+                        'time': 'time',
+                        "expandNode": 'plus',
+                        "collapseNode": 'plus',
+                        "egoNetwork": 'asterisk',
+                        "merge": 'resize-small',
+                        "hide": 'eye-close',
+                        "edit": 'pencil',
+                        "annotate": 'comment'
+                    },
+                    actions: {
+                        'added': 'plus',
+                        'removed': 'minus',
+                        'replaced': 'refresh'
+                    }
+                }
+            }
+        ])
         .controller('HistoryController',
             [
                 '$scope',
@@ -37,16 +60,25 @@ define([
                 'FileSaver',
                 'filterShareService',
                 'ObserverService',
-                function ($scope, $timeout, playRoutes, appData, moment, FileSaver, filterShareService, ObserverService) {
+                'historyFactory',
+                function ($scope, $timeout, playRoutes, appData, moment, FileSaver, filterShareService, ObserverService, historyFactory) {
                     $scope.observer = ObserverService;
-
+                    $scope.factory = historyFactory;
 
                     $scope.observer_subscribe = function(history) { $scope.history = history};
                     $scope.observer.subscribeHistory($scope.observer_subscribe);
                     
                     $scope.removeItem = function(item) {
                         $scope.observer.removeItem(item.id, item.type);
-                    }
+                    };
+
+                    $scope.getIcon = function(type) {
+                        return $scope.factory.icons[type];
+                    };
+
+                    $scope.getActionIcon = function(type) {
+                        return $scope.factory.actions[type];
+                    };
                 }
             ]
         )

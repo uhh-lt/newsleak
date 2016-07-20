@@ -510,6 +510,38 @@ footer > div, footer > div #chartBarchart {
         font-size: 10px;
     }
 }
+/*
+    ======================================
+    History
+    ======================================
+*/
+#historyList li {
+    background-color: #2759AC;
+    cursor: pointer;
+    white-space: nowrap;
+}
+#historyList li {
+    color: white;
+    transition: width 0.3s linear;
+    width: 50px;
+}
+#historyList li:hover {
+    transition: width 0.2s linear;
+    width: 200px;
+}
+#historyList li span {
+    margin-left: 5px;
+}
+#historyList li i {
+    color: white;
+}
+#historyList li i.type-icon {
+    font-size: 16px;
+
+}
+#historyList li i.action-icon {
+    font-size: 8px;
+}
 
 /*
     ======================================
