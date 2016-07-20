@@ -79,7 +79,13 @@ class EntityController @Inject extends Controller {
           .map(Entity(_))
           .list // single, list, traversable
           .apply()
-          .map(x => Json.obj("id" -> x.id, "name" -> x.name, "type" -> x.entityType, "freq" -> x.frequency, "docCount" -> entitiesRes.find(_._1 == x.id).get._2.asInstanceOf[Number].longValue))
+          .map(x => Json.obj(
+            "id" -> x.id,
+            "name" -> x.name,
+            "type" -> x.entityType,
+            "freq" -> x.frequency,
+            "docCount" -> entitiesRes.find(_._1 == x.id).get._2.asInstanceOf[Number].longValue
+          ))
     }
     Results.Ok(Json.toJson(result)).as("application/json")
   }

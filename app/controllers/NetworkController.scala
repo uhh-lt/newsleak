@@ -295,7 +295,7 @@ class NetworkController @Inject extends Controller {
           ORDER BY frequency ${sorting}
           LIMIT ${amount}"""
         .map(rs => (rs.long("id"), rs.long("entity1"), rs.long("entity2"), rs.int("frequency")))
-        .list // single, list, traversable
+        .list
         .apply()
     } else {
       List()
