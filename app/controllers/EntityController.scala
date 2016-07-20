@@ -68,14 +68,17 @@ class EntityController @Inject extends Controller {
       case NodeBucket(id, count) => (id, count)
       case _ => (0, 0)
     })
-    val result =
-      sql"""SELECT * FROM entity
+    var result: List[JsObject] = List()
+    if (entitiesRes.nonEmpty) {
+      result =
+        sql"""SELECT * FROM entity
           WHERE id IN (${entitiesRes.map(_._1)}) AND NOT isblacklisted
           ORDER BY frequency DESC LIMIT 50"""
-        .map(Entity(_))
-        .list // single, list, traversable
-        .apply()
-        .map(x => Json.obj("id" -> x.id, "name" -> x.name, "type" -> x.entityType, "freq" -> x.frequency))
+          .map(Entity(_))
+          .list // single, list, traversable
+          .apply()
+          .map(x => Json.obj("id" -> x.id, "name" -> x.name, "type" -> x.entityType, "freq" -> x.frequency))
+    }
     Results.Ok(Json.toJson(result)).as("application/json")
   }
 
