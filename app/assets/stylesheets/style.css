@@ -251,7 +251,8 @@ main {
     width: 25%;
 }
 #metadata-view, #filter-view {
-    height: 50%;
+    /* mocked height for better view to metadata */
+    height: 20%;
 }
 footer {
     height: 200px;
