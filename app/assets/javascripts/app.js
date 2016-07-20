@@ -138,6 +138,7 @@ define([
                 if(args.id == 'center-box') setUILayoutProperties(args.width, false);
                 if(args.id == 'footer') setUILayoutProperties(false, parseInt($('#network-maps-container').css('height'))-96);
                 $("#chartBarchart").highcharts().reflow();
+                $("#metadata-view .active .active .meta-chart").highcharts().reflow();
             });
 
             angular.element($window).bind('resize', function () {
