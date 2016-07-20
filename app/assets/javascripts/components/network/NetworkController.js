@@ -97,6 +97,13 @@ define([
             $scope.observer = ObserverService;
             $scope.observer_subscribe = function(history) { $scope.history = history};
             $scope.observer.subscribeHistory($scope.observer_subscribe, "");
+            /**
+             * subscribe entity and metadata filters
+             */
+            $scope.observer_subscribe_entity = function(items) { $scope.entityFilters = items};
+            $scope.observer_subscribe_metadata = function(items) { $scope.metadataFilters = items};
+            $scope.observer.subscribeItems($scope.observer_subscribe_entity,"entity");
+            $scope.observer.subscribeItems($scope.observer_subscribe_metadata,"metadata");
 
             const GRAVITATION_HEIGHT_SUBTRACT_VALUE = 126;
 
@@ -1711,6 +1718,51 @@ define([
             		.style("fill", function(d){return color(d.type)});
             }
 
+            /*
+
+             //TODO: examples of fetching documents with and without facet
+             playRoutes.controllers.DocumentController.getDocs('Clinton Snowden',[{'key':'Tags','data':['PTER','PREF']},{'key':'Classification','data':['CONFIDENTIAL']}]).get().then(function(x) {
+             //    console.log(x.data);
+             });
+             playRoutes.controllers.DocumentController.getDocs('',[{'key':'dummy','data': []}]).get().then(function(x) {
+             console.log(x.data);
+             });
+             */
+            /**
+             * load entities for current filtering (called on filter update)
+             */
+            $scope.getEntities = function() {
+                console.log("reload entities");
+                var fulltext = undefined;
+                var entities = [];
+                angular.forEach($scope.entityFilters, function(item) {
+                    entities.push(item.data.id);
+                });
+                var facets = [];
+                if($scope.metadataFilters.length > 0) {
+                    angular.forEach($scope.metadataFilters, function(metaType) {
+                        if($scope.metadataFilters[metaType].length > 0) {
+                            var keys = [];
+                            angular.forEach($scope.metadataFilters[metaType], function(x) {
+                                keys.push(x.data.name);
+                            });
+                            facets.push({key: metaType, data: keys});
+                        }
+                    });
+                    if(facets == 0) facets = [{'key':'dummy','data': []}];
+
+                } else {
+                    facets = [{'key':'dummy','data': []}];
+                }
+                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange()).get().then(function(response) {
+                    //TODO: do what you want with 50 most frequent entities
+                    //console.log(response.data);
+
+                });
+            };
+
+            $scope.getEntities();
+            $scope.observer.registerObserverCallback($scope.getEntities);
         }
     ]);
 

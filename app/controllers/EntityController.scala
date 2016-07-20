@@ -23,6 +23,7 @@ import model.{ Document, Entity, EntityType }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller, Results }
 import scalikejdbc._
+import util.TimeRangeParser
 
 /**
  * Created by flo on 6/20/2016.
@@ -60,14 +61,22 @@ class EntityController @Inject extends Controller {
    * @param generic mapping of metadata key and a list of corresponding tags
    * @return list of matching entity id's and document count
    */
-  def getEntities(fullText: Option[String], generic: Map[String, List[String]]) = Action {
-    val facets = Facets(fullText, generic, List(), None, None)
-    val res = FacetedSearch.aggregateEntities(facets, defaultFetchSize).buckets.map(x => x match {
-      case NodeBucket(id, count) => Json.obj("key" -> id, "count" -> count)
-      case _ => Json.obj()
+  def getEntities(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
+    val times = TimeRangeParser.parseTimeRange(timeRange)
+    val facets = Facets(fullText, generic, entities, times.from, times.to)
+    val entitiesRes = FacetedSearch.aggregateEntities(facets, defaultFetchSize).buckets.map(x => x match {
+      case NodeBucket(id, count) => (id, count)
+      case _ => (0, 0)
     })
-
-    Results.Ok(Json.toJson(res)).as("application/json")
+    val result =
+      sql"""SELECT * FROM entity
+          WHERE id IN (${entitiesRes.map(_._1)}) AND NOT isblacklisted
+          ORDER BY frequency DESC LIMIT 50"""
+        .map(Entity(_))
+        .list // single, list, traversable
+        .apply()
+        .map(x => Json.obj("id" -> x.id, "name" -> x.name, "type" -> x.entityType, "freq" -> x.frequency))
+    Results.Ok(Json.toJson(result)).as("application/json")
   }
 
   /**
