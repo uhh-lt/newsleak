@@ -239,7 +239,7 @@ div.tooltip {
     width: 100%;
 }
 #flex-body {
-
+    height: calc(100% - 350px);
 }
 main {
     width: 50%;
