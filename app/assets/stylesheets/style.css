@@ -516,6 +516,9 @@ footer > div, footer > div #chartBarchart {
     History
     ======================================
 */
+ul#historyList {
+    white-space : nowrap;
+}
 #historyList li {
     background-color: #2759AC;
     cursor: pointer;
