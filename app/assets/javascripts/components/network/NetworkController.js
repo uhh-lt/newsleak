@@ -124,10 +124,13 @@ define([
 
             toolShareService.editNameListener.push(editName);
             toolShareService.editNameListener.push(sendEditedName);
+            toolShareService.editTypeListener.push(editType);
+            toolShareService.editTypeListener.push(sendEditedType);
 
             toolShareService.annotateListener.push(addAnnotation);
 
             toolShareService.mergeListener.push(merge);
+            toolShareService.mergeListener.push(sendMerged);
 
             toolShareService.deleteListener.push(remove);
 
@@ -334,7 +337,8 @@ define([
             }
 
 			/**
-			 *	get all ego networks associated with this specific
+			 *	get all ego networks associated with this spec
+            	);ific
 			 *  node
 			 *
 			 *	@param name
@@ -348,6 +352,11 @@ define([
                	{
                		response.data.ids.forEach(function(id){getEgoNetworkById(id, callback);});
                	});
+            }
+
+            function getEgoNetworkByNameAndType(name, type, callback)
+            {
+
             }
 
 
@@ -439,15 +448,19 @@ define([
                 {
                 	//select all nodes which have to be selected
 					var tags = $scope.tagSelectShared.tagsToSelect;
+					console.log(tags);
 					for(var i=0; i<tags.length; i++)
 					{
-						var nodes = getNodesByName(tags[i]);
+					    console.log(tags[i].id);
+						var node = getNodeById(tags[i].id);
+						console.log(node);
 
-						if(nodes.length == 0)
+
+						if(nodes == undefined)
 						{
 							//get all ego networks and after that execute a callback function
 							//which marks all selected nodes
-							getEgoNetworkByName(tags[i],
+							getEgoNetworkById(tags[i].id,
 							(function()
 							{
 								var tag = tags[i];
@@ -472,7 +485,7 @@ define([
                         nodes.forEach(function(node){unselectNode(node);})
 					}
 					$scope.tagSelectShared.wasChanged = false;
-					enableOrDisableButtons();
+					//enableOrDisableButtons();
                 }
             });
 
@@ -1467,6 +1480,8 @@ define([
 					{
 						if(v.id != focalNode.id)
 						{
+						    console.log(v);
+						    console.log(focalNode);
 							entityids.push(v.id);
 							d3.select("#node_" + v.id).remove();
 							freqsum = freqsum + v.freq;
@@ -1481,10 +1496,6 @@ define([
 				edges.forEach(
 					function(v,i,a)
 					{
-						if(v.target.id == focalNode.id || v.source.id == focalNode.id)
-						{
-							console.log(v)
-						}
 
 						//if we have on both sides a node we want to delete or the focal node
 						if(
@@ -1497,14 +1508,14 @@ define([
 							d3.select("#edgepath_" + v.id).remove();
                            	d3.select("#edgeline_" + v.id).remove();
                             d3.select("#edgelabel_" + v.id).remove();
-                            console.log("both sides")
-                            console.log(v)
+                            //console.log("both sides")
+                            //console.log(v)
 
                             edges.splice(i, 1)
 						}
 						else if(entityids.indexOf(v.source.id) != -1 || entityids.indexOf(v.target.id) != -1)
 						{
-							console.log(v)
+							//console.log(v)
 							//get an existing edge between the focalNode and the node not to delete
 							var existingEdge = edges.filter(
 								function(e,i,a)
@@ -1521,8 +1532,6 @@ define([
 									}
 								}
 							);
-
-							console.log(existingEdge);
 
 							//if we havent found a node
 							if(existingEdge.length == 0)
@@ -1561,6 +1570,37 @@ define([
 						alert(result)
 					}
 				);*/
+            }
+
+            function sendMerged(focalNode, nodes)
+            {
+
+                focalNode = getNodeById(Number(focalNode));
+
+                var entityids = [];
+
+                //save the ids and delete the merged nodes
+                nodes.forEach(
+                	function(v,i,a)
+                	{
+                		if(v.id != focalNode.id)
+                		{
+                			entityids.push(v.id);
+                		}
+                	}
+                );
+
+                playRoutes.controllers.NetworkController.mergeEntitiesById(focalNode.id,entityids).get().then(
+                	function(result)
+                	{
+                	    console.log(result)
+                	    console.log("merge returned")
+                		if(result.result === false)
+                		{
+                		    alert("Error while merging Entities")
+                		}
+                	}
+                );
             }
 
 
@@ -1641,6 +1681,26 @@ define([
             	node.type = type;
             	d3.select("#nodecircle_" + node.id)
             		.style("fill", function(d){return color(d.type)});
+            }
+
+            /**
+             *  send a message to the server that the name of the entity
+             *  was edited
+             *
+             *  @param node
+             *      the node
+             */
+            function sendEditedType(node)
+            {
+                playRoutes.controllers.NetworkController.changeEntityTypeById(node.id, node.type).get().then(
+                    function(result)
+                    {
+                        if(result.result == false)
+                        {
+                            alert("Error while editing Entity")
+                        }
+                    }
+                )
             }
 
         }
