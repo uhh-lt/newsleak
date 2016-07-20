@@ -62,6 +62,7 @@ class DocumentController @Inject extends Controller {
    * @param fullText Full text search term
    * @param generic   mapping of metadata key and a list of corresponding tags
    * @param entities list of entity ids to filter
+   * @param timeRange string of a time range readable for [[TimeRangeParser]]
    * @return list of matching document id's
    */
   def getDocs(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {

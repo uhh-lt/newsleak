@@ -58,7 +58,9 @@ class EntityController @Inject extends Controller {
   /**
    * Gets document counts for entities corresponding to their id's matching the query
    * @param fullText Full text search term
-   * @param generic mapping of metadata key and a list of corresponding tags
+   * @param generic   mapping of metadata key and a list of corresponding tags
+   * @param entities list of entity ids to filter
+   * @param timeRange string of a time range readable for [[TimeRangeParser]]
    * @return list of matching entity id's and document count
    */
   def getEntities(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
