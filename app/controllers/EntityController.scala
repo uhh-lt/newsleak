@@ -61,7 +61,7 @@ class EntityController @Inject extends Controller {
    * @param generic   mapping of metadata key and a list of corresponding tags
    * @param entities list of entity ids to filter
    * @param timeRange string of a time range readable for [[TimeRangeParser]]
-   * @return list of matching entity id's and document count
+   * @return list of matching entity id's and their overall frequency as well as document count for the applied filters
    */
   def getEntities(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
@@ -79,7 +79,7 @@ class EntityController @Inject extends Controller {
           .map(Entity(_))
           .list // single, list, traversable
           .apply()
-          .map(x => Json.obj("id" -> x.id, "name" -> x.name, "type" -> x.entityType, "freq" -> x.frequency))
+          .map(x => Json.obj("id" -> x.id, "name" -> x.name, "type" -> x.entityType, "freq" -> x.frequency, "docCount" -> entitiesRes.find(_._1 == x.id).get._2.asInstanceOf[Number].longValue))
     }
     Results.Ok(Json.toJson(result)).as("application/json")
   }
