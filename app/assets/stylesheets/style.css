@@ -527,7 +527,7 @@ ul#historyList {
 #historyList li {
     color: white;
     transition: width 0.3s linear;
-    width: 50px;
+    width: 47px;
 }
 #historyList li:hover {
     transition: width 0.2s linear;
