@@ -61,6 +61,26 @@ class MetadataController @Inject extends Controller {
   }
 
   /**
+   * Gets document counts for one metadata types corresponding to their keys for given list of instances
+   * @param fullText Full text search term
+   * @param key metadata type key to aggregate on
+   * @param generic mapping of metadata key and a list of corresponding tags
+   * @param entities list of entity ids to filter
+   * @param instances list of metadata instaces to buckets for
+   * @return list of matching metadata keys and document count
+   */
+  def getSpecificMetadata(fullText: Option[String], key: String, generic: Map[String, List[String]], entities: List[Long], instances: List[String]) = Action {
+    val facets = Facets(fullText, generic, entities, None, None)
+    val agg = FacetedSearch.aggregate(facets, key, defaultFetchSize, instances)
+    val res = Json.obj(key -> agg.get.buckets.map(x => x match {
+      case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
+      case _ => Json.obj()
+    }))
+
+    Results.Ok(Json.toJson(res)).as("application/json")
+  }
+
+  /**
    * Gets document counts for keywords
    * @param fullText Full text search term
    * @param generic mapping of metadata key and a list of corresponding tags

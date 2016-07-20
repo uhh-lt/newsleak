@@ -39,7 +39,7 @@ GET    /getEntitiesDocCountWithFilter		controllers.EntityController.getEntitiesD
 GET   /getMetadata     controllers.MetadataController.getMetadata(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long])
 GET   /getKeywords     controllers.MetadataController.getKeywords(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long])
 GET   /getMetadataTypes       controllers.MetadataController.getMetadataTypes
-
+GET    /getSpecificMetadata             controllers.MetadataController.getSpecificMetadata(fullText: Option[String], key: String, generic: Map[String, List[String]], entities: List[Long], instances: List[String])
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # JS ROUTING AND RESOURCES                                                                      #
