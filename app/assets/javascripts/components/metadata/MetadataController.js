@@ -82,35 +82,39 @@ define([
                         } else {
                             facets = [{'key':'dummy','data': []}];
                         }
-                        //TODO: on adding fulltext filter doc count grows
-                        playRoutes.controllers.MetadataController.getMetadata(fulltext,facets,entities).get().then(
-                            function (result) {
-                                angular.forEach(result.data, function(obj) {
-                                    $.each(obj, function(key, value) {
-                                        var data = [];
-                                        angular.forEach(value, function(x) {
-                                            data.push(x.count);
-                                        });
-                                        var newBase = [];
-                                        $.each($scope.chartConfigs[key].series[0].data, function(index, value) {
-                                            if(data[index] == undefined)
-                                                newBase.push($scope.chartConfigs[key].series[0].data[index]);
-                                            else
-                                                newBase.push($scope.chartConfigs[key].series[0].data[index] - data[index]);
-                                        });
-                                        $scope.metaCharts[key].series[0].setData(newBase);
-                                        if($scope.metaCharts[key].series[1] == undefined) {
-                                            $scope.metaCharts[key].addSeries({
-                                                name: 'Filter',
-                                                data: data,
-                                                color: 'black'
-                                            });
-                                        } else {
-                                            $scope.metaCharts[key].series[1].setData(data);
-                                        }
+                        angular.forEach($scope.metadataTypes, function(type) {
+                            var instances = $scope.chartConfigs[type].xAxis["categories"];
+                            playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext,type,facets,entities,instances).get().then(
+                                function(result) {
+                                    //result.data[type].forEach(function(x) {
+                                    //    console.log(x.key + ": " + x.count);
+                                    //});
+                                    var data = [];
+                                    angular.forEach(result.data[type], function(x) {
+                                        data.push(x.count);
                                     });
-                                });
-                            });
+                                    var newBase = [];
+                                    $.each($scope.chartConfigs[type].series[0].data, function(index, value) {
+                                        if(data[index] == undefined)
+                                            newBase.push($scope.chartConfigs[type].series[0].data[index]);
+                                        else
+                                            newBase.push($scope.chartConfigs[type].series[0].data[index] - data[index]);
+                                    });
+                                    $scope.metaCharts[type].series[0].setData(newBase);
+                                    if($scope.metaCharts[type].series[1] == undefined) {
+                                        $scope.metaCharts[type].addSeries({
+                                            name: 'Filter',
+                                            data: data,
+                                            color: 'black'
+                                        });
+                                    } else {
+                                        $scope.metaCharts[type].series[1].setData(data);
+                                    }
+                                }
+                            );
+                        });
+                        //TODO: on adding fulltext filter doc count grows
+
                     };
 
                     $scope.initEntityCharts = function () {
