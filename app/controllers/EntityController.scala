@@ -66,7 +66,7 @@ class EntityController @Inject extends Controller {
   def getEntities(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    val entitiesRes = FacetedSearch.aggregateEntities(facets, defaultFetchSize).buckets.map(x => x match {
+    val entitiesRes = FacetedSearch.aggregateEntities(facets, defaultFetchSize, List()).buckets.map(x => x match {
       case NodeBucket(id, count) => (id, count)
       case _ => (0, 0)
     })

@@ -77,7 +77,7 @@ class MetadataController @Inject extends Controller {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     val agg = FacetedSearch.aggregate(facets, key, defaultFetchSize, instances)
-    val res = Json.obj(key -> agg.get.buckets.map(x => x match {
+    val res = Json.obj(key -> agg.buckets.map(x => x match {
       case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
       case _ => Json.obj()
     }))
@@ -89,12 +89,12 @@ class MetadataController @Inject extends Controller {
    * Gets document counts for keywords
    * @param fullText Full text search term
    * @param generic mapping of metadata key and a list of corresponding tags
-   * @param entities list of entity ids to filter
    * @return list of matching keywords and document count
    */
-  def getKeywords(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long]) = Action {
-    val facets = Facets(fullText, generic, entities, None, None)
-    val res = FacetedSearch.aggregateKeywords(facets, defaultFetchSize).buckets.map(x => x match {
+  def getKeywords(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
+    val times = TimeRangeParser.parseTimeRange(timeRange)
+    val facets = Facets(fullText, generic, entities, times.from, times.to)
+    val res = FacetedSearch.aggregateKeywords(facets, defaultFetchSize, List()).buckets.map(x => x match {
       case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
       case _ => Json.obj()
     })
