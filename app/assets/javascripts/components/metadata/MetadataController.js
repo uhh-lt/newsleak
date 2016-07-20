@@ -84,7 +84,7 @@ define([
                         }
                         angular.forEach($scope.metadataTypes, function(type) {
                             var instances = $scope.chartConfigs[type].xAxis["categories"];
-                            playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext,type,facets,entities,instances).get().then(
+                            playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext,type,facets,entities,instances,$scope.observer.getTimeRange()).get().then(
                                 function(result) {
                                     //result.data[type].forEach(function(x) {
                                     //    console.log(x.key + ": " + x.count);

@@ -22,6 +22,7 @@ import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket }
 import model.{ Document, Entity, EntityType }
 import play.api.libs.json.{ JsArray, JsObject, Json, Writes }
 import play.api.mvc.{ Action, Controller, Results }
+import util.TimeRangeParser
 
 /**
  * Created by f. zouhar on 26.05.16.
@@ -48,10 +49,12 @@ class MetadataController @Inject extends Controller {
    * @param fullText Full text search term
    * @param generic mapping of metadata key and a list of corresponding tags
    * @param entities list of entity ids to filter
+   * @param timeRange string of a time range readable for [[TimeRangeParser]]
    * @return list of matching metadata keys and document count
    */
-  def getMetadata(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long]) = Action {
-    val facets = Facets(fullText, generic, entities, None, None)
+  def getMetadata(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
+    val times = TimeRangeParser.parseTimeRange(timeRange)
+    val facets = Facets(fullText, generic, entities, times.from, times.to)
     val res = FacetedSearch.aggregateAll(facets, defaultFetchSize, defaultExcludeTypes)
       .map(agg => Json.obj(agg.key -> agg.buckets.map(x => x match {
         case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
@@ -67,10 +70,12 @@ class MetadataController @Inject extends Controller {
    * @param generic mapping of metadata key and a list of corresponding tags
    * @param entities list of entity ids to filter
    * @param instances list of metadata instaces to buckets for
+   * @param timeRange string of a time range readable for [[TimeRangeParser]]
    * @return list of matching metadata keys and document count
    */
-  def getSpecificMetadata(fullText: Option[String], key: String, generic: Map[String, List[String]], entities: List[Long], instances: List[String]) = Action {
-    val facets = Facets(fullText, generic, entities, None, None)
+  def getSpecificMetadata(fullText: Option[String], key: String, generic: Map[String, List[String]], entities: List[Long], instances: List[String], timeRange: String) = Action {
+    val times = TimeRangeParser.parseTimeRange(timeRange)
+    val facets = Facets(fullText, generic, entities, times.from, times.to)
     val agg = FacetedSearch.aggregate(facets, key, defaultFetchSize, instances)
     val res = Json.obj(key -> agg.get.buckets.map(x => x match {
       case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
