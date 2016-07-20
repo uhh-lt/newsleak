@@ -18,8 +18,8 @@ package controllers
 
 import javax.inject.Inject
 
-import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket, NodeBucket }
-import model.{ Document, Entity, EntityType }
+import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
+import model.{ Entity, EntityType }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller, Results }
 import scalikejdbc._
@@ -66,10 +66,10 @@ class EntityController @Inject extends Controller {
   def getEntities(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    val entitiesRes = FacetedSearch.aggregateEntities(facets, defaultFetchSize, List()).buckets.map(x => x match {
+    val entitiesRes = FacetedSearch.aggregateEntities(facets, defaultFetchSize, List()).buckets.map {
       case NodeBucket(id, count) => (id, count)
       case _ => (0, 0)
-    })
+    }
     var result: List[JsObject] = List()
     if (entitiesRes.nonEmpty) {
       result =
@@ -99,7 +99,7 @@ class EntityController @Inject extends Controller {
           WHERE type = ${entityType} AND NOT isblacklisted
           ORDER BY frequency DESC LIMIT 50 OFFSET ${offset}"""
         .map(Entity(_))
-        .list // single, list, traversable
+        .list
         .apply()
         .map(x => Json.obj("id" -> x.id, "name" -> x.name, "freq" -> x.frequency))
 

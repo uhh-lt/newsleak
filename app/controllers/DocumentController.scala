@@ -20,8 +20,6 @@ import javax.inject.Inject
 
 import model.Document
 import model.faceted.search.{ FacetedSearch, Facets }
-import org.joda.time.LocalDateTime
-import org.joda.time.format.DateTimeFormat
 import play.api.libs.json.{ JsArray, Json, Writes }
 import play.api.mvc.{ Action, Controller }
 import scalikejdbc._

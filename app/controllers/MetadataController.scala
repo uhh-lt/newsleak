@@ -19,8 +19,8 @@ package controllers
 import javax.inject.Inject
 
 import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket }
-import model.{ Document, Entity, EntityType }
-import play.api.libs.json.{ JsArray, JsObject, Json, Writes }
+import model.{ Document }
+import play.api.libs.json.{ JsArray, Json, Writes }
 import play.api.mvc.{ Action, Controller, Results }
 import util.TimeRangeParser
 
@@ -56,10 +56,10 @@ class MetadataController @Inject extends Controller {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     val res = FacetedSearch.aggregateAll(facets, defaultFetchSize, defaultExcludeTypes)
-      .map(agg => Json.obj(agg.key -> agg.buckets.map(x => x match {
+      .map(agg => Json.obj(agg.key -> agg.buckets.map{
         case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
         case _ => Json.obj()
-      })))
+      }))
     Results.Ok(Json.toJson(res)).as("application/json")
   }
 
@@ -77,10 +77,10 @@ class MetadataController @Inject extends Controller {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     val agg = FacetedSearch.aggregate(facets, key, defaultFetchSize, instances)
-    val res = Json.obj(key -> agg.buckets.map(x => x match {
+    val res = Json.obj(key -> agg.buckets.map {
       case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
       case _ => Json.obj()
-    }))
+    })
 
     Results.Ok(Json.toJson(res)).as("application/json")
   }
@@ -94,10 +94,10 @@ class MetadataController @Inject extends Controller {
   def getKeywords(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    val res = FacetedSearch.aggregateKeywords(facets, defaultFetchSize, List()).buckets.map(x => x match {
+    val res = FacetedSearch.aggregateKeywords(facets, defaultFetchSize, List()).buckets.map {
       case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
       case _ => Json.obj()
-    })
+    }
 
     Results.Ok(Json.toJson(res)).as("application/json")
   }

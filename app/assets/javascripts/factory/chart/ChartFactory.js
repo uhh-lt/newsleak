@@ -96,7 +96,8 @@ define([
                         credits: false,
                         xAxis: {
                             title: {
-                                text: 'Date'
+                                text: 'Date',
+                                enabled: false
                             },
                             type: 'category'
                         },
