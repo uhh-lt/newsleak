@@ -56,6 +56,27 @@ define([
                     $scope.observer.subscribeItems($scope.observer_subscribe_entity,"entity");
                     $scope.observer.subscribeItems($scope.observer_subscribe_metadata,"metadata");
 
+                    $scope.clickedItem = function(category, type, key) {
+                        /*
+                         $scope.filters = [];
+                         $scope.filterItems.forEach(function(x) {
+                         $scope.filters.push(x.data.id);
+                         });
+                         $scope.filters.push($scope.ids[x][$scope.labels[x].indexOf(this.category)]);
+                         */
+                        var id = -1;
+                        if(type == 'entity')
+                            id = $scope.ids[key][$scope.labels[key].indexOf(category.category)];
+                        $scope.observer.addItem({
+                            type: type,
+                            data: {
+                                id: id,
+                                name: category.category,
+                                type: key
+                            }
+                        });
+                    };
+
                     $scope.updateEntityCharts = function () {
 
                     };
@@ -105,7 +126,15 @@ define([
                                         $scope.metaCharts[type].addSeries({
                                             name: 'Filter',
                                             data: data,
-                                            color: 'black'
+                                            color: 'black',
+                                            cursor: 'pointer',
+                                            point: {
+                                                events: {
+                                                    click: function () {
+                                                        $scope.clickedItem(this, 'metadata', type);
+                                                    }
+                                                }
+                                            }
                                         });
                                     } else {
                                         $scope.metaCharts[type].series[1].setData(data);
@@ -143,30 +172,7 @@ define([
                                             point: {
                                                 events: {
                                                     click: function () {
-                                                        $scope.filters = [];
-                                                        $scope.entityFilters.forEach(function(x) {
-                                                            $scope.filters.push(x.data.id);
-                                                        });
-                                                        $scope.filters.push($scope.ids[x][$scope.labels[x].indexOf(this.category)]);
-                                                        $scope.observer.addItem({
-                                                            type: 'entity',
-                                                            data: {
-                                                                id: $scope.ids[x][$scope.labels[x].indexOf(this.category)],
-                                                                name: this.category,
-                                                                type: x
-                                                            }
-                                                        });
-                                                        console.log('Category: ' + this.category + ', id:' + $scope.ids[x][$scope.labels[x].indexOf(this.category)]+', value: ' + this.y + ', filters: ' + $scope.filters);
-                                                        //playRoutes.controllers.EntityController
-                                                        //    .getEntitiesDocCountWithFilter($scope.filters).get().then(function (res) {
-                                                        //    console.log(res.data);
-                                                            //TODO: entity filter series currently not available through ES
-                                                            //$scope.metaCharts[x].addSeries({
-                                                            //    name: 'Filter',
-                                                            //    data: [res.data],
-                                                            //    color: 'black'
-                                                            //});
-                                                        //})
+                                                        $scope.clickedItem(this, 'entity', x);
                                                     }
                                                 }
                                             }
@@ -216,30 +222,14 @@ define([
                                             point: {
                                                 events: {
                                                     click: function () {
-                                                        /*
-                                                        $scope.filters = [];
-                                                        $scope.filterItems.forEach(function(x) {
-                                                            $scope.filters.push(x.data.id);
-                                                        });
-                                                        $scope.filters.push($scope.ids[x][$scope.labels[x].indexOf(this.category)]);
-                                                        */
-                                                        $scope.observer.addItem({
-                                                            type: 'metadata',
-                                                            data: {
-                                                                //id: $scope.ids[x][$scope.labels[x].indexOf(this.category)]
-                                                                name: this.category,
-                                                                type: key
-                                                            }
-                                                        });
-                                                        console.log('Category: ' + this.category + ', value: ' + this.y + ', filters: ' + $scope.filters);
-
+                                                        $scope.clickedItem(this, 'metadata', key);
                                                     }
                                                 }
                                             }
 
                                         }];
                                         $scope.chartConfigs[key].chart.renderTo = "chart_" + key.toLowerCase();
-
+                                        $("#chart_" + key.toLowerCase()).css("height",$scope.frequencies[key].length * 20);
                                         $scope.metaCharts[key] = new Highcharts.Chart($scope.chartConfigs[key]);
                                             });
 
@@ -276,6 +266,18 @@ define([
                             $("#chart_" + type.toLowerCase()).highcharts().reflow();
                         }, 100);
                     };
+                    $scope.reflow = function() {
+                        $timeout(function() {
+                            $("#metadata-view .active .active .meta-chart").highcharts().reflow();
+                        }, 100);
+                    };
+
+                    $('#metadata-view .nav-tabs a').on('shown.bs.tab', function(event){
+                        $("#metadata-view .active .active .meta-chart").highcharts().reflow();
+                    });
+
+
+
 
                     /** entry point here **/
                     $scope.metaShareService = metaShareService;
