@@ -297,8 +297,9 @@ class NetworkController @Inject extends Controller {
         .map(rs => (rs.long("id"), rs.long("entity1"), rs.long("entity2"), rs.int("frequency")))
         .list // single, list, traversable
         .apply()
+    } else {
+      List()
     }
-    List()
   }
 
 }
