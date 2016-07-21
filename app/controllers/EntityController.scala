@@ -87,7 +87,7 @@ class EntityController @Inject extends Controller {
             "docCount" -> entitiesRes.find(_._1 == x.id).get._2.asInstanceOf[Number].longValue
           ))
     }
-    Results.Ok(Json.toJson(result)).as("application/json")
+    Results.Ok(Json.toJson(result.sortBy(-_.value("docCount").as[Long]))).as("application/json")
   }
 
   /**
