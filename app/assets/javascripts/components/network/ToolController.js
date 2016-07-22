@@ -223,12 +223,13 @@ define([
                 modal.result.then(function(result)
                 {
                     var listener = toolShareService.mergeListener;
+                    var nodes = toolShareService.getSelectedNodes()
 
                     listener.forEach
                     (
                         function(l)
                         {
-                            l(result.focalNode, toolShareService.getSelectedNodes())
+                            l(result.focalNode, nodes)
                         }
                     )
                 }

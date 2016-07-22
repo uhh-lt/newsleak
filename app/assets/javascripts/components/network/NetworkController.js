@@ -354,9 +354,16 @@ define([
                	});
             }
 
-            function getEgoNetworkByNameAndType(name, type, callback)
-            {
 
+            function setBorderValue(node, value)
+            {
+                d3
+                    .select('#nodeborder_' + node.id)
+                    .attr('d', d3.svg.arc()
+                    .innerRadius(radius(node.freq))
+                    .outerRadius(radius(node.freq)+4)
+                    .startAngle(0)
+                    .endAngle(value*2*Math.PI));
             }
 
 
@@ -448,12 +455,12 @@ define([
                 {
                 	//select all nodes which have to be selected
 					var tags = $scope.tagSelectShared.tagsToSelect;
-					console.log(tags);
+					//console.log(tags);
 					for(var i=0; i<tags.length; i++)
 					{
-					    console.log(tags[i].id);
+					    //console.log(tags[i].id);
 						var node = getNodeById(tags[i].id);
-						console.log(node);
+						//console.log(node);
 
 
 						if(nodes == undefined)
@@ -585,7 +592,7 @@ define([
             		d3.select('#nodebuttonicon_' + node.id).attr('class', 'glyphicon glyphicon-minus');
 
             		node.expanded = true;
-            		console.log(nodes);
+            		//console.log(nodes);
             	});
             }
 
@@ -608,7 +615,7 @@ define([
             		}
             	);
 
-				console.log(nodes);
+				//console.log(nodes);
 				var deletenodes = [];
             	nodes.forEach(
             		function(v,i,a)
@@ -618,7 +625,7 @@ define([
             				return;
             			}
 
-            			console.log(v);
+            			//console.log(v);
             			if(v.collapseParent.length > 1 && v.collapseParent.indexOf(node.id) != -1)
             			{
             				v.collapseParent.splice(v.collapseParent.indexOf(node.id), 1)
@@ -637,7 +644,7 @@ define([
             			return deletenodes.indexOf(e.id) == -1;
             		}
             	)
-            	console.log(nodes);
+            	//console.log(nodes);
 
             	d3.select('#nodebuttonicon_' + node.id).attr('class', 'glyphicon glyphicon-plus');
             	node.expanded = false;
@@ -727,11 +734,24 @@ define([
                                         .attr('class', 'node')
                                         .call(force.drag);
 
+                    var arc = d3.svg.arc()
+                        .innerRadius(50)
+                        .outerRadius(100)
+                        .startAngle(0)
+                        .endAngle(Math.PI);
+
+                    newNodes
+                        .append('path')
+                        .attr('id', function(d){return 'nodeborder_' + d.id;})
+                        .attr('d', d3.svg.arc())
+
+
                     newNodes.append('circle')
                             .attr('r', function (d) { return radius(d.freq) })
                             .style('fill', function (d) { return color(d.type); })
                             .style('opacity', 0)  // Make new nodes at first invisible.
-                            .attr('id', function(d, i){
+                            .attr('id', function(d, i)
+                            {
                             	return 'nodecircle_' + d.id;
                             })
                             .on('mousedown', function () {  // make nodes clickable
@@ -1203,7 +1223,7 @@ define([
                 // update node array
                 data.nodes.forEach(function(node)
                 {
-                	console.log(node);
+                	//console.log(node);
 					nodes.push({
 						id: node[0],
 						name: node[1],
@@ -1341,97 +1361,6 @@ define([
                 getGraph();
             }
 
-            /*$scope.editOpen = function()
-            {
-                console.log(selectedNodes);
-            	var modal = $uibModal.open(
-            		{
-            			animation: true,
-            			templateUrl: 'editModal',
-            			controller: 'EditModalController',
-            			size: 'sm',
-            			resolve:
-            			{
-            				text: function(){return $scope.selectedElementsText();},
-            				type: function(){return selectedNodes[0].type;},
-            				node: function(){return selectedNodes[0];}
-            			}
-            		}
-            	);
-
-            	modal.result.then(function(result)
-            	{
-					if(result.node.name != result.text)
-            		playRoutes.controllers.NetworkController.changeEntityNameById(result.node.id, result.text).get().then(
-                    	function(result)
-                    	{
-                    		if(result.result == false)
-                    		{
-                    			alert("Error while editing Entity")
-                    		}
-                    	}
-                    );
-
-					if(result.node.type != result.type)
-                    playRoutes.controllers.NetworkController.changeEntityTypeById(result.node.id, result.type).get().then(
-                       	function(result)
-                       	{
-                       		if(result.result == false)
-                       		{
-                       			alert("Error while editing Entity")
-                      		}
-                       	}
-                    );
-
-                    editType(result.node, result.type);
-                    editName(result.node, result.text);
-            	});
-            }*/
-
-            /*$scope.annotateOpen = function()
-            {
-              	var modal = $uibModal.open(
-                	{
-                		animation: true,
-                		templateUrl: 'annotateModal',
-                		controller: 'TextModalController',
-                		size: 'lg',
-                		resolve:
-                		{
-                			text: function(){return ""},
-                			node: function(){return selectedNodes[0];}
-                		}
-                	}
-                );
-
-                modal.result.then(function(result)
-                {
-                	addAnnotation(result.node, result.text);
-                });
-            }*/
-
-            /*$scope.mergeOpen = function()
-            {
-            	var modal = $uibModal.open(
-                	{
-                		animation: true,
-                		templateUrl: 'mergeModal',
-                		controller: 'MergeModalController',
-                		size: 'lg',
-                		resolve:
-                		{
-                			selectedNodes: function(){return selectedNodes;}
-                		}
-                	}
-                );
-
-                modal.result.then(function(result)
-                {
-                	var focalNode = getNodeById(Number(result.focalNode));
-                	merge(focalNode, result.nodes);
-                });
-            }*/
-
 
             /**
              * Hide the currently selected nodes/edges from the graph. The data
@@ -1480,8 +1409,8 @@ define([
 					{
 						if(v.id != focalNode.id)
 						{
-						    console.log(v);
-						    console.log(focalNode);
+						    //console.log(v);
+						    //console.log(focalNode);
 							entityids.push(v.id);
 							d3.select("#node_" + v.id).remove();
 							freqsum = freqsum + v.freq;
@@ -1577,6 +1506,9 @@ define([
 
                 focalNode = getNodeById(Number(focalNode));
 
+                console.log(focalNode);
+                console.log(nodes);
+
                 var entityids = [];
 
                 //save the ids and delete the merged nodes
@@ -1593,8 +1525,8 @@ define([
                 playRoutes.controllers.NetworkController.mergeEntitiesById(focalNode.id,entityids).get().then(
                 	function(result)
                 	{
-                	    console.log(result)
-                	    console.log("merge returned")
+                	    //console.log(result)
+                	    //console.log("merge returned")
                 		if(result.result === false)
                 		{
                 		    alert("Error while merging Entities")
@@ -1602,22 +1534,6 @@ define([
                 	}
                 );
             }
-
-
-
-            /**
-             * gives the user the option to annotate selected nodes/edges
-             */
-            /*$scope.annotateSelected = function (){
-                var annotation = $('#annotateInput').val();
-
-                for(var i=0; i<selectedNodes.length; i++)
-                {
-                	addAnnotation(selectedNodes[i], annotation);
-                }
-
-                //alert("TODO: annotate selected --> " + annotation);
-            }*/
 
             /**
              * gives the user the option to edit the name
