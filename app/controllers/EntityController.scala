@@ -63,10 +63,19 @@ class EntityController @Inject extends Controller {
    * @param timeRange string of a time range readable for [[TimeRangeParser]]
    * @return list of matching entity id's and their overall frequency as well as document count for the applied filters
    */
-  def getEntities(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
+  def getEntities(
+    fullText: Option[String],
+    generic: Map[String, List[String]],
+    entities: List[Long],
+    timeRange: String,
+    filter: List[Long]
+  ) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    val entitiesRes = FacetedSearch.aggregateEntities(facets, defaultFetchSize, List()).buckets.map {
+    println(filter)
+    var size = defaultFetchSize
+    if (filter.nonEmpty) size = filter.length
+    val entitiesRes = FacetedSearch.aggregateEntities(facets, size, filter).buckets.map {
       case NodeBucket(id, count) => (id, count)
       case _ => (0, 0)
     }
