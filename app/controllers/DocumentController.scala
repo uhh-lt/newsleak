@@ -77,10 +77,9 @@ class DocumentController @Inject extends Controller {
     var rs: List[(Long, String)] = List()
     if (docIds.nonEmpty) {
       rs =
-        sql"""SELECT d.id, m.value
-        FROM document d
-        INNER JOIN metadata m ON d.id = m.docid
-        WHERE m.key = ${metadataKey} AND d.id IN (${docIds})"""
+        sql"""SELECT m.docid id, m.value
+        FROM metadata m
+        WHERE m.key = ${metadataKey} AND m.docid IN (${docIds})"""
           .map(rs => (rs.long("id"), rs.string("value")))
           .list()
           .apply()
