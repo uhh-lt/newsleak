@@ -71,6 +71,7 @@ define([
             'uiShareService',
             'tagSelectShareService',
             'filterShareService',
+            'toolShareService',
             'ObserverService',
         function (
             $scope,
@@ -85,6 +86,7 @@ define([
             uiShareService,
             tagSelectShareService,
             filterShareService,
+            toolShareService,
             ObserverService
             )
         {
@@ -124,119 +126,28 @@ define([
             var selectedEdges = new Array();
             var selectionColor = '#2A2AFF';
 
-            $scope.merge={node: ""};
+            toolShareService.getSelectedNodes = function(){return selectedNodes;};
+            toolShareService.getSelectedElementsText = selectedElementsText;
 
+            toolShareService.editNameListener.push(editName);
+            toolShareService.editNameListener.push(sendEditedName);
+            toolShareService.editTypeListener.push(editType);
+            toolShareService.editTypeListener.push(sendEditedType);
 
-            // A slider for choosing the amount of displayed nodes from the type contries/cities.
-            $scope.sliderCountriesCitiesAmount = {
-                value: "3",
-                options: {
-                    from: 1,
-                    to: 100,
-                    step: 1,
-                    dimension: " countries/cities",
-                    limits: false,
-                    scale: [1, 100],
-                    css: {
-                        background: {"background-color": "silver"},
-                        before: {"background-color": "#7CB5EC"},
-                        default: {"background-color": "silver"},
-                        after: {"background-color": "#7CB5EC"},
-                        pointer: {"background-color": "#2759AC"}
-                    },
-                    callback: function(value, released){
-                        getGraph();
-                    }
-                }
-            }
-            // A slider for choosing the amount of displayed nodes from the type organization.
-            $scope.sliderOrganizationsAmount = {
-                value: "3",
-                options: {
-                    from: 1,
-                    to: 100,
-                    step: 1,
-                    dimension: " organizations",
-                    limits: false,
-                    scale: [1, 100],
-                    css: {
-                        background: {"background-color": "silver"},
-                        before: {"background-color": "#7CB5EC"},
-                        default: {"background-color": "silver"},
-                        after: {"background-color": "#7CB5EC"},
-                        pointer: {"background-color": "#2759AC"}
-                    },
-                    callback: function(value, released){
-                        getGraph();
-                    }
-                }
-            }
-            // A slider for choosing the amount of displayed nodes from the type person.
-            $scope.sliderPersonsAmount = {
-                value: "3",
-                options: {
-                    from: 1,
-                    to: 100,
-                    step: 1,
-                    dimension: " persons",
-                    limits: false,
-                    scale: [1, 100],
-                    css: {
-                        background: {"background-color": "silver"},
-                        before: {"background-color": "#7CB5EC"},
-                        default: {"background-color": "silver"},
-                        after: {"background-color": "#7CB5EC"},
-                        pointer: {"background-color": "#2759AC"}
-                    },
-                    callback: function(value, released){
-                        getGraph();
-                    }
-                }
-            }
-            // A slider for choosing the amount of displayed nodes from the type miscellaneous.
-            $scope.sliderMiscellaneousAmount = {
-                value: "3",
-                options: {
-                    from: 1,
-                    to: 100,
-                    step: 1,
-                    dimension: " miscellaneous",
-                    limits: false,
-                    scale: [1, 100],
-                    css: {
-                        background: {"background-color": "silver"},
-                        before: {"background-color": "#7CB5EC"},
-                        default: {"background-color": "silver"},
-                        after: {"background-color": "#7CB5EC"},
-                        pointer: {"background-color": "#2759AC"}
-                    },
-                    callback: function(value, released){
-                        getGraph();
-                    }
-                }
-            }
-            // A slider for choosing the minimum and maximum frequency of a displayed edge.
-            $scope.sliderEdgeFrequency = {
-                value: "1500;"+$scope.maxEdgeFreq,
-                options: {
-                    from: 1,
-                    to: $scope.maxEdgeFreq,
-                    step: 1,
-                    dimension: " Connections between entities",
-                    limits: false,
-                    scale: [1, $scope.maxEdgeFreq],
-                    css: {
-                        background: {"background-color": "silver"},
-                        range: {"background-color": "#7CB5EC"},
-                        default: {"background-color": "silver"},
-                        after: {"background-color": "#7CB5EC"},
-                        pointer: {"background-color": "#2759AC"}
-                    },
-                    callback: function(value, released){
-                        getGraph();
-                    }
-                }
-            }
+            toolShareService.annotateListener.push(addAnnotation);
+
+            toolShareService.mergeListener.push(merge);
+            toolShareService.mergeListener.push(sendMerged);
+
+            toolShareService.deleteListener.push(remove);
+
+            toolShareService.getEgoNetworkListener.push(getEgoNetwork);
+
+            toolShareService.hideListener.push(hideSelected);
+
+            toolShareService.updateGraph = getGraph;
+            toolShareService.isViewLoading = function(){return $scope.isViewLoading};
+            toolShareService.enableOrDisableButtons = enableOrDisableButtons;
 
             // create a graph here
             // when the data changes, the graph remains the same,
@@ -287,7 +198,7 @@ define([
             /**
              * This function updates the text with the name of the selected elements.
              */
-            $scope.selectedElementsText = function (){
+            function selectedElementsText(){
                 var selectedElements = "";
                 for(var i=0; i<selectedNodes.length; i++){
                     selectedElements += selectedNodes[i].name;
@@ -450,6 +361,18 @@ define([
             }
 
 
+            function setBorderValue(node, value)
+            {
+                d3
+                    .select('#nodeborder_' + node.id)
+                    .attr('d', d3.svg.arc()
+                    .innerRadius(radius(node.freq))
+                    .outerRadius(radius(node.freq)+4)
+                    .startAngle(0)
+                    .endAngle(value*2*Math.PI));
+            }
+
+
 			/**
 			 *	add an annotation to the specified Node
 			 *
@@ -538,15 +461,19 @@ define([
                 {
                 	//select all nodes which have to be selected
 					var tags = $scope.tagSelectShared.tagsToSelect;
+					//console.log(tags);
 					for(var i=0; i<tags.length; i++)
 					{
-						var nodes = getNodesByName(tags[i]);
+					    //console.log(tags[i].id);
+						var node = getNodeById(tags[i].id);
+						//console.log(node);
 
-						if(nodes.length == 0)
+
+						if(nodes == undefined)
 						{
 							//get all ego networks and after that execute a callback function
 							//which marks all selected nodes
-							getEgoNetworkByName(tags[i],
+							getEgoNetworkById(tags[i].id,
 							(function()
 							{
 								var tag = tags[i];
@@ -571,7 +498,7 @@ define([
                         nodes.forEach(function(node){unselectNode(node);})
 					}
 					$scope.tagSelectShared.wasChanged = false;
-					enableOrDisableButtons();
+					//enableOrDisableButtons();
                 }
             });
 
@@ -629,13 +556,13 @@ define([
             function getGraph(){
                 $scope.isViewLoading    = true;
                 var sliderValue         = [];
-                sliderValue.push(parseInt($scope.sliderCountriesCitiesAmount.value));
-                sliderValue.push(parseInt($scope.sliderOrganizationsAmount.value));
-                sliderValue.push(parseInt($scope.sliderPersonsAmount.value));
-                sliderValue.push(parseInt($scope.sliderMiscellaneousAmount.value));
-                var sliderEdgeMinFreq   = $scope.sliderEdgeFrequency.value.split(";")[0];
-                var sliderEdgeMaxFreq   = $scope.sliderEdgeFrequency.value.split(";")[1];
-                var leastOrMostFrequent = Number($scope.freqSorting.least);
+                sliderValue.push(parseInt(toolShareService.sliderLocationsValue()));
+                sliderValue.push(parseInt(toolShareService.sliderOrganizationsValue()));
+                sliderValue.push(parseInt(toolShareService.sliderPersonsValue()));
+                sliderValue.push(parseInt(toolShareService.sliderMiscellaneousValue()));
+                var sliderEdgeMinFreq   = toolShareService.sliderEdgeMinFreq();
+                var sliderEdgeMaxFreq   = toolShareService.sliderEdgeMaxFreq();
+                var leastOrMostFrequent = Number(toolShareService.freqSortingLeast);
 
                 playRoutes.controllers.NetworkController.getGraphData(leastOrMostFrequent, sliderValue, sliderEdgeMinFreq, sliderEdgeMaxFreq).get().then(function(response) {
                     var data = response.data;
@@ -723,7 +650,7 @@ define([
             			return deletenodes.indexOf(e.id) == -1;
             		}
             	)
-            	console.log(nodes);
+            	//console.log(nodes);
 
             	d3.select('#nodebuttonicon_' + node.id).attr('class', 'glyphicon glyphicon-plus');
             	node.expanded = false;
@@ -813,11 +740,24 @@ define([
                                         .attr('class', 'node')
                                         .call(force.drag);
 
+                    var arc = d3.svg.arc()
+                        .innerRadius(50)
+                        .outerRadius(100)
+                        .startAngle(0)
+                        .endAngle(Math.PI);
+
+                    newNodes
+                        .append('path')
+                        .attr('id', function(d){return 'nodeborder_' + d.id;})
+                        .attr('d', d3.svg.arc())
+
+
                     newNodes.append('circle')
                             .attr('r', function (d) { return radius(d.freq) })
                             .style('fill', function (d) { return color(d.type); })
                             .style('opacity', 0)  // Make new nodes at first invisible.
-                            .attr('id', function(d, i){
+                            .attr('id', function(d, i)
+                            {
                             	return 'nodecircle_' + d.id;
                             })
                             .on('mousedown', function () {  // make nodes clickable
@@ -833,7 +773,7 @@ define([
                                     var nodeValue = d.name;
                                     var categoryIndex = $scope.graphShared.getIndexOfCategory(d.type);
                                     if(index == -1){  // The node is not selected, so select it.
-                                        selectedNodes.push(d);
+                                        selectNode(d);
                                         d3.select(this)
                                         	.style('stroke-width', 5)
                                             .style('stroke', selectionColor);
@@ -845,7 +785,7 @@ define([
                                         }
                                     }
                                     else{  // The node is already selected, so unselect it.
-                                        selectedNodes.splice(index, 1);  // Remove the node from the list.
+                                        unselectNode(d);  // Remove the node from the list.
                                         d3.select(this).style('stroke-width', 1.5)
                                                        .style('stroke', '#000000');
                                         // Remove the selected node name from the words that get highlighted
@@ -1289,7 +1229,7 @@ define([
                 // update node array
                 data.nodes.forEach(function(node)
                 {
-                	console.log(node);
+                	//console.log(node);
 					nodes.push({
 						id: node[0],
 						name: node[1],
@@ -1324,7 +1264,7 @@ define([
             /**
              * Loads the ego network for the selected node.
              */
-            $scope.getEgoNetwork = function(){
+            function getEgoNetwork(){
                 if(selectedNodes.length != 0){  // If a node is selected.
                     // Get the id of the newest selected node.
                     var id = selectedNodes[selectedNodes.length-1].id;
@@ -1387,7 +1327,7 @@ define([
              * Hide the currently selected nodes/edges from the graph. The data
              * will still be in the database.
              */
-            $scope.hideSelected = function (){
+            function hideSelected(){
                 // Remove selected nodes.
                 selectedNodes.forEach(function(d){
                     // Remove the selected node name from the words that get highlighted
@@ -1522,11 +1462,12 @@ define([
              * Hide the currently selected nodes/edges from the graph. The data
              * will still be in the database.
              */
-            $scope.removeSelected = function (){
+            function remove(nodes)
+            {
 
                 //playRoutes.controllers.NetworkController.deleteEntityById(selectedNodes[0].id).get().then(function(result){alert(result)});
 
-				selectedNodes.forEach(
+				nodes.forEach(
 					function(n,i,a){
 
 						d3.select("#node_" + n.id).remove();
@@ -1553,6 +1494,8 @@ define([
              */
             function merge(focalNode, nodes)
             {
+                focalNode = getNodeById(Number(focalNode));
+
 				var entityids = [];
 				var freqsum = 0
 
@@ -1562,6 +1505,8 @@ define([
 					{
 						if(v.id != focalNode.id)
 						{
+						    //console.log(v);
+						    //console.log(focalNode);
 							entityids.push(v.id);
 							d3.select("#node_" + v.id).remove();
 							freqsum = freqsum + v.freq;
@@ -1576,10 +1521,6 @@ define([
 				edges.forEach(
 					function(v,i,a)
 					{
-						if(v.target.id == focalNode.id || v.source.id == focalNode.id)
-						{
-							console.log(v)
-						}
 
 						//if we have on both sides a node we want to delete or the focal node
 						if(
@@ -1592,8 +1533,8 @@ define([
 							d3.select("#edgepath_" + v.id).remove();
                            	d3.select("#edgeline_" + v.id).remove();
                             d3.select("#edgelabel_" + v.id).remove();
-                            console.log("both sides")
-                            console.log(v)
+                            //console.log("both sides")
+                            //console.log(v)
 
                             edges.splice(i, 1)
 						}
@@ -1616,8 +1557,6 @@ define([
 									}
 								}
 							);
-
-							console.log(existingEdge);
 
 							//if we havent found a node
 							if(existingEdge.length == 0)
@@ -1658,21 +1597,39 @@ define([
 				);*/
             }
 
+            function sendMerged(focalNode, nodes)
+            {
 
+                focalNode = getNodeById(Number(focalNode));
 
-            /**
-             * gives the user the option to annotate selected nodes/edges
-             */
-            /*$scope.annotateSelected = function (){
-                var annotation = $('#annotateInput').val();
+                console.log(focalNode);
+                console.log(nodes);
 
-                for(var i=0; i<selectedNodes.length; i++)
-                {
-                	addAnnotation(selectedNodes[i], annotation);
-                }
+                var entityids = [];
 
-                //alert("TODO: annotate selected --> " + annotation);
-            }*/
+                //save the ids and delete the merged nodes
+                nodes.forEach(
+                	function(v,i,a)
+                	{
+                		if(v.id != focalNode.id)
+                		{
+                			entityids.push(v.id);
+                		}
+                	}
+                );
+
+                playRoutes.controllers.NetworkController.mergeEntitiesById(focalNode.id,entityids).get().then(
+                	function(result)
+                	{
+                	    //console.log(result)
+                	    //console.log("merge returned")
+                		if(result.result === false)
+                		{
+                		    alert("Error while merging Entities")
+                		}
+                	}
+                );
+            }
 
             /**
              * gives the user the option to edit the name
@@ -1701,6 +1658,26 @@ define([
             }
 
             /**
+             *  send to the server a message, that the name of the node
+             *  was edited
+             *
+             *  @param node
+             *      the node with the edited name
+             */
+            function sendEditedName(node)
+            {
+                playRoutes.controllers.NetworkController.changeEntityNameById(node.id, node.name).get().then(
+                    function(result)
+                    {
+                        if(result.result == false)
+                        {
+                            alert("Error while editing Entity")
+                        }
+                    }
+                );
+            }
+
+            /**
              *	edit the type of the node
              *
              *	@param node the type of the node
@@ -1716,6 +1693,26 @@ define([
             	node.type = type;
             	d3.select("#nodecircle_" + node.id)
             		.style("fill", function(d){return color(d.type)});
+            }
+
+            /**
+             *  send a message to the server that the name of the entity
+             *  was edited
+             *
+             *  @param node
+             *      the node
+             */
+            function sendEditedType(node)
+            {
+                playRoutes.controllers.NetworkController.changeEntityTypeById(node.id, node.type).get().then(
+                    function(result)
+                    {
+                        if(result.result == false)
+                        {
+                            alert("Error while editing Entity")
+                        }
+                    }
+                )
             }
 
             /*
