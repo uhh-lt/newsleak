@@ -96,7 +96,7 @@ define([
                     };
 
                     $scope.removeItem = function(filter) {
-                        $scope.factory.observer.removeItem(filter.id, filter.type);
+                        $scope.observer.removeItem(filter.id, filter.type);
                     };
 
                     $scope.hidePopover = function(id) {
