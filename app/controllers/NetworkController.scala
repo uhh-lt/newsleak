@@ -21,7 +21,10 @@ import javax.inject.Inject
 import model.EntityType
 import play.api.libs.json.{ JsArray, JsObject, Json, Writes }
 import play.api.mvc.{ Action, Controller }
+
+// scalastyle:off
 import scalikejdbc._
+// scalastyle:on
 
 /*
     This class encapsulates all functionality for the

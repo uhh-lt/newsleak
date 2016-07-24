@@ -22,8 +22,11 @@ import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
 import model.{ Entity, EntityType }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller, Results }
-import scalikejdbc._
 import util.TimeRangeParser
+
+// scalastyle:off
+import scalikejdbc._
+// scalastyle:on
 
 /**
  * Created by flo on 6/20/2016.

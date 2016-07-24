@@ -29,8 +29,8 @@ import util.TimeRangeParser
  */
 class MetadataController @Inject extends Controller {
   // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
-  implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[Tuple2[A, B]] = new Writes[Tuple2[A, B]] {
-    def writes(tuple: Tuple2[A, B]) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2)))
+  implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[(A, B)] = new Writes[(A, B)] {
+    def writes(tuple: (A, B)) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2)))
   }
 
   private val defaultExcludeTypes = List("Subject", "Header", "ReferenceId", "References", "Keywords", "Entities", "Created", "EventTimes")

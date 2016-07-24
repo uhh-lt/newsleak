@@ -22,8 +22,11 @@ import model.Document
 import model.faceted.search.{ FacetedSearch, Facets }
 import play.api.libs.json.{ JsArray, Json, Writes }
 import play.api.mvc.{ Action, Controller }
-import scalikejdbc._
 import util.TimeRangeParser
+
+// scalastyle:off
+import scalikejdbc._
+// scalastyle:on
 
 /*
     This class provides operations pertaining documents.
