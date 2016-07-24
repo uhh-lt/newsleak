@@ -29,8 +29,8 @@ import util.TimeRangeParser
  */
 class MetadataController @Inject extends Controller {
   // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
-  implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[Tuple2[A, B]] = new Writes[Tuple2[A, B]] {
-    def writes(tuple: Tuple2[A, B]) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2)))
+  implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[(A, B)] = new Writes[(A, B)] {
+    def writes(tuple: (A, B)) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2)))
   }
 
   private val defaultExcludeTypes = List("Subject", "Header", "ReferenceId", "References", "Keywords", "Entities", "Created", "EventTimes")
@@ -84,11 +84,19 @@ class MetadataController @Inject extends Controller {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     val agg = FacetedSearch.aggregate(facets, key, defaultFetchSize, instances)
-    val res = Json.obj(key -> agg.buckets.map {
-      case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
-      case _ => Json.obj()
-    })
-    Results.Ok(Json.toJson(res)).as("application/json")
+    if (instances.isEmpty) {
+      val res = Json.obj(key -> agg.buckets.map {
+        case MetaDataBucket(metaKey, count) => Json.obj("key" -> metaKey, "count" -> count)
+        case _ => Json.obj()
+      })
+      Results.Ok(Json.toJson(res)).as("application/json")
+    } else {
+      val res = instances.zip(instances.map(agg.buckets.map {
+        case MetaDataBucket(metaKey, count) => metaKey -> count
+        case _ => "" -> 0.0
+      }.toMap)).map(x => Json.obj("key" -> x._1, "count" -> x._2.asInstanceOf[Number].longValue()))
+      Results.Ok(Json.obj(key -> res)).as("application/json")
+    }
   }
 
   /**

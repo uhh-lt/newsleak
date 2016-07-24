@@ -33,6 +33,7 @@ define([
     './components/network/ConfirmModalController',
     './components/metadata/MetadataController',
     './components/filter/FilterController',
+    './components/sources/SearchController',
     './components/history/HistoryController',
     './components/map/MapController',
     './components/chart/ChartController',
@@ -58,7 +59,7 @@ define([
             'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
             'myApp.network', 'myApp.metadata', 'myApp.map', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
             'myApp.tagselectfactory', 'myApp.filterfactory','myApp.metafactory', 'myApp.toolfactory',
-            'myApp.chart', 'myApp.chartconfig'
+            'myApp.chart', 'myApp.chartconfig', 'myApp.search'
         ]
     );
 
@@ -104,6 +105,10 @@ define([
                 'history': {
                     templateUrl: 'assets/partials/history.html',
                     controller: 'HistoryController'
+                },
+                'search' : {
+                    templateUrl: 'assets/partials/search.html',
+                    controller: 'SearchController'
                 }
             }
         });

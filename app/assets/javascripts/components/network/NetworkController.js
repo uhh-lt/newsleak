@@ -1712,6 +1712,26 @@ define([
 
             $scope.getEntities();
             $scope.observer.registerObserverCallback($scope.getEntities);
+            /**
+             *  send a message to the server that the name of the entity
+             *  was edited
+             *
+             *  @param node
+             *      the node
+             */
+            function sendEditedType(node)
+            {
+                playRoutes.controllers.NetworkController.changeEntityTypeById(node.id, node.type).get().then(
+                    function(result)
+                    {
+                        if(result.result == false)
+                        {
+                            alert("Error while editing Entity")
+                        }
+                    }
+                )
+            }
+
         }
     ]);
 

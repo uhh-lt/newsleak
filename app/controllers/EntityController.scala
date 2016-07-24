@@ -22,8 +22,11 @@ import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
 import model.{ Entity, EntityType }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller, Results }
-import scalikejdbc._
 import util.TimeRangeParser
+
+// scalastyle:off
+import scalikejdbc._
+// scalastyle:on
 
 /**
  * Created by flo on 6/20/2016.
@@ -63,31 +66,50 @@ class EntityController @Inject extends Controller {
    * @param timeRange string of a time range readable for [[TimeRangeParser]]
    * @return list of matching entity id's and their overall frequency as well as document count for the applied filters
    */
-  def getEntities(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
+  def getEntities(
+    fullText: Option[String],
+    generic: Map[String, List[String]],
+    entities: List[Long],
+    timeRange: String,
+    filter: List[Long]
+  ) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    val entitiesRes = FacetedSearch.aggregateEntities(facets, defaultFetchSize, List()).buckets.map {
+    var size = defaultFetchSize
+    if (filter.nonEmpty) size = filter.length
+    val entitiesRes = FacetedSearch.aggregateEntities(facets, size, filter).buckets.map {
       case NodeBucket(id, count) => (id, count)
       case _ => (0, 0)
     }
     var result: List[JsObject] = List()
-    if (entitiesRes.nonEmpty) {
-      result =
-        sql"""SELECT * FROM entity
+    val sqlResult =
+      sql"""SELECT * FROM entity
           WHERE id IN (${entitiesRes.map(_._1)}) AND NOT isblacklisted
           ORDER BY frequency DESC LIMIT 50"""
-          .map(Entity(_))
-          .list // single, list, traversable
-          .apply()
-          .map(x => Json.obj(
-            "id" -> x.id,
-            "name" -> x.name,
-            "type" -> x.entityType,
-            "freq" -> x.frequency,
-            "docCount" -> entitiesRes.find(_._1 == x.id).get._2.asInstanceOf[Number].longValue
-          ))
+        .map(x => x.long("id") -> Entity(x))
+        .list // single, list, traversable
+        .apply()
+    if (filter.nonEmpty) {
+      val res = filter
+        .zip(filter.map(sqlResult.toMap))
+        .map(x => Json.obj(
+          "id" -> x._2.id,
+          "name" -> x._2.name,
+          "type" -> x._2.entityType,
+          "freq" -> x._2.frequency,
+          "docCount" -> entitiesRes.find(_._1 == x._2.id).get._2.asInstanceOf[Number].longValue
+        ))
+      Results.Ok(Json.toJson(res)).as("application/json")
+    } else {
+      val res = sqlResult.map(x => Json.obj(
+        "id" -> x._2.id,
+        "name" -> x._2.name,
+        "type" -> x._2.entityType,
+        "freq" -> x._2.frequency,
+        "docCount" -> entitiesRes.find(_._1 == x._2.id).get._2.asInstanceOf[Number].longValue
+      ))
+      Results.Ok(Json.toJson(res.sortBy(-_.value("docCount").as[Long]))).as("application/json")
     }
-    Results.Ok(Json.toJson(result.sortBy(-_.value("docCount").as[Long]))).as("application/json")
   }
 
   /**

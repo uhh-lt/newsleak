@@ -16,28 +16,7 @@
 
 <div style="padding: 15px;" id="documents-view">
 <p style="font-size:16px">Document Overview</p>
-
-    <div id="search-group">
-        <div class="input-group">
-            <span class="input-group-addon">Search:</span>
-            <input ng-model="searchQuery" class="form-control" placeholder="Add filter" ng-keyup="autocomplete(searchQuery)" ng-blur="resetAutoComplete()"/>
-
-        </div>
-
-    </div>
-    <div id="autocomplete" class="list-group">
-        <button class="list-group-item" ng-repeat="data in searchTags" ng-click="addFilter(data)">
-            <div class="search-item-container" title="{{data.type}}">
-                <svg width="32" height="32">
-                    <g transform="translate(16,16)">
-                        <circle r="15" id="" ng-style="{'fill': '{{data.color}}'};" style="opacity: 1; stroke-width: 1; stroke: #000;" class=""></circle>
-                    </g>
-                </svg>
-                <span>{{data.text}}</span></div>
-        </button>
-    </div>
-
-    <div class="btn btn-default load-more-button" ng-show="sourceShared.showReloadButton == 1" ng-click="retrieveNextDocSet()">
+    <div class="btn btn-default load-more-button" ng-show="false" ng-click="retrieveNextDocSet()">
         Load more documents
         <i class="glyphicon glyphicon-repeat"></i>
     </div>

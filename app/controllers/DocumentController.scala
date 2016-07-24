@@ -22,8 +22,11 @@ import model.Document
 import model.faceted.search.{ FacetedSearch, Facets }
 import play.api.libs.json.{ JsArray, Json, Writes }
 import play.api.mvc.{ Action, Controller }
-import scalikejdbc._
 import util.TimeRangeParser
+
+// scalastyle:off
+import scalikejdbc._
+// scalastyle:on
 
 /*
     This class provides operations pertaining documents.
@@ -77,7 +80,7 @@ class DocumentController @Inject extends Controller {
     var rs: List[(Long, String)] = List()
     if (docIds.nonEmpty) {
       rs =
-        sql"""SELECT DISTINCT m.docid id, m.value
+        sql"""SELECT m.docid id, m.value
         FROM metadata m
         WHERE m.key = ${metadataKey} AND m.docid IN (${docIds})"""
           .map(rs => (rs.long("id"), rs.string("value")))
