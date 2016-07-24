@@ -75,7 +75,6 @@ class EntityController @Inject extends Controller {
   ) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    println(filter)
     var size = defaultFetchSize
     if (filter.nonEmpty) size = filter.length
     val entitiesRes = FacetedSearch.aggregateEntities(facets, size, filter).buckets.map {
