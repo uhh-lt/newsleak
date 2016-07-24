@@ -53,7 +53,7 @@
 
         <div id="wrapper" layout="column" ng-cloak layout-fill>
             <header><div ui-view="header"></div></header>
-            <div id="history" resizable r-directions="['bottom']" r-flex="true"><div ui-view="history" style="overflow-y: hidden;"></div></div>
+            <div id="history" resizable r-directions="['bottom']" r-flex="true"><div ui-view="history"></div></div>
             <div id="flex-body" flex="none" class="flex-row" layout="row"  resizable r-directions="['bottom']">
                 <nav id="document" flex="initial" resizable r-directions="['right']" r-flex="true">
                     <div ui-view="documentlist"></div>
@@ -80,8 +80,8 @@
                 </main>
 
                 <aside id="right-side" flex="" layout="column">
-                    <div id="filter-view" ui-view="filter" flex="none" resizable r-directions="['bottom']" r-flex="true"></div>
-                    <div id="metadata-view" ui-view="metadata" flex></div>
+                    <!--<div id="filter-view" ui-view="filter" flex="none" resizable r-directions="['bottom']" r-flex="true"></div>-->
+                    <div id="metadata-view" ui-view="metadata"></div>
                 </aside>
 
             </div>
