@@ -250,9 +250,8 @@ main {
 #document, #right-side {
     width: 25%;
 }
-#metadata-view, #filter-view {
-    /* mocked height for better view to metadata */
-    height: 20%;
+#metadata-view {
+    height: 100%;
 }
 footer {
     height: 200px;
@@ -362,42 +361,12 @@ footer > div, footer > div #chartBarchart {
     Document List
     ======================================
 */
-#documents-view .suggestion-item {
-    border-bottom: 1px solid #d7d7d7;
-}
-#documents-view #search-group {
 
-}
-
-#documents-view #autocomplete {
-    height: calc(100% - 104px);
-    width: calc(100% - 30px);
-    overflow: auto;
-    position: absolute;
-    top: 81px;
-    border-bottom: 1px solid #ddd;
-    z-index: -1;
-}
-
-#documents-view #autocomplete .list-group-item {
-    padding: 5px 10px;
-}
-#documents-view .search-item-container{
-    height: 32px;
-}
-#documents-view .search-item-container > span {
-    position: relative;
-    top: -8px;
-    left: 5px;
-}
-.autocomplete-left {
-	float: left;
-}
 #document div#documents-view, #document > div:first-child {
     height: 100%;
 }
 #document div#documents-view div.docs-ul {
-    height: calc(100% - 107px);
+    height: calc(100% - 38px);
     overflow: auto;
 }
 
@@ -510,6 +479,45 @@ footer > div, footer > div #chartBarchart {
     .nav-tabs>li>a {
         font-size: 10px;
     }
+}
+/*
+    ======================================
+    Search
+    ======================================
+*/
+#search-bar .suggestion-item {
+    border-bottom: 1px solid #d7d7d7;
+}
+#search-bar #search-scroll {
+
+}
+#search-bar #search-group {
+
+}
+
+#search-bar #autocomplete {
+    height: 500px;
+    min-width: 348px;
+    width: 24%;
+    overflow: auto;
+    position: absolute;
+    border-bottom: 1px solid #ddd;
+    z-index: -1;
+}
+
+#search-bar #autocomplete .list-group-item {
+    padding: 5px 10px;
+}
+#search-bar .search-item-container{
+    height: 32px;
+}
+#search-bar .search-item-container > span {
+    position: relative;
+    top: -8px;
+    left: 5px;
+}
+.autocomplete-left {
+    float: left;
 }
 /*
     ======================================
