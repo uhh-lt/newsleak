@@ -526,20 +526,24 @@ footer > div, footer > div #chartBarchart {
 */
 ul#historyList {
     white-space : nowrap;
+    display: inline-block;
+    padding: 3px 10px;
+    margin: 0 0 0 10px;
 }
 #historyList > li {
     background-color: #2759AC;
     cursor: pointer;
     white-space: nowrap;
-}
-#historyList > li {
+    /*overflow: hidden;*/
+    display: inline-block;
+    padding: 7px 10px;
     color: white;
     transition: width 0.3s linear;
     width: 47px;
 }
 #historyList > li:hover {
     transition: width 0.2s linear;
-    width: 200px;
+    width: 150px;
 }
 #historyList li span {
     margin-left: 5px;
@@ -553,6 +557,10 @@ ul#historyList {
 }
 #historyList li i.action-icon {
     font-size: 8px;
+}
+#historyList .popover-title {
+    color: white;
+    background-color: #2759AC;
 }
 
 /*

@@ -11,16 +11,19 @@
 			<button ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" type="button" class="btn btn-primary" ng-click="removeItem(obj)">Remove</button>
 		</div>
 	</script>
-	<ul id="historyList" class="list-group" style="display: inline-block; padding: 3px 10px; margin: 0 0 0 10px;">
+	<div class="alert alert-info" ng-show="history.length == 0" style="display: inline-block">
+		<p>No elements in history.</p>
+	</div>
+	<ul id="historyList" class="list-group">
 		<li
 				class="filterListItem list-group-item"
 				ng-repeat="obj in history"
 				ng-mouseleave="hidePopover(obj.id)"
-				style="display: inline-block; padding: 7px 10px;"
+				ng-mouseenter="showPopover(obj.id)"
 				uib-popover-template="'tooltip_tmpl'"
-				popover-title="{{obj.type}}"
+				popover-title="{{getTypeDescription(obj.type)}}"
 				popover-placement="bottom"
-				popover-trigger="mouseenter"
+				popover-trigger="none"
 				popover-is-open="factory.popover.isOpen[{{obj.id}}]">
 
 			<i class="glyphicon type-icon glyphicon-{{ getIcon(obj.type) }}" ng-class=""></i>

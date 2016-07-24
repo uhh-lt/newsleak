@@ -28,7 +28,6 @@ define([
 
     angular.module("myApp.history", ['play.routing', 'angularMoment', 'ngFileSaver', 'ui.bootstrap','ngAnimate'])
         .config(function($uibTooltipProvider) {
-            $uibTooltipProvider.setTriggers({'mouseenter': 'None'});
         })
         .factory('historyFactory', [
             function() {
@@ -45,6 +44,12 @@ define([
                         "edit": 'pencil',
                         "annotate": 'comment'
                     },
+                    typeDescriptions: {
+                      'entity': 'Entity Filter',
+                      'metadata': 'Metadata Filter',
+                      'time': 'Time Range',
+                      'annotate': 'Entity Annotated'
+                    },
                     actions: {
                         'added': 'plus',
                         'removed': 'minus',
@@ -53,7 +58,7 @@ define([
                     popover: {
                         template: 'tooltip_tmpl',
                         placement: 'bottom',
-                        trigger: 'mouseenter',
+                        trigger: 'None',
                         isOpen: []
                     }
                 }
@@ -106,6 +111,10 @@ define([
 
                     $scope.hideFunction = function(x) {
                         $scope.factory.popover.isOpen[x] = false;
+                    };
+
+                    $scope.getTypeDescription = function(x) {
+                        return $scope.factory.typeDescriptions[x];
                     }
                 }
             ]
