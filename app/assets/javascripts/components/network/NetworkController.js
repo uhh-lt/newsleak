@@ -126,6 +126,8 @@ define([
             var selectedEdges = new Array();
             var selectionColor = '#2A2AFF';
 
+            var loadingNodes = false;
+
             toolShareService.getSelectedNodes = function(){return selectedNodes;};
             toolShareService.getSelectedElementsText = selectedElementsText;
 
@@ -564,6 +566,7 @@ define([
                 var sliderEdgeMaxFreq   = toolShareService.sliderEdgeMaxFreq();
                 var leastOrMostFrequent = Number(toolShareService.freqSortingLeast);
 
+                loadingNodes = true;
                 playRoutes.controllers.NetworkController.getGraphData(leastOrMostFrequent, sliderValue, sliderEdgeMinFreq, sliderEdgeMaxFreq).get().then(function(response) {
                     var data = response.data;
 
@@ -583,7 +586,7 @@ define([
                     };
 
                     start();
-
+                    loadingNodes = false;
                 });
             }
 
@@ -1147,6 +1150,7 @@ define([
 
                 var leastOrMostFrequent = Number($scope.freqSorting.least);
                 // Get 4 neighbors (1 of each type).
+                loadingNodes = true;
                 playRoutes.controllers.NetworkController.getEgoNetworkData(leastOrMostFrequent, id, [1, 1, 1, 1], existingNodes).get().then(function(response) {
                     var data = response.data;
 
@@ -1198,7 +1202,11 @@ define([
                         });
                     });
 
+
+
                     start();
+
+                    loadingNodes = false;
                 });
             }
 
@@ -1208,6 +1216,7 @@ define([
             {
             	var leastOrMostFrequent = Number($scope.freqSorting.least);
                 // Get 8 neighbors (2 of each type).
+                loadingNodes = true;
                 playRoutes.controllers.NetworkController.getEgoNetworkData(leastOrMostFrequent, id, [2, 2, 2, 2], []).get().then(function(response) {
                 var data = response.data;
 
@@ -1257,6 +1266,7 @@ define([
 				});
 
 				start(callback);
+				loadingNodes = false;
             	});
         	}
 
@@ -1273,6 +1283,7 @@ define([
 
                     var leastOrMostFrequent = Number($scope.freqSorting.least);
                     // Get 8 neighbors (2 of each type).
+                    loadingNodes = true
                     playRoutes.controllers.NetworkController.getEgoNetworkData(leastOrMostFrequent, id, [2, 2, 2, 2], []).get().then(function(response) {
                         var data = response.data;
 
@@ -1318,6 +1329,8 @@ define([
                         });
 
                         start();
+
+                        loadingNodes = false;
                     });
                 }
             }
@@ -1365,96 +1378,6 @@ define([
              */
             $scope.toggleFreqSorting = function () {
                 getGraph();
-            }
-
-            $scope.editOpen = function()
-            {
-            	var modal = $uibModal.open(
-            		{
-            			animation: true,
-            			templateUrl: 'editModal',
-            			controller: 'EditModalController',
-            			size: 'sm',
-            			resolve:
-            			{
-            				text: function(){return $scope.selectedElementsText();},
-            				type: function(){return selectedNodes[0].type;},
-            				node: function(){return selectedNodes[0];}
-            			}
-            		}
-            	);
-
-            	modal.result.then(function(result)
-            	{
-					if(result.node.name != result.text)
-            		playRoutes.controllers.NetworkController.changeEntityNameById(result.node.id, result.text).get().then(
-                    	function(result)
-                    	{
-                    		if(result.result == false)
-                    		{
-                    			alert("Error while editing Entity")
-                    		}
-                    	}
-                    );
-
-					if(result.node.type != result.type)
-                    playRoutes.controllers.NetworkController.changeEntityTypeById(result.node.id, result.type).get().then(
-                       	function(result)
-                       	{
-                       		if(result.result == false)
-                       		{
-                       			alert("Error while editing Entity")
-                      		}
-                       	}
-                    );
-
-                    editType(result.node, result.type);
-                    editName(result.node, result.text);
-            	});
-            }
-
-            $scope.annotateOpen = function()
-            {
-              	var modal = $uibModal.open(
-                	{
-                		animation: true,
-                		templateUrl: 'annotateModal',
-                		controller: 'TextModalController',
-                		size: 'lg',
-                		resolve:
-                		{
-                			text: function(){return ""},
-                			node: function(){return selectedNodes[0];}
-                		}
-                	}
-                );
-
-                modal.result.then(function(result)
-                {
-                	addAnnotation(result.node, result.text);
-                });
-            }
-
-            $scope.mergeOpen = function()
-            {
-            	var modal = $uibModal.open(
-                	{
-                		animation: true,
-                		templateUrl: 'mergeModal',
-                		controller: 'MergeModalController',
-                		size: 'lg',
-                		resolve:
-                		{
-                			selectedNodes: function(){return selectedNodes;}
-                		}
-                	}
-                );
-
-                modal.result.then(function(result)
-                {
-                	var focalNode = getNodeById(Number(result.focalNode));
-                	merge(focalNode, result.nodes);
-                });
             }
 
 
@@ -1751,8 +1674,37 @@ define([
                 } else {
                     facets = [{'key':'dummy','data': []}];
                 }
+
+                while(loadingNodes)
+                {
+                }
+
+                console.log(entities);
+                console.log(facets);
+                console.log(fulltext);
+
                 playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange()).get().then(function(response) {
-                    //TODO: do what you want with 50 most frequent entities
+
+                    response.data.forEach(
+                        function(v)
+                        {
+                            var node = getNodeById(Number(v.id));
+
+                            //if the node does not
+                            if(node == undefined)
+                            {
+                                return;
+                            }
+
+                            if(node.docCount == undefined)
+                            {
+                                node.docCount = v.docCount;
+                            }
+
+                            setBorderValue(node, v.docCount/node.docCount);
+                        }
+                    );
+
                     //console.log(response.data);
 
                 });
