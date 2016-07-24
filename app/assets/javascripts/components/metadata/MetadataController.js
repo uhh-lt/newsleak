@@ -78,6 +78,67 @@ define([
                     };
 
                     $scope.updateEntityCharts = function () {
+                        var fulltext = undefined;
+                        var entities = [];
+                        angular.forEach($scope.entityFilters, function(item) {
+                            entities.push(item.data.id);
+                        });
+                        var facets = [];
+                        if($scope.metadataFilters.length > 0) {
+                            angular.forEach($scope.metadataFilters, function(metaType) {
+                                if($scope.metadataFilters[metaType].length > 0) {
+                                    var keys = [];
+                                    angular.forEach($scope.metadataFilters[metaType], function(x) {
+                                        keys.push(x.data.name);
+                                    });
+                                    facets.push({key: metaType, data: keys});
+                                }
+                            });
+                            if(facets == 0) facets = [{'key':'dummy','data': []}];
+
+                        } else {
+                            facets = [{'key':'dummy','data': []}];
+                        }
+                        angular.forEach($scope.entityTypes, function(type) {
+                            var instances = $scope.ids[type];
+                            playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),instances).get().then(
+                                function(result) {
+                                    //result.data[type].forEach(function(x) {
+                                    //    console.log(x.key + ": " + x.count);
+                                    //});
+                                    var data = [];
+                                    angular.forEach(result.data, function(x) {
+                                        data.push(x.docCount);
+                                    });
+                                    var newBase = [];
+                                    $.each($scope.chartConfigs[type].series[0].data, function(index, value) {
+                                        if(data[index] == undefined)
+                                            newBase.push($scope.chartConfigs[type].series[0].data[index]);
+                                        else
+                                            newBase.push($scope.chartConfigs[type].series[0].data[index] - data[index]);
+                                    });
+                                    //$scope.metaCharts[type].series[0].setData(newBase);
+                                    if($scope.metaCharts[type].series[1] == undefined) {
+                                        $scope.metaCharts[type].addSeries({
+                                            name: 'Filter',
+                                            data: data,
+                                            color: 'black',
+                                            cursor: 'pointer',
+                                            point: {
+                                                events: {
+                                                    click: function () {
+                                                        $scope.clickedItem(this, 'entity', type);
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    } else {
+                                        $scope.metaCharts[type].series[1].setData(data);
+                                    }
+                                }
+                            );
+                        });
+                        //TODO: on adding fulltext filter doc count grows
 
                     };
 
@@ -121,7 +182,7 @@ define([
                                         else
                                             newBase.push($scope.chartConfigs[type].series[0].data[index] - data[index]);
                                     });
-                                    $scope.metaCharts[type].series[0].setData(newBase);
+                                    //$scope.metaCharts[type].series[0].setData(newBase);
                                     if($scope.metaCharts[type].series[1] == undefined) {
                                         $scope.metaCharts[type].addSeries({
                                             name: 'Filter',

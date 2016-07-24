@@ -82,23 +82,34 @@ class EntityController @Inject extends Controller {
       case _ => (0, 0)
     }
     var result: List[JsObject] = List()
-    if (entitiesRes.nonEmpty) {
-      result =
-        sql"""SELECT * FROM entity
+    val sqlResult =
+      sql"""SELECT * FROM entity
           WHERE id IN (${entitiesRes.map(_._1)}) AND NOT isblacklisted
           ORDER BY frequency DESC LIMIT 50"""
-          .map(Entity(_))
-          .list // single, list, traversable
-          .apply()
-          .map(x => Json.obj(
-            "id" -> x.id,
-            "name" -> x.name,
-            "type" -> x.entityType,
-            "freq" -> x.frequency,
-            "docCount" -> entitiesRes.find(_._1 == x.id).get._2.asInstanceOf[Number].longValue
-          ))
+        .map(x => x.long("id") -> Entity(x))
+        .list // single, list, traversable
+        .apply()
+    if (filter.nonEmpty) {
+      val res = filter
+        .zip(filter.map(sqlResult.toMap))
+        .map(x => Json.obj(
+          "id" -> x._2.id,
+          "name" -> x._2.name,
+          "type" -> x._2.entityType,
+          "freq" -> x._2.frequency,
+          "docCount" -> entitiesRes.find(_._1 == x._2.id).get._2.asInstanceOf[Number].longValue
+        ))
+      Results.Ok(Json.toJson(res)).as("application/json")
+    } else {
+      val res = sqlResult.map(x => Json.obj(
+        "id" -> x._2.id,
+        "name" -> x._2.name,
+        "type" -> x._2.entityType,
+        "freq" -> x._2.frequency,
+        "docCount" -> entitiesRes.find(_._1 == x._2.id).get._2.asInstanceOf[Number].longValue
+      ))
+      Results.Ok(Json.toJson(res.sortBy(-_.value("docCount").as[Long]))).as("application/json")
     }
-    Results.Ok(Json.toJson(result.sortBy(-_.value("docCount").as[Long]))).as("application/json")
   }
 
   /**
