@@ -519,17 +519,17 @@ footer > div, footer > div #chartBarchart {
 ul#historyList {
     white-space : nowrap;
 }
-#historyList li {
+#historyList > li {
     background-color: #2759AC;
     cursor: pointer;
     white-space: nowrap;
 }
-#historyList li {
+#historyList > li {
     color: white;
     transition: width 0.3s linear;
     width: 47px;
 }
-#historyList li:hover {
+#historyList > li:hover {
     transition: width 0.2s linear;
     width: 200px;
 }
