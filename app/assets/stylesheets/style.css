@@ -156,6 +156,10 @@ div.tooltip {
     z-index: 1000;
 }
 
+.btn-block-dropdown {
+    display: block;
+}
+
 .legend-heading {
     font-weight: bold;
     text-decoration: underline;

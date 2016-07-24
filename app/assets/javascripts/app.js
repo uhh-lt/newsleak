@@ -19,15 +19,18 @@ define([
     'angularMoment',
     './factory/chart/ChartFactory',
     './factory/filter/FilterFactory',
+    './factory/network/ToolFactory',
     './factory/metadata/MetaFactory',
     './factory/source/SourceFactory',
     './factory/source/HighlightFactory',
     './factory/source/TagSelectFactory',
     './components/sources/SourceController',
     './components/network/NetworkController',
+    './components/network/ToolController',
     './components/network/TextModalController',
     './components/network/MergeModalController',
     './components/network/EditModalController',
+    './components/network/ConfirmModalController',
     './components/metadata/MetadataController',
     './components/filter/FilterController',
     './components/sources/SearchController',
@@ -52,9 +55,10 @@ define([
         [
             'ui.layout', 'ui.router', 'ui.bootstrap', 'ngTagsInput', 'play.routing','angularResizable','ngMaterial',
             'angularMoment', 'underscore', 'myApp.data', 'myApp.observer', 'myApp.util', 'myApp.filter', 'myApp.history',
-            'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal',
+            'myApp.tools',
+            'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
             'myApp.network', 'myApp.metadata', 'myApp.map', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
-            'myApp.tagselectfactory', 'myApp.filterfactory','myApp.metafactory',
+            'myApp.tagselectfactory', 'myApp.filterfactory','myApp.metafactory', 'myApp.toolfactory',
             'myApp.chart', 'myApp.chartconfig', 'myApp.search'
         ]
     );
@@ -73,6 +77,10 @@ define([
                 'network': {
                     templateUrl: 'assets/partials/network.html',
                     controller: 'NetworkController'
+                },
+                'tools': {
+                    templateUrl: 'assets/partials/tools.html',
+                    controller: 'ToolController'
                 },
                 'source': {
                     templateUrl: 'assets/partials/source.html',

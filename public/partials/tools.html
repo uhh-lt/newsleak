@@ -14,52 +14,277 @@
   limitations under the License.
  -->
 
-<md-content layout="row">
-  <div layout-align="right" layout="column">
-    <md-button class="md-primary md-fab" ng-click="tool.merge = !tool.merge">
-      <md-tooltip>
-        Merge Tool
-      </md-tooltip>
-      <md-icon md-svg-src="assets/images/swap.svg"></md-icon>
-    </md-button>
-
-    <!--<div flex></div>
-    <md-button class="md-primary md-fab" ng-click="">
-    </md-button>
-  </div>
-
-  <div layout-align="right" layout="column">
-    <md-button class="md-primary md-fab" ng-click="">
-    </md-button>
-    
-    <div flex></div>
-    <md-button class="md-primary md-fab" ng-click="">
-    </md-button>
-  </div>-->
-</md-content>
-
-<md-content class="md-padding" ng-if="tool.merge">
-  <md-list>
-    <md-list class="fixedRows">
-    <md-subheader class="md-no-sticky">Selected</md-subheader>
-    <md-list-item class="md-2-line contact-item" ng-repeat="entity in selected">
-      <img ng-src="{{ entity.image }}" class="md-avatar" alt="{{ entity.name}} " />
-      <div class="md-list-item-text compact">
-        <h3>{{ entity.name }}</h3>
-        <p>{{ entity.name }}</p>
+<div class="container-fluid" ng-if="!toolShareService.isViewLoading()">
+  <div class="row">
+    <div id="demo" class="collapse col-md-10">
+      <div class="slider-container">
+        <input ng-model="sliderCountriesCitiesAmount.value" type="text"
+               slider options="sliderCountriesCitiesAmount.options"/>
       </div>
-    </md-list-item>
-  </md-list>
-  <form ng-submit="" name="mergeForm">
-      <md-input-container>
-        <label>Merge to</label>
-        <md-select name="mergeto" ng-model="mergeto" required>
-          <md-option value="{{ entity.name }}" ng-repeat="entity in selected">{{ entity.name }}</md-option>
-        </md-select>
-        <div ng-messages="mergeForm.mergeto.$error">
-            <div ng-message="required">Required</div>
+      <div class="slider-container">
+        <input ng-model="sliderOrganizationsAmount.value" type="text"
+               slider options="sliderOrganizationsAmount.options"/>
+      </div>
+      <div class="slider-container">
+        <input ng-model="sliderPersonsAmount.value" type="text"
+               slider options="sliderPersonsAmount.options"/>
+      </div>
+      <div class="slider-container">
+        <input ng-model="sliderMiscellaneousAmount.value" type="text"
+               slider options="sliderMiscellaneousAmount.options"/>
+      </div>
+
+      <div class="slider-container">
+        <input ng-model="sliderEdgeFrequency.value" type="text" slider options="sliderEdgeFrequency.options"/>
+      </div>
+      <toggle-switch
+              class="toggle-switch"
+              ng-model="toolShareService.freqSortingLeast"
+              on-label="Least"
+              off-label="Most"
+              ng-click="toolShareService.updateGraph()"
+      >
+
+      </toggle-switch> frequent entities / relations
+
+    </div>
+
+    <!-- Show sliders -->
+    <div class="col-md-10">
+      <div class="btn-group">
+        <div class="btn-group btn-block-dropdown">
+          <button
+                  type="button"
+                  class="btn btn-default dropdown-toggle"
+                  data-toggle="dropdown"
+                  aria-hashpopup="true"
+                  aria-expanded="false"
+          >
+            Edit
+            <span class="caret"></span>
+          </button>
+          <div class="dropdown-menu dropdown-button-menu">
+            <div class="btn btn-block btn-group-vertical dropdown-button-menu">
+
+              <button type="button" id="AnnotateButton" class="btn btn-small btn-primary btn-block-dropdown" ng-show="!isViewLoading" ng-disabled="toolShareService.getSelectedNodes().length != 1"
+                      ng-click="annotateOpen()" title="Select one node or edge and click on this button for annotating the selected node or edge.">
+                <i class="glyphicon glyphicon-comment"></i>
+                Annotate
+              </button>
+              <button type="button" id="EditButton" class="btn btn-small btn-primary btn-block-dropdown" ng-show="!isViewLoading" ng-disabled="toolShareService.getSelectedNodes().length != 1"
+                      ng-click="editOpen()" title="Select one node or edge and click on this button for editing the selected node or edge.">
+                <i class="glyphicon glyphicon-pencil"></i>
+                Edit
+              </button>
+              <button type="button" id="MergeButton" class="btn btn-small btn-primary btn-block-dropdown" ng-show="!isViewLoading" ng-disabled="toolShareService.getSelectedNodes().length < 2"
+                      ng-click="mergeOpen()" title="Select at least two nodes and click on this button to merge the selected nodes into a single node.">
+                <i class="glyphicon glyphicon-resize-small"></i>
+                Merge
+              </button>
+              <button type="button" id="DeleteButton" class="btn btn-small btn-primary btn-block-dropdown" ng-show="!isViewLoading" ng-disabled="toolShareService.getSelectedNodes().length == 0"
+                      ng-click="deleteOpen()" title="Click on this button to delete all the selected nodes and edges.">
+                <i class="glyphicon glyphicon-remove"></i>
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
-      </md-input-container>
-    <md-button class="md-raised" ng-click="merge()" type="submit">Merge</md-button>
-  </form>
-</md-content>
+        <div class="btn-group">
+          <button
+                  type="button"
+                  class="btn btn-default dropdown-toggle"
+                  data-toggle="dropdown"
+                  aria-hashpopup="true"
+                  aria-expanded="false"
+          >
+            Navigate
+            <span class="caret"></span>
+          </button>
+          <div class="dropdown-menu dropdown-button-menu">
+            <div class="btn-group-vertical">
+              <button type="button" id="EgoNetworkButton" class="btn btn-small btn-primary" ng-show="!isViewLoading" ng-disabled="toolShareService.getSelectedNodes().length != 1"
+                      ng-click="getEgoNetwork()" data-toggle="tooltip" title="Select a single node and click on this button for showing the ego network (the most frequent relations) of the selected node.">
+                <i class="glyphicon glyphicon-zoom-in"></i>
+                Zoom (Ego Network)
+              </button>
+              <button type="button" id="HideButton" class="btn btn-small btn-primary" ng-show="!isViewLoading" ng-disabled="toolShareService.getSelectedNodes().length != 1"
+                      ng-click="hide()" data-toggle="tooltip" title="Click on this button to hide all the selected nodes and edges. They won't be deleted.">
+                <i class="glyphicon glyphicon-eye-close"></i>
+                Hide
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#demo">Settings</button>
+        </div>
+
+        <div class="btn-group">
+          <button id="btn-show-legend" class="btn btn-primary pull-right">
+            <i class="glyphicon glyphicon-chevron-down"></i> Show Legend
+          </button>
+          <!-- The content of the popover -->
+          <div id="legend-content">
+            <div class="legend-actual-content">
+              <p>
+              <div class="legend-heading">Node color</div>
+              <div class="legend-color-box legend-color-box-person"></div>Persons<br>
+              <div class="legend-color-box legend-color-box-location"></div>Locations<br>
+              <div class="legend-color-box legend-color-box-organization"></div>Organizations<br>
+              <div class="legend-color-box legend-color-box-misc"></div>Miscellaneous<br>
+              </p>
+              <hr>
+              <p>The size of a node denotes it's frequency. Larger nodes are more frequent.</p>
+              <!-- graphical node radius legend -->
+              <svg style="display: block;margin: auto"
+                   width="200" ng-attr-height="{{zm.scale()*maxNodeRadius*2 + 55}}">
+                <g class="node">
+                  <circle ng-attr-cx="{{zm.scale()*maxNodeRadius+2}}"
+                          ng-attr-cy="{{zm.scale()*maxNodeRadius+2}}" ng-attr-r="{{zm.scale()*maxNodeRadius}}"
+                          fill="#666666"/>
+                  <circle ng-attr-cx="{{minNodeRadius*zm.scale()+2}}"
+                          ng-attr-cy="{{zm.scale()*maxNodeRadius+2}}" ng-attr-r="{{minNodeRadius*zm.scale()}}"
+                          fill="#a6a6a6"/>
+                  <text x="0" ng-attr-y="{{zm.scale()*maxNodeRadius*2 + 15}}" font-family="Helvetica Neue"
+                        font-size="11" fill="#666666">
+                    least frequently mentioned
+                  </text>
+                  <text x="0" ng-attr-y="{{zm.scale()*maxNodeRadius*2 + 25}}" font-family="Helvetica Neue"
+                        font-size="11" fill="#666666">
+                    (1 mention)
+                  </text>
+                  <text x="0" ng-attr-y="{{zm.scale()*maxNodeRadius*2 + 40}}" font-family="Helvetica Neue"
+                        font-size="11" fill="#0d0d0d">
+                    most frequently mentioned
+                  </text>
+                  <text x="0" ng-attr-y="{{zm.scale()*maxNodeRadius*2 + 50}}" font-family="Helvetica Neue"
+                        font-size="11" fill="#0d0d0d">
+                    ({{maxNodeFreq}} mentions)
+                  </text>
+                </g>
+              </svg>
+              <hr>
+              <p>The thickness of an edge between two nodes denotes the frequency of their co-occurrence in documents. Thicker edges are more frequent.</p>
+              <!-- graphical edge width legend -->
+              <svg style="display: block;margin: auto"
+                   width="200" ng-attr-height="{{maxEdgeWidth*zm.scale()+30}}">
+                <g>
+                  <polygon ng-attr-points="0,{{maxEdgeWidth*zm.scale()}} 200,{{maxEdgeWidth*zm.scale()}} 200,0 0,{{(maxEdgeWidth-minEdgeWidth)*zm.scale()}}"
+                           class="edgeLegend"/>
+                  <text x="0" ng-attr-y="{{maxEdgeWidth*zm.scale()+15}}" font-family="Helvetica Neue" font-size="11">
+                    not frequent
+                  </text>
+                  <text x="0" ng-attr-y="{{maxEdgeWidth*zm.scale()+25}}" font-family="Helvetica Neue" font-size="11">
+                    (1 mention)
+                  </text>
+                  <text x="120" ng-attr-y="{{maxEdgeWidth*zm.scale()+15}}" font-family="Helvetica Neue" font-size="11">
+                    very frequent
+                  </text>
+                  <text x="100" ng-attr-y="{{maxEdgeWidth*zm.scale()+25}}" font-family="Helvetica Neue" font-size="11">
+                    ({{maxEdgeFreq}} mentions)
+                  </text>
+                </g>
+              </svg>
+              <hr>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end of legend -->
+
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+<!-- Modal for Annotation -->
+<script type="text/ng-template" id="annotateModal">
+  <div class="modal-header">
+    <button type="button" class="close" aria-label="Close" ng-click="cancel()"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title" id="myModalLabel">Annotate</h4>
+  </div>
+  <div class="modal-body">
+    You can write your annotation for the selected element in the textfield below.
+    <input type="text" class="form-control" ng-model="text">
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" ng-click="ok()">Save</button>
+  </div>
+</script>
+<!--<div class="modal fade" id="annotateModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Annotate</h4>
+      </div>
+      <div class="modal-body">
+        You can write your annotation for the selected element in the textfield below.
+        <input type="text" class="form-control" id="annotateInput">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" ng-click="annotateSelected()" data-dismiss="modal">Save</button>
+      </div>
+    </div>
+  </div>
+</div>-->
+<!-- Modal for Editing -->
+<script type="text/ng-template" id="editModal">
+  <div class="modal-header">
+    <button type="button" class="close" aria-label="Close" ng-click="cancel()"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title" id="myModalLabel">Edit</h4>
+  </div>
+  <div class="modal-body">
+    In the following fields you can edit the name and the type of the selected element.
+    <input type="text" class="form-control" ng-model="text">
+    <select name="type" class="form-control" ng-model="type">
+      <option ng-repeat="type in types" value="{{type.id}}">{{type.full}}</option>
+    </select>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" ng-click="ok()">Save</button>
+  </div>
+</script>
+<!-- Modal for Merging -->
+<script type="text/ng-template" id="mergeModal">
+  <div class="modal-header">
+    <button type="button" class="close" aria-label="Close" ng-click="cancel()"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title" id="myModalLabel">Merge</h4>
+  </div>
+  <div class="modal-body">
+    <p>In which element you want to merge?</p>
+    <div>
+      <select size="5" name="mergeNodeSelect" id="mergeNodeSelect" ng-model="focalNode">
+        <option ng-repeat="node in nodes" ng-mouseover="setMergeNode(node)" value="{{node.id}}">{{node.name}}</option>
+      </select>
+      <svg width="50" height="50"><g id="merge-node" class="node" transform="translate(25, 25)"></g></svg>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" ng-click="ok()" ng-disabled="focalNode == null">Merge</button>
+  </div>
+</script>
+<!-- Modal for Deleting -->
+<!--<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">-->
+<script type="text/ng-template" id="deleteModal">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title" id="myModalLabel">Delete</h4>
+  </div>
+  <div class="modal-body">
+    {{text}}
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" ng-click="ok()">Delete</button>
+  </div>
+</script>
+    <!--</div>
+  </div>
+</div>-->

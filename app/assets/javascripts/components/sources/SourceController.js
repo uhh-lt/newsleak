@@ -379,6 +379,7 @@ define([
                                 view: 'search'
                             }
                         });
+                        console.log("Added filter")
 
                         //TODO: replace tagService with observer
                         $scope.addedTag(item);
@@ -398,7 +399,7 @@ define([
                             tagSelectShareService.tagsToUnselect.splice(idx, 1);
                         }
 
-                        tagSelectShareService.tagsToSelect.push(tagName.text);
+                        tagSelectShareService.tagsToSelect.push(tagName);
                         tagSelectShareService.wasChanged = true;
 
 
@@ -409,8 +410,6 @@ define([
                      * This function is called whenever a tag is removed
                      */
                     $scope.removedTag = function (tagName) {
-                        console.log("removed " + tagName.text);
-
                         var idx = tagSelectShareService.tagsToSelect.indexOf(tagName.text);
                         if (idx > -1) {
                             tagSelectShareService.tagsToSelect.splice(idx, 1);
