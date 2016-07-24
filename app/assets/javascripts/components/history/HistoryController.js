@@ -21,12 +21,15 @@ define([
     'angular',
     'angularMoment',
     'jquery-json',
-    'ngFileSaver'
+    'ui-bootstrap',
+    'ngAnimate'
 ], function(angular) {
     'use strict';
 
-    angular.module("myApp.history", ['play.routing', 'angularMoment', 'ngFileSaver']);
-    angular.module("myApp.history")
+    angular.module("myApp.history", ['play.routing', 'angularMoment', 'ngFileSaver', 'ui.bootstrap','ngAnimate'])
+        .config(function($uibTooltipProvider) {
+            $uibTooltipProvider.setTriggers({'mouseenter': 'None'});
+        })
         .factory('historyFactory', [
             function() {
                 return {
@@ -46,6 +49,12 @@ define([
                         'added': 'plus',
                         'removed': 'minus',
                         'replaced': 'refresh'
+                    },
+                    popover: {
+                        template: 'tooltip_tmpl',
+                        placement: 'bottom',
+                        trigger: 'mouseenter',
+                        isOpen: []
                     }
                 }
             }
@@ -65,6 +74,8 @@ define([
                     $scope.observer = ObserverService;
                     $scope.factory = historyFactory;
 
+                    $scope.toolTipPromise = undefined;
+
                     $scope.observer_subscribe = function(history) { $scope.history = history};
                     $scope.observer.subscribeHistory($scope.observer_subscribe);
                     
@@ -79,6 +90,23 @@ define([
                     $scope.getActionIcon = function(type) {
                         return $scope.factory.actions[type];
                     };
+
+                    $scope.removeItem = function(filter) {
+                        $scope.observer.removeItem(filter.id, filter.type);
+                    };
+
+                    $scope.hidePopover = function(id) {
+                        $scope.toolTipPromise = $timeout(function() { $scope.hideFunction(id)}, 500);
+                    };
+
+                    $scope.showPopover = function(id) {
+                        $timeout.cancel($scope.toolTipPromise);
+                        $scope.factory.popover.isOpen[id] = true;
+                    };
+
+                    $scope.hideFunction = function(x) {
+                        $scope.factory.popover.isOpen[x] = false;
+                    }
                 }
             ]
         )

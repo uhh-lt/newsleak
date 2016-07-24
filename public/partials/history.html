@@ -1,10 +1,32 @@
 <div style="padding-left: 10px;">
 	<p style="font-size:16px; float: left; padding-top: 10px">History Tracker</p>
+	<script type="text/ng-template" id="tooltip_tmpl">
+		<div ng-mouseleave="hidePopover(obj.id)" ng-mouseenter="showPopover(obj.id)">
+		<ul class="list-group-item">
+			<li class="list-group-item"><span>Content:</span> {{obj.data.name}}</li>
+			<li class="list-group-item" ng-if="obj.data.id"><span>Id:</span> {{obj.data.id}}</li>
+			<li class="list-group-item" ng-if="obj.data.type"><span>Typ:</span> {{obj.data.type}}</li>
+			<li class="list-group-item"><span>Active:</span> {{obj.active}}</li>
+		</ul>
+			<button ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" type="button" class="btn btn-primary" ng-click="removeItem(obj)">Remove</button>
+		</div>
+	</script>
 	<ul id="historyList" class="list-group" style="display: inline-block; padding: 3px 10px; margin: 0 0 0 10px;">
-		<li class="filterListItem list-group-item" ng-repeat="obj in history" style="display: inline-block; padding: 7px 10px;">
+		<li
+				class="filterListItem list-group-item"
+				ng-repeat="obj in history"
+				ng-mouseleave="hidePopover(obj.id)"
+				style="display: inline-block; padding: 7px 10px;"
+				uib-popover-template="'tooltip_tmpl'"
+				popover-title="{{obj.type}}"
+				popover-placement="bottom"
+				popover-trigger="mouseenter"
+				popover-is-open="factory.popover.isOpen[{{obj.id}}]">
+
 			<i class="glyphicon type-icon glyphicon-{{ getIcon(obj.type) }}" ng-class=""></i>
 			<i class="glyphicon action-icon glyphicon-{{ getActionIcon(obj.action) }}" ng-class=""></i>
 			<span>{{obj.type}}: {{obj.data.name}}</span><span ng-if="obj.data.type"> ({{obj.data.type}})</span>
 		</li>
 	</ul>
+
 </div>

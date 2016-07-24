@@ -127,6 +127,7 @@ define([
                     lastAdded++;
                     item["action"] = action;
                     item["id"] = angular.copy(lastAdded);
+                    item["active"] = true;
 
                     history.push(item);
                     //if(items.indexOf(item.type) == -1) items[item.type] = [];
@@ -153,9 +154,13 @@ define([
                 },
 
                 removeItem: function (id, type) {
-                    var item = angular.copy(history[history.findIndex(function (item) {
+                    var toBeRemoved = history[history.findIndex(function (item) {
                         return id == item.id;
-                    })]);
+                    })];
+                    toBeRemoved.active = false;
+                    var item = angular.copy(toBeRemoved);
+                    lastAdded++;
+                    item["id"] = angular.copy(lastAdded);
                     item["action"] = "removed";
                     history.push(item);
 
