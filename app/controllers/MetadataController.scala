@@ -86,13 +86,13 @@ class MetadataController @Inject extends Controller {
     val agg = FacetedSearch.aggregate(facets, key, defaultFetchSize, instances)
     if (instances.isEmpty) {
       val res = Json.obj(key -> agg.buckets.map {
-        case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
+        case MetaDataBucket(metaKey, count) => Json.obj("key" -> metaKey, "count" -> count)
         case _ => Json.obj()
       })
       Results.Ok(Json.toJson(res)).as("application/json")
     } else {
       val res = instances.zip(instances.map(agg.buckets.map {
-        case MetaDataBucket(key, count) => key -> count
+        case MetaDataBucket(metaKey, count) => metaKey -> count
         case _ => "" -> 0.0
       }.toMap)).map(x => Json.obj("key" -> x._1, "count" -> x._2.asInstanceOf[Number].longValue()))
       Results.Ok(Json.obj(key -> res)).as("application/json")
