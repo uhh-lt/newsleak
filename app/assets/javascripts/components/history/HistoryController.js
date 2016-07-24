@@ -59,7 +59,8 @@ define([
                         template: 'tooltip_tmpl',
                         placement: 'bottom',
                         trigger: 'None',
-                        isOpen: []
+                        isOpen: [],
+                        promises: []
                     }
                 }
             }
@@ -79,8 +80,6 @@ define([
                     $scope.observer = ObserverService;
                     $scope.factory = historyFactory;
 
-                    $scope.toolTipPromise = undefined;
-
                     $scope.observer_subscribe = function(history) { $scope.history = history};
                     $scope.observer.subscribeHistory($scope.observer_subscribe);
                     
@@ -97,15 +96,15 @@ define([
                     };
 
                     $scope.removeItem = function(filter) {
-                        $scope.observer.removeItem(filter.id, filter.type);
+                        $scope.factory.observer.removeItem(filter.id, filter.type);
                     };
 
                     $scope.hidePopover = function(id) {
-                        $scope.toolTipPromise = $timeout(function() { $scope.hideFunction(id)}, 500);
+                        $scope.factory.popover.promises[id] = $timeout(function() { $scope.hideFunction(id)}, 500);
                     };
 
                     $scope.showPopover = function(id) {
-                        $timeout.cancel($scope.toolTipPromise);
+                        if($scope.factory.popover.promises[id] != undefined) $timeout.cancel($scope.factory.popover.promises[id]);
                         $scope.factory.popover.isOpen[id] = true;
                     };
 
