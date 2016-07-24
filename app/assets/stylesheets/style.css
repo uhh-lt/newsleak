@@ -247,6 +247,7 @@ div.tooltip {
 }
 main {
     width: 50%;
+    margin-top: 10px;
 }
 #document {
     width: 250px;
@@ -329,7 +330,7 @@ footer > div, footer > div #chartBarchart {
 
 /* Give us more space between the tabs and the tab content */
 #network-maps-container .tab-content {
-    height: calc(100% - 42px);
+    height: calc(100% - 78px);
     padding-top: 20px;
 }
 
