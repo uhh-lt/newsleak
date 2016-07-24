@@ -84,11 +84,19 @@ class MetadataController @Inject extends Controller {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     val agg = FacetedSearch.aggregate(facets, key, defaultFetchSize, instances)
-    val res = Json.obj(key -> agg.buckets.map {
-      case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
-      case _ => Json.obj()
-    })
-    Results.Ok(Json.toJson(res)).as("application/json")
+    if (instances.isEmpty) {
+      val res = Json.obj(key -> agg.buckets.map {
+        case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
+        case _ => Json.obj()
+      })
+      Results.Ok(Json.toJson(res)).as("application/json")
+    } else {
+      val res = instances.zip(instances.map(agg.buckets.map {
+        case MetaDataBucket(key, count) => key -> count
+        case _ => "" -> 0.0
+      }.toMap)).map(x => Json.obj("key" -> x._1, "count" -> x._2.asInstanceOf[Number].longValue()))
+      Results.Ok(Json.obj(key -> res)).as("application/json")
+    }
   }
 
   /**

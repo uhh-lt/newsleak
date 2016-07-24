@@ -189,10 +189,7 @@ define([
                     };
 
                     $scope.initMetadataCharts = function () {
-                        $scope.observer.getMetadataTypes().then(function(types) {
-
-
-
+                        $scope.observer.getMetadataTypes().then(function() {
                                 playRoutes.controllers.MetadataController.getMetadata(undefined,[{'key':'dummy','data': []}]).get().then(
                                     function (result) {
 
