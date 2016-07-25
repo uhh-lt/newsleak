@@ -1682,8 +1682,13 @@ define([
                 console.log(entities);
                 console.log(facets);
                 console.log(fulltext);
+                var filters = [];
+                angular.forEach(nodes, function(node) {
+                    filters.push(node.id);
+                });
 
-                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange()).get().then(function(response) {
+
+                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),filters).get().then(function(response) {
 
                     response.data.forEach(
                         function(v)
