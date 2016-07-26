@@ -1,5 +1,10 @@
 <div style="padding-left: 10px;">
-	<p style="font-size:16px; float: left; padding-top: 10px">History Tracker</p>
+	<div style="float: left; padding-top: 10px">
+	<p style="font-size:16px; ">History Tracker</p>
+	<div class="checkbox">
+		<label><input type="checkbox" checked id="show-history" ng-model="showHistory" >Show full history</label>
+	</div>
+	</div>
 	<script type="text/ng-template" id="tooltip_tmpl">
 		<div ng-mouseleave="hidePopover(obj.id)" ng-mouseenter="showPopover(obj.id)">
 		<ul class="list-group-item">
@@ -20,6 +25,7 @@
 				ng-repeat="obj in history"
 				ng-mouseleave="hidePopover(obj.id)"
 				ng-mouseenter="showPopover(obj.id)"
+				ng-show="obj.active || showHistory"
 				uib-popover-template="'tooltip_tmpl'"
 				popover-title="{{getTypeDescription(obj.type)}}"
 				popover-placement="bottom"
