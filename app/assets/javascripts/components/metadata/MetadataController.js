@@ -108,7 +108,10 @@ define([
                                     //});
                                     var data = [];
                                     angular.forEach(result.data, function(x) {
-                                        data.push(x.docCount);
+                                        if(x.docCount <= 0)
+                                            data.push(null);
+                                        else
+                                            data.push(x.docCount);
                                     });
                                     var newBase = [];
                                     $.each($scope.chartConfigs[type].series[0].data, function(index, value) {
@@ -173,7 +176,10 @@ define([
                                     //});
                                     var data = [];
                                     angular.forEach(result.data[type], function(x) {
-                                        data.push(x.count);
+                                        if(x.count <= 0)
+                                            data.push(null);
+                                        else
+                                            data.push(x.count);
                                     });
                                     var newBase = [];
                                     $.each($scope.chartConfigs[type].series[0].data, function(index, value) {
