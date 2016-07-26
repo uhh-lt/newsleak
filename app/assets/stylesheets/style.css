@@ -263,6 +263,7 @@ footer {
 }
 footer > div, footer > div #chartBarchart {
     height: 100%;
+    margin-top: 10px;
 }
 
 .rg-bottom, .rg-left, .rg-right, .rg-top {
@@ -529,6 +530,10 @@ footer > div, footer > div #chartBarchart {
     History
     ======================================
 */
+#history {
+    margin-left: 10px;
+}
+
 ul#historyList {
     white-space : nowrap;
     display: inline-block;
