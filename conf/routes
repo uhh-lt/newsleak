@@ -15,7 +15,7 @@ GET         /                                                controllers.Applica
 #GET			/partials/*file						                 controllers.Application.loadPublicHTML(file)
 
 GET    /docById           		controllers.DocumentController.getDocById(id: Int)
-GET    /getDocs           		controllers.DocumentController.getDocs(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
+GET    /getDocs           		controllers.DocumentController.getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
 GET    /frequencySeries			controllers.DocumentController.getFrequencySeries
 GET    /docsByDate           	controllers.DocumentController.getDocsByDate(date: Long)
 GET    /getDocsForMonth         controllers.DocumentController.getDocsForMonth(year: Int, month: Int, startIndex: Int, offset: Int ?= 0)
@@ -29,17 +29,17 @@ GET	   /mergeEntitiesById		controllers.NetworkController.mergeEntitiesById(focal
 GET    /changeEntityNameById	controllers.NetworkController.changeEntityNameById(id: Long, newName: String)
 GET    /changeEntityTypeById	controllers.NetworkController.changeEntityTypeById(id: Long, newType: String)
 GET    /getAutocomplete		controllers.SearchController.getAutocomplete(query: String)
-GET    /getEntities		controllers.EntityController.getEntities(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, filter: List[Long])
+GET    /getEntities		controllers.EntityController.getEntities(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, filter: List[Long])
 GET     /getEntityTypes controllers.EntityController.getEntityTypes
 GET    /getEntitiesByType		controllers.EntityController.getEntitiesByType(entityType: String)
 GET    /getEntitiesWithOffset		controllers.EntityController.getEntitiesWithOffset(entityType: String, offset: Int ?= 0)
 GET    /getEntitiesDocCount		controllers.EntityController.getEntitiesDocCount(entityType: String)
 GET    /getEntitiesDocCountWithOffset		controllers.EntityController.getEntitiesDocCountWithOffset(entityType: String, offset: Int ?= 0)
 GET    /getEntitiesDocCountWithFilter		controllers.EntityController.getEntitiesDocCountWithFilter(filter: List[Long])
-GET   /getMetadata     controllers.MetadataController.getMetadata(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
-GET   /getKeywords     controllers.MetadataController.getKeywords(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
+GET   /getMetadata     controllers.MetadataController.getMetadata(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
+GET   /getKeywords     controllers.MetadataController.getKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
 GET   /getMetadataTypes       controllers.MetadataController.getMetadataTypes
-GET    /getSpecificMetadata             controllers.MetadataController.getSpecificMetadata(fullText: Option[String], key: String, generic: Map[String, List[String]], entities: List[Long], instances: List[String], timeRange: String)
+GET    /getSpecificMetadata             controllers.MetadataController.getSpecificMetadata(fullText: List[String], key: String, generic: Map[String, List[String]], entities: List[Long], instances: List[String], timeRange: String)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # JS ROUTING AND RESOURCES                                                                      #

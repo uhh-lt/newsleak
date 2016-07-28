@@ -66,15 +66,15 @@ class DocumentController @Inject extends Controller {
    * @param timeRange string of a time range readable for [[TimeRangeParser]]
    * @return list of matching document id's
    */
-  def getDocs(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
+  def getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var pageCounter = 0
     val metadataKey = "Subject"
     val hitIterator = FacetedSearch.searchDocuments(facets, defaultPageSize)
     var docIds: List[Long] = List()
-    while (hitIterator.hasNext && pageCounter <= defaultPageSize) {
-      docIds ::= hitIterator.next()
+    while (hitIterator._2.hasNext && pageCounter <= defaultPageSize) {
+      docIds ::= hitIterator._2.next()
       pageCounter += 1
     }
     var rs: List[(Long, String)] = List()

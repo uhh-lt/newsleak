@@ -67,7 +67,7 @@ class EntityController @Inject extends Controller {
    * @return list of matching entity id's and their overall frequency as well as document count for the applied filters
    */
   def getEntities(
-    fullText: Option[String],
+    fullText: List[String],
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
@@ -81,6 +81,7 @@ class EntityController @Inject extends Controller {
       case NodeBucket(id, count) => (id, count)
       case _ => (0, 0)
     }
+
     var result: List[JsObject] = List()
     val sqlResult =
       sql"""SELECT * FROM entity
@@ -88,8 +89,11 @@ class EntityController @Inject extends Controller {
           ORDER BY frequency DESC LIMIT 50"""
         .map(x => x.long("id") -> Entity(x))
         .list // single, list, traversable
-        .apply()
-    if (filter.nonEmpty) {
+        .apply
+
+    //TODO: ordering commented out while no zerobuckets available
+    //if (filter.nonEmpty) {
+    if (false) {
       val res = filter
         .zip(filter.map(sqlResult.toMap))
         .map(x => Json.obj(

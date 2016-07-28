@@ -52,7 +52,7 @@ class MetadataController @Inject extends Controller {
    * @param timeRange string of a time range readable for [[TimeRangeParser]]
    * @return list of matching metadata keys and document count
    */
-  def getMetadata(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
+  def getMetadata(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     val res = FacetedSearch.aggregateAll(facets, defaultFetchSize, defaultExcludeTypes)
@@ -74,7 +74,7 @@ class MetadataController @Inject extends Controller {
    * @return list of matching metadata keys and document count
    */
   def getSpecificMetadata(
-    fullText: Option[String],
+    fullText: List[String],
     key: String,
     generic: Map[String, List[String]],
     entities: List[Long],
@@ -105,7 +105,7 @@ class MetadataController @Inject extends Controller {
    * @param generic mapping of metadata key and a list of corresponding tags
    * @return list of matching keywords and document count
    */
-  def getKeywords(fullText: Option[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
+  def getKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     val res = FacetedSearch.aggregateKeywords(facets, defaultFetchSize, List()).buckets.map {
