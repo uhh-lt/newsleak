@@ -92,8 +92,8 @@ class EntityController @Inject extends Controller {
         .apply
 
     //TODO: ordering commented out while no zerobuckets available
-    //if (filter.nonEmpty) {
-    if (false) {
+    if (filter.nonEmpty) {
+      //if (false) {
       val res = filter
         .zip(filter.map(sqlResult.toMap))
         .map(x => Json.obj(
