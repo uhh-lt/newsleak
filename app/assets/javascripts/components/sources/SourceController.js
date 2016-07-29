@@ -61,7 +61,7 @@ define([
                     $scope.graphPropertiesShared = graphPropertiesShareService;
                     $scope.test = "Hi :D";
 
-                    $scope.highlightState = {on: false};
+                    $scope.highlightState = {on: true};
 
                     var placeholderTags = [
                         {text: 'Türkei'},
