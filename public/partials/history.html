@@ -13,7 +13,10 @@
 			<li class="list-group-item" ng-if="obj.data.type"><span>Typ:</span> {{obj.data.type}}</li>
 			<li class="list-group-item"><span>Active:</span> {{obj.active}}</li>
 		</ul>
-			<button ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" type="button" class="btn btn-primary" ng-click="removeItem(obj)">Remove</button>
+
+			<button ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" type="button" class="btn btn-primary" ng-click="removeItem(obj)">
+				<i class="glyphicon type-icon glyphicon-trash" ng-class=""></i> Remove
+			</button>
 		</div>
 	</script>
 	<div class="alert alert-info" ng-show="history.length == 0" style="display: inline-block">
