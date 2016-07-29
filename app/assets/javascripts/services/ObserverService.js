@@ -33,7 +33,7 @@ define([
             //all item structured by type
             var items = [];
             //types of tracked items
-            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate"];
+            var types = ["entity", "metadata", "fulltext", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate"];
             var metadataTypes = [];
             var entityTypes = [];
             types.forEach(function(type) {

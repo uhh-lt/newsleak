@@ -42,11 +42,13 @@ define([
                         "merge": 'resize-small',
                         "hide": 'eye-close',
                         "edit": 'pencil',
-                        "annotate": 'comment'
+                        "annotate": 'comment',
+                        "fulltext": 'align-left'
                     },
                     typeDescriptions: {
                       'entity': 'Entity Filter',
                       'metadata': 'Metadata Filter',
+                      'fulltext': 'Fulltext Search',
                       'time': 'Time Range',
                       'annotate': 'Entity Annotated'
                     },
