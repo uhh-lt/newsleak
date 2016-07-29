@@ -129,7 +129,8 @@ define([
                         playRoutes.controllers.DocumentController.getDocs(fulltext,facets,entities,$scope.observer.getTimeRange()).get().then(function(x) {
                             // console.log(x.data);
                             $scope.sourceShared.reset(0);
-                            $scope.sourceShared.addDocs(x.data);
+                            $scope.sourceShared.addDocs(x.data.docs);
+                            $scope.hits = x.data.hits;
                         });
                     };
 

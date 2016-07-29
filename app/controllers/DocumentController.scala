@@ -88,7 +88,7 @@ class DocumentController @Inject extends Controller {
           .apply()
     }
 
-    Ok(Json.toJson(rs)).as("application/json")
+    Ok(Json.toJson(Json.obj("hits" -> hitIterator._1, "docs" -> rs))).as("application/json")
   }
 
   /**
