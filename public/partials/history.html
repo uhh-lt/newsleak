@@ -9,7 +9,7 @@
 		<div ng-mouseleave="hidePopover(obj.id)" ng-mouseenter="showPopover(obj.id)">
 		<ul class="list-group-item">
 			<li class="list-group-item"><span>Content:</span> {{obj.data.name}}</li>
-			<li class="list-group-item" ng-if="obj.data.id"><span>Id:</span> {{obj.data.id}}</li>
+			<li class="list-group-item" ng-if="obj.data.id && obj.data.id > -1"><span>ID#:</span> {{obj.data.id}}</li>
 			<li class="list-group-item" ng-if="obj.data.type"><span>Typ:</span> {{obj.data.type}}</li>
 			<li class="list-group-item"><span>Active:</span> {{obj.active}}</li>
 		</ul>
