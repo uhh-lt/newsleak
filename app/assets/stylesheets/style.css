@@ -540,6 +540,7 @@ ul#historyList {
     padding: 3px 10px;
     margin: 0 0 0 10px;
 }
+/* TODO: calculate remaining space for items */
 #historyList > li {
     background-color: #2759AC;
     cursor: pointer;
@@ -550,10 +551,12 @@ ul#historyList {
     color: white;
     transition: width 0.3s linear;
     width: 47px;
+    width: auto;
 }
 #historyList > li:hover {
     transition: width 0.2s linear;
     width: 150px;
+    width: auto;
 }
 #historyList li span {
     margin-left: 5px;
