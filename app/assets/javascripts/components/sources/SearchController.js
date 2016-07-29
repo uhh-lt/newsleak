@@ -105,7 +105,7 @@ define([
                         });
 
                         //TODO: replace tagService with observer
-                        $scope.addedTag(item);
+                        //$scope.addedTag(item);
                         $("#autocomplete").css('z-index','-1');
                         $scope.searchTags = [];
                     };
