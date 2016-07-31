@@ -168,7 +168,7 @@ define([
 
                         //metadata
                         case types[1]:
-                            items[type][item.data.type].splice(items[type].findIndex(function (item) {
+                            items[type][item.data.type].splice(items[type][item.data.type].findIndex(function (item) {
                                 return id == item.id;
                             }), 1);
                             break;
