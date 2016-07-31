@@ -163,6 +163,21 @@ define([
                     item["id"] = angular.copy(lastAdded);
                     item["action"] = "removed";
                     history.push(item);
+                    switch(item.type) {
+
+
+                        //metadata
+                        case types[1]:
+                            items[type][item.data.type].splice(items[type].findIndex(function (item) {
+                                return id == item.id;
+                            }), 1);
+                            break;
+
+                        default:
+                            items[type].splice(items[type].findIndex(function (item) {
+                                return id == item.id;
+                            }), 1);
+                    }
 
                     items[type].splice(items[type].findIndex(function (item) {
                         return id == item.id;
