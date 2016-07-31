@@ -106,7 +106,7 @@ define([
                     switch(item.type) {
                         //entity
                         case types[0]:
-                            history.forEach(function(x) {
+                            items[item.type].forEach(function(x) {
                                 if (item.data.id == x.data.id) isDup = true;
                             });
                             break;
