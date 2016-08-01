@@ -87,8 +87,10 @@ define([
                      */
                     $scope.observer_subscribe_entity = function(items) { $scope.entityFilters = items};
                     $scope.observer_subscribe_metadata = function(items) { $scope.metadataFilters = items};
+                    $scope.observer_subscribe_fulltext = function(items) { $scope.fulltextFilters = items};
                     $scope.observer.subscribeItems($scope.observer_subscribe_entity,"entity");
                     $scope.observer.subscribeItems($scope.observer_subscribe_metadata,"metadata");
+                    $scope.observer.subscribeItems($scope.observer_subscribe_fulltext,"fulltext");
 
                     /*
 
@@ -105,7 +107,6 @@ define([
                      */
                     $scope.updateDocumentList = function() {
                         console.log("reload doc list");
-                        var fulltext = undefined;
                         var entities = [];
                         angular.forEach($scope.entityFilters, function(item) {
                             entities.push(item.data.id);
@@ -126,6 +127,10 @@ define([
                         } else {
                             facets = [{'key':'dummy','data': []}];
                         }
+                        var fulltext = [];
+                        angular.forEach($scope.fulltextFilters, function(item) {
+                           fulltext.push(item.data.name);
+                        });
                         playRoutes.controllers.DocumentController.getDocs(fulltext,facets,entities,$scope.observer.getTimeRange()).get().then(function(x) {
                             // console.log(x.data);
                             $scope.sourceShared.reset(0);

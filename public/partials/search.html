@@ -1,4 +1,5 @@
 <div style="padding: 10px;">
+	<!--
 	<div id="search-group">
 		<div class="input-group">
 			<span class="input-group-addon">Search:</span>
@@ -7,6 +8,7 @@
 		</div>
 
 	</div>
+
 	<div id="search-scroll">
 	<div id="autocomplete" class="list-group">
 		<button class="list-group-item" ng-repeat="data in searchTags" ng-click="addFilter(data)">
@@ -20,4 +22,14 @@
 		</button>
 	</div>
 	</div>
+	-->
+	<form ng-submit="addFulltext(fulltextInput)">
+	<div class="input-group">
+			<input type="text" class="form-control" placeholder="Search for..." ng-model="fulltextInput" ui-keypress="{13:'addFulltexta(fulltextInput)'}">
+			<span class="input-group-btn">
+        	<button class="btn btn-secondary" type="submit" ng-click="addFulltexta(fulltextInput)">Go!</button>
+			</span>
+	</div>
+	</form>
+
 </div>

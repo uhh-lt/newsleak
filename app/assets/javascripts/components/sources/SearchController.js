@@ -110,6 +110,18 @@ define([
                         $scope.searchTags = [];
                     };
 
+                    $scope.addFulltext = function(input) {
+                        $scope.observer.addItem({
+                            type: 'fulltext',
+                            data: {
+                                id: -1,
+                                name: angular.copy(input),
+                                view: 'search'
+                            }
+                        });
+                        $scope.fulltextInput = '';
+                    };
+
 
                     /**
                      * This function is called whenever a tag is added

@@ -104,8 +104,10 @@ define([
              */
             $scope.observer_subscribe_entity = function(items) { $scope.entityFilters = items};
             $scope.observer_subscribe_metadata = function(items) { $scope.metadataFilters = items};
+            $scope.observer_subscribe_fulltext = function(items) { $scope.fulltextFilters = items};
             $scope.observer.subscribeItems($scope.observer_subscribe_entity,"entity");
             $scope.observer.subscribeItems($scope.observer_subscribe_metadata,"metadata");
+            $scope.observer.subscribeItems($scope.observer_subscribe_fulltext,"fulltext");
 
             const GRAVITATION_HEIGHT_SUBTRACT_VALUE = 126;
 
@@ -1653,7 +1655,6 @@ define([
              */
             $scope.getEntities = function() {
                 console.log("reload entities");
-                var fulltext = undefined;
                 var entities = [];
                 angular.forEach($scope.entityFilters, function(item) {
                     entities.push(item.data.id);
@@ -1688,6 +1689,10 @@ define([
                 });
 
                 var size = 20;
+                var fulltext = [];
+                angular.forEach($scope.fulltextFilters, function(item) {
+                    fulltext.push(item.data.name);
+                });
                 playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,filters).get().then(function(response) {
 
                     response.data.forEach(

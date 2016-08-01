@@ -33,7 +33,7 @@ define([
             //all item structured by type
             var items = [];
             //types of tracked items
-            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate"];
+            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext"];
             var metadataTypes = [];
             var entityTypes = [];
             types.forEach(function(type) {
@@ -145,6 +145,9 @@ define([
                         case types[2]:
                             items[item.type].push(item);
                             break;
+                        default:
+                            items[item.type].push(item);
+                            break;
                     }
 
 
@@ -178,10 +181,6 @@ define([
                                 return id == item.id;
                             }), 1);
                     }
-
-                    items[type].splice(items[type].findIndex(function (item) {
-                        return id == item.id;
-                    }), 1);
                     lastRemoved = id;
                     this.notifyObservers();
                     console.log("removed from history: " + lastRemoved);

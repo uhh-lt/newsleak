@@ -53,8 +53,10 @@ define([
                      */
                     $scope.observer_subscribe_entity = function(items) { $scope.entityFilters = items};
                     $scope.observer_subscribe_metadata = function(items) { $scope.metadataFilters = items};
+                    $scope.observer_subscribe_fulltext = function(items) { $scope.fulltextFilters = items};
                     $scope.observer.subscribeItems($scope.observer_subscribe_entity,"entity");
                     $scope.observer.subscribeItems($scope.observer_subscribe_metadata,"metadata");
+                    $scope.observer.subscribeItems($scope.observer_subscribe_fulltext,"fulltext");
 
                     $scope.clickedItem = function(category, type, key) {
                         /*
@@ -78,7 +80,6 @@ define([
                     };
 
                     $scope.updateEntityCharts = function () {
-                        var fulltext = undefined;
                         var entities = [];
                         angular.forEach($scope.entityFilters, function(item) {
                             entities.push(item.data.id);
@@ -99,6 +100,10 @@ define([
                         } else {
                             facets = [{'key':'dummy','data': []}];
                         }
+                        var fulltext = [];
+                        angular.forEach($scope.fulltextFilters, function(item) {
+                            fulltext.push(item.data.name);
+                        });
                         angular.forEach($scope.entityTypes, function(type) {
                             var instances = $scope.ids[type];
                             playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),50,instances).get().then(
@@ -146,7 +151,6 @@ define([
                     };
 
                     $scope.updateMetadataCharts = function() {
-                        var fulltext = undefined;
                         var entities = [];
                         angular.forEach($scope.entityFilters, function(item) {
                             entities.push(item.data.id);
@@ -167,6 +171,10 @@ define([
                         } else {
                             facets = [{'key':'dummy','data': []}];
                         }
+                        var fulltext = [];
+                        angular.forEach($scope.fulltextFilters, function(item) {
+                            fulltext.push(item.data.name);
+                        });
                         angular.forEach($scope.metadataTypes, function(type) {
                             var instances = $scope.chartConfigs[type].xAxis["categories"];
                             playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext,type,facets,entities,instances,$scope.observer.getTimeRange()).get().then(
@@ -209,8 +217,6 @@ define([
                                 }
                             );
                         });
-                        //TODO: on adding fulltext filter doc count grows
-
                     };
 
                     $scope.initEntityCharts = function () {
