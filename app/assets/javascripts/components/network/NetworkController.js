@@ -111,7 +111,7 @@ define([
 
             const GRAVITATION_HEIGHT_SUBTRACT_VALUE = 126;
 
-            $scope.maxNodeFreq = 592035;
+            $scope.maxNodeFreq = 251287;
             $scope.maxEdgeFreq = 81337;
 
             $scope.minNodeRadius = 15;
@@ -149,7 +149,7 @@ define([
 
             toolShareService.hideListener.push(hideSelected);
 
-            toolShareService.updateGraph = getGraph;
+            toolShareService.updateGraph = getEntities;
             toolShareService.isViewLoading = function(){return $scope.isViewLoading};
             toolShareService.enableOrDisableButtons = enableOrDisableButtons;
 
@@ -163,9 +163,10 @@ define([
             var edges      = [];
             var color      = d3.scale.category10().range($scope.graphShared.categoryColors);
             //console.log([color("LOC"), color("ORG"), color("PER"), color("MISC")])
-            var radius     = d3.scale.sqrt()
+            /*var radius     = d3.scale.sqrt()
                                     .domain([1,$scope.maxNodeFreq])
-                                    .range([$scope.minNodeRadius, $scope.maxNodeRadius]);var radius     = d3.scale.sqrt()
+                                    .range([$scope.minNodeRadius, $scope.maxNodeRadius]);*/
+            var radius     = d3.scale.sqrt()
                                     .domain([1,$scope.maxNodeFreq])
                                     .range([$scope.minNodeRadius, $scope.maxNodeRadius]);
             var edgeScale  = d3.scale.log()
@@ -309,20 +310,6 @@ define([
             }
 
             /**
-             * paints a circle lowered with the specific size
-             *
-             * @param node
-             * 		the node to reduce
-             * @param value
-             *		the value from which so reduce
-             */
-            function reduceNode(node, value)
-            {
-            	d3.select("#node_" + node.id)
-            }
-
-
-            /**
              * get the nodes associated with this specific name
              *
              * @param name
@@ -365,13 +352,21 @@ define([
             }
 
 
+            /**
+             * paints a circle lowered with the specific size
+             *
+             * @param node
+             * 		the node to reduce
+             * @param value
+             *		the value from which so reduce
+             */
             function setBorderValue(node, value)
             {
                 d3
                     .select('#nodeborder_' + node.id)
                     .attr('d', d3.svg.arc()
-                    .innerRadius(radius(node.freq))
-                    .outerRadius(radius(node.freq)+4)
+                    .innerRadius(radius(node.docCount))
+                    .outerRadius(radius(node.docCount)+4)
                     .startAngle(0)
                     .endAngle(value*2*Math.PI));
             }
@@ -391,7 +386,7 @@ define([
             		.append('foreignObject')
             		.attr('width', '24')
             		.attr('height', '24')
-            		.attr('x', function(d){return radius(d.freq)-2;})
+            		.attr('x', function(d){return radius(d.docCount)-2;})
             		.attr('y', /*function(d){return (radius(d.freq));}*/-12)
             		.append('xhtml:body')
             		.html('<button type="button" class="btn btn-xs btn-default neighbor-button" ng-show="!isViewLoading"><i class="glyphicon glyphicon-comment"></i></button>')
@@ -429,6 +424,11 @@ define([
                     ]);
                     force.start();
                 }
+            }
+
+            function setEdgeDisabled(edge)
+            {
+
             }
 
 
@@ -570,6 +570,7 @@ define([
 
                 loadingNodes = true;
                 playRoutes.controllers.NetworkController.getGraphData(leastOrMostFrequent, sliderValue, sliderEdgeMinFreq, sliderEdgeMaxFreq).get().then(function(response) {
+                //playRoutes.controllers.EntityController.getEntities(nodes., sliderEdgeMinFreq, sliderEdgeMaxFreq).get().then(function(response) {
                     var data = response.data;
 
                     prepareData(data);
@@ -745,12 +746,6 @@ define([
                                         .attr('class', 'node')
                                         .call(force.drag);
 
-                    var arc = d3.svg.arc()
-                        .innerRadius(50)
-                        .outerRadius(100)
-                        .startAngle(0)
-                        .endAngle(Math.PI);
-
                     newNodes
                         .append('path')
                         .attr('id', function(d){return 'nodeborder_' + d.id;})
@@ -758,7 +753,7 @@ define([
 
 
                     newNodes.append('circle')
-                            .attr('r', function (d) { return radius(d.freq) })
+                            .attr('r', function (d) { return radius(d.docCount) })
                             .style('fill', function (d) { return color(d.type); })
                             .style('opacity', 0)  // Make new nodes at first invisible.
                             .attr('id', function(d, i)
@@ -812,14 +807,14 @@ define([
                                	return 'nodetext_' + d.id;
                             })
                             .text(function (d){
-                                var r = radius(d.freq);
-                                if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
+                                var r = radius(d.docCount);
+                                //if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
                                     return d.name;
-                                else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
-                                    return d.name.substring(0, r/3 - 3) + "...";
+                                //else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
+                                //    return d.name.substring(0, r/3 - 3) + "...";
                             })
                             .style('font-size', function(d){
-                                var r = radius(d.freq);
+                                var r = radius(d.docCount);
                                 var textLength;
                                 var size;
                                 if(r/3 >= d.name.length - 1){  // If the text fits inside the node.
@@ -845,7 +840,7 @@ define([
                         .attr('height', '24')
                         .attr('x', -12)
                         .attr('y', function(d){
-                            return radius(d.freq) - 2;
+                            return radius(d.docCount) - 2;
                         })
                         .append('xhtml:body')
                         .html(function(d)
@@ -1056,13 +1051,14 @@ define([
 
             }
 
+            $scope.loaded = reload;
 
             /** 
              * Create an example graph; we use a trick (namely the $timeout even with 0ms)
              * to render it only after the DOM is fully loaded.
              * Also, initialize the legend popover
              */
-            $scope.loaded = function() {
+            function reload() {
                 createSVG();
 
                 force = d3.layout
@@ -1073,8 +1069,8 @@ define([
                     .charge(-400)
                     .linkStrength(0.4)
                     .linkDistance(function(d) {
-                        return radius(d.source.freq)
-                            + radius(d.target.freq)
+                        return radius(d.source.docCount)
+                            + radius(d.target.docCount)
                             + 100;
                     })
                     .on("tick", function() {
@@ -1112,7 +1108,7 @@ define([
                                 return 'rotate(0)';
                         });
                     });
-                getGraph();
+                //getGraph();
                 // Extend the popover to a callback when loading is done
                 var tmp = $.fn.popover.Constructor.prototype.show;
                 $.fn.popover.Constructor.prototype.show = function () {
@@ -1441,7 +1437,7 @@ define([
 
 				//extend the focal node with the sum of the frequencies of
 				focalNode.freq = focalNode.freq + freqsum;
-				d3.select("#nodecircle_" + focalNode.id).attr('r', function(d){return radius(d.freq);});
+				d3.select("#nodecircle_" + focalNode.id).attr('r', function(d){return radius(d.docCount);});
 
 				edges.forEach(
 					function(v,i,a)
@@ -1574,11 +1570,11 @@ define([
                 var edit = text;
                 node.name = edit;
                 d3.select("#nodetext_" + node.id).text(function (d){
-                	var r = radius(d.freq);
+                	var r = radius(d.docCount);
                 	if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
                 		return d.name;
-                	else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
-                		return d.name.substring(0, r/3 - 3) + "...";
+                	/*else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
+                		return d.name.substring(0, r/3 - 3) + "...";*/
                 });
             }
 
@@ -1653,7 +1649,9 @@ define([
             /**
              * load entities for current filtering (called on filter update)
              */
-            $scope.getEntities = function() {
+            $scope.getEntities = getEntities;
+
+            function getEntities() {
                 console.log("reload entities");
                 var entities = [];
                 angular.forEach($scope.entityFilters, function(item) {
@@ -1693,28 +1691,68 @@ define([
                 var entityType = "";
                 playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,entityType,filters).get().then(function(response) {
 
+                    //to prevent invisible selections
+                    unselectNodes();
+                    unselectEdges();
+                    //delete all nodes and edges
+                    nodes = [];
+
+                    console.log(response);
+
                     response.data.forEach(
                         function(v)
                         {
-                            var node = getNodeById(Number(v.id));
-
-                            //if the node does not
-                            if(node == undefined)
-                            {
-                                return;
-                            }
-
-                            if(node.docCount == undefined)
-                            {
-                                node.docCount = v.docCount;
-                            }
-
-                            setBorderValue(node, v.docCount/node.docCount);
+                            nodes.push({
+                            	id: v.id,
+                            	name: v.name,
+                            	freq: v.freq,
+                            	type: v.type,
+                            	docCount: v.docCount,
+                                size: 2,
+                            });
                         }
                     );
 
-                    //console.log(response.data);
+                    /*edges.forEach(
+                        function(edge)
+                        {
+                            if(nodes.find(edge.source.id) != undefined && nodes.find(edge.target.id) != undefined)
+                            {
+                                console.log(edge)
+                                setEdgeDisabled(edge);
+                            }
+                        }
+                    )*/
 
+                    reload();
+                    calculateNewForceSize();
+
+                    svg.selectAll("*").remove();
+                    createSVG();
+                    start();
+
+                    console.log
+
+                    playRoutes.controllers.NetworkController.getRelations(response.data.map(function(v){return v.id}), toolShareService.sliderEdgeMinFreq(), toolShareService.sliderEdgeMaxFreq()).get().then(
+                        function(response)
+                        {
+                            edges=[];
+                            response.data.forEach(
+                                function(v)
+                                {
+                                    var sourceNode = nodes.find(function(node){return v[1] == node.id});
+                                    var targetNode = nodes.find(function(node){return v[2] == node.id});
+                                    if(sourceNode == undefined || targetNode == undefined)
+                                    {
+                                        return;
+                                    }
+                                    edges.push({id: v[0], source: sourceNode, target: targetNode, freq: v[3]});
+                                }
+                            )
+                            reload();
+                            start();
+                        }
+                    )
                 });
             };
 
