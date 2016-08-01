@@ -111,15 +111,17 @@ define([
                     };
 
                     $scope.addFulltext = function(input) {
-                        $scope.observer.addItem({
-                            type: 'fulltext',
-                            data: {
-                                id: -1,
-                                name: angular.copy(input),
-                                view: 'search'
-                            }
-                        });
-                        $scope.fulltextInput = '';
+                        if(input.length > 2) {
+                            $scope.observer.addItem({
+                                type: 'fulltext',
+                                data: {
+                                    id: -1,
+                                    name: angular.copy(input),
+                                    view: 'search'
+                                }
+                            });
+                            $scope.fulltextInput = "";
+                        }
                     };
 
 
