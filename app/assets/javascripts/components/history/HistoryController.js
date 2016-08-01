@@ -43,7 +43,7 @@ define([
                         "hide": 'eye-close',
                         "edit": 'pencil',
                         "annotate": 'comment',
-                        "fulltext": 'font'
+                        "fulltext": 'search'
                     },
                     typeDescriptions: {
                       'entity': 'Entity Filter',
