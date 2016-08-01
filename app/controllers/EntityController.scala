@@ -74,17 +74,25 @@ class EntityController @Inject extends Controller {
     entities: List[Long],
     timeRange: String,
     size: Int,
+    entityType: String,
     filter: List[Long]
   ) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var newSize = size
     if (filter.nonEmpty) newSize = filter.length
-    val entitiesRes = FacetedSearch.aggregateEntities(facets, newSize, filter).buckets.map {
-      case NodeBucket(id, count) => (id, count)
-      case _ => (0, 0)
+    entityType.isEmpty
+    val entitiesRes = if (entityType.isEmpty) {
+      FacetedSearch.aggregateEntities(facets, newSize, filter).buckets.map {
+        case NodeBucket(id, count) => (id, count)
+        case _ => (0, 0)
+      }
+    } else {
+      FacetedSearch.aggregateEntitiesByType(facets, EntityType.withName(entityType), newSize, filter).buckets.map {
+        case NodeBucket(id, count) => (id, count)
+        case _ => (0, 0)
+      }
     }
-
     var result: List[JsObject] = List()
     val sqlResult =
       sql"""SELECT * FROM entity

@@ -104,9 +104,10 @@ define([
                         angular.forEach($scope.fulltextFilters, function(item) {
                             fulltext.push(item.data.name);
                         });
+                        var entityType = "";
                         angular.forEach($scope.entityTypes, function(type) {
                             var instances = $scope.ids[type];
-                            playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),50,instances).get().then(
+                            playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),50,entityType,instances).get().then(
                                 function(result) {
                                     //result.data[type].forEach(function(x) {
                                     //    console.log(x.key + ": " + x.count);

@@ -30,7 +30,7 @@ GET	   /mergeEntitiesById		controllers.NetworkController.mergeEntitiesById(focal
 GET    /changeEntityNameById	controllers.NetworkController.changeEntityNameById(id: Long, newName: String)
 GET    /changeEntityTypeById	controllers.NetworkController.changeEntityTypeById(id: Long, newType: String)
 GET    /getAutocomplete		controllers.SearchController.getAutocomplete(query: String)
-GET    /getEntities		controllers.EntityController.getEntities(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, size: Int, filter: List[Long])
+GET    /getEntities		controllers.EntityController.getEntities(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, size: Int, entityType: String, filter: List[Long])
 GET     /getEntityTypes controllers.EntityController.getEntityTypes
 GET    /getEntitiesByType		controllers.EntityController.getEntitiesByType(entityType: String)
 GET    /getEntitiesWithOffset		controllers.EntityController.getEntitiesWithOffset(entityType: String, offset: Int ?= 0)

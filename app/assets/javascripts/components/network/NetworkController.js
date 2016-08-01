@@ -1680,9 +1680,6 @@ define([
                 {
                 }
 
-                console.log(entities);
-                console.log(facets);
-                console.log(fulltext);
                 var filters = [];
                 angular.forEach(nodes, function(node) {
                     filters.push(node.id);
@@ -1693,7 +1690,8 @@ define([
                 angular.forEach($scope.fulltextFilters, function(item) {
                     fulltext.push(item.data.name);
                 });
-                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,filters).get().then(function(response) {
+                var entityType = "";
+                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,entityType,filters).get().then(function(response) {
 
                     response.data.forEach(
                         function(v)
