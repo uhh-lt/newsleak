@@ -64,6 +64,7 @@ class EntityController @Inject extends Controller {
    * @param generic   mapping of metadata key and a list of corresponding tags
    * @param entities list of entity ids to filter
    * @param timeRange string of a time range readable for [[TimeRangeParser]]
+   * @param size amount of entities to fetch
    * @param filter provide a list of entities you want to aggregate
    * @return list of matching entity id's and their overall frequency as well as document count for the applied filters
    */
