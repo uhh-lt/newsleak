@@ -58,6 +58,7 @@ class EntityController @Inject extends Controller {
     Results.Ok(Json.toJson(Entity.getTypes().map(_.toString))).as("application/json")
   }
 
+  // scalastyle:off
   /**
    * Gets document counts for entities corresponding to their id's matching the query
    * @param fullText Full text search term
@@ -81,7 +82,6 @@ class EntityController @Inject extends Controller {
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var newSize = size
     if (filter.nonEmpty) newSize = filter.length
-    entityType.isEmpty
     val entitiesRes = if (entityType.isEmpty) {
       FacetedSearch.aggregateEntities(facets, newSize, filter).buckets.map {
         case NodeBucket(id, count) => (id, count)
@@ -126,6 +126,7 @@ class EntityController @Inject extends Controller {
       Results.Ok(Json.toJson(res.sortBy(-_.value("docCount").as[Long]))).as("application/json")
     }
   }
+  // scalastyle:on
 
   /**
    * get the entities, frequency to given type using an offset

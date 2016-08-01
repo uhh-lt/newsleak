@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket }
 import model.Document
-import play.api.libs.json.{ JsArray, Json, Writes }
+import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller, Results }
 import util.TimeRangeParser
 
@@ -28,10 +28,6 @@ import util.TimeRangeParser
  * Created by f. zouhar on 26.05.16.
  */
 class MetadataController @Inject extends Controller {
-  // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
-  implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[(A, B)] = new Writes[(A, B)] {
-    def writes(tuple: (A, B)) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2)))
-  }
 
   private val defaultExcludeTypes = List("Subject", "Header", "ReferenceId", "References", "Keywords", "Entities", "Created", "EventTimes")
   private val defaultFetchSize = 50
