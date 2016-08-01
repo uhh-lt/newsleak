@@ -1687,8 +1687,8 @@ define([
                     filters.push(node.id);
                 });
 
-
-                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),filters).get().then(function(response) {
+                var size = 20;
+                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,filters).get().then(function(response) {
 
                     response.data.forEach(
                         function(v)

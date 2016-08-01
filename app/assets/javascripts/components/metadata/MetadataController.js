@@ -101,7 +101,7 @@ define([
                         }
                         angular.forEach($scope.entityTypes, function(type) {
                             var instances = $scope.ids[type];
-                            playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),instances).get().then(
+                            playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),50,instances).get().then(
                                 function(result) {
                                     //result.data[type].forEach(function(x) {
                                     //    console.log(x.key + ": " + x.count);

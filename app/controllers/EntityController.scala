@@ -72,13 +72,14 @@ class EntityController @Inject extends Controller {
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
+    size: Int,
     filter: List[Long]
   ) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    var size = defaultFetchSize
-    if (filter.nonEmpty) size = filter.length
-    val entitiesRes = FacetedSearch.aggregateEntities(facets, size, filter).buckets.map {
+    var newSize = size
+    if (filter.nonEmpty) newSize = filter.length
+    val entitiesRes = FacetedSearch.aggregateEntities(facets, newSize, filter).buckets.map {
       case NodeBucket(id, count) => (id, count)
       case _ => (0, 0)
     }
