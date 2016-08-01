@@ -64,6 +64,7 @@ class EntityController @Inject extends Controller {
    * @param generic   mapping of metadata key and a list of corresponding tags
    * @param entities list of entity ids to filter
    * @param timeRange string of a time range readable for [[TimeRangeParser]]
+   * @param filter provide a list of entities you want to aggregate
    * @return list of matching entity id's and their overall frequency as well as document count for the applied filters
    */
   def getEntities(
@@ -91,9 +92,9 @@ class EntityController @Inject extends Controller {
         .list // single, list, traversable
         .apply
 
-    //TODO: ordering commented out while no zerobuckets available
+    // TODO: ordering commented out while no zerobuckets available
     if (filter.nonEmpty) {
-      //if (false) {
+      // if (false) {
       val res = filter
         .zip(filter.map(sqlResult.toMap))
         .map(x => Json.obj(

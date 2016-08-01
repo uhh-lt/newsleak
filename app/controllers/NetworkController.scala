@@ -151,6 +151,29 @@ class NetworkController @Inject extends Controller {
   }
 
   /**
+   *
+   * @param entities list of entity id's you want relations for
+   * @param minEdgeFreq minimun Edge Frequency
+   * @param maxEdgeFreq maximum Edge Frequency
+   * @return
+   */
+  def getRelations(entities: List[Long], minEdgeFreq: Int, maxEdgeFreq: Int) = Action {
+    val relations = sql"""SELECT DISTINCT ON (id, frequency) id, entity1, entity2, frequency
+        FROM relationship
+        WHERE entity1 IN (${entities})
+        AND entity2 IN (${entities})
+        AND frequency >= ${minEdgeFreq}
+        AND frequency <= ${maxEdgeFreq}
+        ORDER BY frequency DESC
+        LIMIT 100"""
+      .map(rs => (rs.long("id"), rs.long("entity1"), rs.long("entity2"), rs.int("frequency")))
+      .list()
+      .apply()
+
+    Ok(Json.toJson(relations)).as("application/json")
+  }
+
+  /**
    * deletes an entity from the graph by its id
    *
    * @param id the id of the entity to delete

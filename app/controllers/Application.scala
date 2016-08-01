@@ -99,6 +99,7 @@ class Application @Inject extends Controller {
         controllers.routes.javascript.NetworkController.deleteEntityById,
         controllers.routes.javascript.NetworkController.mergeEntitiesById,
         controllers.routes.javascript.NetworkController.changeEntityNameById,
+        controllers.routes.javascript.NetworkController.getRelations,
         controllers.routes.javascript.EntityController.getEntities,
         controllers.routes.javascript.EntityController.getEntityTypes,
         controllers.routes.javascript.EntityController.getEntitiesByType,
