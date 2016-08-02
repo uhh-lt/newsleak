@@ -113,7 +113,9 @@ class Application @Inject extends Controller {
         controllers.routes.javascript.MetadataController.getSpecificMetadata,
         controllers.routes.javascript.MetadataController.getKeywords,
         controllers.routes.javascript.MetadataController.getMetadataTypes,
-        controllers.routes.javascript.SearchController.getAutocomplete
+        controllers.routes.javascript.SearchController.getAutocomplete,
+        controllers.routes.javascript.HistogramController.getHistogram,
+        controllers.routes.javascript.HistogramController.getHistogramLod
 
       )
     ).as(JAVASCRIPT)
