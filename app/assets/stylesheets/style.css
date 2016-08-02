@@ -69,6 +69,10 @@ line {
     stroke: #696969;
 }
 
+.edgepath {
+    stroke: #F5F5F5;
+}
+
 .dropdown-button-menu
 {
 	padding: 0px 0px 0px 0px;

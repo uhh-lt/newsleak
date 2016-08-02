@@ -677,7 +677,8 @@ define([
                         .attr('id', function(d){return 'edgeline_' + d.id;})
                         .style('opacity', 0)  // Make new edges at first invisible.
                         .style('stroke-width', function (d) {
-                            return edgeScale(d.freq)+'px';
+                            //return edgeScale(d.freq)+'px';
+                            return '4px'
                         })
                         .on('mouseup', function (d) {  // when clicking on an edge
                             var index = selectedEdges.indexOf(d);
@@ -717,7 +718,7 @@ define([
                     edgepaths.exit().remove();  // Remove old paths.
                     // add the new edge labels
                     edgelabels = edgelabels.data(force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-                    edgelabels.enter()
+                    /*edgelabels.enter()
                                 .append('text')
                                 .attr('id', function(d, i){
                                     return 'edgelabel_' + d.id;
@@ -735,7 +736,7 @@ define([
                                 .style('text-anchor', 'middle')
                                 .attr('startOffset', '50%')
                                 .text(function(d,i){ return d.freq; })
-                                .style('text-shadow', '-1px -1px 3px #FFFFFF, 1px -1px 3px #FFFFFF, -1px 1px 3px #FFFFFF, 1px 1px 3px #FFFFFF');
+                                .style('text-shadow', '-1px -1px 3px #FFFFFF, 1px -1px 3px #FFFFFF, -1px 1px 3px #FFFFFF, 1px 1px 3px #FFFFFF');*/
                     edgelabels.exit().remove();  // Remove old edge labels.
 
                     // update nodes
