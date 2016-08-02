@@ -1713,17 +1713,6 @@ define([
                         }
                     );
 
-                    /*edges.forEach(
-                        function(edge)
-                        {
-                            if(nodes.find(edge.source.id) != undefined && nodes.find(edge.target.id) != undefined)
-                            {
-                                console.log(edge)
-                                setEdgeDisabled(edge);
-                            }
-                        }
-                    )*/
-
                     reload();
                     calculateNewForceSize();
 
