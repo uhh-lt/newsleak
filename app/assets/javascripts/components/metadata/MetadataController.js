@@ -221,45 +221,43 @@ define([
                     };
 
                     $scope.initEntityCharts = function () {
+                        var facets = [{'key':'dummy','data': []}];
+                        var entities = [];
+                        var fulltext = [];
+                        var timeRange = "";
+
                         $scope.observer.getEntityTypes().then(function(types) {
                             types.forEach(function (x) {
                                 $scope.chartConfigs[x] = angular.copy($scope.chartConfig);
+                                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities, timeRange,50,x).get().then(function(result) {
 
-                                playRoutes.controllers.EntityController.getEntitiesByType(x).get().then(
-                                    function (result) {
-
-                                        $scope.frequencies[x] = [];
-                                        $scope.labels[x] = [];
-                                        $scope.ids[x] = [];
-                                        result.data.forEach(function (entity) {
-                                            $scope.frequencies[x].push(entity.freq);
-                                            $scope.labels[x].push(entity.name);
-                                            $scope.ids[x].push(entity.id);
-                                        });
-
-
-                                        $scope.chartConfigs[x].xAxis["categories"] = $scope.labels[x];
-                                        $scope.chartConfigs[x]["series"] = [{
-                                            name: 'Total',
-                                            data: $scope.frequencies[x],
-                                            cursor: 'pointer',
-                                            point: {
-                                                events: {
-                                                    click: function () {
-                                                        $scope.clickedItem(this, 'entity', x);
-                                                    }
+                                    $scope.frequencies[x] = [];
+                                    $scope.labels[x] = [];
+                                    $scope.ids[x] = [];
+                                    result.data.forEach(function (entity) {
+                                        $scope.frequencies[x].push(entity.docCount);
+                                        $scope.labels[x].push(entity.name);
+                                        $scope.ids[x].push(entity.id);
+                                    });
+                                    $scope.chartConfigs[x].xAxis["categories"] = $scope.labels[x];
+                                    $scope.chartConfigs[x]["series"] = [{
+                                        name: 'Total',
+                                        data: $scope.frequencies[x],
+                                        cursor: 'pointer',
+                                        point: {
+                                            events: {
+                                                click: function () {
+                                                    $scope.clickedItem(this, 'entity', x);
                                                 }
                                             }
-                                        }];
-                                        $scope.chartConfigs[x].chart.renderTo = "chart_" + x.toLowerCase();
+                                        }
+                                    }];
+                                    $scope.chartConfigs[x].chart.renderTo = "chart_" + x.toLowerCase();
 
-                                        $scope.metaCharts[x] = new Highcharts.Chart($scope.chartConfigs[x]);
-                                    });
-
+                                    $scope.metaCharts[x] = new Highcharts.Chart($scope.chartConfigs[x]);
+                                });
                             });
-                        }
-                        )
-
+                        });
                     };
 
                     $scope.initMetadataCharts = function () {
