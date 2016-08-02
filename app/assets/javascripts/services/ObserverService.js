@@ -36,6 +36,7 @@ define([
             var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext"];
             var metadataTypes = [];
             var entityTypes = [];
+            var histogramLoD = [];
             types.forEach(function(type) {
                 items[type] = [];
             });
@@ -62,12 +63,15 @@ define([
                 playRoutes.controllers.EntityController.getEntityTypes().get().then(function (response) {
                     entityTypes = angular.copy(response.data);
                     deferred.resolve(entityTypes);
-                    //angular.forEach(metadataTypes, function(type) {
-                    //    items['metadata'].push(type);
-                    //    items['metadata'][type] = [];
-                    //});
-                    //TODO: how to add metadata filter
-                    //items['metadata']['Tags'].push('PREF');
+                });
+                return deferred.promise;
+            }
+            //fetch levels of detail for histogram
+            function updateLoD() {
+                var deferred = $q.defer();
+                playRoutes.controllers.HistogramController.getHistogramLod().get().then(function (response) {
+                    histogramLoD = angular.copy(response.data);
+                    deferred.resolve(histogramLoD);
                 });
                 return deferred.promise;
             }
@@ -78,7 +82,7 @@ define([
             //promises.then() waits for factory ready to use
             var promiseMetadata = updateMetadataTypes();
             var promiseEntities = updateEntityTypes();
-
+            var promiseLoD = updateLoD();
             //var promise = $q.all([updateMetadataTypes(), updateEntityTypes()]);
 
             return {
@@ -223,6 +227,13 @@ define([
 
                 getTimeRange: function() {
                     if(items["time"].length == 0) return ""; else return items["time"][items["time"].length-1].data.name;
+                },
+                /**
+                 * after async type load, you get the types (promise.then(function(lod) [}))
+                 * @returns promise lod are fetched
+                 */
+                getHistogramLod: function() {
+                    return promiseLoD;
                 }
             }
         }]);
