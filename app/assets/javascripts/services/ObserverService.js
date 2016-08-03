@@ -25,7 +25,7 @@ define([
 
     angular.module("myApp.observer", ['play.routing', 'angularMoment']);
     angular.module("myApp.observer")
-        .factory('ObserverService', ['playRoutes', '$q', function(playRoutes, $q) {
+        .factory('ObserverService', ['playRoutes', '$q', '$timeout', function(playRoutes, $q, $timeout) {
             //holds all observer functions
             var observerCallbacks = [];
             //all items in order
@@ -91,13 +91,14 @@ define([
                  */
                 registerObserverCallback: function(callback){
                     observerCallbacks.push(callback);
+
                 },
                 /**
                  * call all observer callback functions
                  */
                 notifyObservers: function(){
                     angular.forEach(observerCallbacks, function(callback){
-                        callback();
+                        $timeout(callback,0);
                     });
                 },
                 

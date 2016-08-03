@@ -71,6 +71,9 @@ define([
                     // General configuration for the chart
                     chartConfig: {
                         options: {
+                            title: {
+                                text: null
+                            },
                             chart: {
                                 type: 'column',
                                 // height: 200,
@@ -83,21 +86,7 @@ define([
                                     }
                                 },
                                 reflow: true,
-                                events: {
-                                    // Click event, when drill up button is clicked
-                                    drillup: function () {
-                                        // Destroy popovers
-                                        $('.popover[role="tooltip"]').popover('destroy');
-                                    },
-                                    /*
-                                     When a bar is clicked two things shall happen:
-                                     1. Load the documents that belong to that bar (i. e. the time frame)
-                                     2. Do not drilldown
-                                     */
-                                    drilldown: function (column) {
-
-                                    }
-                                }
+                                events: ""
                             },
                             credits: false,
                             xAxis: {
@@ -136,26 +125,18 @@ define([
                             },
                             legend: {
                                 enabled: false
-                            },
-                            tooltip: {
-                                useHTML: true,
-                                formatter: function () {
-                                    var s = '' + this.series.data[this.x].name + '<br/>'
-                                        + '<span style="color:' + this.series.color + '">' + this.series.name
-                                        + '</span>: <b>' + this.y + ' Documents</b>';
-                                    return s;
-                                }
+
                             }
                         },
                         title: {
                             text: ''
-                        }
-                        ,
-                        loading: false,
+                        },
+                        drilldown: {
+                            series: []
+                        },
+                        loading: false
                         //chart logic
-                        func: function (chart) {
-                            addPlotLineForNow(chart);
-                        }
+
                     }
                 };
                 return config;
@@ -166,6 +147,7 @@ define([
             '$scope',
             '$compile',
             '$timeout',
+            '$q',
             'playRoutes',
             'moment',
             'appData',
@@ -173,7 +155,7 @@ define([
             'util',
             'HistogramFactory',
             'ObserverService',
-            function ($scope, $compile, $timeout, playRoutes, moment, appData, sourceShareService, util, HistogramFactory, ObserverService) {
+            function ($scope, $compile, $timeout, $q, playRoutes, moment, appData, sourceShareService, util, HistogramFactory, ObserverService) {
 
                 /*
                  There is an issue with the bar chart: Sometimes the document count is 0 which cannot be plotted.
@@ -181,13 +163,24 @@ define([
                  */
                 var PSEUDO_ZERO_VALUE = null;
 
-                $scope.loadedDocuments = {};
+                $scope.initialized = false;
+                $scope.drilldown = false;
                 $scope.factory = HistogramFactory;
-                $scope.chartConfig = HistogramFactory.chartConfig;
+                $scope.chartConfig = angular.copy(HistogramFactory.chartConfig.options);
                 $scope.observer = ObserverService;
 
+                $scope.data = [];
+                //current Level of Detail in Histogram
+                $scope.currentLoD = "";
+                $scope.currentRange = "";
+
                 // fetch levels of detail from the backend
-                $scope.observer.getHistogramLod().then(function(lod) {$scope.lod  = lod});
+                $scope.observer.getHistogramLod().then(function(lod) {
+                    $scope.lod  = angular.copy(lod);
+                    $scope.currentLoD = $scope.lod[0];
+                    $scope.updateHistogram();
+                });
+
 
                 /**
                  * subscribe entity and metadata filters
@@ -199,12 +192,14 @@ define([
                 $scope.observer.subscribeItems($scope.observer_subscribe_metadata,"metadata");
                 $scope.observer.subscribeItems($scope.observer_subscribe_fulltext,"fulltext");
 
+
+
                 /**
                  * We use this wrapper in order to override the drilldown method. This is necessary
                  * because we don't want to drilldown on a bar click. Instead, the bar click fetches
                  * documents of the clicked time range.
                  * When clicking the corresponding labels, however, drilldown will be executed
-                 */
+
                 (function (H) {
                     H.wrap(H.Point.prototype, 'doDrilldown', function (p, hold, x) {
                         var UNDEFINED;
@@ -216,14 +211,14 @@ define([
                         }
                     });
                 })(Highcharts);
-
+                */
                 /**
                  * Add time range filter to observer
                  *
                  * @param range - The range delivers the information for which time frame data
                  * shall be loaded (e. g. can be values like '1970-1979', '1970', 'Jan 1980').
                  */
-                function addTimeFilter(range) {
+                $scope.addTimeFilter = function(range) {
                     $scope.observer.addItem({
                         type: 'time',
                         data: {
@@ -238,10 +233,10 @@ define([
                  because first, the corresponding label below the bar has to be found, then the
                  text (time range) extracted and only then can the documents be fetched.
                  */
-                $(document).on('click', '#chartBarchart .stack-label', function () {
+                $(document).on('click', '#histogram .stack-label', function () {
                     // + 1 because nth-child is 1-based
                     var x = parseInt($(this).attr('data-x')) + 1;
-                    var range = $("#chartBarchart .highcharts-xaxis-labels text:nth-child(" + x + ")")[0].childNodes[0];
+                    var range = $("#histogram .highcharts-xaxis-labels text:nth-child(" + x + ")")[0].childNodes[0];
                     // We have to handle decade / year and month / day differently, as month / day are within
                     // an additional tspan tag; this is for year / month
                     if (range.data != undefined) {
@@ -251,7 +246,8 @@ define([
                     else {
                         range = range.innerHTML;
                     }
-                    addTimeFilter(range);
+                    console.log(range);
+                    $scope.addTimeFilter(range);
 
 
                 });
@@ -259,207 +255,137 @@ define([
                 // set language related options
                 Highcharts.setOptions($scope.factory.highchartsOptions);
 
-                /**
-                 * This function loads the data with the amount of documents and
-                 * creates a bar chart that represents this data.
-                 */
-                function loadAndDrawChart() {
-                    playRoutes.controllers.DocumentController.getFrequencySeries().get().then(function (response) {
-                        var documentData = countDocuments(response.data);
-                        $scope.factory.series = [{
-                            name: "Kissinger Cables",
-                            data: getSeriesData(documentData)
-                        }];
-                        $scope.chartConfig.options.drilldown = getDrilldown(documentData, "Kissinger Cables");
-                    });
-                }
+                $scope.clickedItem = function (category) {
+                    $scope.addTimeFilter(category.name);
+                };
 
-                /**
-                 * This function creates the data for the initial barchart.
-                 *
-                 * @param countDocuments - The result of the function countDocuments.
-                 * @return The data for the initial bar chart.
-                 */
-                function getSeriesData(countDocuments) {
-                    var seriesData = [];
-                    for (var i = 0; i < countDocuments.length; i++) {
-                        seriesData.push({
-                            name: countDocuments[i].name,
-                            y: countDocuments[i].y,
-                            drilldown: countDocuments[i].name
-                        });
-                    }
-                    return seriesData;
-                }
 
-                /**
-                 * This function creates the drilldown with the given data.
-                 *
-                 * @param countDocuments - The result of the function countDocuments.
-                 * @param {String} name - The name of the series.
-                 * @return The drilldown for the bar chart.
-                 */
-                function getDrilldown(countDocuments, name) {
-                    var drilldown = {
-                        series: []
-                    };
-                    // Iterate over decades.
-                    for (var a = 0; a < countDocuments.length; a++) {
-                        drilldown.series.push({
-                            id: countDocuments[a].name,
-                            name: name + ' ' + countDocuments[a].name,
-                            data: countDocuments[a].data
-                        });
-                        // Iterate over years.
-                        for (var b = 0; b < countDocuments[a].data.length; b++) {
-                            var nameB = countDocuments[a].data[b].name;
-                            if (countDocuments[a].data[b].y == 0) {
-                                countDocuments[a].data[b].drilldown = null;
-                                // Replace 0 with null (see comment above PSEUDO_ZERO_VALUE)
-                                countDocuments[a].data[b].y = PSEUDO_ZERO_VALUE;
-                            }
-                            drilldown.series.push({
-                                id: nameB,
-                                name: name + ' ' + nameB,
-                                data: countDocuments[a].subdata[b].data
-                            });
-                            // Iterate over months.
-                            for (var c = 0; c < countDocuments[a].subdata[b].data.length; c++) {
-                                var nameC = countDocuments[a].subdata[b].data[c].name;
-                                if (countDocuments[a].subdata[b].data[c].y == 0) {
-                                    countDocuments[a].subdata[b].data[c].drilldown = null;
-                                    countDocuments[a].subdata[b].data[c].y = PSEUDO_ZERO_VALUE;  // Replace 0 with null
+                $scope.initHistogram = function() {
+                    $scope.chartConfig["series"] = [{
+                        name: 'Overview',
+                        data: $scope.data,
+                        cursor: 'pointer',
+                        point: {
+                            events: {
+                                click: function(e) {
+                                    $scope.clickedItem(this);
                                 }
-                                drilldown.series.push({
-                                    id: nameC,
-                                    name: name + ' ' + nameC,
-                                    data: countDocuments[a].subdata[b].subdata[c].data,
-                                    point: {
-                                        events: {
-                                            click: function () {
-                                                addTimeFilter(this.series.data[this.x].name);
-                                            },
+                            }
+                        }
+                    }];
+
+                    $scope.chartConfig.chart.events = {
+                        drilldown: function(e) {
+                            $scope.drillDown(e, this)
+                        },
+                        drillup: function(e) {
+                            $scope.drillUp(e)
+                        }
+                    };
+                    $scope.chartConfig.chart.renderTo = "histogram";
+
+                    $scope.histogram = new Highcharts.Chart($scope.chartConfig);
+                    $scope.initialized = true;
+                };
+
+                /**
+                 * updated on filter changes
+                 */
+                $scope.updateHistogram = function() {
+                    console.log("reload histogram");
+                    var deferred = $q.defer();
+                    var entities = [];
+                    angular.forEach($scope.entityFilters, function(item) {
+                        entities.push(item.data.id);
+                    });
+                    var facets = [];
+                    if($scope.metadataFilters.length > 0) {
+                        angular.forEach($scope.metadataFilters, function(metaType) {
+                            if($scope.metadataFilters[metaType].length > 0) {
+                                var keys = [];
+                                angular.forEach($scope.metadataFilters[metaType], function(x) {
+                                    keys.push(x.data.name);
+                                });
+                                facets.push({key: metaType, data: keys});
+                            }
+                        });
+                        if(facets == 0) facets = [{'key':'dummy','data': []}];
+
+                    } else {
+                        facets = [{'key':'dummy','data': []}];
+                    }
+                    var fulltext = [];
+                    angular.forEach($scope.fulltextFilters, function(item) {
+                        fulltext.push(item.data.name);
+                    });
+                    //TODO: figure out: time filter vs. time range for histogram
+                    //playRoutes.controllers.HistogramController.getHistogram(fulltext,facets,entities,$scope.observer.getTimeRange(),$scope.currentLoD).get().then(function(respone) {
+                    playRoutes.controllers.HistogramController.getHistogram(fulltext,facets,entities,$scope.currentRange,$scope.currentLoD).get().then(function(respone) {
+                        $scope.data = [];
+                        angular.forEach(respone.data.histogram, function(x) {
+                            var count = x.count;
+                            if(x.count == 0)
+                                count = null;
+                            var drilldown = x.range;
+                            if($scope.lod.indexOf($scope.currentLoD) == $scope.lod.length -1) drilldown = false;
+                            $scope.data.push({
+                                name: x.range,
+                                y: x.count,
+                                drilldown: drilldown,
+                                title: x.range
+                            });
+                        });
+                        if(!$scope.initialized)
+                            $scope.initHistogram();
+                        if(!$scope.drilldown)
+                            $scope.histogram.series[0].setData($scope.data);
+
+                        deferred.resolve('success');
+                    });
+                    return deferred.promise;
+                };
+
+                $scope.updateLoD = function(lod) {
+                    $scope.currentLoD = lod;
+                };
+
+
+
+                $scope.observer.registerObserverCallback($scope.updateHistogram);
+
+                $scope.drillDown = function(e, chart) {
+                    console.log("histogram drilldown");
+                    if (!e.seriesOptions) {
+                        $scope.drilldown = true;
+                        $scope.histogram.showLoading('Loading ...');
+                        $scope.currentLoD = $scope.lod[$scope.lod.indexOf($scope.currentLoD) + 1];
+                        $scope.currentRange = e.point.name;
+                        //$scope.addTimeFilter(e.point.name);
+                        $scope.updateHistogram().then(function (res) {
+
+                            $scope.drilldown = false;
+                            var series = [{
+                                name: e.point.name,
+                                data: $scope.data,
+                                cursor: 'pointer',
+                                point: {
+                                    events: {
+                                        click: function(e) {
+                                            $scope.clickedItem(this);
                                         }
                                     }
-                                });
-                                // Replace 0 with null
-                                for (var i = 0; i < countDocuments[a].subdata[b].subdata[c].data.length; i++) {
-                                    if (countDocuments[a].subdata[b].subdata[c].data[i].y == 0) {
-                                        countDocuments[a].subdata[b].subdata[c].data[i].y = PSEUDO_ZERO_VALUE;
-                                    }
                                 }
-                            }
-                        }
-                    }
-                    return drilldown;
-                }
-
-
-                /**
-                 * This function returns the amount of days the month 'month' in the
-                 * year 'year' has.
-                 *
-                 * @param {Number} month - The month. A number from the set [1,12].
-                 * @param {Number} year - The year.
-                 * @return The amount of days the given month has in the given year.
-                 */
-                function daysInMonth(month, year) {
-                    return new Date(year, month, 0).getDate();
-                }
-
-
-                /**
-                 * This function counts how many documents in the given data are on
-                 * which decade, year, month and day.
-                 *
-                 * @param data - An array containing arrays which contain the time
-                 *               in milliseconds and the amount of documents at this
-                 *               time.
-                 * @return A structur that contains the amount of documents on the
-                 *         decades, years, months and days.
-                 */
-                function countDocuments(data) {
-                    var documentCount = [];
-                    var firstDecade = getDecade(data[0][0]);
-                    var numberOfdecades = (getDecade(data[data.length - 1][0]) - firstDecade) / 10;
-                    // Iterate over all decades, years, months and days and set
-                    // the amount of documents to 0.
-                    for (var decade = 0; decade <= numberOfdecades; decade++) {
-                        // Push decade.
-                        documentCount.push({
-                            name: (firstDecade + 10 * decade) + '-' + (firstDecade + 9 + 10 * decade),
-                            y: 0,
-                            data: [],
-                            subdata: []
+                            }];
+                            chart.addSeriesAsDrilldown(e.point, series[0]);
+                            chart.hideLoading();
                         });
-                        for (var year = 0; year < 10; year++) {
-                            // Push year.
-                            documentCount[decade].data.push({
-                                name: firstDecade + 10 * decade + year,
-                                y: 0,
-                                drilldown: firstDecade + 10 * decade + year
-                            });
-                            documentCount[decade].subdata.push({
-                                data: [],
-                                subdata: []
-                            })
-                            for (var month = 0; month < 12; month++) {
-                                // Push month.
-                                documentCount[decade].subdata[year].data.push({
-                                    name: $scope.factory.monthAbbreviations[month] + ' ' + (firstDecade + 10 * decade + year),
-                                    y: 0,
-                                    drilldown: $scope.factory.monthAbbreviations[month] + ' ' + (firstDecade + 10 * decade + year)
-                                });
-                                documentCount[decade].subdata[year].subdata.push({
-                                    data: [],
-                                    subdata: []
-                                });
-                                var numberOfDays = daysInMonth(month + 1, year);
-                                for (var day = 0; day < numberOfDays; day++) {
-                                    // Push day.
-                                    documentCount[decade].subdata[year].subdata[month].data.push({
-                                        name: (day + 1) + '.' + (month + 1) + '.' + (firstDecade + 10 * decade + year),
-                                        y: 0
-                                    });
-                                }
-
-                            }
-                        }
                     }
-                    // Insert the amount of documents into documentCount.
-                    for (var i = 0; i < data.length; i++) {
-                        var docs = data[i][1];
-                        var date = new Date(data[i][0]);
-                        var year = date.getFullYear();
-                        var decade = year - (year % 10);
-                        var decadeIndex = (decade - firstDecade) / 10;
-                        var month = date.getMonth();  // Element of [0,11].
-                        var day = date.getDate();  // Element of [1,31].
-                        documentCount[decadeIndex].y += docs;
-                        documentCount[decadeIndex].data[year - decade].y += docs;
-                        documentCount[decadeIndex].subdata[year - decade].data[month].y += docs;
-                        documentCount[decadeIndex].subdata[year - decade].subdata[month].data[day - 1].y += docs;
-                    }
-                    return documentCount;
+                };
+
+                $scope.drillUp = function(e) {
+                    console.log("histogram drillup");
+                    $scope.currentLoD = $scope.lod[$scope.lod.indexOf($scope.currentLoD)-1];
                 }
-
-
-                /**
-                 * This function returns the decade (the year the decade starts)
-                 * from the given date. The date is in unix time * 1000.
-                 *
-                 * @param {Number} date - The date which decade is requested.
-                 * @return The decade (the year it starts) of the given date.
-                 */
-                function getDecade(date) {
-                    var d = new Date(date);
-                    d = d.getFullYear() - (d.getFullYear() % 10);
-                    return d;
-                }
-
-                // draw the chart
-                loadAndDrawChart();
-
             }
         ])
 });
