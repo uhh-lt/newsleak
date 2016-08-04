@@ -121,8 +121,12 @@ define([
                             plotOptions: {
                                 column: {
                                     grouping: false,
-                                    shadow: false
+                                    shadow: false,
+                                    dataLabels: {
+                                        enabled: true
+                                    }
                                 }
+
                             },
                             legend: {
                                 enabled: false
@@ -230,7 +234,7 @@ define([
                             name: range
                         }
                     });
-                }
+                };
 
                 /*
                  The click on a label above a bar. I (Patrick) did not find a way to implement
@@ -371,7 +375,7 @@ define([
                             else if(!$scope.drilldown && !$scope.drillup) {
                                 var series = {
                                     data: $scope.dataFilter,
-                                    name: 'Filter',
+                                    name: $scope.currentRange,
                                     color: 'black',
                                     cursor: 'pointer',
                                     point: {
@@ -426,6 +430,7 @@ define([
                             var series = [{
                                 name: e.point.name,
                                 data: $scope.data,
+                                color: 'rgb(149, 206, 255)',
                                 cursor: 'pointer',
                                 point: {
                                     events: {
