@@ -467,7 +467,7 @@ define([
                         if ($scope.lod.indexOf($scope.currentLoD) == 0)
                             $scope.currentRange = "";
                         else
-                            $scope.currentRange = $scope.histogram.series[0].name;
+                            $scope.currentRange = $scope.observer.getTimeRange();
                         $scope.updateHistogram().then(function () {
                             $scope.histogram.series[0].setData($scope.data);
                             var series = {
