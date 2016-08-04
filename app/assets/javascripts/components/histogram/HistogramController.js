@@ -426,7 +426,6 @@ define([
                             var series = [{
                                 name: e.point.name,
                                 data: $scope.data,
-                                color: 'black',
                                 cursor: 'pointer',
                                 point: {
                                     events: {
@@ -439,6 +438,7 @@ define([
                                 {
                                 name: e.point.name,
                                 data: $scope.dataFilter,
+                                color: 'black',
                                 cursor: 'pointer',
                                 point: {
                                     events: {
@@ -473,7 +473,6 @@ define([
                             var series = {
                                 data: $scope.dataFilter,
                                 name: 'Filter',
-                                color: 'black',
                                 cursor: 'pointer',
                                 point: {
                                     events: {
