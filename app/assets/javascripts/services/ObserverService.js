@@ -229,6 +229,9 @@ define([
                 getTimeRange: function() {
                     if(items["time"].length == 0) return ""; else return items["time"][items["time"].length-1].data.name;
                 },
+                removeLastTimeFilter: function() {
+                    this.removeItem(items["time"][items["time"].length-1].id,'time');
+                },
                 /**
                  * after async type load, you get the types (promise.then(function(lod) [}))
                  * @returns promise lod are fetched

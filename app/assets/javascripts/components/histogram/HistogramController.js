@@ -120,7 +120,8 @@ define([
                             },
                             plotOptions: {
                                 column: {
-                                    stacking: 'normal'
+                                    grouping: false,
+                                    shadow: false
                                 }
                             },
                             legend: {
@@ -165,14 +166,18 @@ define([
 
                 $scope.initialized = false;
                 $scope.drilldown = false;
+                $scope.drillup = false;
                 $scope.factory = HistogramFactory;
                 $scope.chartConfig = angular.copy(HistogramFactory.chartConfig.options);
                 $scope.observer = ObserverService;
 
                 $scope.data = [];
+                $scope.dataFilter = [];
                 //current Level of Detail in Histogram
                 $scope.currentLoD = "";
                 $scope.currentRange = "";
+
+                $scope.emptyFacets = [{'key':'dummy','data': []}];
 
                 // fetch levels of detail from the backend
                 $scope.observer.getHistogramLod().then(function(lod) {
@@ -309,10 +314,10 @@ define([
                                 facets.push({key: metaType, data: keys});
                             }
                         });
-                        if(facets == 0) facets = [{'key':'dummy','data': []}];
+                        if(facets == 0) facets = $scope.emptyFacets;
 
                     } else {
-                        facets = [{'key':'dummy','data': []}];
+                        facets = $scope.emptyFacets;
                     }
                     var fulltext = [];
                     angular.forEach($scope.fulltextFilters, function(item) {
@@ -321,26 +326,73 @@ define([
                     //TODO: figure out: time filter vs. time range for histogram
                     //playRoutes.controllers.HistogramController.getHistogram(fulltext,facets,entities,$scope.observer.getTimeRange(),$scope.currentLoD).get().then(function(respone) {
                     playRoutes.controllers.HistogramController.getHistogram(fulltext,facets,entities,$scope.currentRange,$scope.currentLoD).get().then(function(respone) {
-                        $scope.data = [];
-                        angular.forEach(respone.data.histogram, function(x) {
-                            var count = x.count;
-                            if(x.count == 0)
-                                count = null;
-                            var drilldown = x.range;
-                            if($scope.lod.indexOf($scope.currentLoD) == $scope.lod.length -1) drilldown = false;
-                            $scope.data.push({
-                                name: x.range,
-                                y: x.count,
-                                drilldown: drilldown,
-                                title: x.range
+                        var overallPromise = $q.defer();
+                        if($scope.drilldown ||  $scope.drillup) {
+                            playRoutes.controllers.HistogramController.getHistogram("",$scope.emptyFacets,[],$scope.currentRange,$scope.currentLoD).get().then(function(responeAll) {
+                                $scope.data = [];
+                                angular.forEach(responeAll.data.histogram, function(x) {
+                                    var count = x.count;
+                                    if(x.count == 0)
+                                        count = null;
+                                    var drilldown = x.range;
+                                    if($scope.lod.indexOf($scope.currentLoD) == $scope.lod.length -1) drilldown = false;
+                                    $scope.data.push({
+                                        name: x.range,
+                                        y: count,
+                                        drilldown: drilldown,
+                                        title: x.range
+                                    });
+                                });
+                                overallPromise.resolve('success');
                             });
-                        });
-                        if(!$scope.initialized)
-                            $scope.initHistogram();
-                        if(!$scope.drilldown)
-                            $scope.histogram.series[0].setData($scope.data);
+                        } else {
+                            overallPromise.resolve('success');
+                        }
 
-                        deferred.resolve('success');
+                        overallPromise.promise.then(function() {
+                            $scope.dataFilter = [];
+                            angular.forEach(respone.data.histogram, function(x) {
+                                var count = x.count;
+                                if(x.count == 0)
+                                    count = null;
+                                var drilldown = x.range;
+                                if($scope.lod.indexOf($scope.currentLoD) == $scope.lod.length -1) drilldown = false;
+                                $scope.dataFilter.push({
+                                    name: x.range,
+                                    y: count,
+                                    drilldown: drilldown,
+                                    title: x.range
+                                });
+                            });
+                            if(!$scope.initialized)  {
+                                $scope.data = angular.copy($scope.dataFilter);
+                                $scope.initHistogram();
+                            }
+                            else if(!$scope.drilldown && !$scope.drillup) {
+                                var series = {
+                                    data: $scope.dataFilter,
+                                    name: 'Filter',
+                                    color: 'black',
+                                    cursor: 'pointer',
+                                    point: {
+                                        events: {
+                                            click: function () {
+                                                $scope.clickedItem(this);
+                                            }
+                                        }
+                                    }
+                                };
+                                if($scope.histogram.series[1])
+                                    $scope.histogram.series[1].setData($scope.dataFilter);
+                                else
+                                    $scope.histogram.addSeries(series);
+                            }
+
+
+
+                            deferred.resolve('success');
+                        });
+
                     });
                     return deferred.promise;
                 };
@@ -351,15 +403,22 @@ define([
 
 
 
-                $scope.observer.registerObserverCallback($scope.updateHistogram);
+                $scope.observer.registerObserverCallback(function() {
+                    if(!$scope.drilldown && !$scope.drillup)
+                        $scope.updateHistogram()
+                });
 
                 $scope.drillDown = function(e, chart) {
                     console.log("histogram drilldown");
+
                     if (!e.seriesOptions) {
                         $scope.drilldown = true;
                         $scope.histogram.showLoading('Loading ...');
                         $scope.currentLoD = $scope.lod[$scope.lod.indexOf($scope.currentLoD) + 1];
-                        $scope.currentRange = e.point.name;
+                        if($scope.lod.indexOf($scope.currentLoD) == 0)
+                            $scope.currentRange = "";
+                        else
+                            $scope.currentRange = e.point.name;
                         //$scope.addTimeFilter(e.point.name);
                         $scope.updateHistogram().then(function (res) {
 
@@ -367,6 +426,7 @@ define([
                             var series = [{
                                 name: e.point.name,
                                 data: $scope.data,
+                                color: 'black',
                                 cursor: 'pointer',
                                 point: {
                                     events: {
@@ -375,16 +435,63 @@ define([
                                         }
                                     }
                                 }
-                            }];
-                            chart.addSeriesAsDrilldown(e.point, series[0]);
+                            },
+                                {
+                                name: e.point.name,
+                                data: $scope.dataFilter,
+                                cursor: 'pointer',
+                                point: {
+                                    events: {
+                                        click: function(e) {
+                                            $scope.clickedItem(this);
+                                        }
+                                    }
+                                }
+                            }
+                            ];
+                            chart.addSingleSeriesAsDrilldown(e.point, series[0]);
+                            chart.addSingleSeriesAsDrilldown(e.point, series[1]);
+                            chart.applyDrilldown();
                             chart.hideLoading();
                         });
                     }
                 };
 
                 $scope.drillUp = function(e) {
-                    console.log("histogram drillup");
-                    $scope.currentLoD = $scope.lod[$scope.lod.indexOf($scope.currentLoD)-1];
+                    if (!$scope.drillup) {
+                        console.log("histogram drillup");
+                        $scope.histogram.showLoading('Loading ...');
+                        $scope.drillup = true;
+                        $scope.currentLoD = $scope.lod[$scope.lod.indexOf($scope.currentLoD) - 1];
+                        $scope.observer.removeLastTimeFilter();
+                        if ($scope.lod.indexOf($scope.currentLoD) == 0)
+                            $scope.currentRange = "";
+                        else
+                            $scope.currentRange = $scope.histogram.series[0].name;
+                        $scope.updateHistogram().then(function () {
+                            $scope.histogram.series[0].setData($scope.data);
+                            var series = {
+                                data: $scope.dataFilter,
+                                name: 'Filter',
+                                color: 'black',
+                                cursor: 'pointer',
+                                point: {
+                                    events: {
+                                        click: function () {
+                                            $scope.clickedItem(this);
+                                        }
+                                    }
+                                }
+                            };
+                            if ($scope.histogram.series[1])
+                                $scope.histogram.series[1].setData($scope.dataFilter);
+                            else
+                                $scope.histogram.addSeries(series);
+                            $scope.drillup = false;
+                            $scope.histogram.hideLoading();
+
+                        });
+                    }
                 }
             }
         ])
