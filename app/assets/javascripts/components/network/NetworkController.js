@@ -257,7 +257,7 @@ define([
             function unselectEdges(){
                 selectedEdges = new Array();
                 link.each(function(d){
-                    d3.select(this).style('stroke', '#696969')
+                    d3.select(this).style('stroke', '#d0d0d0')//.style('stroke', '#696969')
                                    .style('opacity', .8);
                     d3.select('#edgelabel_' + d.id).style('fill', '#000000')
                                                    .attr('font-weight', 'normal');
@@ -678,7 +678,7 @@ define([
                         .style('opacity', 0)  // Make new edges at first invisible.
                         .style('stroke-width', function (d) {
                             //return edgeScale(d.freq)+'px';
-                            return '4px'
+                            return '2px'
                         })
                         .on('mouseup', function (d) {  // when clicking on an edge
                             var index = selectedEdges.indexOf(d);
@@ -692,7 +692,7 @@ define([
                             }
                             else{  // The edge is already selected, so unselect it.
                                 selectedEdges.splice(index, 1);  // Remove the edge from the list.
-                                d3.select(this).style('stroke', '#696969')
+                                d3.select(this).style('stroke', '#d0d0d0'/*'#696969'*/)
                                                .style('obacity', .8);
                                 d3.select('#edgelabel_' + d.id)
                                             .style('fill', '#000000')
@@ -836,15 +836,34 @@ define([
                             });
 
                     // add buttons to the nodes
-                    newNodes.append('foreignObject')
-                        .attr('width', '24')
-                        .attr('height', '24')
-                        .attr('x', -12)
+                    var buttonlist = newNodes.append('foreignObject')
+                        .attr('width', '16')
+                        .attr('height', '16')
+                        .attr('x', -8)
                         .attr('y', function(d){
-                            return radius(d.docCount) - 2;
+                            return radius(d.docCount) - 4;
                         })
                         .append('xhtml:body')
-                        .html(function(d)
+                        .style('padding', '0')
+                        .style('margin-top', '0px')
+
+
+                    buttonlist
+                        .append('button')
+                        .attr('type', 'button')
+                        .attr('class', 'btn btn-default btn-block')
+                        .style('width', '100%')
+                        .style('height', '100%')
+                        .style('padding', '0px 0px 0px 0px')
+                        .append('span')
+                        .attr('class', 'glyphicon glyphicon-plus')
+                        .style('position', 'absolute')
+                        .style('left', '3px')
+                        .style('top', '3px')
+                        .style('text-align', 'center')
+                        .style('font-size', '10px')
+
+                    /*buttonlist.html(function(d)
                         {
                         	return '<button type="button" id="nodebutton_' + d.id + '" class="btn btn-xs btn-default neighbor-button" ng-show="!isViewLoading"><i id="nodebuttonicon_' + d.id + '" class="glyphicon glyphicon-plus"></i></button>'
                         })
@@ -857,7 +876,7 @@ define([
                         	{
                             	expand(d);
                             }
-                        });
+                        });*/
 
                     node.exit().remove();
 
@@ -911,7 +930,7 @@ define([
                         '<span class="tooltipImportantText">' + d.name +
                             '</span> has the type <span class="tooltipImportantText">'
                             + d.type + '</span> and is <span class="tooltipImportantText">'
-                            + d.freq + "</span> times mentioned.")
+                            + d.docCount + "</span> times mentioned.")
                         .style("left", (d3.event.pageX - 75) + "px")
                         .style("top", (d3.event.pageY + 25) + "px");
                 });
@@ -1695,6 +1714,9 @@ define([
                     //to prevent invisible selections
                     unselectNodes();
                     unselectEdges();
+
+                    var tmpnodes = nodes;
+
                     //delete all nodes and edges
                     nodes = [];
 
@@ -1703,6 +1725,14 @@ define([
                     response.data.forEach(
                         function(v)
                         {
+                            /*var enode = tmpnodes.find(function(node){return node.id === v.id;});
+                            if(enode != undefined)
+                            {
+                                enode.docCount = v.docCount;
+                                nodes.push(enode);
+                                return;
+                            }*/
+
                             nodes.push({
                             	id: v.id,
                             	name: v.name,
@@ -1714,14 +1744,12 @@ define([
                         }
                     );
 
-                    reload();
-                    calculateNewForceSize();
 
-                    svg.selectAll("*").remove();
-                    createSVG();
+                    //reload();
+                    force.nodes(nodes);
+                    //calculateNewForceSize();
+
                     start();
-
-                    console.log
 
                     playRoutes.controllers.NetworkController.getRelations(response.data.map(function(v){return v.id}), toolShareService.sliderEdgeMinFreq(), toolShareService.sliderEdgeMaxFreq()).get().then(
                         function(response)
@@ -1739,7 +1767,8 @@ define([
                                     edges.push({id: v[0], source: sourceNode, target: targetNode, freq: v[3]});
                                 }
                             )
-                            reload();
+                            force.links(edges);
+                            //calculateNewForceSize();
                             start();
                         }
                     )
