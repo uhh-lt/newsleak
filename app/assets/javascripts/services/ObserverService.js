@@ -229,8 +229,10 @@ define([
                 getTimeRange: function() {
                     if(items["time"].length == 0) return ""; else return items["time"][items["time"].length-1].data.name;
                 },
-                removeLastTimeFilter: function() {
+                drillUpTimeFilter: function() {
                     this.removeItem(items["time"][items["time"].length-1].id,'time');
+                    while(items["time"][items["time"].length-1] && items["time"][items["time"].length-1].data.lod == "month")
+                        this.removeItem(items["time"][items["time"].length-1].id,'time');
                 },
                 /**
                  * after async type load, you get the types (promise.then(function(lod) [}))
