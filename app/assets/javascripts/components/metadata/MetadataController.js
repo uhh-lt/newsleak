@@ -278,6 +278,7 @@ define([
                                     $scope.chartConfigs[x].chart.renderTo = "chart_" + x.toLowerCase();
                                     $("#chart_" + x.toLowerCase()).css("height",$scope.frequencies[x].length * 35);
                                     $scope.metaCharts[x] = new Highcharts.Chart($scope.chartConfigs[x]);
+                                    if(types.indexOf(x) >= types.length-1) $scope.updateEntityCharts();
                                 });
                             });
                         });
@@ -327,7 +328,8 @@ define([
 
                                         }
                                 );
-                            })
+                            });
+                            $scope.updateMetadataCharts();
                         })
                     };
 

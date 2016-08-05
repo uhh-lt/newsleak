@@ -268,6 +268,7 @@ define([
 
                     $scope.histogram = new Highcharts.Chart($scope.chartConfig);
                     $scope.initialized = true;
+                    $scope.updateHistogram();
                 };
 
                 /**
