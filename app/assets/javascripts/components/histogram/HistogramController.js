@@ -348,9 +348,11 @@ define([
                                 $scope.initHistogram();
                             }
                             else if(!$scope.drilldown && !$scope.drillup) {
+                                var name = "Overview";
+                                if($scope.currentRange) name = $scope.currentRange;
                                 var series = {
                                     data: $scope.dataFilter,
-                                    name: $scope.currentRange,
+                                    name: name,
                                     dataLabels: {
                                         inside: true,
                                         verticalAlign: "top",
