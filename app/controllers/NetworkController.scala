@@ -47,6 +47,12 @@ object NetworkController extends Controller {
                                                             d.writes(tuple._4)))
     }
 
+  implicit def tuple3Writes[A, B, C](implicit a: Writes[A], b: Writes[B], c: Writes[C]): Writes[(A, B, C)] = new Writes[(A, B, C)] {
+    def writes(tuple: (A, B, C)) = JsArray(Seq(a.writes(tuple._1),
+      b.writes(tuple._2),
+      c.writes(tuple._3)))
+  }
+
   implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[(A, B)] = new Writes[(A, B)] {
     def writes(tuple: (A, B)) = JsArray(Seq(a.writes(tuple._1),
       b.writes(tuple._2)))
@@ -85,6 +91,8 @@ object NetworkController extends Controller {
      * Map cacht Knoten deren DoI-Wert schonmal berechnet wurden. Wird mit dem Beginn jedes Guidance-Schrittes zurückgesetzt.
      */
     var cachedDoIValues: mutable.HashMap[(Long,Long),Double] = new mutable.HashMap[(Long,Long),Double] () ;
+
+    var cachedEdgeFreq: mutable.HashMap[(Long,Long),Int] = new mutable.HashMap[(Long,Long),Int] () ;
 
     var cachedDistanceValues: mutable.HashMap[Long,Int] = new mutable.HashMap[Long,Int] () ;
 
@@ -444,10 +452,14 @@ object NetworkController extends Controller {
     * @return sendet die Kanten+Knoten an den Benutzer
     */
   def getGuidanceNodes(focusId: Long) = Action{
+    import scalikejdbc._
+    implicit val session = AutoSession
+
     Logger.info("start guidance")
     this.focusId=focusId
     cachedDoIValues.clear()
-    val k = 25
+    cachedDistanceValues.clear()
+    val k = 20
     var edgeArr =new Array[(Long,Long)](k) //(id, source, target, frequency)
     var usedNodes = new mutable.HashSet[Long]()
     usedNodes += focusId
@@ -457,34 +469,29 @@ object NetworkController extends Controller {
 
     for (i <- 0 until k){//edgeArr.map ??
       val edge = pq.dequeue()
+      Logger.info("E:"+edge._1+","+edge._2+" V:"+doI(edge))
+
       edgeArr(i)=edge
-      if ( ! usedNodes.contains(edge._1)){
-        usedNodes += edge._1
-        pq ++= getEdges(edge._1)
-      } else if ( ! usedNodes.contains(edge._2)){
+//      if ( ! usedNodes.contains(edge._1)){
+//        usedNodes += edge._1
+//        pq ++= getEdges(edge._1)
+//      } else
+      if ( ! usedNodes.contains(edge._2)){
         usedNodes += edge._2
-        pq ++= getEdges(edge._2)
+        if (i<k/2) {
+          pq ++= getEdges(edge._2)
+        }
       }
       Logger.info(edgeArr.toString)
     }
 
     //bestimme Namen, Frequenz und Typ der Knoten
-    val sj = new StringJoiner(",", "(", ")")
-    usedNodes.foreach(node => sj.add(node.toString))
-    val entityIdString = sj.toString
-    val nodeArr = new Array[(Long,String,String,Int)](usedNodes.size)//(id, name, type, frequency)
-    DB.withConnection { implicit connection =>
-      val stmt = connection.createStatement
-      Logger.info("ggN SQL: SELECT id, name, type, frequency FROM entity WHERE id IN " + entityIdString)
-      val rs = stmt.executeQuery("SELECT id, name, type, frequency FROM entity WHERE id IN " + entityIdString)
-      var i = 0
-      while (rs.next()){
-        nodeArr(i) = new Tuple4(rs.getLong("id"), rs.getString("name"), rs.getString("type"), rs.getInt("frequency"))
-        i+=1
-      }
-    }
+    Logger.info("ggN SQL: SELECT id, name, type, frequency FROM entity WHERE id IN ")
+    val nodes = sql"""SELECT id, name, type, frequency FROM entity WHERE id IN ($usedNodes)"""
+        .map(rs => (rs.long("id"), rs.string("name"), rs.int("frequency"), rs.string("type"))).list().apply()
 
-    val result = new JsObject(Map(("nodes", Json.toJson(nodeArr)), ("links", Json.toJson(edgeArr))))//TODO Kantenattribute müssen auch zurückgegeben werden
+
+    val result = new JsObject(Map(("nodes", Json.toJson(nodes)), ("links", Json.toJson(edgeArr.map(e => (e._1, e._2, cachedEdgeFreq.apply(e)))))))//TODO Kantenattribute müssen auch zurückgegeben werden
 
     Ok(Json.toJson(result)).as("application/json")
   }
@@ -498,29 +505,30 @@ object NetworkController extends Controller {
     import scalikejdbc._
     implicit val session = AutoSession
 
-    var distToFocus = cachedDistanceValues.getOrElse(nodeId,0)//Wenn der Knoten nicht in der Map liegt, muss es sich um dem Fokus handeln, also dist=0
+    var distToFocus = cachedDistanceValues.getOrElse(nodeId,-1)//Wenn der Knoten nicht in der Map liegt, muss es sich um dem Fokus handeln, also dist=0
       distToFocus += 1
-      val result = sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq
+    val result = sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq
           FROM relationship LEFT JOIN entity AS et1 ON et1.id = relationship.entity1
-          LEFT JOIN entity AS et2 ON et2.id = relationship.entity2 WHERE entity1 = $nodeId"""
-        .map(rs => {
-          ((rs.long(1), rs.long(2)), (scala.math.log(rs.int(3)/(rs.int(4)+rs.int(5))) / -scala.math.log(rs.int(3))+1)/2)
-        }).toList().apply().filter(x => cachedDistanceValues.getOrElse(x._1._2, distToFocus+1)>distToFocus) //TODO Optimierung: npmi-plus nur berechnen wenn er wirklich gebraucht wird (also nach dem Filtern)
-      cachedDistanceValues ++= result.map(x=>(x._1._2, distToFocus))
-      cachedDoIValues ++= result.map(x=>(x._1,{
-        val alpha = 1
-        val beta = 1
-        val gamma = 0
+          LEFT JOIN entity AS et2 ON et2.id = relationship.entity2 WHERE entity1 = $nodeId ORDER BY relationship.frequency DESC LIMIT 300""".map(rs => {(rs.long(1),rs.long(2),rs.int(3),rs.int(4),rs.int(5))//TODO Limit verändert sich
+    })
+      .toList().apply().filter(x => cachedDistanceValues.getOrElse(x._2, distToFocus+1)>distToFocus).map(x =>
+  ((x._1, x._2), (x._3*x._3*x._3)/(x._4*x._5), x._3) )
 
-        val API = x._2
-        val D = -scala.math.pow(0.5,distToFocus*x._2) //TODO macht diese Berechnung Sinn?
-        val UI = 0
-        API*alpha+D*beta+UI*gamma
+    cachedDistanceValues ++= result.map(x=>(x._1._2, distToFocus))
+    cachedEdgeFreq ++= result.map(x=>(x._1, x._3))
+    cachedDoIValues ++= result.map(x=>(x._1,{
+      val alpha = 1
+      val beta = 1
+      val gamma = 0
+
+      val API = x._2
+      val D = -(1-scala.math.pow(0.5,distToFocus)*x._2)
+      val UI = 0
+      API*alpha+D*beta+UI*gamma
       }))
 
       result.map(_._1)
   }
-
 
 }
 
