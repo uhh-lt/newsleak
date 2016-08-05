@@ -33,9 +33,8 @@ define([
                 'appData',
                 'metaShareService',
                 'sourceShareService',
-                'filterShareService',
                 'ObserverService',
-                function ($scope, $timeout, playRoutes, appData, metaShareService, sourceShareService, filterShareService, ObserverService) {
+                function ($scope, $timeout, playRoutes, appData, metaShareService, sourceShareService, ObserverService) {
 
                     $scope.frequencies = [];
                     $scope.labels = [];
@@ -375,7 +374,6 @@ define([
                     /** entry point here **/
                     $scope.metaShareService = metaShareService;
                     $scope.sourceShareService = sourceShareService;
-                    $scope.filterShareService = filterShareService;
 
 
                     //TODO: calc height on bar count -> scroll bar

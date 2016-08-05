@@ -28,14 +28,12 @@ define([
                 'playRoutes',
                 'sourceShareService',
                 'graphPropertiesShareService',
-                'tagSelectShareService',
                 'ObserverService',
                 function ($scope,
                           $window,
                           playRoutes,
                           sourceShareService,
                           graphPropertiesShareService,
-                          tagSelectShareService,
                           ObserverService) {
 
                     $scope.sourceShared = sourceShareService;

@@ -17,13 +17,11 @@
 define([
     'angular',
     'angularMoment',
-    './factory/chart/ChartFactory',
     './factory/filter/FilterFactory',
     './factory/network/ToolFactory',
     './factory/metadata/MetaFactory',
     './factory/source/SourceFactory',
     './factory/source/HighlightFactory',
-    './factory/source/TagSelectFactory',
     './components/sources/SourceController',
     './components/network/NetworkController',
     './components/network/ToolController',
@@ -58,7 +56,7 @@ define([
             'myApp.tools',
             'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
             'myApp.network', 'myApp.metadata', 'myApp.map', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
-            'myApp.tagselectfactory', 'myApp.filterfactory','myApp.metafactory', 'myApp.toolfactory',
+            'myApp.filterfactory','myApp.metafactory', 'myApp.toolfactory',
             'myApp.histogram', 'myApp.search'
         ]
     );

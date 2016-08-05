@@ -69,8 +69,6 @@ define([
             'graphPropertiesShareService',
             'highlightShareService',
             'uiShareService',
-            'tagSelectShareService',
-            'filterShareService',
             'toolShareService',
             'ObserverService',
         function (
@@ -84,15 +82,11 @@ define([
             graphPropertiesShareService,
             highlightShareService,
             uiShareService,
-            tagSelectShareService,
-            filterShareService,
             toolShareService,
             ObserverService
             )
         {
 
-			$scope.filterShared = filterShareService;
-            $scope.tagSelectShared = tagSelectShareService;
             $scope.graphShared = graphPropertiesShareService;
             $scope.uiShareService = uiShareService;
 
@@ -453,57 +447,6 @@ define([
 
             angular.element($window).bind('resize', function () {
                 calculateNewForceSize();
-            });
-
-        	/**
-			 * whenever a new tag is written into the search bar, we tell
-			 * the graph to mark the nodes and if not available, we create
-			 * the associated ego networks and mark them
-			 */
-            $scope.$watch('tagSelectShared.wasChanged', function(){
-                if($scope.tagSelectShared.wasChanged)
-                {
-                	//select all nodes which have to be selected
-					var tags = $scope.tagSelectShared.tagsToSelect;
-					//console.log(tags);
-					for(var i=0; i<tags.length; i++)
-					{
-					    //console.log(tags[i].id);
-						var node = getNodeById(tags[i].id);
-						//console.log(node);
-
-
-						if(nodes == undefined)
-						{
-							//get all ego networks and after that execute a callback function
-							//which marks all selected nodes
-							getEgoNetworkById(tags[i].id,
-							(function()
-							{
-								var tag = tags[i];
-								return function(){
-								var tagnodes = getNodesByName(tag);
-								tagnodes.forEach(function(node){selectNode(node);})};
-							})());
-						}
-						else
-						{
-							//mark all existing nodes
-							nodes.forEach(function(node){selectNode(node);})
-						}
-					}
-
-					//unselect all nodes which should be unselected
-					tags = $scope.tagSelectShared.tagsToUnselect;
-					for(var i=0; i<tags.length; i++)
-					{
-						var nodes = getNodesByName(tags[i]);
-						//unmark all nodes
-                        nodes.forEach(function(node){unselectNode(node);})
-					}
-					$scope.tagSelectShared.wasChanged = false;
-					//enableOrDisableButtons();
-                }
             });
 
 

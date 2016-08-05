@@ -39,7 +39,6 @@ define([
                 'highlightShareService',
                 'graphPropertiesShareService',
                 'uiShareService',
-                'tagSelectShareService',
                 'ObserverService',
                 function ($scope,
                           $http,
@@ -53,7 +52,6 @@ define([
                           highlightShareService,
                           graphPropertiesShareService,
                           uiShareService,
-                          tagSelectShareService,
                           ObserverService) {
                     $scope.sourceShared = sourceShareService;
                     $scope.highlightShared = highlightShareService;
@@ -392,39 +390,6 @@ define([
                         $("#autocomplete").css('z-index','-1');
                         $scope.searchTags = [];
                     };
-
-
-                    /**
-                     * This function is called whenever a tag is added
-                     */
-                    $scope.addedTag = function (tagName) {
-                        console.log("added " + tagName.text);
-
-                        var idx = tagSelectShareService.tagsToUnselect.indexOf(tagName.text);
-                        if (idx > -1) {
-                            tagSelectShareService.tagsToUnselect.splice(idx, 1);
-                        }
-
-                        tagSelectShareService.tagsToSelect.push(tagName);
-                        tagSelectShareService.wasChanged = true;
-
-
-                    };
-
-
-                    /**
-                     * This function is called whenever a tag is removed
-                     */
-                    $scope.removedTag = function (tagName) {
-                        var idx = tagSelectShareService.tagsToSelect.indexOf(tagName.text);
-                        if (idx > -1) {
-                            tagSelectShareService.tagsToSelect.splice(idx, 1);
-                        }
-
-                        tagSelectShareService.tagsToUnselect.push(tagName.text);
-                        tagSelectShareService.wasChanged = true;
-                    }
-
 
                     // The close click on a tab
                     $(document).on('click', '.nav-tabs .closeTab', function () {
