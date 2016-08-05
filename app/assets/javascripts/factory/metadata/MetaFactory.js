@@ -45,6 +45,7 @@ define([
                         bar: {
                             dataLabels: {
                                 enabled: true
+                              //  align: 'right'
                             },
                             grouping: false,
                             shadow: false

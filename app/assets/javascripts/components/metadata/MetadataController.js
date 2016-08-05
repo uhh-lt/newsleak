@@ -106,6 +106,7 @@ define([
                         });
                         var entityType = "";
                         angular.forEach($scope.entityTypes, function(type) {
+                            $scope.metaCharts[type].showLoading('Loading ...');
                             var instances = $scope.ids[type];
                             playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),50,entityType,instances).get().then(
                                 function(result) {
@@ -139,11 +140,22 @@ define([
                                                         $scope.clickedItem(this, 'entity', type);
                                                     }
                                                 }
+                                            },
+                                            dataLabels: {
+                                                inside: true,
+                                                align: 'left',
+                                                useHTML: true,
+                                                formatter : function() {
+                                                    return $('<div/>').css({
+                                                        'color' : 'white'
+                                                    }).text(this.y)[0].outerHTML;
+                                                }
                                             }
                                         });
                                     } else {
                                         $scope.metaCharts[type].series[1].setData(data);
                                     }
+                                    $scope.metaCharts[type].hideLoading();
                                 }
                             );
                         });
@@ -177,6 +189,7 @@ define([
                             fulltext.push(item.data.name);
                         });
                         angular.forEach($scope.metadataTypes, function(type) {
+                            $scope.metaCharts[type].showLoading('Loading ...');
                             var instances = $scope.chartConfigs[type].xAxis["categories"];
                             playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext,type,facets,entities,instances,$scope.observer.getTimeRange()).get().then(
                                 function(result) {
@@ -210,11 +223,22 @@ define([
                                                         $scope.clickedItem(this, 'metadata', type);
                                                     }
                                                 }
+                                            },
+                                            dataLabels: {
+                                                inside: true,
+                                                align: 'left',
+                                                useHTML: true,
+                                                formatter : function() {
+                                                    return $('<div/>').css({
+                                                        'color' : 'white'
+                                                    }).text(this.y)[0].outerHTML;
+                                                }
                                             }
                                         });
                                     } else {
                                         $scope.metaCharts[type].series[1].setData(data);
                                     }
+                                    $scope.metaCharts[type].hideLoading();
                                 }
                             );
                         });
@@ -253,7 +277,7 @@ define([
                                         }
                                     }];
                                     $scope.chartConfigs[x].chart.renderTo = "chart_" + x.toLowerCase();
-
+                                    $("#chart_" + x.toLowerCase()).css("height",$scope.frequencies[x].length * 35);
                                     $scope.metaCharts[x] = new Highcharts.Chart($scope.chartConfigs[x]);
                                 });
                             });
@@ -298,7 +322,7 @@ define([
 
                                         }];
                                         $scope.chartConfigs[key].chart.renderTo = "chart_" + key.toLowerCase();
-                                        $("#chart_" + key.toLowerCase()).css("height",$scope.frequencies[key].length * 20);
+                                        $("#chart_" + key.toLowerCase()).css("height",$scope.frequencies[key].length * 35);
                                         $scope.metaCharts[key] = new Highcharts.Chart($scope.chartConfigs[key]);
                                             });
 

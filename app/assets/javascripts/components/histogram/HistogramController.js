@@ -29,26 +29,6 @@ define([
             'util',
             'moment',
             function(util, moment) {
-                /**
-                 * This function adds a line representing the current date into the chart.
-                 *
-                 * @param {Highchart Object} chart - The highchart object.
-                 */
-                function addPlotLineForNow(chart) {
-                    chart.xAxis[0].addPlotLine({
-                        id: 'now',
-                        label: {
-                            text: 'now',
-                            rotation: 270,
-                            x: 15,
-                            y: 25
-                        },
-                        color: '#FF3500',
-                        value: moment(),
-                        width: 5
-                    });
-                }
-
                 var config = {
                     weekdays: [
                         'Sunday', 'Monday', 'Tuesday', 'Wednesday',
@@ -105,16 +85,7 @@ define([
                                 type: 'logarithmic',
                                 tickInterval: 2,
                                 stackLabels: {
-                                    enabled: true,
-                                    useHTML: true,
-                                    formatter: function () {
-                                        // Only display if not 0
-                                        if (this.total > 0) {
-                                            return '<span class="stack-label"" data-x="' + this.x + '" style="cursor: pointer;">' + util.formatNumber(this.total) + '</span>';
-                                        } else {
-                                            return '';
-                                        }
-                                    }
+                                    enabled: true
                                 },
                                 gridLineWidth: 0
                             },
@@ -123,7 +94,8 @@ define([
                                     grouping: false,
                                     shadow: false,
                                     dataLabels: {
-                                        enabled: true
+                                        enabled: true,
+                                        padding: 0
                                     }
                                 }
 
@@ -231,7 +203,8 @@ define([
                     $scope.observer.addItem({
                         type: 'time',
                         data: {
-                            name: range
+                            name: range,
+                            lod: $scope.currentLoD
                         }
                     });
                 };
@@ -301,6 +274,8 @@ define([
                  * updated on filter changes
                  */
                 $scope.updateHistogram = function() {
+                    if($scope.histogram)
+                        $scope.histogram.showLoading('Loading ...');
                     console.log("reload histogram");
                     var deferred = $q.defer();
                     var entities = [];
@@ -376,6 +351,16 @@ define([
                                 var series = {
                                     data: $scope.dataFilter,
                                     name: $scope.currentRange,
+                                    dataLabels: {
+                                        inside: true,
+                                        verticalAlign: "top",
+                                        useHTML: true,
+                                        formatter : function() {
+                                            return $('<div/>').css({
+                                                'color' : 'white'
+                                            }).text(this.y)[0].outerHTML;
+                                        }
+                                    },
                                     color: 'black',
                                     cursor: 'pointer',
                                     point: {
@@ -393,6 +378,7 @@ define([
                             }
 
 
+                            $scope.histogram.hideLoading();
 
                             deferred.resolve('success');
                         });
@@ -417,7 +403,6 @@ define([
 
                     if (!e.seriesOptions) {
                         $scope.drilldown = true;
-                        $scope.histogram.showLoading('Loading ...');
                         $scope.currentLoD = $scope.lod[$scope.lod.indexOf($scope.currentLoD) + 1];
                         if($scope.lod.indexOf($scope.currentLoD) == 0)
                             $scope.currentRange = "";
@@ -451,13 +436,22 @@ define([
                                             $scope.clickedItem(this);
                                         }
                                     }
+                                },
+                                dataLabels: {
+                                    inside: true,
+                                    verticalAlign: "top",
+                                    useHTML: true,
+                                    formatter : function() {
+                                        return $('<div/>').css({
+                                            'color' : 'white'
+                                        }).text(this.y)[0].outerHTML;
+                                    }
                                 }
                             }
                             ];
                             chart.addSingleSeriesAsDrilldown(e.point, series[0]);
                             chart.addSingleSeriesAsDrilldown(e.point, series[1]);
                             chart.applyDrilldown();
-                            chart.hideLoading();
                         });
                     }
                 };
@@ -465,10 +459,9 @@ define([
                 $scope.drillUp = function(e) {
                     if (!$scope.drillup) {
                         console.log("histogram drillup");
-                        $scope.histogram.showLoading('Loading ...');
                         $scope.drillup = true;
                         $scope.currentLoD = $scope.lod[$scope.lod.indexOf($scope.currentLoD) - 1];
-                        $scope.observer.removeLastTimeFilter();
+                        $scope.observer.drillUpTimeFilter();
                         if ($scope.lod.indexOf($scope.currentLoD) == 0)
                             $scope.currentRange = "";
                         else
@@ -477,7 +470,7 @@ define([
                             $scope.histogram.series[0].setData($scope.data);
                             var series = {
                                 data: $scope.dataFilter,
-                                name: 'Filter',
+                                name:  $scope.currentLoD,
                                 cursor: 'pointer',
                                 point: {
                                     events: {
@@ -492,7 +485,6 @@ define([
                             else
                                 $scope.histogram.addSeries(series);
                             $scope.drillup = false;
-                            $scope.histogram.hideLoading();
 
                         });
                     }
