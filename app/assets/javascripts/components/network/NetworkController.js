@@ -108,7 +108,7 @@ define([
             $scope.maxNodeFreq = 251287;
             $scope.maxEdgeFreq = 81337;
 
-            $scope.minNodeRadius = 15;
+            $scope.minNodeRadius = 7;
             $scope.maxNodeRadius = 30;
             $scope.minEdgeWidth  = 3;
             $scope.maxEdgeWidth  = 10;
@@ -251,7 +251,7 @@ define([
             function unselectEdges(){
                 selectedEdges = new Array();
                 link.each(function(d){
-                    d3.select(this).style('stroke', '#d0d0d0')//.style('stroke', '#696969')
+                    d3.select(this).style('stroke', '#b0b0b0')//.style('stroke', '#696969')
                                    .style('opacity', .8);
                     d3.select('#edgelabel_' + d.id).style('fill', '#000000')
                                                    .attr('font-weight', 'normal');
@@ -635,7 +635,7 @@ define([
                             }
                             else{  // The edge is already selected, so unselect it.
                                 selectedEdges.splice(index, 1);  // Remove the edge from the list.
-                                d3.select(this).style('stroke', '#d0d0d0'/*'#696969'*/)
+                                d3.select(this).style('stroke', '#b0b0b0'/*'#696969'*/)
                                                .style('obacity', .8);
                                 d3.select('#edgelabel_' + d.id)
                                             .style('fill', '#000000')
@@ -798,6 +798,11 @@ define([
                         .style('width', '100%')
                         .style('height', '100%')
                         .style('padding', '0px 0px 0px 0px')
+                        .on('click', function(d)
+                                                {
+                                                    console.log("button clicked");
+                                                    $scope.observer.addItem({type: 'entity', data: {id: d.id, name: d.name, type: d.type}});
+                                                })
                         .append('span')
                         .attr('class', 'glyphicon glyphicon-plus')
                         //TODO: positioning of glyphicons in svg (absolute only works in firefox)
@@ -806,6 +811,7 @@ define([
                         .style('top', '3px')
                         .style('text-align', 'center')
                         .style('font-size', '10px')
+
 
                     /*buttonlist.html(function(d)
                         {
@@ -884,7 +890,7 @@ define([
                         .style("opacity", 0);
                 });
 
-                link.on("mouseover", function(d){
+                /*link.on("mouseover", function(d){
                     tooltip.transition()
                         .duration(500)
                         .style("opacity", 0);
@@ -903,7 +909,7 @@ define([
                     tooltip.transition()
                         .duration(500)
                         .style("opacity", 0);
-                });
+                });*/
             }
 
 
@@ -1653,6 +1659,7 @@ define([
                     fulltext.push(item.data.name);
                 });
                 var entityType = "";
+
                 playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,entityType).get().then(function(response) {
 
                     //to prevent invisible selections
@@ -1663,8 +1670,6 @@ define([
 
                     //delete all nodes and edges
                     nodes = [];
-
-                    console.log(response);
 
                     response.data.forEach(
                         function(v)
@@ -1689,11 +1694,22 @@ define([
                     );
 
 
+
+
                     //reload();
                     force.nodes(nodes);
                     //calculateNewForceSize();
 
                     start();
+
+                    $scope.entityFilters.forEach(
+                                            function(v)
+                                            {
+                                                console.log(v)
+                                                selectNode(v.data)
+                                            }
+                    )
+                    console.log($scope.entityFilters)
 
                     playRoutes.controllers.NetworkController.getRelations(response.data.map(function(v){return v.id}), toolShareService.sliderEdgeMinFreq(), toolShareService.sliderEdgeMaxFreq()).get().then(
                         function(response)
@@ -1715,7 +1731,9 @@ define([
                             //calculateNewForceSize();
                             start();
                         }
-                    )
+                    );
+
+
                 });
             };
 
