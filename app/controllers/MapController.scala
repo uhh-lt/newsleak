@@ -18,18 +18,15 @@ package controllers
 
 import javax.inject.Inject
 
-import model.Document
 import play.api.Play.current
-import play.api.Logger
 import play.api.mvc.{ Action, Controller }
-import play.api.db._
 import play.api.libs.json.Json
-import play.api.libs.json.JsArray
-import play.api.libs.json.Json._
-import play.api.libs.json.Format
-import play.api.libs.json.JsSuccess
-import play.api.libs.json.Writes
 import scalikejdbc.AutoSession
+
+// scalastyle:off
+import util.TupleWriters._
+import play.api.db._
+// scalastyle:on
 
 /*
     This class contains all those methods that are related
@@ -51,11 +48,6 @@ class MapController @Inject extends Controller {
       list ::= "This is just some text for da country " + countryCode
     }
     Ok(Json.toJson(list)).as("application/json")
-  }
-
-  // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
-  implicit def tuple3Writes[A, B, C](implicit a: Writes[A], b: Writes[B], c: Writes[C]): Writes[Tuple3[A, B, C]] = new Writes[Tuple3[A, B, C]] {
-    def writes(tuple: Tuple3[A, B, C]) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2), c.writes(tuple._3)))
   }
 
   def getDocsByDate(date: Long) = Action {

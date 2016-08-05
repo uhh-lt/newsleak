@@ -17,13 +17,11 @@
 define([
     'angular',
     'angularMoment',
-    './factory/chart/ChartFactory',
     './factory/filter/FilterFactory',
     './factory/network/ToolFactory',
     './factory/metadata/MetaFactory',
     './factory/source/SourceFactory',
     './factory/source/HighlightFactory',
-    './factory/source/TagSelectFactory',
     './components/sources/SourceController',
     './components/network/NetworkController',
     './components/network/ToolController',
@@ -35,8 +33,8 @@ define([
     './components/filter/FilterController',
     './components/sources/SearchController',
     './components/history/HistoryController',
+    './components/histogram/HistogramController',
     './components/map/MapController',
-    './components/chart/ChartController',
     './services/playRoutes',
     './services/ObserverService',
     './factory/appData',
@@ -58,8 +56,8 @@ define([
             'myApp.tools',
             'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
             'myApp.network', 'myApp.metadata', 'myApp.map', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
-            'myApp.tagselectfactory', 'myApp.filterfactory','myApp.metafactory', 'myApp.toolfactory',
-            'myApp.chart', 'myApp.chartconfig', 'myApp.search'
+            'myApp.filterfactory','myApp.metafactory', 'myApp.toolfactory',
+            'myApp.histogram', 'myApp.search'
         ]
     );
 
@@ -86,9 +84,9 @@ define([
                     templateUrl: 'assets/partials/source.html',
                     controller: 'SourceController'
                 },
-                'chart': {
-                    templateUrl: 'assets/partials/chart.html',
-                    controller: 'ChartController'
+                'histogram': {
+                    templateUrl: 'assets/partials/histogram.html',
+                    controller: 'HistogramController'
                 },
                 'map': {
                     templateUrl: 'assets/partials/map.html',
@@ -150,7 +148,7 @@ define([
             $scope.$on("angular-resizable.resizeEnd", function (event, args) {
                 if(args.id == 'center-box') setUILayoutProperties(args.width, false);
                 if(args.id == 'footer') setUILayoutProperties(false, parseInt($('#network-maps-container').css('height'))-96);
-                $("#chartBarchart").highcharts().reflow();
+                $("#histogram").highcharts().reflow();
                 $("#metadata-view .active .active .meta-chart").highcharts().reflow();
             });
 

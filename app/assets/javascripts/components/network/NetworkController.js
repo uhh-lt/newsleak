@@ -69,8 +69,6 @@ define([
             'graphPropertiesShareService',
             'highlightShareService',
             'uiShareService',
-            'tagSelectShareService',
-            'filterShareService',
             'toolShareService',
             'ObserverService',
         function (
@@ -84,15 +82,11 @@ define([
             graphPropertiesShareService,
             highlightShareService,
             uiShareService,
-            tagSelectShareService,
-            filterShareService,
             toolShareService,
             ObserverService
             )
         {
 
-			$scope.filterShared = filterShareService;
-            $scope.tagSelectShared = tagSelectShareService;
             $scope.graphShared = graphPropertiesShareService;
             $scope.uiShareService = uiShareService;
 
@@ -104,15 +98,17 @@ define([
              */
             $scope.observer_subscribe_entity = function(items) { $scope.entityFilters = items};
             $scope.observer_subscribe_metadata = function(items) { $scope.metadataFilters = items};
+            $scope.observer_subscribe_fulltext = function(items) { $scope.fulltextFilters = items};
             $scope.observer.subscribeItems($scope.observer_subscribe_entity,"entity");
             $scope.observer.subscribeItems($scope.observer_subscribe_metadata,"metadata");
+            $scope.observer.subscribeItems($scope.observer_subscribe_fulltext,"fulltext");
 
             const GRAVITATION_HEIGHT_SUBTRACT_VALUE = 126;
 
-            $scope.maxNodeFreq = 592035;
+            $scope.maxNodeFreq = 251287;
             $scope.maxEdgeFreq = 81337;
 
-            $scope.minNodeRadius = 15;
+            $scope.minNodeRadius = 7;
             $scope.maxNodeRadius = 30;
             $scope.minEdgeWidth  = 3;
             $scope.maxEdgeWidth  = 10;
@@ -147,7 +143,7 @@ define([
 
             toolShareService.hideListener.push(hideSelected);
 
-            toolShareService.updateGraph = getGraph;
+            toolShareService.updateGraph = getEntities;
             toolShareService.isViewLoading = function(){return $scope.isViewLoading};
             toolShareService.enableOrDisableButtons = enableOrDisableButtons;
 
@@ -161,9 +157,10 @@ define([
             var edges      = [];
             var color      = d3.scale.category10().range($scope.graphShared.categoryColors);
             //console.log([color("LOC"), color("ORG"), color("PER"), color("MISC")])
-            var radius     = d3.scale.sqrt()
+            /*var radius     = d3.scale.sqrt()
                                     .domain([1,$scope.maxNodeFreq])
-                                    .range([$scope.minNodeRadius, $scope.maxNodeRadius]);var radius     = d3.scale.sqrt()
+                                    .range([$scope.minNodeRadius, $scope.maxNodeRadius]);*/
+            var radius     = d3.scale.sqrt()
                                     .domain([1,$scope.maxNodeFreq])
                                     .range([$scope.minNodeRadius, $scope.maxNodeRadius]);
             var edgeScale  = d3.scale.log()
@@ -254,7 +251,7 @@ define([
             function unselectEdges(){
                 selectedEdges = new Array();
                 link.each(function(d){
-                    d3.select(this).style('stroke', '#696969')
+                    d3.select(this).style('stroke', '#b0b0b0')//.style('stroke', '#696969')
                                    .style('opacity', .8);
                     d3.select('#edgelabel_' + d.id).style('fill', '#000000')
                                                    .attr('font-weight', 'normal');
@@ -307,20 +304,6 @@ define([
             }
 
             /**
-             * paints a circle lowered with the specific size
-             *
-             * @param node
-             * 		the node to reduce
-             * @param value
-             *		the value from which so reduce
-             */
-            function reduceNode(node, value)
-            {
-            	d3.select("#node_" + node.id)
-            }
-
-
-            /**
              * get the nodes associated with this specific name
              *
              * @param name
@@ -363,13 +346,21 @@ define([
             }
 
 
+            /**
+             * paints a circle lowered with the specific size
+             *
+             * @param node
+             * 		the node to reduce
+             * @param value
+             *		the value from which so reduce
+             */
             function setBorderValue(node, value)
             {
                 d3
                     .select('#nodeborder_' + node.id)
                     .attr('d', d3.svg.arc()
-                    .innerRadius(radius(node.freq))
-                    .outerRadius(radius(node.freq)+4)
+                    .innerRadius(radius(node.docCount))
+                    .outerRadius(radius(node.docCount)+4)
                     .startAngle(0)
                     .endAngle(value*2*Math.PI));
             }
@@ -389,7 +380,7 @@ define([
             		.append('foreignObject')
             		.attr('width', '24')
             		.attr('height', '24')
-            		.attr('x', function(d){return radius(d.freq)-2;})
+            		.attr('x', function(d){return radius(d.docCount)-2;})
             		.attr('y', /*function(d){return (radius(d.freq));}*/-12)
             		.append('xhtml:body')
             		.html('<button type="button" class="btn btn-xs btn-default neighbor-button" ng-show="!isViewLoading"><i class="glyphicon glyphicon-comment"></i></button>')
@@ -429,6 +420,11 @@ define([
                 }
             }
 
+            function setEdgeDisabled(edge)
+            {
+
+            }
+
 
             /**
              * Set the height of the legend popover.
@@ -451,57 +447,6 @@ define([
 
             angular.element($window).bind('resize', function () {
                 calculateNewForceSize();
-            });
-
-        	/**
-			 * whenever a new tag is written into the search bar, we tell
-			 * the graph to mark the nodes and if not available, we create
-			 * the associated ego networks and mark them
-			 */
-            $scope.$watch('tagSelectShared.wasChanged', function(){
-                if($scope.tagSelectShared.wasChanged)
-                {
-                	//select all nodes which have to be selected
-					var tags = $scope.tagSelectShared.tagsToSelect;
-					//console.log(tags);
-					for(var i=0; i<tags.length; i++)
-					{
-					    //console.log(tags[i].id);
-						var node = getNodeById(tags[i].id);
-						//console.log(node);
-
-
-						if(nodes == undefined)
-						{
-							//get all ego networks and after that execute a callback function
-							//which marks all selected nodes
-							getEgoNetworkById(tags[i].id,
-							(function()
-							{
-								var tag = tags[i];
-								return function(){
-								var tagnodes = getNodesByName(tag);
-								tagnodes.forEach(function(node){selectNode(node);})};
-							})());
-						}
-						else
-						{
-							//mark all existing nodes
-							nodes.forEach(function(node){selectNode(node);})
-						}
-					}
-
-					//unselect all nodes which should be unselected
-					tags = $scope.tagSelectShared.tagsToUnselect;
-					for(var i=0; i<tags.length; i++)
-					{
-						var nodes = getNodesByName(tags[i]);
-						//unmark all nodes
-                        nodes.forEach(function(node){unselectNode(node);})
-					}
-					$scope.tagSelectShared.wasChanged = false;
-					//enableOrDisableButtons();
-                }
             });
 
 
@@ -568,6 +513,7 @@ define([
 
                 loadingNodes = true;
                 playRoutes.controllers.NetworkController.getGraphData(leastOrMostFrequent, sliderValue, sliderEdgeMinFreq, sliderEdgeMaxFreq).get().then(function(response) {
+                //playRoutes.controllers.EntityController.getEntities(nodes., sliderEdgeMinFreq, sliderEdgeMaxFreq).get().then(function(response) {
                     var data = response.data;
 
                     prepareData(data);
@@ -674,7 +620,8 @@ define([
                         .attr('id', function(d){return 'edgeline_' + d.id;})
                         .style('opacity', 0)  // Make new edges at first invisible.
                         .style('stroke-width', function (d) {
-                            return edgeScale(d.freq)+'px';
+                            //return edgeScale(d.freq)+'px';
+                            return '2px'
                         })
                         .on('mouseup', function (d) {  // when clicking on an edge
                             var index = selectedEdges.indexOf(d);
@@ -688,7 +635,7 @@ define([
                             }
                             else{  // The edge is already selected, so unselect it.
                                 selectedEdges.splice(index, 1);  // Remove the edge from the list.
-                                d3.select(this).style('stroke', '#696969')
+                                d3.select(this).style('stroke', '#b0b0b0'/*'#696969'*/)
                                                .style('obacity', .8);
                                 d3.select('#edgelabel_' + d.id)
                                             .style('fill', '#000000')
@@ -714,7 +661,7 @@ define([
                     edgepaths.exit().remove();  // Remove old paths.
                     // add the new edge labels
                     edgelabels = edgelabels.data(force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-                    edgelabels.enter()
+                    /*edgelabels.enter()
                                 .append('text')
                                 .attr('id', function(d, i){
                                     return 'edgelabel_' + d.id;
@@ -732,7 +679,7 @@ define([
                                 .style('text-anchor', 'middle')
                                 .attr('startOffset', '50%')
                                 .text(function(d,i){ return d.freq; })
-                                .style('text-shadow', '-1px -1px 3px #FFFFFF, 1px -1px 3px #FFFFFF, -1px 1px 3px #FFFFFF, 1px 1px 3px #FFFFFF');
+                                .style('text-shadow', '-1px -1px 3px #FFFFFF, 1px -1px 3px #FFFFFF, -1px 1px 3px #FFFFFF, 1px 1px 3px #FFFFFF');*/
                     edgelabels.exit().remove();  // Remove old edge labels.
 
                     // update nodes
@@ -743,12 +690,6 @@ define([
                                         .attr('class', 'node')
                                         .call(force.drag);
 
-                    var arc = d3.svg.arc()
-                        .innerRadius(50)
-                        .outerRadius(100)
-                        .startAngle(0)
-                        .endAngle(Math.PI);
-
                     newNodes
                         .append('path')
                         .attr('id', function(d){return 'nodeborder_' + d.id;})
@@ -756,7 +697,7 @@ define([
 
 
                     newNodes.append('circle')
-                            .attr('r', function (d) { return radius(d.freq) })
+                            .attr('r', function (d) { return radius(d.docCount) })
                             .style('fill', function (d) { return color(d.type); })
                             .style('opacity', 0)  // Make new nodes at first invisible.
                             .attr('id', function(d, i)
@@ -810,14 +751,14 @@ define([
                                	return 'nodetext_' + d.id;
                             })
                             .text(function (d){
-                                var r = radius(d.freq);
-                                if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
+                                var r = radius(d.docCount);
+                                //if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
                                     return d.name;
-                                else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
-                                    return d.name.substring(0, r/3 - 3) + "...";
+                                //else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
+                                //    return d.name.substring(0, r/3 - 3) + "...";
                             })
                             .style('font-size', function(d){
-                                var r = radius(d.freq);
+                                var r = radius(d.docCount);
                                 var textLength;
                                 var size;
                                 if(r/3 >= d.name.length - 1){  // If the text fits inside the node.
@@ -838,15 +779,41 @@ define([
                             });
 
                     // add buttons to the nodes
-                    newNodes.append('foreignObject')
-                        .attr('width', '24')
-                        .attr('height', '24')
-                        .attr('x', -12)
+                    var buttonlist = newNodes.append('foreignObject')
+                        .attr('width', '16')
+                        .attr('height', '16')
+                        .attr('x', -8)
                         .attr('y', function(d){
-                            return radius(d.freq) - 2;
+                            return radius(d.docCount) - 4;
                         })
                         .append('xhtml:body')
-                        .html(function(d)
+                        .style('padding', '0')
+                        .style('margin-top', '0px')
+
+
+                    buttonlist
+                        .append('button')
+                        .attr('type', 'button')
+                        .attr('class', 'btn btn-default btn-block')
+                        .style('width', '100%')
+                        .style('height', '100%')
+                        .style('padding', '0px 0px 0px 0px')
+                        .on('click', function(d)
+                                                {
+                                                    console.log("button clicked");
+                                                    $scope.observer.addItem({type: 'entity', data: {id: d.id, name: d.name, type: d.type}});
+                                                })
+                        .append('span')
+                        .attr('class', 'glyphicon glyphicon-plus')
+                        //TODO: positioning of glyphicons in svg (absolute only works in firefox)
+                        //.style('position', 'absolute')
+                        .style('left', '3px')
+                        .style('top', '3px')
+                        .style('text-align', 'center')
+                        .style('font-size', '10px')
+
+
+                    /*buttonlist.html(function(d)
                         {
                         	return '<button type="button" id="nodebutton_' + d.id + '" class="btn btn-xs btn-default neighbor-button" ng-show="!isViewLoading"><i id="nodebuttonicon_' + d.id + '" class="glyphicon glyphicon-plus"></i></button>'
                         })
@@ -859,7 +826,7 @@ define([
                         	{
                             	expand(d);
                             }
-                        });
+                        });*/
 
                     node.exit().remove();
 
@@ -913,7 +880,7 @@ define([
                         '<span class="tooltipImportantText">' + d.name +
                             '</span> has the type <span class="tooltipImportantText">'
                             + d.type + '</span> and is <span class="tooltipImportantText">'
-                            + d.freq + "</span> times mentioned.")
+                            + d.docCount + "</span> times mentioned.")
                         .style("left", (d3.event.pageX - 75) + "px")
                         .style("top", (d3.event.pageY + 25) + "px");
                 });
@@ -923,7 +890,7 @@ define([
                         .style("opacity", 0);
                 });
 
-                link.on("mouseover", function(d){
+                /*link.on("mouseover", function(d){
                     tooltip.transition()
                         .duration(500)
                         .style("opacity", 0);
@@ -942,7 +909,7 @@ define([
                     tooltip.transition()
                         .duration(500)
                         .style("opacity", 0);
-                });
+                });*/
             }
 
 
@@ -1054,13 +1021,14 @@ define([
 
             }
 
+            $scope.loaded = reload;
 
             /** 
              * Create an example graph; we use a trick (namely the $timeout even with 0ms)
              * to render it only after the DOM is fully loaded.
              * Also, initialize the legend popover
              */
-            $scope.loaded = function() {
+            function reload() {
                 createSVG();
 
                 force = d3.layout
@@ -1071,8 +1039,8 @@ define([
                     .charge(-400)
                     .linkStrength(0.4)
                     .linkDistance(function(d) {
-                        return radius(d.source.freq)
-                            + radius(d.target.freq)
+                        return radius(d.source.docCount)
+                            + radius(d.target.docCount)
                             + 100;
                     })
                     .on("tick", function() {
@@ -1110,7 +1078,7 @@ define([
                                 return 'rotate(0)';
                         });
                     });
-                getGraph();
+                //getGraph();
                 // Extend the popover to a callback when loading is done
                 var tmp = $.fn.popover.Constructor.prototype.show;
                 $.fn.popover.Constructor.prototype.show = function () {
@@ -1439,7 +1407,7 @@ define([
 
 				//extend the focal node with the sum of the frequencies of
 				focalNode.freq = focalNode.freq + freqsum;
-				d3.select("#nodecircle_" + focalNode.id).attr('r', function(d){return radius(d.freq);});
+				d3.select("#nodecircle_" + focalNode.id).attr('r', function(d){return radius(d.docCount);});
 
 				edges.forEach(
 					function(v,i,a)
@@ -1572,11 +1540,11 @@ define([
                 var edit = text;
                 node.name = edit;
                 d3.select("#nodetext_" + node.id).text(function (d){
-                	var r = radius(d.freq);
+                	var r = radius(d.docCount);
                 	if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
                 		return d.name;
-                	else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
-                		return d.name.substring(0, r/3 - 3) + "...";
+                	/*else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
+                		return d.name.substring(0, r/3 - 3) + "...";*/
                 });
             }
 
@@ -1651,9 +1619,10 @@ define([
             /**
              * load entities for current filtering (called on filter update)
              */
-            $scope.getEntities = function() {
+            $scope.getEntities = getEntities;
+
+            function getEntities() {
                 console.log("reload entities");
-                var fulltext = undefined;
                 var entities = [];
                 angular.forEach($scope.entityFilters, function(item) {
                     entities.push(item.data.id);
@@ -1679,38 +1648,91 @@ define([
                 {
                 }
 
-                console.log(entities);
-                console.log(facets);
-                console.log(fulltext);
                 var filters = [];
                 angular.forEach(nodes, function(node) {
                     filters.push(node.id);
                 });
 
+                var size = 20;
+                var fulltext = [];
+                angular.forEach($scope.fulltextFilters, function(item) {
+                    fulltext.push(item.data.name);
+                });
+                var entityType = "";
 
-                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),filters).get().then(function(response) {
+                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,entityType).get().then(function(response) {
+
+                    //to prevent invisible selections
+                    unselectNodes();
+                    unselectEdges();
+
+                    var tmpnodes = nodes;
+
+                    //delete all nodes and edges
+                    nodes = [];
 
                     response.data.forEach(
                         function(v)
                         {
-                            var node = getNodeById(Number(v.id));
-
-                            //if the node does not
-                            if(node == undefined)
+                            /*var enode = tmpnodes.find(function(node){return node.id === v.id;});
+                            if(enode != undefined)
                             {
+                                enode.docCount = v.docCount;
+                                nodes.push(enode);
                                 return;
-                            }
+                            }*/
 
-                            if(node.docCount == undefined)
-                            {
-                                node.docCount = v.docCount;
-                            }
-
-                            setBorderValue(node, v.docCount/node.docCount);
+                            nodes.push({
+                            	id: v.id,
+                            	name: v.name,
+                            	freq: v.freq,
+                            	type: v.type,
+                            	docCount: v.docCount,
+                                size: 2,
+                            });
                         }
                     );
 
-                    //console.log(response.data);
+
+
+
+                    //reload();
+                    force.nodes(nodes);
+                    //calculateNewForceSize();
+
+                    start();
+
+                    $scope.entityFilters.forEach(
+                                            function(v)
+                                            {
+                                                console.log(v)
+                                                selectNode(v.data)
+                                            }
+                    )
+                    console.log($scope.entityFilters)
+
+                    playRoutes.controllers.NetworkController.getRelations(response.data.map(function(v){return v.id}), toolShareService.sliderEdgeMinFreq(), toolShareService.sliderEdgeMaxFreq()).get().then(
+                        function(response)
+                        {
+                            edges=[];
+                            response.data.forEach(
+                                function(v)
+                                {
+                                    var sourceNode = nodes.find(function(node){return v[1] == node.id});
+                                    var targetNode = nodes.find(function(node){return v[2] == node.id});
+                                    if(sourceNode == undefined || targetNode == undefined)
+                                    {
+                                        return;
+                                    }
+                                    edges.push({id: v[0], source: sourceNode, target: targetNode, freq: v[3]});
+                                }
+                            )
+                            force.links(edges);
+                            //calculateNewForceSize();
+                            start();
+                        }
+                    );
+
 
                 });
             };

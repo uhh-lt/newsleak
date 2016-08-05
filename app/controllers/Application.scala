@@ -99,6 +99,8 @@ class Application @Inject extends Controller {
         controllers.routes.javascript.NetworkController.deleteEntityById,
         controllers.routes.javascript.NetworkController.mergeEntitiesById,
         controllers.routes.javascript.NetworkController.changeEntityNameById,
+        controllers.routes.javascript.NetworkController.getRelations,
+        controllers.routes.javascript.NetworkController.induceSubgraph,
         controllers.routes.javascript.EntityController.getEntities,
         controllers.routes.javascript.EntityController.getEntityTypes,
         controllers.routes.javascript.EntityController.getEntitiesByType,
@@ -111,7 +113,9 @@ class Application @Inject extends Controller {
         controllers.routes.javascript.MetadataController.getSpecificMetadata,
         controllers.routes.javascript.MetadataController.getKeywords,
         controllers.routes.javascript.MetadataController.getMetadataTypes,
-        controllers.routes.javascript.SearchController.getAutocomplete
+        controllers.routes.javascript.SearchController.getAutocomplete,
+        controllers.routes.javascript.HistogramController.getHistogram,
+        controllers.routes.javascript.HistogramController.getHistogramLod
 
       )
     ).as(JAVASCRIPT)

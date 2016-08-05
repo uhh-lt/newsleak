@@ -43,14 +43,14 @@ define([
                         "hide": 'eye-close',
                         "edit": 'pencil',
                         "annotate": 'comment',
-                        "fulltext": 'align-left'
+                        "fulltext": 'search'
                     },
                     typeDescriptions: {
                       'entity': 'Entity Filter',
                       'metadata': 'Metadata Filter',
-                      'fulltext': 'Fulltext Search',
                       'time': 'Time Range',
-                      'annotate': 'Entity Annotated'
+                      'annotate': 'Entity Annotated',
+                      'fulltext': 'Fulltext Search'
                     },
                     actions: {
                         'added': 'plus',
@@ -75,10 +75,9 @@ define([
                 'appData',
                 'moment',
                 'FileSaver',
-                'filterShareService',
                 'ObserverService',
                 'historyFactory',
-                function ($scope, $timeout, playRoutes, appData, moment, FileSaver, filterShareService, ObserverService, historyFactory) {
+                function ($scope, $timeout, playRoutes, appData, moment, FileSaver, ObserverService, historyFactory) {
                     $scope.observer = ObserverService;
                     $scope.factory = historyFactory;
 

@@ -20,12 +20,13 @@ import javax.inject.Inject
 
 import model.Document
 import model.faceted.search.{ FacetedSearch, Facets }
-import play.api.libs.json.{ JsArray, Json, Writes }
+import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller }
 import util.TimeRangeParser
 
 // scalastyle:off
 import scalikejdbc._
+import util.TupleWriters._
 // scalastyle:on
 
 /*
@@ -35,20 +36,6 @@ class DocumentController @Inject extends Controller {
   private implicit val session = AutoSession
 
   private val defaultPageSize = 50
-
-  // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
-  implicit def tuple3Writes[A, B, C](implicit a: Writes[A], b: Writes[B], c: Writes[C]): Writes[Tuple3[A, B, C]] = new Writes[Tuple3[A, B, C]] {
-    def writes(tuple: Tuple3[A, B, C]) = JsArray(Seq(
-      a.writes(tuple._1),
-      b.writes(tuple._2),
-      c.writes(tuple._3)
-    ))
-  }
-
-  // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
-  implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[Tuple2[A, B]] = new Writes[Tuple2[A, B]] {
-    def writes(tuple: Tuple2[A, B]) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2)))
-  }
 
   /**
    * returns the document with the id "id", if there is any

@@ -19,11 +19,14 @@ package controllers
 import javax.inject.Inject
 
 import model.EntityType
-import play.api.libs.json.{ JsArray, JsObject, Json, Writes }
+import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
+import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller }
+import util.TimeRangeParser
 
 // scalastyle:off
 import scalikejdbc._
+import util.TupleWriters._
 // scalastyle:on
 
 /*
@@ -32,19 +35,6 @@ import scalikejdbc._
 */
 class NetworkController @Inject extends Controller {
   implicit val session = AutoSession
-
-  /**
-   * this implicit writes allows us to serialize tuple4
-   * see http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
-   */
-  implicit def tuple4Writes[A, B, C, D](implicit a: Writes[A], b: Writes[B], c: Writes[C], d: Writes[D]): Writes[Tuple4[A, B, C, D]] = new Writes[Tuple4[A, B, C, D]] {
-    def writes(tuple: Tuple4[A, B, C, D]) = JsArray(Seq(
-      a.writes(tuple._1),
-      b.writes(tuple._2),
-      c.writes(tuple._3),
-      d.writes(tuple._4)
-    ))
-  }
 
   // TODO: fetch entity types from backend API
   /**
@@ -69,6 +59,7 @@ class NetworkController @Inject extends Controller {
    */
   val neighborRelCount = 5
 
+  // scalastyle:off
   /**
    * If leastOrMostFrequent == 0:
    * Returns entities with the highest frequency and their relationships with
@@ -139,6 +130,7 @@ class NetworkController @Inject extends Controller {
     val result = new JsObject(Map(("nodes", Json.toJson(entities)), ("links", Json.toJson(relations))))
     Ok(Json.toJson(result)).as("application/json")
   }
+  // scalastyle:on
 
   /**
    * Returns the assosciated Id with the given name
@@ -148,6 +140,50 @@ class NetworkController @Inject extends Controller {
    */
   def getIdsByName(name: String) = Action {
     Ok(Json.obj("ids" -> model.Entity.getByName(name).map(_.id))).as("application/json")
+  }
+
+  /**
+   *
+   * @param entities list of entity id's you want relations for
+   * @param minEdgeFreq minimun Edge Frequency
+   * @param maxEdgeFreq maximum Edge Frequency
+   * @return
+   */
+  def getRelations(entities: List[Long], minEdgeFreq: Int, maxEdgeFreq: Int) = Action {
+    val relations = sql"""SELECT DISTINCT ON (id, frequency) id, entity1, entity2, frequency
+        FROM relationship
+        WHERE entity1 IN (${entities})
+        AND entity2 IN (${entities})
+        AND frequency >= ${minEdgeFreq}
+        AND frequency <= ${maxEdgeFreq}
+        ORDER BY frequency DESC
+        LIMIT 100"""
+      .map(rs => (rs.long("id"), rs.long("entity1"), rs.long("entity2"), rs.int("frequency")))
+      .list()
+      .apply()
+
+    Ok(Json.toJson(relations)).as("application/json")
+  }
+
+  def induceSubgraph(
+    fullText: List[String],
+    generic: Map[String, List[String]],
+    entities: List[Long],
+    timeRange: String,
+    size: Int,
+    filter: List[Long]
+  ) = Action {
+    val times = TimeRangeParser.parseTimeRange(timeRange)
+    val facets = Facets(fullText, generic, entities, times.from, times.to)
+    var newSize = size
+    if (filter.nonEmpty) newSize = filter.length
+    val res = FacetedSearch.induceSubgraph(facets, newSize)
+    val subgraphEntities = res._1.map {
+      case NodeBucket(id, count) => Json.obj("id" -> id, "count" -> count)
+      case _ => Json.obj()
+    }
+
+    Ok(Json.toJson(Json.obj("entities" -> subgraphEntities, "relations" -> res._2))).as("application/json")
   }
 
   /**
@@ -194,6 +230,7 @@ class NetworkController @Inject extends Controller {
     Ok(Json.obj("result" -> model.Entity.changeType(id, EntityType.withName(newType)))).as("application/json")
   }
 
+  // scalastyle:off
   /**
    * Returns the nodes and edges of the ego network of the node with id "id".
    * Which and how many nodes and edges are to be selected is defined by the
@@ -280,6 +317,7 @@ class NetworkController @Inject extends Controller {
 
     Ok(Json.toJson(result)).as("application/json")
   }
+  // scalastyle:on
 
   /**
    * Returns a list with "amount" relations between neighbors of the node with the id "id".

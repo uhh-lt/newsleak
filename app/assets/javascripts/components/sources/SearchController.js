@@ -28,14 +28,12 @@ define([
                 'playRoutes',
                 'sourceShareService',
                 'graphPropertiesShareService',
-                'tagSelectShareService',
                 'ObserverService',
                 function ($scope,
                           $window,
                           playRoutes,
                           sourceShareService,
                           graphPropertiesShareService,
-                          tagSelectShareService,
                           ObserverService) {
 
                     $scope.sourceShared = sourceShareService;
@@ -108,6 +106,20 @@ define([
                         //$scope.addedTag(item);
                         $("#autocomplete").css('z-index','-1');
                         $scope.searchTags = [];
+                    };
+
+                    $scope.addFulltext = function(input) {
+                        if(input.length > 2) {
+                            $scope.observer.addItem({
+                                type: 'fulltext',
+                                data: {
+                                    id: -1,
+                                    name: angular.copy(input),
+                                    view: 'search'
+                                }
+                            });
+                            $scope.fulltextInput = "";
+                        }
                     };
 
 
