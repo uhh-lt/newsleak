@@ -1716,7 +1716,7 @@ define([
                 });
                 var entityType = "";
 
-                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,entityType,filters).get().then(function(response) {
+                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,entityType).get().then(function(response) {
 
                     //to prevent invisible selections
                     unselectNodes();
