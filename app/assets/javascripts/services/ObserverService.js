@@ -25,7 +25,7 @@ define([
 
     angular.module("myApp.observer", ['play.routing', 'angularMoment']);
     angular.module("myApp.observer")
-        .factory('ObserverService', ['playRoutes', function(playRoutes) {
+        .factory('ObserverService', ['playRoutes', '$q', '$timeout', function(playRoutes, $q, $timeout) {
             //holds all observer functions
             var observerCallbacks = [];
             //all items in order
@@ -33,25 +33,57 @@ define([
             //all item structured by type
             var items = [];
             //types of tracked items
-            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate"];
+            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext"];
             var metadataTypes = [];
+            var entityTypes = [];
+            var histogramLoD = [];
             types.forEach(function(type) {
                 items[type] = [];
             });
             items[types[1]] = metadataTypes;
+
             //fetch metadata Types dynamically
-            playRoutes.controllers.MetadataController.getMetadataTypes().get().then(function(response) {
-               metadataTypes =  response.data;
-                angular.forEach(metadataTypes, function(type) {
-                    items['metadata'].push(type);
-                    items['metadata'][type] = [];
+            function updateMetadataTypes() {
+                var deferred = $q.defer();
+                playRoutes.controllers.MetadataController.getMetadataTypes().get().then(function (response) {
+                    metadataTypes = angular.copy(response.data);
+                    angular.forEach(metadataTypes, function (type) {
+                        items['metadata'].push(type);
+                        items['metadata'][type] = [];
+                    });
+                    deferred.resolve(metadataTypes);
+                    //TODO: how to add metadata filter
+                    //items['metadata']['Tags'].push('PREF');
                 });
-                //TODO: how to add metadata filter
-                //items['metadata']['Tags'].push('PREF');
-            });
+                return deferred.promise;
+            }
+            //fetch entity Types dynamically
+            function updateEntityTypes() {
+                var deferred = $q.defer();
+                playRoutes.controllers.EntityController.getEntityTypes().get().then(function (response) {
+                    entityTypes = angular.copy(response.data);
+                    deferred.resolve(entityTypes);
+                });
+                return deferred.promise;
+            }
+            //fetch levels of detail for histogram
+            function updateLoD() {
+                var deferred = $q.defer();
+                playRoutes.controllers.HistogramController.getHistogramLod().get().then(function (response) {
+                    histogramLoD = angular.copy(response.data);
+                    deferred.resolve(histogramLoD);
+                });
+                return deferred.promise;
+            }
 
             var lastAdded = -1;
             var lastRemoved = -1;
+
+            //promises.then() waits for factory ready to use
+            var promiseMetadata = updateMetadataTypes();
+            var promiseEntities = updateEntityTypes();
+            var promiseLoD = updateLoD();
+            //var promise = $q.all([updateMetadataTypes(), updateEntityTypes()]);
 
             return {
                 /**
@@ -59,13 +91,14 @@ define([
                  */
                 registerObserverCallback: function(callback){
                     observerCallbacks.push(callback);
+
                 },
                 /**
                  * call all observer callback functions
                  */
                 notifyObservers: function(){
                     angular.forEach(observerCallbacks, function(callback){
-                        callback();
+                        $timeout(callback,0);
                     });
                 },
                 
@@ -76,16 +109,19 @@ define([
                     var  isDup =false;
                     var action = "added";
                     switch(item.type) {
+                        //entity
                         case types[0]:
-                            history.forEach(function(x) {
+                            items[item.type].forEach(function(x) {
                                 if (item.data.id == x.data.id) isDup = true;
                             });
                             break;
+                        //metadata
                         case types[1]:
-                            history.forEach(function(x) {
-                                if (item.data.id == x.data.id) isDup = true;
-                            });
+                            //history.forEach(function(x) {
+                            //    if (item.data.id == x.data.id) isDup = true;
+                            //});
                             break;
+                        //time filter
                         case types[2]:
                             if(items[item.type].length > 0) action = "replaced";
                             break;
@@ -96,25 +132,60 @@ define([
                     lastAdded++;
                     item["action"] = action;
                     item["id"] = angular.copy(lastAdded);
+                    item["active"] = true;
 
                     history.push(item);
                     //if(items.indexOf(item.type) == -1) items[item.type] = [];
-                    items[item.type].push(item);
+                    //adding item structured
+                    switch(item.type) {
+                        //entity
+                        case types[0]:
+                            items[item.type].push(item);
+                            break;
+                        //metadata
+                        case types[1]:
+                            items[item.type][item.data.type].push(item);
+                            break;
+                        //time filter
+                        case types[2]:
+                            items[item.type].push(item);
+                            break;
+                        default:
+                            items[item.type].push(item);
+                            break;
+                    }
+
+
                     this.notifyObservers();
                     console.log("added to history: " + item.data.name);
                     return (lastAdded);
                 },
 
                 removeItem: function (id, type) {
-                    var item = angular.copy(history[history.findIndex(function (item) {
+                    var toBeRemoved = history[history.findIndex(function (item) {
                         return id == item.id;
-                    })]);
+                    })];
+                    toBeRemoved.active = false;
+                    var item = angular.copy(toBeRemoved);
+                    lastAdded++;
+                    item["id"] = angular.copy(lastAdded);
                     item["action"] = "removed";
                     history.push(item);
+                    switch(item.type) {
 
-                    items[type].splice(items[type].findIndex(function (item) {
-                        return id == item.id;
-                    }), 1);
+
+                        //metadata
+                        case types[1]:
+                            items[type][item.data.type].splice(items[type][item.data.type].findIndex(function (item) {
+                                return id == item.id;
+                            }), 1);
+                            break;
+
+                        default:
+                            items[type].splice(items[type].findIndex(function (item) {
+                                return id == item.id;
+                            }), 1);
+                    }
                     lastRemoved = id;
                     this.notifyObservers();
                     console.log("removed from history: " + lastRemoved);
@@ -123,7 +194,7 @@ define([
 
 
 
-                
+                //TODO: replace type by array to more then one type can be subscribed in a merged item array
                 subscribeItems: function (_subscriber, type) {
                     _subscriber(items[type]);
                 },
@@ -139,8 +210,36 @@ define([
                 getTypes: function() {
                     return types;
                 },
+
+                /**
+                 * after async type load, you get the types (promise.then(function(types) [}))
+                 * @returns promise types are fetched
+                 */
                 getMetadataTypes: function() {
-                    return metadataTypes;
+                    return promiseMetadata;
+                },
+                /**
+                 * after async type load, you get the types (promise.then(function(types) [}))
+                 * @returns promise types are fetched
+                 */
+                getEntityTypes: function() {
+                    return promiseEntities;
+                },
+
+                getTimeRange: function() {
+                    if(items["time"].length == 0) return ""; else return items["time"][items["time"].length-1].data.name;
+                },
+                drillUpTimeFilter: function() {
+                    this.removeItem(items["time"][items["time"].length-1].id,'time');
+                    while(items["time"][items["time"].length-1] && items["time"][items["time"].length-1].data.lod == "month")
+                        this.removeItem(items["time"][items["time"].length-1].id,'time');
+                },
+                /**
+                 * after async type load, you get the types (promise.then(function(lod) [}))
+                 * @returns promise lod are fetched
+                 */
+                getHistogramLod: function() {
+                    return promiseLoD;
                 }
             }
         }]);

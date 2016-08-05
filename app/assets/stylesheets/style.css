@@ -66,7 +66,7 @@ html, body {
 
 line {
     /* Should be the same as edgeLegend#fill */
-    stroke: #696969;
+    stroke: #b0b0b0;
 }
 
 .dropdown-button-menu
@@ -156,6 +156,10 @@ div.tooltip {
     z-index: 1000;
 }
 
+.btn-block-dropdown {
+    display: block;
+}
+
 .legend-heading {
     font-weight: bold;
     text-decoration: underline;
@@ -239,10 +243,11 @@ div.tooltip {
     width: 100%;
 }
 #flex-body {
-
+    height: calc(100% - 350px);
 }
 main {
     width: 50%;
+    margin-top: 10px;
 }
 #document {
     width: 250px;
@@ -250,14 +255,15 @@ main {
 #document, #right-side {
     width: 25%;
 }
-#metadata-view, #filter-view {
-    height: 50%;
+#metadata-view {
+    height: 100%;
 }
 footer {
     height: 200px;
 }
-footer > div, footer > div #chartBarchart {
+footer > div, footer > div #histogram {
     height: 100%;
+    margin-top: 10px;
 }
 
 .rg-bottom, .rg-left, .rg-right, .rg-top {
@@ -325,7 +331,7 @@ footer > div, footer > div #chartBarchart {
 
 /* Give us more space between the tabs and the tab content */
 #network-maps-container .tab-content {
-    height: calc(100% - 42px);
+    height: calc(100% - 78px);
     padding-top: 20px;
 }
 
@@ -361,42 +367,12 @@ footer > div, footer > div #chartBarchart {
     Document List
     ======================================
 */
-#documents-view .suggestion-item {
-    border-bottom: 1px solid #d7d7d7;
-}
-#documents-view #search-group {
 
-}
-
-#documents-view #autocomplete {
-    height: calc(100% - 104px);
-    width: calc(100% - 30px);
-    overflow: auto;
-    position: absolute;
-    top: 81px;
-    border-bottom: 1px solid #ddd;
-    z-index: -1;
-}
-
-#documents-view #autocomplete .list-group-item {
-    padding: 5px 10px;
-}
-#documents-view .search-item-container{
-    height: 32px;
-}
-#documents-view .search-item-container > span {
-    position: relative;
-    top: -8px;
-    left: 5px;
-}
-.autocomplete-left {
-	float: left;
-}
 #document div#documents-view, #document > div:first-child {
     height: 100%;
 }
 #document div#documents-view div.docs-ul {
-    height: calc(100% - 107px);
+    height: calc(100% - 38px);
     overflow: auto;
 }
 
@@ -440,7 +416,7 @@ footer > div, footer > div #chartBarchart {
     overflow-y: auto;
 }
 
-#chartBarchart .stack-label {
+#histogram .stack-label {
     text-decoration: underline;
 }
 
@@ -474,20 +450,29 @@ footer > div, footer > div #chartBarchart {
 #metadata {
     height: 100%;
 }
-#metadata-overview {
+#metadata-overview, #metadata_tabs, #metadata-overview2 {
     height: calc(100% - 74px);
 }
-#metadata-overview .meta-chart-container {
+#metadata_tabs .meta-chart-container {
     height: 100%;
     overflow: hidden;
 }
-#metadata-overview .scroll-chart {
+#metadata_tabs .tab-content, #metadata-overview .tab-pane {
+    height: 100%;
+}
+#metadata_tabs {
+    height: calc(100% - 50px);
+}
+#metadata_tabs .tab-pane {
+    height: 100%;
+}
+#metadata_tabs .scroll-chart {
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
 }
 
-.meta-chart-container .meta-chart {
+#metadata_tabs .meta-chart {
     height: 1000px;
 }
 
@@ -500,6 +485,95 @@ footer > div, footer > div #chartBarchart {
     .nav-tabs>li>a {
         font-size: 10px;
     }
+}
+/*
+    ======================================
+    Search
+    ======================================
+*/
+#search-bar .suggestion-item {
+    border-bottom: 1px solid #d7d7d7;
+}
+#search-bar #search-scroll {
+
+}
+#search-bar #search-group {
+
+}
+
+#search-bar #autocomplete {
+    height: 500px;
+    min-width: 348px;
+    width: 24%;
+    overflow: auto;
+    position: absolute;
+    border-bottom: 1px solid #ddd;
+    z-index: -1;
+}
+
+#search-bar #autocomplete .list-group-item {
+    padding: 5px 10px;
+}
+#search-bar .search-item-container{
+    height: 32px;
+}
+#search-bar .search-item-container > span {
+    position: relative;
+    top: -8px;
+    left: 5px;
+}
+.autocomplete-left {
+    float: left;
+}
+/*
+    ======================================
+    History
+    ======================================
+*/
+#history {
+    margin-left: 10px;
+}
+
+ul#historyList {
+    white-space : nowrap;
+    display: inline-block;
+    padding: 3px 10px;
+    margin: 0 0 0 10px;
+}
+/* TODO: calculate remaining space for items */
+#historyList > li {
+    background-color: #2759AC;
+    cursor: pointer;
+    white-space: nowrap;
+    /*overflow: hidden;*/
+    display: inline-block;
+    padding: 7px 10px;
+    color: white;
+    transition: width 0.3s linear;
+    width: 47px;
+    width: auto;
+}
+#historyList > li:hover {
+    transition: width 0.2s linear;
+    width: 150px;
+    width: auto;
+}
+#historyList li span {
+    margin-left: 5px;
+}
+#historyList li i {
+    color: white;
+}
+#historyList li i.type-icon {
+    font-size: 16px;
+
+}
+#historyList li i.action-icon {
+    font-size: 8px;
+}
+#historyList .popover-title {
+    color: white;
+    background-color: #2759AC;
 }
 
 /*

@@ -1,0 +1,35 @@
+<div style="padding: 10px;">
+	<!--
+	<div id="search-group">
+		<div class="input-group">
+			<span class="input-group-addon">Search:</span>
+			<input ng-model="searchQuery" class="form-control" placeholder="Add filter" ng-keyup="autocomplete(searchQuery)" ng-blur="resetAutoComplete()"/>
+
+		</div>
+
+	</div>
+
+	<div id="search-scroll">
+	<div id="autocomplete" class="list-group">
+		<button class="list-group-item" ng-repeat="data in searchTags" ng-click="addFilter(data)">
+			<div class="search-item-container" title="{{data.type}}">
+				<svg width="32" height="32">
+					<g transform="translate(16,16)">
+						<circle r="15" id="" ng-style="{'fill': '{{data.color}}'};" style="opacity: 1; stroke-width: 1; stroke: #000;" class=""></circle>
+					</g>
+				</svg>
+				<span>{{data.text}}</span></div>
+		</button>
+	</div>
+	</div>
+	-->
+	<form ng-submit="addFulltext(fulltextInput)">
+	<div class="input-group">
+			<input type="text" class="form-control" placeholder="Search for..." ng-model="fulltextInput" ui-keypress="{13:'addFulltexta(fulltextInput)'}">
+			<span class="input-group-btn">
+        	<button class="btn btn-secondary" type="submit" ng-click="addFulltexta(fulltextInput)">Go!</button>
+			</span>
+	</div>
+	</form>
+
+</div>

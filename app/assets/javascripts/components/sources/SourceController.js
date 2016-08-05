@@ -39,7 +39,6 @@ define([
                 'highlightShareService',
                 'graphPropertiesShareService',
                 'uiShareService',
-                'tagSelectShareService',
                 'ObserverService',
                 function ($scope,
                           $http,
@@ -53,7 +52,6 @@ define([
                           highlightShareService,
                           graphPropertiesShareService,
                           uiShareService,
-                          tagSelectShareService,
                           ObserverService) {
                     $scope.sourceShared = sourceShareService;
                     $scope.highlightShared = highlightShareService;
@@ -61,7 +59,7 @@ define([
                     $scope.graphPropertiesShared = graphPropertiesShareService;
                     $scope.test = "Hi :D";
 
-                    $scope.highlightState = {on: false};
+                    $scope.highlightState = {on: true};
 
                     var placeholderTags = [
                         {text: 'Türkei'},
@@ -87,8 +85,10 @@ define([
                      */
                     $scope.observer_subscribe_entity = function(items) { $scope.entityFilters = items};
                     $scope.observer_subscribe_metadata = function(items) { $scope.metadataFilters = items};
+                    $scope.observer_subscribe_fulltext = function(items) { $scope.fulltextFilters = items};
                     $scope.observer.subscribeItems($scope.observer_subscribe_entity,"entity");
                     $scope.observer.subscribeItems($scope.observer_subscribe_metadata,"metadata");
+                    $scope.observer.subscribeItems($scope.observer_subscribe_fulltext,"fulltext");
 
                     /*
 
@@ -105,24 +105,35 @@ define([
                      */
                     $scope.updateDocumentList = function() {
                         console.log("reload doc list");
-                        var fulltext = "";
+                        var entities = [];
                         angular.forEach($scope.entityFilters, function(item) {
-                            fulltext += item.data.name + " ";
+                            entities.push(item.data.id);
                         });
                         var facets = [];
                         if($scope.metadataFilters.length > 0) {
                             angular.forEach($scope.metadataFilters, function(metaType) {
-                                if($scope.metadataFilters[metaType].length > 0) facets.push({key: metaType, data: $scope.metadataFilters[metaType]});
+                                if($scope.metadataFilters[metaType].length > 0) {
+                                    var keys = [];
+                                    angular.forEach($scope.metadataFilters[metaType], function(x) {
+                                        keys.push(x.data.name);
+                                    });
+                                    facets.push({key: metaType, data: keys});
+                                }
                             });
                             if(facets == 0) facets = [{'key':'dummy','data': []}];
 
                         } else {
                             facets = [{'key':'dummy','data': []}];
                         }
-                        playRoutes.controllers.DocumentController.getDocs(fulltext,facets).get().then(function(x) {
+                        var fulltext = [];
+                        angular.forEach($scope.fulltextFilters, function(item) {
+                           fulltext.push(item.data.name);
+                        });
+                        playRoutes.controllers.DocumentController.getDocs(fulltext,facets,entities,$scope.observer.getTimeRange()).get().then(function(x) {
                             // console.log(x.data);
                             $scope.sourceShared.reset(0);
-                            $scope.sourceShared.addDocs(x.data);
+                            $scope.sourceShared.addDocs(x.data.docs);
+                            $scope.hits = x.data.hits;
                         });
                     };
 
@@ -372,47 +383,13 @@ define([
                                 view: 'search'
                             }
                         });
+                        console.log("Added filter")
 
                         //TODO: replace tagService with observer
                         $scope.addedTag(item);
                         $("#autocomplete").css('z-index','-1');
                         $scope.searchTags = [];
                     };
-
-
-                    /**
-                     * This function is called whenever a tag is added
-                     */
-                    $scope.addedTag = function (tagName) {
-                        console.log("added " + tagName.text);
-
-                        var idx = tagSelectShareService.tagsToUnselect.indexOf(tagName.text);
-                        if (idx > -1) {
-                            tagSelectShareService.tagsToUnselect.splice(idx, 1);
-                        }
-
-                        tagSelectShareService.tagsToSelect.push(tagName.text);
-                        tagSelectShareService.wasChanged = true;
-
-
-                    };
-
-
-                    /**
-                     * This function is called whenever a tag is removed
-                     */
-                    $scope.removedTag = function (tagName) {
-                        console.log("removed " + tagName.text);
-
-                        var idx = tagSelectShareService.tagsToSelect.indexOf(tagName.text);
-                        if (idx > -1) {
-                            tagSelectShareService.tagsToSelect.splice(idx, 1);
-                        }
-
-                        tagSelectShareService.tagsToUnselect.push(tagName.text);
-                        tagSelectShareService.wasChanged = true;
-                    }
-
 
                     // The close click on a tab
                     $(document).on('click', '.nav-tabs .closeTab', function () {

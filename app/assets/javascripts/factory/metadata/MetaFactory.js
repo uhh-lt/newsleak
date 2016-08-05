@@ -28,8 +28,6 @@ define([
             {
                 var metaShareService =
                 {
-					metaTypes: ["PER", "MISC", "ORG", "LOC"],
-
                     //Global Metadata bar chart config
                     chartConfig : {
                     chart: {
@@ -43,12 +41,14 @@ define([
                     },
                     plotOptions: {
                         series: {
-                            stacking: 'normal'
                         },
                         bar: {
                             dataLabels: {
                                 enabled: true
-                            }
+                              //  align: 'right'
+                            },
+                            grouping: false,
+                            shadow: false
                         }
 
                     },

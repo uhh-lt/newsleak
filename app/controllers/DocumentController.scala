@@ -16,75 +16,72 @@
 
 package controllers
 
+import javax.inject.Inject
+
 import model.Document
-import model.faceted.search.FacetedSearch
-import play.api.libs.json.{JsArray, Json, Writes}
-import play.api.mvc.{Action, Controller}
+import model.faceted.search.{ FacetedSearch, Facets }
+import play.api.libs.json.Json
+import play.api.mvc.{ Action, Controller }
+import util.TimeRangeParser
+
+// scalastyle:off
 import scalikejdbc._
+import util.TupleWriters._
+// scalastyle:on
 
 /*
     This class provides operations pertaining documents.
 */
-object DocumentController extends Controller {
+class DocumentController @Inject extends Controller {
   private implicit val session = AutoSession
 
-  // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
-  implicit def tuple3Writes[A, B, C](implicit a: Writes[A], b: Writes[B], c: Writes[C]): Writes[Tuple3[A, B, C]] = new Writes[Tuple3[A, B, C]] {
-    def writes(tuple: Tuple3[A, B, C]) = JsArray(Seq(a.writes(tuple._1),
-      b.writes(tuple._2),
-      c.writes(tuple._3)))
-  }
-
-  // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
-  implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[Tuple2[A, B]] = new Writes[Tuple2[A, B]] {
-    def writes(tuple: Tuple2[A, B]) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2)))
-  }
+  private val defaultPageSize = 50
 
   /**
-    * returns the document with the id "id", if there is any
-    */
+   * returns the document with the id "id", if there is any
+   */
   def getDocById(id: Int) = Action {
     Ok(Json.toJson(Document.getById(id).map(doc => (doc.id, doc.created.toString(), doc.content)))).as("application/json")
   }
 
   /**
-    * Search for Dcoument by fulltext term and faceted search map via elastic search
-    *
-    * @param fullText Full text search term
-    * @param facets   mapping of metadata key and a list of corresponding tags
-    * @return list of matching document id's
-    */
-  def getDocs(fullText: Option[String], facets: Map[String, List[String]]) = Action {
-    println(facets)
-    println(fullText)
-    val pageSize = 50
+   * Search for Dcoument by fulltext term and faceted search map via elastic search
+   *
+   * @param fullText Full text search term
+   * @param generic   mapping of metadata key and a list of corresponding tags
+   * @param entities list of entity ids to filter
+   * @param timeRange string of a time range readable for [[TimeRangeParser]]
+   * @return list of matching document id's
+   */
+  def getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
+    val times = TimeRangeParser.parseTimeRange(timeRange)
+    val facets = Facets(fullText, generic, entities, times.from, times.to)
     var pageCounter = 0
     val metadataKey = "Subject"
-    val hitIterator = FacetedSearch.searchDocuments(fullText, facets, pageSize)
+    val hitIterator = FacetedSearch.searchDocuments(facets, defaultPageSize)
     var docIds: List[Long] = List()
-    while (hitIterator.hasNext && pageCounter <= pageSize) {
-      docIds ::= hitIterator.next()
+    while (hitIterator._2.hasNext && pageCounter <= defaultPageSize) {
+      docIds ::= hitIterator._2.next()
       pageCounter += 1
     }
-    println(docIds)
     var rs: List[(Long, String)] = List()
-    if(docIds.nonEmpty)
-    rs =
-      sql"""SELECT d.id, m.value
-        FROM document d
-        INNER JOIN metadata m ON d.id = m.docid
-        WHERE m.key = ${metadataKey} AND d.id IN (${docIds})"""
-        .map(rs => (rs.long("id"), rs.string("value")))
-        .list()
-        .apply()
+    if (docIds.nonEmpty) {
+      rs =
+        sql"""SELECT m.docid id, m.value
+        FROM metadata m
+        WHERE m.key = ${metadataKey} AND m.docid IN (${docIds})"""
+          .map(rs => (rs.long("id"), rs.string("value")))
+          .list()
+          .apply()
+    }
 
-    Ok(Json.toJson(rs)).as("application/json")
+    Ok(Json.toJson(Json.obj("hits" -> hitIterator._1, "docs" -> rs))).as("application/json")
   }
 
   /**
-    * returns a list of date-number-tuples, where date is a number of milliseconds since 1970.01.01
-    * and number is the amount of documents created that day
-    */
+   * returns a list of date-number-tuples, where date is a number of milliseconds since 1970.01.01
+   * and number is the amount of documents created that day
+   */
   def getFrequencySeries = Action {
     val rs =
       sql"""SELECT created, COUNT(created)
@@ -95,15 +92,15 @@ object DocumentController extends Controller {
         .list()
         .apply()
 
-    //TODO: sort by data evtually
-    //rs.sortWith((e1, e2) => (e1._1 < e2._1))
+    // TODO: sort by data evtually
+    // rs.sortWith((e1, e2) => (e1._1 < e2._1))
     Ok(Json.toJson(rs)).as("application/json")
   }
 
   /**
-    * returns a list of all document ids from documents created at a given date and a short description
-    * where date is a unixtimestamp
-    */
+   * returns a list of all document ids from documents created at a given date and a short description
+   * where date is a unixtimestamp
+   */
   def getDocsByDate(date: Long) = Action {
     val rs =
       sql"""SELECT id, value
@@ -118,15 +115,15 @@ object DocumentController extends Controller {
   }
 
   /**
-    * Retrieves documents between two years.
-    *
-    * @param fromYear Select documents that have a created date >= this value.
-    * @param toYear   Select documents that have a created date <= this value.
-    * @param offset   The offset in the ordered list of documents
-    * @param count    The amount of documents
-    * @return Returns a list containing the IDs and Subjects of the documents that match the
-    *         given criterion.
-    */
+   * Retrieves documents between two years.
+   *
+   * @param fromYear Select documents that have a created date >= this value.
+   * @param toYear   Select documents that have a created date <= this value.
+   * @param offset   The offset in the ordered list of documents
+   * @param count    The amount of documents
+   * @return Returns a list containing the IDs and Subjects of the documents that match the
+   *         given criterion.
+   */
   def getDocsForYearRange(fromYear: Int, toYear: Int, offset: Int, count: Int) = Action {
     val rs =
       sql"""SELECT id, value
@@ -141,22 +138,20 @@ object DocumentController extends Controller {
         .map(rs => (rs.long("id"), rs.string("value")))
         .list()
         .apply()
-
-
     Ok(Json.toJson(rs)).as("application/json")
   }
 
   /**
-    * Retrieves documents for a given month in a given year.
-    *
-    * @param year   The year to get the documents for.
-    * @param month  The month to get the documents for. This value is not zero-based, thus
-    *               for January pass 1.
-    * @param offset The offset in the ordered list of documents
-    * @param count  The amount of documents
-    * @return Returns a list containing the IDs and Subjects of the documents that match the
-    *         given criterion.
-    */
+   * Retrieves documents for a given month in a given year.
+   *
+   * @param year   The year to get the documents for.
+   * @param month  The month to get the documents for. This value is not zero-based, thus
+   *               for January pass 1.
+   * @param offset The offset in the ordered list of documents
+   * @param count  The amount of documents
+   * @return Returns a list containing the IDs and Subjects of the documents that match the
+   *         given criterion.
+   */
   def getDocsForMonth(year: Int, month: Int, offset: Int, count: Int) = Action {
     val rs =
       sql"""SELECT id, value

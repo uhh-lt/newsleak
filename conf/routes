@@ -15,15 +15,17 @@ GET         /                                                controllers.Applica
 #GET			/partials/*file						                 controllers.Application.loadPublicHTML(file)
 
 GET    /docById           		controllers.DocumentController.getDocById(id: Int)
-GET    /getDocs           		controllers.DocumentController.getDocs(fullText: Option[String], facets: Map[String, List[String]])
+GET    /getDocs           		controllers.DocumentController.getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
 GET    /frequencySeries			controllers.DocumentController.getFrequencySeries
 GET    /docsByDate           	controllers.DocumentController.getDocsByDate(date: Long)
-GET    /getDocsForMonth         controllers.DocumentController.getDocsForMonth(year: Int, month: Int, startIndex: Int, offset: Int)
-GET    /getDocsForYearRange      controllers.DocumentController.getDocsForYearRange(fromYear: Int, toYear: Int, startIndex: Int, offset: Int)
+GET    /getDocsForMonth         controllers.DocumentController.getDocsForMonth(year: Int, month: Int, startIndex: Int, offset: Int ?= 0)
+GET    /getDocsForYearRange      controllers.DocumentController.getDocsForYearRange(fromYear: Int, toYear: Int, startIndex: Int, offset: Int ?= 0)
 
 GET    /getGuidanceNodes        controllers.NetworkController.getGuidanceNodes(focusId: Long)
 
 GET    /getGraphData         	controllers.NetworkController.getGraphData(leastOrMostFrequent: Int, amount: List[Int], minEdgeFreq: Int, maxEdgeFreq: Int)
+GET    /getRelations           controllers.NetworkController.getRelations(entities: List[Long], minEdgeFreq: Int, maxEdgeFreq: Int)
+GET     /induceSubgraph         controllers.NetworkController.induceSubgraph(fullText: List[String],generic: Map[String, List[String]],entities: List[Long],timeRange: String,size: Int,filter: List[Long])
 GET    /docsByCountry         	controllers.MapController.getDocsForCountry(countryCode: String)
 GET    /getEgoNetworkData       controllers.NetworkController.getEgoNetworkData(leastOrMostFrequent: Int, id: Long, amountOfType: List[Int], existingNodes: List[Long])
 GET    /getIdsByName             controllers.NetworkController.getIdsByName(name: String)
@@ -32,16 +34,19 @@ GET	   /mergeEntitiesById		controllers.NetworkController.mergeEntitiesById(focal
 GET    /changeEntityNameById	controllers.NetworkController.changeEntityNameById(id: Long, newName: String)
 GET    /changeEntityTypeById	controllers.NetworkController.changeEntityTypeById(id: Long, newType: String)
 GET    /getAutocomplete		controllers.SearchController.getAutocomplete(query: String)
-GET    /getEntities		controllers.EntityController.getEntities(fullText: Option[String], facets: Map[String, List[String]])
+GET    /getEntities		controllers.EntityController.getEntities(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, size: Int, entityType: String, filter: List[Long])
+GET     /getEntityTypes controllers.EntityController.getEntityTypes
 GET    /getEntitiesByType		controllers.EntityController.getEntitiesByType(entityType: String)
-GET    /getEntitiesWithOffset		controllers.EntityController.getEntitiesWithOffset(entityType: String, offset: Int)
+GET    /getEntitiesWithOffset		controllers.EntityController.getEntitiesWithOffset(entityType: String, offset: Int ?= 0)
 GET    /getEntitiesDocCount		controllers.EntityController.getEntitiesDocCount(entityType: String)
-GET    /getEntitiesDocCountWithOffset		controllers.EntityController.getEntitiesDocCountWithOffset(entityType: String, offset: Int)
+GET    /getEntitiesDocCountWithOffset		controllers.EntityController.getEntitiesDocCountWithOffset(entityType: String, offset: Int ?= 0)
 GET    /getEntitiesDocCountWithFilter		controllers.EntityController.getEntitiesDocCountWithFilter(filter: List[Long])
-GET   /getMetadata     controllers.MetadataController.getMetadata(fullText: Option[String], facets: Map[String, List[String]])
-GET   /getKeywords     controllers.MetadataController.getKeywords(fullText: Option[String], facets: Map[String, List[String]])
+GET   /getMetadata     controllers.MetadataController.getMetadata(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
+GET   /getKeywords     controllers.MetadataController.getKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
 GET   /getMetadataTypes       controllers.MetadataController.getMetadataTypes
-
+GET    /getSpecificMetadata             controllers.MetadataController.getSpecificMetadata(fullText: List[String], key: String, generic: Map[String, List[String]], entities: List[Long], instances: List[String], timeRange: String)
+GET     /getHistogram               controllers.HistogramController.getHistogram(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, lod: String)
+GET      /getHistogramLod         controllers.HistogramController.getHistogramLod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # JS ROUTING AND RESOURCES                                                                      #
