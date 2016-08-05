@@ -66,7 +66,7 @@ html, body {
 
 line {
     /* Should be the same as edgeLegend#fill */
-    stroke: #d0d0d0;
+    stroke: #b0b0b0;
 }
 
 .dropdown-button-menu
