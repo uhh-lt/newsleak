@@ -254,6 +254,28 @@ define([
                                 }
                             }
                         }
+                    },{
+                        name:  'Overview',
+                        data: $scope.dataFilter,
+                        color: 'black',
+                        cursor: 'pointer',
+                        point: {
+                            events: {
+                                click: function(e) {
+                                    $scope.clickedItem(this);
+                                }
+                            }
+                        },
+                        dataLabels: {
+                            inside: true,
+                            verticalAlign: "top",
+                            useHTML: true,
+                            formatter : function() {
+                                return $('<div/>').css({
+                                    'color' : 'white'
+                                }).text(this.y)[0].outerHTML;
+                            }
+                        }
                     }];
 
                     $scope.chartConfig.chart.events = {
@@ -268,7 +290,6 @@ define([
 
                     $scope.histogram = new Highcharts.Chart($scope.chartConfig);
                     $scope.initialized = true;
-                    $scope.updateHistogram();
                 };
 
                 /**

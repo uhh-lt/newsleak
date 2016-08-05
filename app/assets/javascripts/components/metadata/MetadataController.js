@@ -274,11 +274,32 @@ define([
                                                 }
                                             }
                                         }
+                                    },{
+                                        name: 'Filter',
+                                        data: $scope.frequencies[x],
+                                        color: 'black',
+                                        cursor: 'pointer',
+                                        point: {
+                                            events: {
+                                                click: function () {
+                                                    $scope.clickedItem(this, 'entity', x);
+                                                }
+                                            }
+                                        },
+                                        dataLabels: {
+                                            inside: true,
+                                            align: 'left',
+                                            useHTML: true,
+                                            formatter : function() {
+                                                return $('<div/>').css({
+                                                    'color' : 'white'
+                                                }).text(this.y)[0].outerHTML;
+                                            }
+                                        }
                                     }];
                                     $scope.chartConfigs[x].chart.renderTo = "chart_" + x.toLowerCase();
                                     $("#chart_" + x.toLowerCase()).css("height",$scope.frequencies[x].length * 35);
                                     $scope.metaCharts[x] = new Highcharts.Chart($scope.chartConfigs[x]);
-                                    if(types.indexOf(x) >= types.length-1) $scope.updateEntityCharts();
                                 });
                             });
                         });
@@ -320,6 +341,28 @@ define([
                                                 }
                                             }
 
+                                        },{
+                                            name: 'Filter',
+                                            data: $scope.frequencies[key],
+                                            color: 'black',
+                                            cursor: 'pointer',
+                                            point: {
+                                                events: {
+                                                    click: function () {
+                                                        $scope.clickedItem(this, 'metadata', key);
+                                                    }
+                                                }
+                                            },
+                                            dataLabels: {
+                                                inside: true,
+                                                align: 'left',
+                                                useHTML: true,
+                                                formatter : function() {
+                                                    return $('<div/>').css({
+                                                        'color' : 'white'
+                                                    }).text(this.y)[0].outerHTML;
+                                                }
+                                            }
                                         }];
                                         $scope.chartConfigs[key].chart.renderTo = "chart_" + key.toLowerCase();
                                         $("#chart_" + key.toLowerCase()).css("height",$scope.frequencies[key].length * 35);
@@ -329,7 +372,6 @@ define([
                                         }
                                 );
                             });
-                            $scope.updateMetadataCharts();
                         })
                     };
 
