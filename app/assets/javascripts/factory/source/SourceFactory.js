@@ -57,35 +57,6 @@ define([
                     this.index = 0;
                     this.numberOfDocsToFetch = 100;
                 },
-                fetchNextDocs: function () {
-                    var toIndex = this.index + this.numberOfDocsToFetch - 1;
-                    if (this.lastCategoryFetched == this.CATEGORY_DECADE) {
-                        playRoutes.controllers.DocumentController.getDocsForYearRange(
-                            this.fromYear, this.toYear, this.index, toIndex
-                        ).get().then(function (response) {
-                            this.addDocs(response.data);
-                            }
-                        );
-                    } else if (this.lastCategoryFetched == this.CATEGORY_YEAR) {
-                        playRoutes.controllers.DocumentController.getDocsForYearRange(
-                            this.fromYear, this.fromYear, this.index, toIndex
-                        ).get().then(function (response) {
-                            this.addDocs(response.data);
-                            }
-                        );
-                    } else if (this.lastCategoryFetched == this.CATEGORY_MONTH) {
-                        playRoutes.controllers.DocumentController.getDocsForMonth(
-                            this.fromYear, this.month, this.index, toIndex
-                        ).get().then(function (response) {
-                            this.addDocs(response.data);
-                            }
-                        );
-                    } else if (this.lastCategoryFetched == this.CATEGORY_DAY) {
-                        playRoutes.controllers.DocumentController.getDocsByDate(this.day).get().then(function (response) {
-                            this.addDocs(response.data);
-                        });
-                    }
-                },
                 /**
                  * Append documents to the scope variable.
                  *
@@ -93,15 +64,19 @@ define([
                  */
                 addDocs: function (data) {
                 if (data.length > 0) {
-                    for (var i = 0; i < data.length; i++) {
-                        sourceShareService.documentList.push({
-                            id: data[i][0],
-                            title: data[i][1]
+                    angular.forEach(data, function(doc) {
+                        var currentDoc = {
+                            id: doc.id,
+                            metadata: {}
+                        };
+                        angular.forEach(doc.metadata, function(metadata) {
+                                currentDoc.metadata[metadata.key] = metadata.val;
                         });
-                    }
+                        sourceShareService.documentList.push(currentDoc);
+                    });
+
                     sourceShareService.showReloadButton = 1;
                     // Compute the next range of documents to fetch
-                    sourceShareService.index += sourceShareService.numberOfDocsToFetch;
                     sourceShareService.numberOfDocsToFetch = sourceShareService.numberOfDocsToFetch * 2;
                 } else {
                     sourceShareService.showReloadButton = 0;

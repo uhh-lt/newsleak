@@ -27,13 +27,26 @@
     <div class="alert alert-warning" ng-show="sourceShared.documentList.length == 0 && sourceShared.documentListWarning != ''">
         <p>{{ sourceShared.documentListWarning }}</p>
     </div>
-
+    <script type="text/ng-template" id="doc_tooltip_tmpl">
+        <div>
+            <ul class="list-group-item">
+                <li class="list-group-item" ng-repeat="(key, value) in item.metadata"><span style="font-weight: 700">{{key}}:</span> {{value}}</li>
+            </ul>
+        </div>
+    </script>
     <div ng-show="sourceShared.documentList.length > 0" class="docs-ul">
         <b style="text-decoration: underline;">{{ sourceShared.documentListInfo }}</b>
         <ul id="document-list">
-            <li ng-repeat="item in sourceShared.documentList" ng-class="{true: 'doc-list-highlight', false: 'doc-list-no-highlight'}[sourceShared.openDocuments.IDs.indexOf(item.id) > -1]">
+            <li ng-repeat="item in sourceShared.documentList"
+                ng-class="{true: 'doc-list-highlight', false: 'doc-list-no-highlight'}[sourceShared.openDocuments.IDs.indexOf(item.id) > -1]"
+                uib-popover-template="'doc_tooltip_tmpl'"
+                popover-trigger="'mouseenter:mouseleave'"
+                popover-title="Metadata for {{item.id}}"
+                popover-placement="right"
+
+                >
                 <a href="#" ng-click="loadFullDocument(item.id)">
-                    {{ item.title }}
+                    {{ item.metadata.Subject }}
                 </a>
             </li>
         </ul>
