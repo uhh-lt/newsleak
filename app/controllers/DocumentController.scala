@@ -29,9 +29,17 @@ import scalikejdbc._
 import util.TupleWriters._
 // scalastyle:on
 
+case class Session(hits: Long, hitIterator: Iterator[Long], hash: Long)
+
 /*
     This class provides operations pertaining documents.
 */
+object DocumentController {
+  val facets = Facets(List(), Map(), List(), None, None)
+  var res = FacetedSearch.searchDocuments(facets, 50)
+  private var session = Session(res._1, res._2, facets.hashCode())
+}
+
 class DocumentController @Inject extends Controller {
   private implicit val session = AutoSession
 
@@ -58,10 +66,16 @@ class DocumentController @Inject extends Controller {
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var pageCounter = 0
     val metadataKey = "Subject"
-    val hitIterator = FacetedSearch.searchDocuments(facets, defaultPageSize)
+    if (facets.hashCode() != DocumentController.session.hash) {
+      println("new")
+      DocumentController.res = FacetedSearch.searchDocuments(facets, defaultPageSize)
+      DocumentController.session = Session(DocumentController.res._1, DocumentController.res._2, facets.hashCode())
+    }
+    // val hitIterator = FacetedSearch.searchDocuments(facets, defaultPageSize)
+    //  DocumentController.iterator = FacetedSearch.searchDocuments(facets, defaultPageSize)._2
     var docIds: List[Long] = List()
-    while (hitIterator._2.hasNext && pageCounter <= defaultPageSize) {
-      docIds ::= hitIterator._2.next()
+    while (DocumentController.session.hitIterator.hasNext && pageCounter <= defaultPageSize) {
+      docIds ::= DocumentController.session.hitIterator.next()
       pageCounter += 1
     }
     var rs: List[(Long, String)] = List()
@@ -75,7 +89,7 @@ class DocumentController @Inject extends Controller {
           .apply()
     }
 
-    Ok(Json.toJson(Json.obj("hits" -> hitIterator._1, "docs" -> rs))).as("application/json")
+    Ok(Json.toJson(Json.obj("hits" -> 10, "docs" -> rs))).as("application/json")
   }
 
   /**
