@@ -21,7 +21,7 @@ import javax.inject.Inject
 import model.EntityType
 import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
 import play.api.libs.json.{ JsObject, Json }
-import play.api.mvc.{ Action, Controller }
+import play.api.mvc.{ Action, Controller, Results }
 import util.TimeRangeParser
 
 // scalastyle:off
@@ -150,7 +150,9 @@ class NetworkController @Inject extends Controller {
    * @return
    */
   def getRelations(entities: List[Long], minEdgeFreq: Int, maxEdgeFreq: Int) = Action {
-    val relations = sql"""SELECT DISTINCT ON (id, frequency) id, entity1, entity2, frequency
+    if (entities.nonEmpty) {
+      val relations =
+        sql"""SELECT DISTINCT ON (id, frequency) id, entity1, entity2, frequency
         FROM relationship
         WHERE entity1 IN (${entities})
         AND entity2 IN (${entities})
@@ -158,11 +160,14 @@ class NetworkController @Inject extends Controller {
         AND frequency <= ${maxEdgeFreq}
         ORDER BY frequency DESC
         LIMIT 100"""
-      .map(rs => (rs.long("id"), rs.long("entity1"), rs.long("entity2"), rs.int("frequency")))
-      .list()
-      .apply()
+          .map(rs => (rs.long("id"), rs.long("entity1"), rs.long("entity2"), rs.int("frequency")))
+          .list()
+          .apply()
 
-    Ok(Json.toJson(relations)).as("application/json")
+      Ok(Json.toJson(relations)).as("application/json")
+    } else {
+      Results.Ok(Json.toJson(List[JsObject]())).as("application/json")
+    }
   }
 
   def induceSubgraph(
