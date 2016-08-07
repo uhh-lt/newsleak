@@ -19,12 +19,16 @@ define([
     'ngSanitize',
     '../../factory/appData',
     '../../factory/util',
+    'ui-bootstrap',
     'toggle-switch'
 ], function (angular) {
     'use strict';
 
-    angular.module('myApp.source', ['play.routing', 'ngSanitize', 'toggle-switch']);
-    angular.module('myApp.source')
+    angular.module('myApp.source', ['play.routing', 'ngSanitize', 'toggle-switch', 'ui.bootstrap'])
+        .config(['$uibTooltipProvider', function($uibTooltipProvider) {
+            //$uibTooltipProvider.setTriggers({'mouseenter': 'mouseleave'});
+            console.log("config");
+        }])
         .controller('SourceController',
             [
                 '$scope',
@@ -289,7 +293,7 @@ define([
                                 appendNewTabContent(docId);
                             });
                         }
-                    }
+                    };
 
 
                     /**
@@ -311,7 +315,7 @@ define([
                                 }
                             }
                         }
-                    }
+                    };
 
 
                     /**
@@ -321,7 +325,7 @@ define([
                         console.log("annotateSelected TODO");
                         var annotation = $('#annotateDocumentInput').val();
                         alert("TODO: annotate selected --> " + annotation);
-                    }
+                    };
 
                     /**
                      * With this function the user can create a new entity with the selected
@@ -330,7 +334,7 @@ define([
                     $scope.createEntity = function () {
                         console.log("createEntity TODO");
                         alert("TODO: create a entity");
-                    }
+                    };
 
                     /**
                      * This function is used for autocompleting the tags

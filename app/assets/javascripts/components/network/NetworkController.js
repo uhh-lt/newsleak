@@ -830,7 +830,7 @@ define([
 
                     node.exit().remove();
 
-                    addTooltip(node, link);  // add the tooltips to the nodes and links
+                    //addTooltip(node, link);  // add the tooltips to the nodes and links
                     enableOrDisableButtons();
 
                     $scope.isViewLoading = false;
