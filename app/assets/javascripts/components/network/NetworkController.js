@@ -371,6 +371,47 @@ define([
                     .endAngle(value*2*Math.PI));
             }
 
+            function updateNodeSize(node)
+            {
+                d3
+                    .select('#nodecircle_' + node.id)
+                    .attr('r', function (d) { return radius(d.docCount) })
+
+                d3
+                    .select('#nodebuttons_' + node.id)
+                    .attr('y', function(d){return radius(d.docCount) - 4;})
+
+                d3
+                    .select('#nodetext_' + node.id)
+                    .text(function (d){
+                        var r = radius(d.docCount);
+                        //if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
+                            return d.name;
+                        //else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
+                        //    return d.name.substring(0, r/3 - 3) + "...";
+                    })
+                    .style('font-size', function(d){
+                        var r = radius(d.docCount);
+                        var textLength;
+                        var size;
+                        if(r/3 >= d.name.length - 1){  // If the text fits inside the node.
+                            textLength = d.name.length;
+                            // If the text contains less than 3 characters: act as if
+                            // there where 3 characters so that the font doesn't become to big.
+                            if(textLength < 3)
+                                textLength = 3;
+                            size = r/3;
+                        }
+                        else{  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
+                            textLength = d.name.substring(0, r/3 - 3).length;
+                            size = r/3 - 3;
+                        }
+                        size *= 7 / textLength;  // This seems to work to get a good text size.
+                        size = Math.max(10, Math.round(size));  // Min. text size = 10px
+                        return size+'px';
+                    });
+            }
+
 
 			/**
 			 *	add an annotation to the specified Node
@@ -424,11 +465,6 @@ define([
                     ]);
                     force.start();
                 }
-            }
-
-            function setEdgeDisabled(edge)
-            {
-
             }
 
 
@@ -837,6 +873,7 @@ define([
 
                     // add buttons to the nodes
                     var buttonlist = newNodes.append('foreignObject')
+                        .attr('id', function(d){return 'nodebuttons_' + d.id})
                         .attr('width', '16')
                         .attr('height', '16')
                         .attr('x', -8)
@@ -857,7 +894,6 @@ define([
                         .style('padding', '0px 0px 0px 0px')
                         .on('click', function(d)
                                                 {
-                                                    console.log("button clicked");
                                                     $scope.observer.addItem({type: 'entity', data: {id: d.id, name: d.name, type: d.type}});
                                                 })
                         .append('span')
@@ -1716,7 +1752,7 @@ define([
                 });
                 var entityType = "";
 
-                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,entityType,filters).get().then(function(response) {
+                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,entityType).get().then(function(response) {
 
                     //to prevent invisible selections
                     unselectNodes();
@@ -1725,35 +1761,55 @@ define([
                     var tmpnodes = nodes;
 
                     //delete all nodes and edges
-                    nodes = [];
+                    //nodes.length = 0;
 
                     response.data.forEach(
-                        function(v)
+                        function(v, index)
                         {
-                            /*var enode = tmpnodes.find(function(node){return node.id === v.id;});
+                            var enode = tmpnodes.find(function(node){return node.id === v.id;});
                             if(enode != undefined)
                             {
                                 enode.docCount = v.docCount;
-                                nodes.push(enode);
-                                return;
-                            }*/
-
-                            nodes.push({
-                            	id: v.id,
-                            	name: v.name,
-                            	freq: v.freq,
-                            	type: v.type,
-                            	docCount: v.docCount,
-                                size: 2,
-                            });
+                                updateNodeSize(enode);
+                            }
+                            else
+                            {
+                                nodes.push({
+                                    id: v.id,
+                                    name: v.name,
+                                    freq: v.freq,
+                                    type: v.type,
+                                    docCount: v.docCount,
+                                    size: 2,
+                                });
+                            }
                         }
                     );
+
+                    var nodesToDelete = []
+                    nodes.forEach(
+                        function(node, index)
+                        {
+                            if(response.data.find(function(v){return v.id === node.id}) == undefined)
+                            {
+                                nodesToDelete.push(node.id);
+                            }
+                        }
+                    )
+
+                    for(var i=0; i<nodesToDelete.length; i++)
+                    {
+                        nodes.splice(nodes.findIndex(function(v){return nodesToDelete[i] === v.id}), 1);
+                    }
+
+                    //delete all nodes not used
+                    //nodes.filter(function(v){return response.data.find(function(node){return node.id === v.id}) != undefined;})
 
 
 
 
                     //reload();
-                    force.nodes(nodes);
+                    //force.nodes(nodes);
                     //calculateNewForceSize();
 
                     start();
@@ -1770,7 +1826,7 @@ define([
                     playRoutes.controllers.NetworkController.getRelations(response.data.map(function(v){return v.id}), toolShareService.sliderEdgeMinFreq(), toolShareService.sliderEdgeMaxFreq()).get().then(
                         function(response)
                         {
-                            edges=[];
+                            edges.length = 0;
                             response.data.forEach(
                                 function(v)
                                 {
@@ -1783,7 +1839,8 @@ define([
                                     edges.push({id: v[0], source: sourceNode, target: targetNode, freq: v[3]});
                                 }
                             )
-                            force.links(edges);
+
+                            //force.links(edges);
                             //calculateNewForceSize();
                             start();
                         }
