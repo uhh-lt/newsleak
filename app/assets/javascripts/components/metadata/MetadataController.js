@@ -369,7 +369,6 @@ define([
                                         }];
                                         $scope.chartConfigs[key].chart.renderTo = "chart_" + key.toLowerCase();
                                         $("#chart_" + key.toLowerCase()).css("height",$scope.frequencies[key].length * 35);
-                                                console.log($("#" +$scope.chartConfigs[key].chart.renderTo));
                                         $scope.metaCharts[key] = new Highcharts.Chart($scope.chartConfigs[key]);
                                             }
 

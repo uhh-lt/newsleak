@@ -547,7 +547,7 @@ define([
             		d3.select('#nodebuttonicon_' + node.id).attr('class', 'glyphicon glyphicon-minus');
 
             		node.expanded = true;
-            		console.log(nodes);
+            		//console.log(nodes);
             	});
             }
 
@@ -570,7 +570,7 @@ define([
             		}
             	);
 
-				console.log(nodes);
+				//console.log(nodes);
 				var deletenodes = [];
             	nodes.forEach(
             		function(v,i,a)
@@ -580,7 +580,7 @@ define([
             				return;
             			}
 
-            			console.log(v);
+            			//console.log(v);
             			if(v.collapseParent.length > 1 && v.collapseParent.indexOf(node.id) != -1)
             			{
             				v.collapseParent.splice(v.collapseParent.indexOf(node.id), 1)
