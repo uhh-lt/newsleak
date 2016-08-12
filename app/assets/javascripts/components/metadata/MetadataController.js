@@ -36,6 +36,8 @@ define([
                 'ObserverService',
                 function ($scope, $timeout, playRoutes, appData, metaShareService, sourceShareService, ObserverService) {
 
+                    $scope.initialized = false;
+
                     $scope.frequencies = [];
                     $scope.labels = [];
                     $scope.ids = [];
@@ -313,6 +315,7 @@ define([
                                         $.each(result.data,function() {
                                             $.each(this, function(key, value) {
                                                 //console.log(value);
+                                            if($scope.metadataTypes.indexOf(key) != -1) {
 
                                             $scope.chartConfigs[key] = angular.copy($scope.chartConfig);
 
@@ -366,12 +369,17 @@ define([
                                         }];
                                         $scope.chartConfigs[key].chart.renderTo = "chart_" + key.toLowerCase();
                                         $("#chart_" + key.toLowerCase()).css("height",$scope.frequencies[key].length * 35);
+                                                console.log($("#" +$scope.chartConfigs[key].chart.renderTo));
                                         $scope.metaCharts[key] = new Highcharts.Chart($scope.chartConfigs[key]);
+                                            }
+
                                             });
 
                                         }
                                 );
-                            });
+
+                                    });
+                            $scope.initialized = true;
                         })
                     };
 

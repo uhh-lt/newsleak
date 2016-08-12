@@ -33,7 +33,7 @@ define([
             //all item structured by type
             var items = [];
             //types of tracked items
-            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext"];
+            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset"];
             var metadataTypes = [];
             var entityTypes = [];
             var histogramLoD = [];
@@ -45,6 +45,7 @@ define([
             //fetch metadata Types dynamically
             function updateMetadataTypes() {
                 var deferred = $q.defer();
+                metadataTypes = [];
                 playRoutes.controllers.MetadataController.getMetadataTypes().get().then(function (response) {
                     metadataTypes = angular.copy(response.data);
                     angular.forEach(metadataTypes, function (type) {
@@ -60,6 +61,7 @@ define([
             //fetch entity Types dynamically
             function updateEntityTypes() {
                 var deferred = $q.defer();
+                entityTypes = [];
                 playRoutes.controllers.EntityController.getEntityTypes().get().then(function (response) {
                     entityTypes = angular.copy(response.data);
                     deferred.resolve(entityTypes);
@@ -97,6 +99,7 @@ define([
                  * call all observer callback functions
                  */
                 notifyObservers: function(){
+                    console.log(items);
                     angular.forEach(observerCallbacks, function(callback){
                         $timeout(callback,0);
                     });
@@ -240,6 +243,31 @@ define([
                  */
                 getHistogramLod: function() {
                     return promiseLoD;
+                },
+
+                reset: function() {
+                    //lastAdded = -1;
+                    //lastRemoved = -1;
+                    var rootThis = this;
+                    history.forEach(function(item) {
+                        if(item.active)
+                            rootThis.removeItem(item.id, item.type);
+                    });
+
+                    this.addItem({
+                        type: 'reset',
+                        active: false,
+                        data: {
+                            name: "Filter reseted"
+                        }
+                    });
+                    items = [];
+                    types.forEach(function(type) {
+                        items[type] = [];
+                    });
+                    updateEntityTypes();
+                    updateMetadataTypes();
+                    this.notifyObservers();
                 }
             }
         }]);
