@@ -99,7 +99,6 @@ define([
                  * call all observer callback functions
                  */
                 notifyObservers: function(){
-                    console.log(items);
                     angular.forEach(observerCallbacks, function(callback){
                         $timeout(callback,0);
                     });
@@ -151,6 +150,11 @@ define([
                             break;
                         //time filter
                         case types[2]:
+                            items[item.type].push(item);
+                            break;
+                        //reset
+                        case types[10]:
+                            item.active = false;
                             items[item.type].push(item);
                             break;
                         default:
@@ -246,8 +250,6 @@ define([
                 },
 
                 reset: function() {
-                    //lastAdded = -1;
-                    //lastRemoved = -1;
                     var rootThis = this;
                     history.forEach(function(item) {
                         if(item.active)
@@ -261,12 +263,15 @@ define([
                             name: "Filter reseted"
                         }
                     });
-                    items = [];
                     types.forEach(function(type) {
-                        items[type] = [];
+                        if(type != types[1])
+                            items[type].splice(0,items[type].length);
+                        else {
+                            angular.forEach(metadataTypes, function (mtype) {
+                                items[type][mtype].splice(0, items[type][mtype].length);
+                            });
+                        }
                     });
-                    updateEntityTypes();
-                    updateMetadataTypes();
                     this.notifyObservers();
                 }
             }
