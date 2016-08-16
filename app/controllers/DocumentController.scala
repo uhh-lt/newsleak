@@ -35,15 +35,15 @@ case class Session(hits: Long, hitIterator: Iterator[Long], hash: Long)
     This class provides operations pertaining documents.
 */
 object DocumentController {
+  private val defaultPageSize = 50
   val facets = Facets(List(), Map(), List(), None, None)
-  var res = FacetedSearch.searchDocuments(facets, 50)
-  private var session = Session(res._1, res._2, facets.hashCode())
+  var res = FacetedSearch.searchDocuments(facets, defaultPageSize)
+  private val defaultSssion = Session(res._1, res._2, facets.hashCode())
+  private var iteratorSessions = Map("default" -> defaultSssion)
 }
 
 class DocumentController @Inject extends Controller {
   private implicit val session = AutoSession
-
-  private val defaultPageSize = 50
 
   /**
    * returns the document with the id "id", if there is any
@@ -61,21 +61,21 @@ class DocumentController @Inject extends Controller {
    * @param timeRange string of a time range readable for [[TimeRangeParser]]
    * @return list of matching document id's
    */
-  def getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
+  def getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action { implicit request =>
+    val uid = request.session.get("uid")
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var pageCounter = 0
     val metadataKey = "Subject"
-    if (facets.hashCode() != DocumentController.session.hash) {
-      println("new")
-      DocumentController.res = FacetedSearch.searchDocuments(facets, defaultPageSize)
-      DocumentController.session = Session(DocumentController.res._1, DocumentController.res._2, facets.hashCode())
+    var iteratorSession = DocumentController.iteratorSessions.get(uid.get)
+    if (iteratorSession.isEmpty || facets.hashCode() != iteratorSession.get.hash) {
+      val res = FacetedSearch.searchDocuments(facets, DocumentController.defaultPageSize)
+      DocumentController.iteratorSessions += (uid.get -> Session(res._1, res._2, facets.hashCode()))
+      iteratorSession = DocumentController.iteratorSessions.get(uid.get)
     }
-    // val hitIterator = FacetedSearch.searchDocuments(facets, defaultPageSize)
-    //  DocumentController.iterator = FacetedSearch.searchDocuments(facets, defaultPageSize)._2
     var docIds: List[Long] = List()
-    while (DocumentController.session.hitIterator.hasNext && pageCounter <= defaultPageSize) {
-      docIds ::= DocumentController.session.hitIterator.next()
+    while (iteratorSession.get.hitIterator.hasNext && pageCounter <= DocumentController.defaultPageSize) {
+      docIds ::= iteratorSession.get.hitIterator.next()
       pageCounter += 1
     }
     var rs: List[(Long, String)] = List()
@@ -89,7 +89,7 @@ class DocumentController @Inject extends Controller {
           .apply()
     }
 
-    Ok(Json.toJson(Json.obj("hits" -> 10, "docs" -> rs))).as("application/json")
+    Ok(Json.toJson(Json.obj("hits" -> iteratorSession.get.hits, "docs" -> rs))).as("application/json")
   }
 
   /**
