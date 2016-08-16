@@ -77,7 +77,6 @@ define([
                         {text: 'Iran'},
                         {text: 'Iraq'}
                     ];
-
                     /**
                      * This array holds the current tags.
                      */
@@ -138,11 +137,43 @@ define([
                             $scope.sourceShared.reset(0);
                             $scope.sourceShared.addDocs(x.data.docs);
                             $scope.hits = x.data.hits;
+                            $(".docs-ul").scrollTop(0);
                         });
                     };
 
                     //initial document list load
                     $scope.updateDocumentList();
+
+                    $scope.loadMore = function () {
+                        console.log("reload doc list");
+                        var entities = [];
+                        angular.forEach($scope.entityFilters, function(item) {
+                            entities.push(item.data.id);
+                        });
+                        var facets = [];
+                        if($scope.metadataFilters.length > 0) {
+                            angular.forEach($scope.metadataFilters, function(metaType) {
+                                if($scope.metadataFilters[metaType].length > 0) {
+                                    var keys = [];
+                                    angular.forEach($scope.metadataFilters[metaType], function(x) {
+                                        keys.push(x.data.name);
+                                    });
+                                    facets.push({key: metaType, data: keys});
+                                }
+                            });
+                            if(facets == 0) facets = [{'key':'dummy','data': []}];
+
+                        } else {
+                            facets = [{'key':'dummy','data': []}];
+                        }
+                        var fulltext = [];
+                        angular.forEach($scope.fulltextFilters, function(item) {
+                            fulltext.push(item.data.name);
+                        });
+                        playRoutes.controllers.DocumentController.getDocs(fulltext,facets,entities,$scope.observer.getTimeRange()).get().then(function(x) {
+                            $scope.sourceShared.addDocs(x.data.docs);
+                        });
+                    };
 
                     //subscribe to update document list on filter change
                     $scope.observer.registerObserverCallback($scope.updateDocumentList);

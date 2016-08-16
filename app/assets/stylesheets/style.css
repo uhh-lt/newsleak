@@ -372,7 +372,7 @@ footer > div, footer > div #histogram {
     height: 100%;
 }
 #document div#documents-view div.docs-ul {
-    height: calc(100% - 38px);
+    height: calc(100% - 90px);
     overflow: auto;
 }
 
