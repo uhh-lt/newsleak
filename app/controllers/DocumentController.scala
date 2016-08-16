@@ -62,11 +62,10 @@ class DocumentController @Inject extends Controller {
    * @return list of matching document id's
    */
   def getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action { implicit request =>
-    val uid = request.session.get("uid")
+    val uid = if (request.session.get("uid").nonEmpty) request.session.get("uid") else Some("0")
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var pageCounter = 0
-    val metadataKey = "Subject"
     val metadataKeys = List("Subject", "Origin", "SignedBy", "Classification")
     var iteratorSession = DocumentController.iteratorSessions.get(uid.get)
     if (iteratorSession.isEmpty || facets.hashCode() != iteratorSession.get.hash) {
@@ -92,7 +91,7 @@ class DocumentController @Inject extends Controller {
           .map { case (id, inner) => id -> inner.map(doc => Json.obj("key" -> doc._2, "val" -> doc._3)) }
           .map(x => Json.obj("id" -> x._1, "metadata" -> Json.toJson(x._2)))
     }
-    Ok(Json.toJson(Json.obj("hits" -> hitIterator._1, "docs" -> Json.toJson(rs)))).as("application/json")
+    Ok(Json.toJson(Json.obj("hits" -> iteratorSession.get.hits, "docs" -> Json.toJson(rs)))).as("application/json")
   }
 
   /**
