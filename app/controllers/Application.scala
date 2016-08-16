@@ -47,6 +47,8 @@ class Application @Inject extends Controller {
    * Serves the Networks of Names frontend to the client.
    */
   def index = Action { implicit request =>
+    val uid = request.session.get("uid").getOrElse { (Random.alphanumeric take 8).mkString }
+    Logger.debug("Session UID: " + uid)
 
     var authorized = false
     // TODO: commented out for disable auth
@@ -75,7 +77,9 @@ class Application @Inject extends Controller {
       Unauthorized(views.html.defaultpages.unauthorized())
         .withHeaders("WWW-Authenticate" -> "Basic realm=\"new/s/leak\"")
     } else {
-      Ok(views.html.index())
+      Ok(views.html.index()).withSession(
+        "uid" -> uid
+      )
     }
   }
 
