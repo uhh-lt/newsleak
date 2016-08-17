@@ -375,6 +375,8 @@ define([
             {
                 d3
                     .select('#nodecircle_' + node.id)
+                    .transition()
+                    .duration(3000)
                     .attr('r', function (d) { return radius(d.docCount) })
 
                 d3
@@ -382,13 +384,30 @@ define([
                     .attr('y', function(d){return radius(d.docCount) - 4;})
 
                 d3
+                    .select('#nodebuttonannotate_' + node.id)
+                    .attr('x', function(d){return radius(d.docCount)-2;});
+
+                d3
                     .select('#nodetext_' + node.id)
                     .text(function (d){
                         var r = radius(d.docCount);
-                        //if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
-                            return d.name;
-                        //else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
-                        //    return d.name.substring(0, r/3 - 3) + "...";
+
+                        if(!(r/3 >= d.name.length - 1))
+                        {
+                            //console.log(d3.select(this).style('font-size').split("px")[0])
+                            d3.select(this).attr('y', (-r-d3.select(this).style('font-size').split("px")[0]/2) + 'px')
+                        }
+
+                        /*if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
+                        {
+                        }
+                        else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
+                        {
+                            d3.select(this).attr('dy', r)
+                        }*/
+                            //return d.name.substring(0, r/3 - 3) + "...";
+
+                        return d.name;
                     })
                     .style('font-size', function(d){
                         var r = radius(d.docCount);
@@ -425,13 +444,18 @@ define([
             {
             	d3.select("#node_" + node.id)
             		.append('foreignObject')
+            		.attr('id', function(d){return 'nodebuttonannotate_' + d.id})
             		.attr('width', '24')
             		.attr('height', '24')
             		.attr('x', function(d){return radius(d.docCount)-2;})
             		.attr('y', /*function(d){return (radius(d.freq));}*/-12)
             		.append('xhtml:body')
-            		.html('<button type="button" class="btn btn-xs btn-default neighbor-button" ng-show="!isViewLoading"><i class="glyphicon glyphicon-comment"></i></button>')
-            		.on('mouseup', function(){alert(text);});
+            		.append('button')
+            		.attr('class', 'btn btn-xs btn-default neighbor-button')
+            		//.html('<button type="button" id="nodebuttonannotate_" class="btn btn-xs btn-default neighbor-button"><i class="glyphicon glyphicon-comment"></i></button>')
+            		.on('mouseup', function(){alert(text);})
+            		.append('i')
+            		.attr('class', 'glyphicon glyphicon-comment')
 
                 //track annotating nodes within observer
                 $scope.observer.addItem({
@@ -845,8 +869,15 @@ define([
                             })
                             .text(function (d){
                                 var r = radius(d.docCount);
+
+                                if(!(r/3 >= d.name.length - 1))
+                                {
+                                    console.log(d3.select(this).style('font-size').split("px")[0])
+                                    d3.select(this).attr('y', (-r-d3.select(this).style('font-size').split("px")[0]/2) + 'px')
+                                }
+
                                 //if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
-                                    return d.name;
+                                return d.name;
                                 //else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
                                 //    return d.name.substring(0, r/3 - 3) + "...";
                             })
@@ -1633,6 +1664,13 @@ define([
                 node.name = edit;
                 d3.select("#nodetext_" + node.id).text(function (d){
                 	var r = radius(d.docCount);
+
+                	if(!(r/3 >= d.name.length - 1))
+                    {
+                        console.log(d3.select(this).style('font-size').split("px")[0])
+                        d3.select(this).attr('y', (-r-d3.select(this).style('font-size').split("px")[0]/2) + 'px')
+                    }
+
                 	if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
                 		return d.name;
                 	/*else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
