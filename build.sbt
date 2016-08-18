@@ -8,6 +8,7 @@ scalacOptions += "-feature"
 
 libraryDependencies ++= Seq(
   jdbc,
+  cache,
   "org.postgresql" % "postgresql" % "9.4-1206-jdbc41",
   "org.apache.lucene" % "lucene-snowball" % "3.0.3",
   "commons-io" % "commons-io" % "2.4",

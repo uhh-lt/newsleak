@@ -20,30 +20,28 @@ import javax.inject.Inject
 
 import model.Document
 import model.faceted.search.{ FacetedSearch, Facets }
-import play.api.libs.json.{ JsObject, JsValue, Json }
+import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller }
 import util.TimeRangeParser
 
 // scalastyle:off
 import scalikejdbc._
 import util.TupleWriters._
+import play.cache._
 // scalastyle:on
 
-case class Session(hits: Long, hitIterator: Iterator[Long], hash: Long)
+case class IteratorSession(hits: Long, hitIterator: Iterator[Long], hash: Long)
 
 /*
     This class provides operations pertaining documents.
 */
-object DocumentController {
-  private val defaultPageSize = 50
-  val facets = Facets(List(), Map(), List(), None, None)
-  var res = FacetedSearch.searchDocuments(facets, defaultPageSize)
-  private val defaultSssion = Session(res._1, res._2, facets.hashCode())
-  private var iteratorSessions = Map("default" -> defaultSssion)
-}
-
-class DocumentController @Inject extends Controller {
+class DocumentController @Inject() (cache: CacheApi) extends Controller {
   private implicit val session = AutoSession
+
+  private val defaultPageSize = 50
+  private val defaultFacets = Facets(List(), Map(), List(), None, None)
+  private val defaultRes = FacetedSearch.searchDocuments(defaultFacets, defaultPageSize)
+  private val defaultSssion = IteratorSession(defaultRes._1, defaultRes._2, defaultFacets.hashCode())
 
   /**
    * returns the document with the id "id", if there is any
@@ -62,20 +60,22 @@ class DocumentController @Inject extends Controller {
    * @return list of matching document id's
    */
   def getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action { implicit request =>
-    val uid = if (request.session.get("uid").nonEmpty) request.session.get("uid") else Some("0")
+    val uid = request.session.get("uid").getOrElse("0")
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var pageCounter = 0
     val metadataKeys = List("Subject", "Origin", "SignedBy", "Classification")
-    var iteratorSession = DocumentController.iteratorSessions.get(uid.get)
-    if (iteratorSession.isEmpty || facets.hashCode() != iteratorSession.get.hash) {
-      val res = FacetedSearch.searchDocuments(facets, DocumentController.defaultPageSize)
-      DocumentController.iteratorSessions += (uid.get -> Session(res._1, res._2, facets.hashCode()))
-      iteratorSession = DocumentController.iteratorSessions.get(uid.get)
+
+    var iteratorSession: IteratorSession = cache.get[IteratorSession](uid)
+    if (iteratorSession == null || iteratorSession.hash != facets.hashCode()) {
+      val res = FacetedSearch.searchDocuments(facets, defaultPageSize)
+      iteratorSession = IteratorSession(res._1, res._2, facets.hashCode())
+      cache.set(uid, iteratorSession)
     }
+
     var docIds: List[Long] = List()
-    while (iteratorSession.get.hitIterator.hasNext && pageCounter <= DocumentController.defaultPageSize) {
-      docIds ::= iteratorSession.get.hitIterator.next()
+    while (iteratorSession.hitIterator.hasNext && pageCounter <= defaultPageSize) {
+      docIds ::= iteratorSession.hitIterator.next()
       pageCounter += 1
     }
     var rs: Iterable[JsObject] = List()
@@ -91,7 +91,7 @@ class DocumentController @Inject extends Controller {
           .map { case (id, inner) => id -> inner.map(doc => Json.obj("key" -> doc._2, "val" -> doc._3)) }
           .map(x => Json.obj("id" -> x._1, "metadata" -> Json.toJson(x._2)))
     }
-    Ok(Json.toJson(Json.obj("hits" -> iteratorSession.get.hits, "docs" -> Json.toJson(rs)))).as("application/json")
+    Ok(Json.toJson(Json.obj("hits" -> iteratorSession.hits, "docs" -> Json.toJson(rs)))).as("application/json")
   }
 
   /**
