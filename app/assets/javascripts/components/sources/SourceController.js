@@ -61,26 +61,10 @@ define([
                     $scope.highlightShared = highlightShareService;
                     $scope.uiShareService = uiShareService;
                     $scope.graphPropertiesShared = graphPropertiesShareService;
-                    $scope.test = "Hi :D";
+                    $scope.docsLoading = false;
+                    $scope.noMoreDocs = false;
 
                     $scope.highlightState = {on: true};
-
-                    var placeholderTags = [
-                        {text: 'Türkei'},
-                        {text: 'Paris'},
-                        {text: 'Wirtschaft'},
-                        {text: 'Obama'},
-                        {text: 'Merkel'},
-                        {text: 'Balkan'},
-                        {text: 'U.S.'},
-                        {text: 'Bush'},
-                        {text: 'Iran'},
-                        {text: 'Iraq'}
-                    ];
-                    /**
-                     * This array holds the current tags.
-                     */
-                    $scope.tags = [/*"Obama", "Merkel", "Balkan"*/];
 
                     $scope.observer = ObserverService;
                     /**
@@ -107,6 +91,7 @@ define([
                      * load document list for current filtering
                      */
                     $scope.updateDocumentList = function() {
+                        $scope.docsLoading = true;
                         console.log("reload doc list");
                         var entities = [];
                         angular.forEach($scope.entityFilters, function(item) {
@@ -138,6 +123,7 @@ define([
                             $scope.sourceShared.addDocs(x.data.docs);
                             $scope.hits = x.data.hits;
                             $(".docs-ul").scrollTop(0);
+                            $scope.docsLoading = false;
                         });
                     };
 
@@ -146,6 +132,7 @@ define([
 
                     $scope.loadMore = function () {
                         console.log("reload doc list");
+                        $scope.docsLoading = true;
                         var entities = [];
                         angular.forEach($scope.entityFilters, function(item) {
                             entities.push(item.data.id);
@@ -172,6 +159,7 @@ define([
                         });
                         playRoutes.controllers.DocumentController.getDocs(fulltext,facets,entities,$scope.observer.getTimeRange()).get().then(function(x) {
                             $scope.sourceShared.addDocs(x.data.docs);
+                            $scope.docsLoading = false;
                         });
                     };
 
@@ -418,13 +406,22 @@ define([
                                 view: 'search'
                             }
                         });
-                        console.log("Added filter")
+                        console.log("Added filter");
 
                         //TODO: replace tagService with observer
                         $scope.addedTag(item);
                         $("#autocomplete").css('z-index','-1');
                         $scope.searchTags = [];
                     };
+
+                    $(".docs-ul").on('scroll',function() {
+                        if(!$scope.docsLoading) {
+                            if(($(this).find("ul").height() - $(this).scrollTop()) < 600)
+                                $scope.loadMore();
+                        }
+
+
+                    });
 
                     // The close click on a tab
                     $(document).on('click', '.nav-tabs .closeTab', function () {
