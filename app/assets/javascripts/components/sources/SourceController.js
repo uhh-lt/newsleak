@@ -433,7 +433,7 @@ define([
                     });
 
                     $scope.hidePopover = function(id) {
-                        $scope.popover.promises[id] = $timeout(function() { $scope.hideFunction(id)}, 350);
+                        $scope.popover.promises[id] = $timeout(function() { $scope.hideFunction(id)}, 10);
                     };
 
                     $scope.showPopover = function(id) {
