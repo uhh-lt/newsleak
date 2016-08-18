@@ -141,7 +141,7 @@ define([
 
                     $scope.loadMore = function () {
                         console.log("reload doc list");
-                        $scope.docsLoading = false;
+                        $scope.docsLoading = true;
                         var entities = [];
                         angular.forEach($scope.entityFilters, function(item) {
                             entities.push(item.data.id);
