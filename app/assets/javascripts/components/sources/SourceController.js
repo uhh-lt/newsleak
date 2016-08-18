@@ -36,6 +36,7 @@ define([
                 '$compile',
                 '$templateRequest',
                 '$sce',
+                '$timeout',
                 'playRoutes',
                 'util',
                 '_',
@@ -49,6 +50,7 @@ define([
                           $compile,
                           $templateRequest,
                           $sce,
+                          $timeout,
                           playRoutes,
                           util,
                           _,
@@ -63,6 +65,13 @@ define([
                     $scope.graphPropertiesShared = graphPropertiesShareService;
                     $scope.docsLoading = false;
                     $scope.noMoreDocs = false;
+                    $scope.popover = {
+                        template: 'doc_tooltip_tmpl',
+                            placement: 'right',
+                            trigger: 'None',
+                            isOpen: [],
+                            promises: []
+                    };
 
                     $scope.highlightState = {on: true};
 
@@ -422,6 +431,19 @@ define([
 
 
                     });
+
+                    $scope.hidePopover = function(id) {
+                        $scope.popover.promises[id] = $timeout(function() { $scope.hideFunction(id)}, 350);
+                    };
+
+                    $scope.showPopover = function(id) {
+                        if($scope.popover.promises[id] != undefined) $timeout.cancel($scope.popover.promises[id]);
+                        $scope.popover.isOpen[id] = true;
+                    };
+
+                    $scope.hideFunction = function(x) {
+                        $scope.popover.isOpen[x] = false;
+                    };
 
                     // The close click on a tab
                     $(document).on('click', '.nav-tabs .closeTab', function () {
