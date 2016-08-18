@@ -404,7 +404,21 @@ footer > div, footer > div #histogram {
     width: 100%;
 
 }
-
+.docs-loading {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background: white;
+    opacity: 0.5;
+    text-align: center;
+}
+.docs-loading span {
+    font-weight: bold;
+    position: relative;
+    top: 45%;
+}
 /*
     ======================================
     Bar Chart
