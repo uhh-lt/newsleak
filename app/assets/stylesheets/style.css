@@ -430,10 +430,6 @@ footer > div, footer > div #histogram {
     overflow-y: auto;
 }
 
-#histogram .stack-label {
-    text-decoration: underline;
-}
-
 /*
     ======================================
     Filters

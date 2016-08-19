@@ -22,8 +22,7 @@ define([
     {
         'use strict';
 
-        angular.module('myApp.metafactory', []);
-        angular.module('myApp.metafactory')
+        angular.module('myApp.metafactory', [])
             .factory('metaShareService', function()
             {
                 var metaShareService =

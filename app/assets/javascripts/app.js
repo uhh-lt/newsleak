@@ -17,7 +17,6 @@
 define([
     'angular',
     'angularMoment',
-    './factory/filter/FilterFactory',
     './factory/network/ToolFactory',
     './factory/metadata/MetaFactory',
     './factory/source/SourceFactory',
@@ -30,7 +29,6 @@ define([
     './components/network/EditModalController',
     './components/network/ConfirmModalController',
     './components/metadata/MetadataController',
-    './components/filter/FilterController',
     './components/sources/SearchController',
     './components/history/HistoryController',
     './components/histogram/HistogramController',
@@ -43,7 +41,6 @@ define([
     'ui-layout',
     'ui-router',
     'ui-bootstrap',
-    'ng-tags-input',
     'angularResizable',
     'ngMaterial'
 ], function (angular) {
@@ -51,12 +48,12 @@ define([
 
     var app = angular.module('myApp',
         [
-            'ui.layout', 'ui.router', 'ui.bootstrap', 'ngTagsInput', 'play.routing','angularResizable','ngMaterial',
-            'angularMoment', 'underscore', 'myApp.data', 'myApp.observer', 'myApp.util', 'myApp.filter', 'myApp.history',
+            'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable','ngMaterial',
+            'angularMoment', 'underscore', 'myApp.data', 'myApp.observer', 'myApp.util', 'myApp.history',
             'myApp.tools',
             'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
             'myApp.network', 'myApp.metadata', 'myApp.map', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
-            'myApp.filterfactory','myApp.metafactory', 'myApp.toolfactory',
+            'myApp.metafactory', 'myApp.toolfactory',
             'myApp.histogram', 'myApp.search'
         ]
     );
@@ -95,10 +92,6 @@ define([
                 'metadata': {
                     templateUrl: 'assets/partials/metadata.html',
                     controller: 'MetadataController'
-                },
-                'filter': {
-                	templateUrl: 'assets/partials/filter.html',
-                	controller: 'FilterController'
                 },
                 'history': {
                     templateUrl: 'assets/partials/history.html',

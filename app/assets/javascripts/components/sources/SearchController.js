@@ -19,94 +19,17 @@ define([
 ], function (angular) {
     'use strict';
 
-    angular.module('myApp.search', ['play.routing']);
-    angular.module('myApp.search')
+    angular.module('myApp.search', [])
         .controller('SearchController',
             [
                 '$scope',
                 '$window',
-                'playRoutes',
-                'sourceShareService',
-                'graphPropertiesShareService',
                 'ObserverService',
                 function ($scope,
                           $window,
-                          playRoutes,
-                          sourceShareService,
-                          graphPropertiesShareService,
                           ObserverService) {
 
-                    $scope.sourceShared = sourceShareService;
-
                     $scope.observer = ObserverService;
-
-                    $scope.updateSearchHeight = function() {
-                        $('#autocomplete').css("height",$(window).height() * 0.75);
-                    };
-
-                    angular.element($window).bind('resize', function() {
-                        $scope.updateSearchHeight();
-                    });
-
-                    $scope.updateSearchHeight();
-
-                    /**
-                     * This function is used for autocompleting the tags
-                     */
-                    $scope.autocomplete = function (query) {
-                        // filter tags, only show those that contain query
-                        $scope.searchTags = [];
-                        $("#autocomplete").css('z-index','1000');
-
-                        if(query.length >= 3) playRoutes.controllers.SearchController.getAutocomplete(query).get().then(
-                            function (tags) {
-                                var limit = 0;
-
-                                tags.data.entities.forEach
-                                (
-                                    function (currentValue, index, array) {
-                                        if (limit == 10) {
-                                            return;
-                                        }
-
-                                        $scope.searchTags.push(
-                                            {
-                                                id: currentValue[0],
-                                                text: currentValue[1],
-                                                type: currentValue[2],
-                                                color: graphPropertiesShareService.categoryColors[
-                                                    graphPropertiesShareService.getIndexOfCategory(
-                                                        currentValue[2]
-                                                    )
-                                                    ]
-                                            });
-                                        limit = limit + 1;
-                                    }
-                                );
-                            }
-                        );
-                    };
-
-                    $scope.resetAutoComplete = function() {
-                        $scope.searchQuery = "";
-                    };
-
-                    $scope.addFilter = function(item) {
-                        $scope.observer.addItem({
-                            type: 'entity',
-                            data: {
-                                id: item.id,
-                                name: item.text,
-                                type: item.type,
-                                view: 'search'
-                            }
-                        });
-
-                        //TODO: replace tagService with observer
-                        //$scope.addedTag(item);
-                        $("#autocomplete").css('z-index','-1');
-                        $scope.searchTags = [];
-                    };
 
                     $scope.addFulltext = function(input) {
                         if(input.length > 2) {
@@ -121,27 +44,6 @@ define([
                             $scope.fulltextInput = "";
                         }
                     };
-
-
-                    /**
-                     * This function is called whenever a tag is added
-                     */
-                    $scope.addedTag = function (tagName) {
-                        console.log("added " + tagName.text);
-
-                        var idx = tagSelectShareService.tagsToUnselect.indexOf(tagName.text);
-                        if (idx > -1) {
-                            tagSelectShareService.tagsToUnselect.splice(idx, 1);
-                        }
-
-                        tagSelectShareService.tagsToSelect.push(tagName.text);
-                        tagSelectShareService.wasChanged = true;
-
-
-                    };
-
-
-
                 }
             ]);
 

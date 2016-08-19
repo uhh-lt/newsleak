@@ -17,35 +17,20 @@
 define([
     'angular',
     'highcharts',
-    'ngHighcharts',
     'drilldown',
-    'angularMoment',
     'bootstrap'
 ], function (angular) {
     'use strict';
 
-    angular.module('myApp.histogram', ['play.routing', 'highcharts-ng', 'angularMoment', 'myApp.source', 'myApp.sourcefactory'])
+    angular.module('myApp.histogram', ['play.routing'])
         .factory('HistogramFactory', [
-            'util',
-            'moment',
-            function(util, moment) {
+            function() {
                 var config = {
-                    weekdays: [
-                        'Sunday', 'Monday', 'Tuesday', 'Wednesday',
-                        'Thursday', 'Friday', 'Saturday'
-                    ],
-                    monthAbbreviations: [
-                        'Jan', 'Feb', 'March', 'Apr', 'May', 'June',
-                        'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'
-                    ],
                     // Highcharts options
                     highchartsOptions: {
                         lang: {
-                            resetZoom: 'Reset view',
                             drillUpText: 'Back to {series.name}',
-                            loading: 'Loading...',
-                            weekdays: this.weekdays,
-                            shortMonths: this.monthAbbreviations
+                            loading: 'Loading...'
                         }
                     },
                     // General configuration for the chart
@@ -126,19 +111,9 @@ define([
             '$timeout',
             '$q',
             'playRoutes',
-            'moment',
-            'appData',
-            'sourceShareService',
-            'util',
             'HistogramFactory',
             'ObserverService',
-            function ($scope, $compile, $timeout, $q, playRoutes, moment, appData, sourceShareService, util, HistogramFactory, ObserverService) {
-
-                /*
-                 There is an issue with the bar chart: Sometimes the document count is 0 which cannot be plotted.
-                 A workaround is to set these 0 values to null which is done in the getDrilldown() method.
-                 */
-                var PSEUDO_ZERO_VALUE = null;
+            function ($scope, $compile, $timeout, $q, playRoutes, HistogramFactory, ObserverService) {
 
                 $scope.initialized = false;
                 $scope.drilldown = false;
@@ -173,26 +148,6 @@ define([
                 $scope.observer.subscribeItems($scope.observer_subscribe_metadata,"metadata");
                 $scope.observer.subscribeItems($scope.observer_subscribe_fulltext,"fulltext");
 
-
-
-                /**
-                 * We use this wrapper in order to override the drilldown method. This is necessary
-                 * because we don't want to drilldown on a bar click. Instead, the bar click fetches
-                 * documents of the clicked time range.
-                 * When clicking the corresponding labels, however, drilldown will be executed
-
-                (function (H) {
-                    H.wrap(H.Point.prototype, 'doDrilldown', function (p, hold, x) {
-                        var UNDEFINED;
-                        // x is defined when clicked on a category
-                        if (x !== UNDEFINED) {
-                            p.call(this, hold, x);
-                        } else {
-                            addTimeFilter(this.options.drilldown.toString());
-                        }
-                    });
-                })(Highcharts);
-                */
                 /**
                  * Add time range filter to observer
                  *
@@ -208,31 +163,6 @@ define([
                         }
                     });
                 };
-
-                /*
-                 The click on a label above a bar. I (Patrick) did not find a way to implement
-                 the click event using Highcharts. Thus, this solution is a little bit cumbersome
-                 because first, the corresponding label below the bar has to be found, then the
-                 text (time range) extracted and only then can the documents be fetched.
-                 */
-                $(document).on('click', '#histogram .stack-label', function () {
-                    // + 1 because nth-child is 1-based
-                    var x = parseInt($(this).attr('data-x')) + 1;
-                    var range = $("#histogram .highcharts-xaxis-labels text:nth-child(" + x + ")")[0].childNodes[0];
-                    // We have to handle decade / year and month / day differently, as month / day are within
-                    // an additional tspan tag; this is for year / month
-                    if (range.data != undefined) {
-                        range = range.data;
-                    }
-                    // For month / day
-                    else {
-                        range = range.innerHTML;
-                    }
-                    console.log(range);
-                    $scope.addTimeFilter(range);
-
-
-                });
 
                 // set language related options
                 Highcharts.setOptions($scope.factory.highchartsOptions);

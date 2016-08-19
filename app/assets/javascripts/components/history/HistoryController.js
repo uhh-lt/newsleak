@@ -26,7 +26,7 @@ define([
 ], function(angular) {
     'use strict';
 
-    angular.module("myApp.history", ['play.routing', 'angularMoment', 'ngFileSaver', 'ui.bootstrap','ngAnimate'])
+    angular.module("myApp.history", ['ngFileSaver', 'ui.bootstrap','ngAnimate'])
         .config(function($uibTooltipProvider) {
         })
         .factory('historyFactory', [
@@ -71,13 +71,10 @@ define([
             [
                 '$scope',
                 '$timeout',
-                'playRoutes',
-                'appData',
-                'moment',
                 'FileSaver',
                 'ObserverService',
                 'historyFactory',
-                function ($scope, $timeout, playRoutes, appData, moment, FileSaver, ObserverService, historyFactory) {
+                function ($scope, $timeout, FileSaver, ObserverService, historyFactory) {
                     $scope.observer = ObserverService;
                     $scope.factory = historyFactory;
 
@@ -115,6 +112,10 @@ define([
 
                     $scope.getTypeDescription = function(x) {
                         return $scope.factory.typeDescriptions[x];
+                    };
+
+                    $scope.setFilterState = function() {
+                        //FileSaver.saveAs(new Blob([$.toJSON(savedata)], {type: 'text/plain;charset=UTF-8'}), "filters_" + Date.now() + ".txt")
                     }
                 }
             ]

@@ -34,7 +34,6 @@
 			'bootstrap': 'libs/bootstrap/dist/js/bootstrap.min',
 			'ui-bootstrap': 'libs/angular-bootstrap/ui-bootstrap-tpls.min',
 			'toggle-switch': 'libs/angular-toggle-switch/angular-toggle-switch.min',
-			'ng-tags-input': 'libs/ng-tags-input/ng-tags-input.min',
 			'ngSanitize': 'libs/angular-sanitize/angular-sanitize.min',
 			'scDateTime': 'libs/sc-date-time/dist/sc-date-time',
 			'moment': 'libs/moment/min/moment.min',
@@ -44,7 +43,6 @@
 			'screenfull': 'libs/screenfull/dist/screenfull',
 			'angularScreenfull': 'libs/angular-screenfull/dist/angular-screenfull.min',
 			'highcharts': 'libs/highcharts-release/highcharts',
-			'ngHighcharts': 'libs/highcharts-ng/dist/highcharts-ng.min',
 			'ngFileSaver': 'libs/angular-file-saver/dist/angular-file-saver.bundle.min',
 			'drilldown' : 'libs/highcharts-release/modules/drilldown',
 			'datamaps' : 'libs/datamaps/dist/datamaps.world',
@@ -95,9 +93,6 @@
 				exports: 'angular',
 				deps: ['angular']
 			},
-			'ng-tags-input': {
-				deps: ['angular']
-			},
 			'ngSanitize': {
 				exports: 'angular',
 				deps: ['angular']
@@ -112,9 +107,6 @@
 			'highcharts': {
 				exports: 'Highcharts',
 				deps: ['jquery']
-			},
-			'ngHighcharts': {
-				deps: ['highcharts', 'angular']
 			},
 			'ngMaterial': {
 				deps: ['angular','ngAria','ngMessages','ngAnimate']
@@ -161,7 +153,7 @@
 
 	require([
 			'angular',
-			'app',
+			'app'
 		], function(angular, app) {
 			angular.bootstrap(document, ['myApp']);
 		}

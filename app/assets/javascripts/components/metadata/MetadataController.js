@@ -18,23 +18,21 @@ define([
     'angular',
     'angularMoment',
     'jquery-json',
-    '../../factory/appData',
     'ngFileSaver'
 ], function (angular) {
     'use strict';
 
-    angular.module("myApp.metadata", ['play.routing', 'angularMoment', 'ngFileSaver', 'highcharts-ng']);
+    angular.module("myApp.metadata", ['play.routing', 'angularMoment']);
     angular.module("myApp.metadata")
         .controller('MetadataController',
             [
                 '$scope',
                 '$timeout',
                 'playRoutes',
-                'appData',
                 'metaShareService',
                 'sourceShareService',
                 'ObserverService',
-                function ($scope, $timeout, playRoutes, appData, metaShareService, sourceShareService, ObserverService) {
+                function ($scope, $timeout, playRoutes, metaShareService, sourceShareService, ObserverService) {
 
                     $scope.initialized = false;
 

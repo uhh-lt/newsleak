@@ -128,7 +128,7 @@ define([
                         });
                         playRoutes.controllers.DocumentController.getDocs(fulltext,facets,entities,$scope.observer.getTimeRange()).get().then(function(x) {
                             // console.log(x.data);
-                            $scope.sourceShared.reset(0);
+                            $scope.sourceShared.reset();
                             $scope.sourceShared.addDocs(x.data.docs);
                             $scope.hits = x.data.hits;
                             $(".docs-ul").scrollTop(0);
@@ -416,16 +416,13 @@ define([
                             }
                         });
                         console.log("Added filter");
-
-                        //TODO: replace tagService with observer
-                        $scope.addedTag(item);
                         $("#autocomplete").css('z-index','-1');
                         $scope.searchTags = [];
                     };
 
                     $(".docs-ul").on('scroll',function() {
                         if(!$scope.docsLoading) {
-                            if(($(this).find("ul").height() - $(this).scrollTop()) < 600)
+                            if(($(this).find("ul").height() - $(this).scrollTop()) < 1000)
                                 $scope.loadMore();
                         }
 
