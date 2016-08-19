@@ -43,12 +43,12 @@
                 ng-mouseenter="showPopover(item.id)"
                 uib-popover-template="'doc_tooltip_tmpl'"
                 popover-trigger="none"
-                popover-title="Metadata for {{item.id}}"
+                popover-title="Metadata for #{{item.id}}"
                 popover-placement="right"
                 popover-is-open="popover.isOpen[{{item.id}}]"
                 >
                 <a href="#" ng-click="loadFullDocument(item.id)">
-                    {{ item.metadata.Subject }}
+                    {{ item.metadata.Subject }} #{{item.id}}
                 </a>
             </li>
         </ul>
