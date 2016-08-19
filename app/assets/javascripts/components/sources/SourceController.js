@@ -64,7 +64,10 @@ define([
                     $scope.uiShareService = uiShareService;
                     $scope.graphPropertiesShared = graphPropertiesShareService;
                     $scope.docsLoading = false;
+                    $scope.showLoading = false;
                     $scope.noMoreDocs = false;
+                    $scope.iteratorEmpty = false;
+
                     $scope.popover = {
                         template: 'doc_tooltip_tmpl',
                             placement: 'right',
@@ -101,6 +104,7 @@ define([
                      */
                     $scope.updateDocumentList = function() {
                         $scope.docsLoading = true;
+                        $scope.showLoading = true;
                         console.log("reload doc list");
                         var entities = [];
                         angular.forEach($scope.entityFilters, function(item) {
@@ -135,6 +139,11 @@ define([
                                 $scope.sourceShared.documentsInDB = x.data.hits;
                             $(".docs-ul").scrollTop(0);
                             $scope.docsLoading = false;
+                            $scope.showLoading = false;
+                            if(x.data.hits <= 50)
+                                $scope.iteratorEmpty = true;
+                            else
+                                $scope.iteratorEmpty = false;
                         });
                     };
 
@@ -143,35 +152,41 @@ define([
 
                     $scope.loadMore = function () {
                         console.log("reload doc list");
-                        $scope.docsLoading = true;
-                        var entities = [];
-                        angular.forEach($scope.entityFilters, function(item) {
-                            entities.push(item.data.id);
-                        });
-                        var facets = [];
-                        if($scope.metadataFilters.length > 0) {
-                            angular.forEach($scope.metadataFilters, function(metaType) {
-                                if($scope.metadataFilters[metaType].length > 0) {
-                                    var keys = [];
-                                    angular.forEach($scope.metadataFilters[metaType], function(x) {
-                                        keys.push(x.data.name);
-                                    });
-                                    facets.push({key: metaType, data: keys});
-                                }
+                        if(!$scope.iteratorEmpty) {
+                            $scope.docsLoading = true;
+                            var entities = [];
+                            angular.forEach($scope.entityFilters, function (item) {
+                                entities.push(item.data.id);
                             });
-                            if(facets == 0) facets = [{'key':'dummy','data': []}];
+                            var facets = [];
+                            if ($scope.metadataFilters.length > 0) {
+                                angular.forEach($scope.metadataFilters, function (metaType) {
+                                    if ($scope.metadataFilters[metaType].length > 0) {
+                                        var keys = [];
+                                        angular.forEach($scope.metadataFilters[metaType], function (x) {
+                                            keys.push(x.data.name);
+                                        });
+                                        facets.push({key: metaType, data: keys});
+                                    }
+                                });
+                                if (facets == 0) facets = [{'key': 'dummy', 'data': []}];
 
-                        } else {
-                            facets = [{'key':'dummy','data': []}];
+                            } else {
+                                facets = [{'key': 'dummy', 'data': []}];
+                            }
+                            var fulltext = [];
+                            angular.forEach($scope.fulltextFilters, function (item) {
+                                fulltext.push(item.data.name);
+                            });
+                            playRoutes.controllers.DocumentController.getDocs(fulltext, facets, entities, $scope.observer.getTimeRange()).get().then(function (x) {
+                                if (x.data.docs.length == 0)
+                                    $scope.iteratorEmpty = true;
+                                else
+                                    $scope.sourceShared.addDocs(x.data.docs);
+                                $scope.docsLoading = false;
+
+                            });
                         }
-                        var fulltext = [];
-                        angular.forEach($scope.fulltextFilters, function(item) {
-                            fulltext.push(item.data.name);
-                        });
-                        playRoutes.controllers.DocumentController.getDocs(fulltext,facets,entities,$scope.observer.getTimeRange()).get().then(function(x) {
-                            $scope.sourceShared.addDocs(x.data.docs);
-                            $scope.docsLoading = false;
-                        });
                     };
 
                     //subscribe to update document list on filter change
