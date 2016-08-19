@@ -23,6 +23,7 @@ define([
         .factory('sourceShareService', [function () {
             var sourceShareService = {
                 documentList: [],
+                documentsInDB: -1,
                 openDocuments: {IDs: [], contents: [], nonHighlightedContents: [], displayHighlightedText: []},
                 reset: function () {
                     this.documentList = [];

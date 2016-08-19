@@ -131,6 +131,8 @@ define([
                             $scope.sourceShared.reset();
                             $scope.sourceShared.addDocs(x.data.docs);
                             $scope.hits = x.data.hits;
+                            if($scope.sourceShared.documentsInDB == -1)
+                                $scope.sourceShared.documentsInDB = x.data.hits;
                             $(".docs-ul").scrollTop(0);
                             $scope.docsLoading = false;
                         });
