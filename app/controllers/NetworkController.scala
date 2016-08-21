@@ -463,7 +463,7 @@ class NetworkController @Inject extends Controller {
     val result = sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq
           FROM relationship LEFT JOIN entity AS et1 ON et1.id = relationship.entity1
           LEFT JOIN entity AS et2 ON et2.id = relationship.entity2 WHERE entity1 = $nodeId ORDER BY relationship.frequency DESC LIMIT 300""".map(rs => {
-      (rs.long(1), rs.long(2), rs.int(3), rs.int(4), rs.int(5)) //TODO Limit verändert sich
+      (rs.long(1), rs.long(2), rs.int(3), rs.int(4), rs.int(5)) //TODO Limit ist veränderbar
     })
       .toList().apply().filter(x => cachedDistanceValues.getOrElse(x._2, distToFocus + 1) > distToFocus).map(x =>
         ((x._1, x._2), (x._3 * x._3 * x._3) / (x._4 * x._5), x._3))

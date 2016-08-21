@@ -501,6 +501,7 @@ define([
              * and renders the graph
              */
             function getGraph(){
+                console.log("nc.js getGraph");
                 $scope.isViewLoading    = true;
                 var sliderValue         = [];
                 sliderValue.push(parseInt(toolShareService.sliderLocationsValue()));
@@ -614,7 +615,7 @@ define([
             /**
              * resets the graph and starts the force layout
              */
-            function start(callback){
+            function start(callback){//Graph zeichnen
                     var time;
 
                     // update links
@@ -802,7 +803,7 @@ define([
                         .style('width', '100%')
                         .style('height', '100%')
                         .style('padding', '0px 0px 0px 0px')
-                        .on('click', function(d)
+                        .on('click', function(d)//Wenn der Plus-Button gedrückt wird
                                                 {
                                                     console.log("button clicked");
                                                     $scope.observer.addItem({type: 'entity', data: {id: d.id, name: d.name, type: d.type}});
