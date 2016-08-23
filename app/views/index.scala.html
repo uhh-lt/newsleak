@@ -32,13 +32,11 @@
         <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/angular-awesome-slider/dist/css/angular-awesome-slider.min.css")">
         <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/angular-toggle-switch/angular-toggle-switch.css")">
         <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/angular-resizable/angular-resizable.min.css")">
+        <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/vis/dist/vis.css")">
         <link type="text/css" rel="stylesheet" href="@routes.Assets.at("stylesheets/style.css")">
 
 
         <link rel="stylesheet" href="@routes.Assets.at("javascripts/libs/angular-material/angular-material.min.css")">
-
-
-
 
         <style>
         body {
@@ -71,7 +69,8 @@
                         </ul>
                             <!-- Tab panes -->
                         <div class="tab-content">
-                            <div role="tabpanel" class="tab-pane active" id="network" ng-controller="NetworkController">
+                            <!--<div role="tabpanel" class="tab-pane active" id="network" ng-controller="NetworkController">-->
+                            <div role="tabpanel" class="tab-pane active" id="network" ng-controller="FancyNetworkController">
                                 <div ng-include=" 'assets/partials/network.html' " onload="loaded()"></div>
                             </div>
                             <!--<div role="tabpanel" class="tab-pane" id="map" ng-controller="MapController">

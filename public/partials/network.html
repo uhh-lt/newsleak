@@ -16,9 +16,14 @@
   -->
 
 <!-- Loading Image -->
-<div class="alert alert-info loading-network-image" ng-show="isViewLoading">
+<!--<div class="alert alert-info loading-network-image" ng-show="isViewLoading">
     <img src="./assets/images/loading2.gif"/>
-</div>
+</div>-->
 
 <!-- Show Graph if available -->
-<div id="network-graph" ng-show="!isViewLoading"></div>
+<!--<div id="network-graph" ng-show="!isViewLoading"></div>-->
+<!-- Network -->
+
+<div id="mynetwork">
+    <vis-network data="graphData" options="graphOptions" layout-fill events="graphEvents"></vis-network>
+</div>

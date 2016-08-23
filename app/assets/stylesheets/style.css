@@ -84,10 +84,19 @@ line {
     pointer-events: none;
 }
 
+/* old network */
 #network-graph {
     width: 100%;
     height: calc(100% - 96px);
     position: absolute;
+}
+
+#mynetwork {
+    position: absolute;
+    overflow-y: hidden;
+    width: 100%;
+    height: 100%;
+    background-color:#333333;
 }
 
 #merge-node

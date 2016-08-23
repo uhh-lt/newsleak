@@ -49,7 +49,9 @@
 			'underscore': 'libs/underscore/underscore-min',
 			'd3': 'libs/d3/d3.min',
 			'angularResizable': 'libs/angular-resizable/angular-resizable.min',
-			'bootstrapFileField': 'libs/angular-bootstrap-file-field/dist/angular-bootstrap-file-field.min'
+			'bootstrapFileField': 'libs/angular-bootstrap-file-field/dist/angular-bootstrap-file-field.min',
+			'vis': 'libs/vis/dist/vis.min',
+			'ngVis': 'libs/angular-visjs/angular-vis'
 		},
 		shim: {
 			'jsRoutes': {
@@ -131,6 +133,9 @@
 			},
 			'bootstrapFileField' : {
 				deps: ['angular', 'bootstrap']
+			},
+			'ngVis': {
+				deps: ['angular', 'vis']
 			}
 		},
 		priority: [
@@ -139,7 +144,6 @@
 		],
 		deps: ['angular','jquery'],
 		waitSeconds: 5
-
 	});
 
 	requirejs.onError = function (err) {
@@ -153,6 +157,4 @@
 			angular.bootstrap(document, ['myApp']);
 		}
 	);
-	
-	
 })(requirejs);
