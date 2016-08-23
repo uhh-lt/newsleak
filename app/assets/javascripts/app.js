@@ -23,7 +23,8 @@ define([
     './factory/source/SourceFactory',
     './factory/source/HighlightFactory',
     './components/sources/SourceController',
-    './components/network/NetworkController',
+    //'./components/network/NetworkController',
+    './components/network/FancyNetworkController',
     './components/network/ToolController',
     './components/network/TextModalController',
     './components/network/MergeModalController',
@@ -42,7 +43,9 @@ define([
     'ui-router',
     'ui-bootstrap',
     'angularResizable',
-    'ngMaterial'
+    'ngMaterial',
+    'ngVis',
+    'vis'
 ], function (angular) {
     'use strict';
 
@@ -54,7 +57,8 @@ define([
             'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
             'myApp.network', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
             'myApp.metafactory', 'myApp.toolfactory',
-            'myApp.histogram', 'myApp.search'
+            'myApp.histogram', 'myApp.search',
+            'ngVis'
         ]
     );
 
@@ -123,16 +127,7 @@ define([
                 $timeout(function() {
                     setUILayoutProperties(parseInt($('#network-maps-container').css('width')), parseInt($('#network-maps-container').css('height'))-96);
                 }, 100);
-            };
-
-            //TODO: WHEN USING THIS FOR WATCH NO DEEP COPY IS NEEDED!!!!
-            $scope.$watch(function () {
-                return appData.getDate();
-            }, function (newVal, oldVal) {
-                if (!angular.equals(newVal, oldVal)) {
-                    $scope.date = newVal;
-                }
-            });
+            }
 
             $scope.$on("angular-resizable.resizeEnd", function (event, args) {
                 if(args.id == 'center-box') setUILayoutProperties(args.width, false);
