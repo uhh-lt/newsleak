@@ -53,7 +53,7 @@ define([
             self.edgesDataset = new VisDataSet([]);
 
 
-            $scope.options = {
+            self.options = {
                 nodes : {
                     shape: 'dot',
                     size: 10,
@@ -113,9 +113,8 @@ define([
                 edges: self.edgesDataset
             };
 
-            $scope.graphOptions = $scope.options;
+            $scope.graphOptions = self.options;
             $scope.graphEvents = {
-                // stabilizationIterationsDone
                 "startStabilizing": stabilizationStart,
                 "stabilized": stabilizationDone,
                 "onload": onNetworkLoad
@@ -157,8 +156,8 @@ define([
                 }
                 playRoutes.controllers.NetworkController.induceSubgraph(fulltext, facets,[],$scope.observerService.getTimeRange(),18,"").get().then(function(response) {
                     // Activate physics for new graph simulation
-                    $scope.options['physics'] = true;
-                    console.log(response.data);
+                    console.log("Enable physics");
+                    togglePhysics(true);
                     self.nodes = response.data.entities.map(function(n) {
                         return {id: n.id, label: n.label, value: n.count, group: n.group };
                     });
@@ -176,18 +175,25 @@ define([
                 });
             }
 
-            function stabilizationStart() {
-                console.log("Stab start");
+            function togglePhysics(flag) {
+                console.log("Physics simultaion " + (flag? "on" : "off"));
+                $scope.graphOptions['physics'] = flag;
+                // Need to explicitly apply the new options since the automatic
+                // watchCollection from angular-visjs seems to be outside of the
+                // regular angular update event cycle.
+                self.network.setOptions($scope.graphOptions);
             }
 
+            // ---------------------------------
             // Event Callbacks
+            // ---------------------------------
+            function stabilizationStart() {
+                console.log("Stabilization start");
+            }
+
             function stabilizationDone() {
-                console.log("Stab done");
-                // Do not disable physics for controller initialization
-               // if(self.nodesDataset.length > 0 && self.edgesDataset.length > 0) {
-                    $scope.options['physics'] = false;
-                    console.log("Disabled physics");
-              // }
+                console.log("Stabilization done");
+                togglePhysics(false);
             }
      }]);
 });
