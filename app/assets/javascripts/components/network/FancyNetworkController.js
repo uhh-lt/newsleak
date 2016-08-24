@@ -12,7 +12,7 @@ define([
         // This factory is used to share graph properties between this module and the app.js
         .factory('graphPropertiesShareService', function () {
             var graphProperties = {
-                // Order: locations, orginaziations, persons, misc
+                // Order: locations, organizations, persons, miscellaneous
                 categoryColors: ["#8dd3c7", "#fb8072","#bebada", "#ffffb3"],
                 categories:
                     [
@@ -155,11 +155,11 @@ define([
                     facets = [{'key':'dummy','data': []}];
                 }
                 playRoutes.controllers.NetworkController.induceSubgraph(fulltext, facets,[],$scope.observerService.getTimeRange(),18,"").get().then(function(response) {
-                    // Activate physics for new graph simulation
-                    console.log("Enable physics");
                     togglePhysics(true);
                     self.nodes = response.data.entities.map(function(n) {
-                        return {id: n.id, label: n.label, value: n.count, group: n.group };
+                        // See css property div.network-tooltip for custom tooltip styling
+                        var title = "Co-occurrence: " + n.count + "<br>Typ: " + n.type;
+                        return {id: n.id, label: n.label, value: n.count, group: n.group, title: title };
                     });
                     self.nodesDataset.clear();
                     self.nodesDataset.add(self.nodes);
