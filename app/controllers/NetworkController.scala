@@ -19,7 +19,7 @@ package controllers
 
 import javax.inject.Inject
 
-import model.EntityType
+import model.{ Entity, EntityType }
 import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller, Results }
@@ -172,24 +172,53 @@ class NetworkController @Inject extends Controller {
   }
 
   def induceSubgraph(
-    fullText: List[String],
-    generic: Map[String, List[String]],
-    entities: List[Long],
-    timeRange: String,
-    size: Int,
-    filter: List[Long]
-  ) = Action { implicit request =>
+                      fullText: List[String],
+                      generic: Map[String, List[String]],
+                      entities: List[Long],
+                      timeRange: String,
+                      nodeFraction: Map[String, String],
+                      filter: List[Long]
+                    ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    var newSize = size
-    if (filter.nonEmpty) newSize = filter.length
-    val res = FacetedSearch.fromIndexName(currentDataset).induceSubgraph(facets, newSize)
-    val subgraphEntities = res._1.map {
-      case NodeBucket(id, count) => Json.obj("id" -> id, "count" -> count)
-      case _ => Json.obj()
-    }
+    // var newSize = size
+    // if (filter.nonEmpty) newSize = filter.length
 
-    Ok(Json.toJson(Json.obj("entities" -> subgraphEntities, "relations" -> res._2))).as("application/json")
+    val sizes = nodeFraction.map { case (t, s) => withName(t) -> s.toInt }
+    val (buckets, relations) = FacetedSearch.
+      fromIndexName(currentDataset).
+      induceSubgraph(facets, sizes)
+    val nodes = buckets.collect { case a @ NodeBucket(_, _) => a }
+
+    if (nodes.isEmpty) {
+      Ok(Json.toJson(Json.obj("entities" -> List[JsObject](), "relations" -> List[JsObject]()))).as("application/json")
+    } else {
+      val ids = nodes.map(_.id)
+      val nodeIdToEntity = Entity.fromDBName(currentDataset).getByIds(ids).map(e => e.id -> e).toMap
+
+      val graphEntities = nodes.collect {
+        // Ignore blacklisted nodes
+        case NodeBucket(id, count) if nodeIdToEntity.contains(id) =>
+          val node = nodeIdToEntity(id)
+          Json.obj(
+            "id" -> id,
+            "label" -> node.name,
+            "count" -> count,
+            "type" -> node.entityType.toString,
+            "group" -> node.entityType.id
+          )
+      }
+      // Ignore relations that connect blacklisted nodes
+      val graphRelations = relations.filter { case (from, to, _) => nodeIdToEntity.contains(from) && nodeIdToEntity.contains(to) }
+
+      val types = Json.obj(
+        Person.toString -> Person.id,
+        Organization.toString -> Organization.id,
+        Location.toString -> Location.id,
+        Misc.toString -> Misc.id
+      )
+      Ok(Json.toJson(Json.obj("entities" -> graphEntities, "relations" -> graphRelations, "types" -> types))).as("application/json")
+    }
   }
 
   /**

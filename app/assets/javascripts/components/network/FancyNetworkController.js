@@ -53,7 +53,7 @@ define([
             self.edgesDataset = new VisDataSet([]);
 
 
-            self.options = {
+            $scope.options = {
                 interaction: {
                     tooltipDelay: 200,
                     hideEdgesOnDrag: true,
@@ -72,20 +72,23 @@ define([
             };
             $scope.observerService.subscribeItems($scope.observer_subscribe_fulltext, "fulltext");
 
-
-            $scope.graphOptions = self.options;
-            $scope.graphEvents = {
-                // stabilizationIterationsDone
-                "stabilized": stabilizationDone,
-                "onload": onNetworkLoad
-            };
-
             $scope.graphData = {
                 nodes: self.nodesDataset,
                 edges: self.edgesDataset
             };
 
+            $scope.graphOptions = $scope.options;
+            $scope.graphEvents = {
+                // stabilizationIterationsDone
+                "startStabilizing": stabilizationStart,
+                "stabilized": stabilizationDone,
+                "onload": onNetworkLoad
+            };
+
+
+
             $scope.loaded = reload;
+
 
             $scope.observerService.registerObserverCallback(function() {
                 console.log("update network");
@@ -99,81 +102,39 @@ define([
             function reload() {
 
                 var fulltext = $scope.fulltextFilters.map(function(f) { return f.data.name; });
-                // TODO: Why do we need this dummy?!
-                playRoutes.controllers.EntityController.getEntities(fulltext,[{'key':'dummy','data': []}],[],$scope.observerService.getTimeRange(),10,"").get().then(function(response) {
-                    self.nodes = response.data.map(function(n) {
-                        return {id: n.id, label: n.name };
+                playRoutes.controllers.NetworkController.induceSubgraph(fulltext,[{'key':'dummy','data': []}],[],$scope.observerService.getTimeRange(),10,"").get().then(function(response) {
+                    // Activate physics for new graph simulation
+                    $scope.options['physics'] = true;
+                    console.log(response.data);
+                    self.nodes = response.data.entities.map(function(n) {
+                        return {id: n.id, label: n.label };
                     });
-                    /*self.nodes = [
-                        {id: 1, label: 'Node 1'},
-                        {id: 2, label: 'Node 2'},
-                        {id: 3, label: 'Node 3'},
-                        {id: 4, label: 'Node 4'},
-                        {id: 5, label: 'Node 5'}
-                    ];*/
+                    self.nodesDataset.clear();
                     self.nodesDataset.add(self.nodes);
 
-                   // self.edges = [{from: 323644, to: 902475}];
-                    // Not connected nodes slows the convergence down :(
-                    //self.edges = [{from: 1, to: 2}];
-                    /*self.edges = [
-                        {from: 1, to: 3},
-                        {from: 1, to: 2},
-                        {from: 2, to: 4},
-                        {from: 2, to: 5}
-                    ];*/
-                    //self.edgesDataset.add(self.edges);
-
-                    playRoutes.controllers.NetworkController.getRelations(self.nodesDataset.getIds(), 1, 81337).get().then(function(response) {
-                        var ids = self.nodesDataset.getIds();
-                        self.edges = response.data.map(function(v) {
-                                var sourceNode = ids.find(function(node){return v[1] == node});
-                                var targetNode = ids.find(function(node){return v[2] == node});
-                                if(sourceNode == undefined || targetNode == undefined) {
-                                    return;
-                                }
-                                console.log({from: sourceNode, to: targetNode });
-                                return {from: sourceNode, to: targetNode };
-                            }
-                        );
-                        console.log(self.edges);
-                        self.edgesDataset.add(self.edges);
+                    self.edges = response.data.relations.map(function(n) {
+                        return {from: n[0], to: n[1] };
                     });
+                    self.edgesDataset.clear();
+                    self.edgesDataset.add(self.edges);
 
-
-                    //$timeout(function() { self.options['physics'] = false; }, 0, false);
+                    // Bring graph in current viewport
                     self.network.fit();
                 });
+            }
 
-
-
-
-                  /*  self.nodes = [
-                        {id: 1, label: 'Node 1'},
-                        {id: 2, label: 'Node 2'},
-                        {id: 3, label: 'Node 3'},
-                        {id: 4, label: 'Node 4'},
-                        {id: 5, label: 'Node 5'}
-                    ];
-                self.nodesDataset.add(self.nodes);
-
-                self.edges = [
-                    {from: 1, to: 3},
-                    {from: 1, to: 2},
-                    {from: 2, to: 4},
-                    {from: 2, to: 5}
-                ];
-                self.edgesDataset.add(self.edges);*/
-
-
+            function stabilizationStart() {
+                console.log("Stab start");
             }
 
             // Event Callbacks
             function stabilizationDone() {
-                if(self.nodesDataset.length > 0 && self.edgesDataset.length > 0) {
-                    self.options['physics'] = false;
+                console.log("Stab done");
+                // Do not disable physics for controller initialization
+               // if(self.nodesDataset.length > 0 && self.edgesDataset.length > 0) {
+                    $scope.options['physics'] = false;
                     console.log("Disabled physics");
-                }
+              // }
             }
      }]);
 });
