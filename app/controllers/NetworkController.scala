@@ -19,7 +19,7 @@ package controllers
 
 import javax.inject.Inject
 
-import model.EntityType
+import model.{ Entity, EntityType }
 import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller, Results }
@@ -182,13 +182,19 @@ class NetworkController @Inject extends Controller {
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var newSize = size
     if (filter.nonEmpty) newSize = filter.length
-    val res = FacetedSearch.induceSubgraph(facets, newSize)
-    val subgraphEntities = res._1.map {
-      case NodeBucket(id, count) => Json.obj("id" -> id, "count" -> count)
-      case _ => Json.obj()
+    val (buckets, relations) = FacetedSearch.induceSubgraph(facets, newSize)
+    val nodes = buckets.collect { case a @ NodeBucket(_, _) => a }
+
+    val nodeIdToEntity = sql"""
+        SELECT * FROM entity
+        WHERE id IN (${nodes.map(_.id)})
+      """.map(x => x.long("id") -> Entity(x)).list.apply.toMap
+
+    val subgraphEntities = nodes.map {
+      case NodeBucket(id, count) => Json.obj("id" -> id, "label" -> nodeIdToEntity(id).name, "count" -> count)
     }
 
-    Ok(Json.toJson(Json.obj("entities" -> subgraphEntities, "relations" -> res._2))).as("application/json")
+    Ok(Json.toJson(Json.obj("entities" -> subgraphEntities, "relations" -> relations))).as("application/json")
   }
 
   /**
