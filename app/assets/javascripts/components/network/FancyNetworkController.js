@@ -54,6 +54,40 @@ define([
 
 
             $scope.options = {
+                nodes : {
+                    shape: 'dot',
+                    size: 10,
+                    shadow: true,
+                    font: {
+                        strokeWidth: 3,
+                        strokeColor: 'white'
+                    }
+                },
+                edges: {
+                    color: {
+                        color: 'rgb(220,220,220)',
+                        highlight: 'lightblue',
+                        opacity: 0.5
+                    }
+                },
+                physics: {
+                    forceAtlas2Based: {
+                        gravitationalConstant: -50,
+                        centralGravity: 0.01,
+                        springConstant: 0.08,
+                        springLength: 100,
+                        damping: 0.4,
+                        avoidOverlap: 0
+                    },
+                    maxVelocity: 146,
+                    solver: 'forceAtlas2Based',
+                    timestep: 0.35,
+                    stabilization: {
+                        enabled: true,
+                        iterations: 2000,
+                        updateInterval: 25
+                    }
+                },
                 interaction: {
                     tooltipDelay: 200,
                     hideEdgesOnDrag: true,
@@ -70,7 +104,9 @@ define([
                 // TODO: check why map does not work here
                 $scope.fulltextFilters = items;//items.map(function(f) { return f.data.name; });
             };
+            $scope.observer_subscribe_metadata = function(items) { $scope.metadataFilters = items};
             $scope.observerService.subscribeItems($scope.observer_subscribe_fulltext, "fulltext");
+            $scope.observerService.subscribeItems($scope.observer_subscribe_metadata, "metadata");
 
             $scope.graphData = {
                 nodes: self.nodesDataset,
@@ -100,20 +136,37 @@ define([
             }
 
             function reload() {
-
+                // TODO: We need this in several components helper methods would be nice ... (copied from metadataController)
                 var fulltext = $scope.fulltextFilters.map(function(f) { return f.data.name; });
-                playRoutes.controllers.NetworkController.induceSubgraph(fulltext,[{'key':'dummy','data': []}],[],$scope.observerService.getTimeRange(),10,"").get().then(function(response) {
+                var facets = [];
+                if($scope.metadataFilters.length > 0) {
+                    angular.forEach($scope.metadataFilters, function(metaType) {
+                        if($scope.metadataFilters[metaType].length > 0) {
+                            var keys = [];
+                            angular.forEach($scope.metadataFilters[metaType], function(x) {
+                                keys.push(x.data.name);
+                            });
+                            facets.push({key: metaType, data: keys});
+                        }
+                    });
+                    if(facets == 0) facets = [{'key':'dummy','data': []}];
+
+                } else {
+                    // TODO Can we get rid of this dummy?!
+                    facets = [{'key':'dummy','data': []}];
+                }
+                playRoutes.controllers.NetworkController.induceSubgraph(fulltext, facets,[],$scope.observerService.getTimeRange(),18,"").get().then(function(response) {
                     // Activate physics for new graph simulation
                     $scope.options['physics'] = true;
                     console.log(response.data);
                     self.nodes = response.data.entities.map(function(n) {
-                        return {id: n.id, label: n.label };
+                        return {id: n.id, label: n.label, value: n.count, group: n.group };
                     });
                     self.nodesDataset.clear();
                     self.nodesDataset.add(self.nodes);
 
                     self.edges = response.data.relations.map(function(n) {
-                        return {from: n[0], to: n[1] };
+                        return {from: n[0], to: n[1], value: n[2] };
                     });
                     self.edgesDataset.clear();
                     self.edgesDataset.add(self.edges);

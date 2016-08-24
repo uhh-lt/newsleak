@@ -191,7 +191,7 @@ class NetworkController @Inject extends Controller {
       """.map(x => x.long("id") -> Entity(x)).list.apply.toMap
 
     val subgraphEntities = nodes.map {
-      case NodeBucket(id, count) => Json.obj("id" -> id, "label" -> nodeIdToEntity(id).name, "count" -> count)
+      case NodeBucket(id, count) => Json.obj("id" -> id, "label" -> nodeIdToEntity(id).name, "count" -> count, "group" -> nodeIdToEntity(id).entityType.id)
     }
 
     Ok(Json.toJson(Json.obj("entities" -> subgraphEntities, "relations" -> relations))).as("application/json")
