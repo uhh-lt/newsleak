@@ -16,10 +16,11 @@
 
 package controllers
 
-import play.api.Logger
-import play.api.mvc.{ Action, Controller }
-import org.apache.commons.codec.binary.{ Base64, Hex, StringUtils }
 import javax.inject.Inject
+
+import org.apache.commons.codec.binary.{Base64, StringUtils}
+import play.api.Logger
+import play.api.mvc.{Action, Controller}
 
 import scala.util.Random
 
@@ -101,6 +102,7 @@ class Application @Inject extends Controller {
         controllers.routes.javascript.NetworkController.changeEntityNameById,
         controllers.routes.javascript.NetworkController.getRelations,
         controllers.routes.javascript.NetworkController.induceSubgraph,
+        controllers.routes.javascript.NetworkController.getGuidanceNodes,
         controllers.routes.javascript.EntityController.getEntities,
         controllers.routes.javascript.EntityController.getEntityTypes,
         controllers.routes.javascript.EntityController.getEntitiesByType,

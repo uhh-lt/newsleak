@@ -625,8 +625,8 @@ define([
                         .attr('id', function(d){return 'edgeline_' + d.id;})
                         .style('opacity', 0)  // Make new edges at first invisible.
                         .style('stroke-width', function (d) {
-                            //return edgeScale(d.freq)+'px';
-                            return '2px'
+                            return edgeScale(d.freq)+'px';
+                            //return '2px'
                         })
                         .on('mouseup', function (d) {  // when clicking on an edge
                             var index = selectedEdges.indexOf(d);
@@ -702,7 +702,7 @@ define([
 
 
                     newNodes.append('circle')
-                            .attr('r', function (d) { return radius(d.docCount) })
+                            .attr('r', function (d) { return radius(d.freq) })
                             .style('fill', function (d) { return color(d.type); })
                             .style('opacity', 0)  // Make new nodes at first invisible.
                             .attr('id', function(d, i)
@@ -806,7 +806,8 @@ define([
                         .on('click', function(d)//Wenn der Plus-Button gedrückt wird
                                                 {
                                                     console.log("button clicked");
-                                                    $scope.observer.addItem({type: 'entity', data: {id: d.id, name: d.name, type: d.type}});
+                                                    getGuidanceNodes(d.id)
+                                                    //$scope.observer.addItem({type: 'entity', data: {id: d.id, name: d.name, type: d.type}});
                                                 })
                         .append('span')
                         .attr('class', 'glyphicon glyphicon-plus')
@@ -883,9 +884,14 @@ define([
                         .style("opacity", .9);
                     tooltip.html(
                         '<span class="tooltipImportantText">' + d.name +
-                            '</span> has the type <span class="tooltipImportantText">'
-                            + d.type + '</span> and is <span class="tooltipImportantText">'
-                            + d.docCount + "</span> times mentioned.")
+                             '</span>(id: '+d.id+') has the type <span class="tooltipImportantText">'
+                             + d.type + '</span> and has frequency <span class="tooltipImportantText">'
+                             + d.freq + "</span>"
+                        // '<span class="tooltipImportantText">' + d.name +
+                        //     '</span> has the type <span class="tooltipImportantText">'
+                        //     + d.type + '</span> and is <span class="tooltipImportantText">'
+                        //     + d.docCount + "</span> times mentioned."
+                    )
                         .style("left", (d3.event.pageX - 75) + "px")
                         .style("top", (d3.event.pageY + 25) + "px");
                 });
@@ -895,7 +901,7 @@ define([
                         .style("opacity", 0);
                 });
 
-                /*link.on("mouseover", function(d){
+                link.on("mouseover", function(d){
                     tooltip.transition()
                         .duration(500)
                         .style("opacity", 0);
@@ -914,7 +920,7 @@ define([
                     tooltip.transition()
                         .duration(500)
                         .style("opacity", 0);
-                });*/
+                });
             }
 
 
@@ -1762,6 +1768,62 @@ define([
                         }
                     }
                 )
+            }
+
+            function getGuidanceNodes(node){
+                playRoutes.controllers.NetworkController.getGuidanceNodes(node).get().then(function(response) {
+
+                    //to prevent invisible selections
+                    unselectNodes();
+                    unselectEdges();
+
+                    //delete all nodes and edges
+                    nodes = [];
+                    edges=[];
+
+                    response.data.nodes.forEach(
+                        function(v)
+                        {
+                            /*var enode = tmpnodes.find(function(node){return node.id === v.id;});
+                             if(enode != undefined)
+                             {
+                             enode.docCount = v.docCount;
+                             nodes.push(enode);
+                             return;
+                             }*/
+
+                            nodes.push({
+                                id: v[0],
+                                name: v[1],
+                                freq: v[2],
+                                type: v[3],
+                                docCount: -1,
+                                size: 2,
+                            });
+
+                            force.links(edges);
+                            //calculateNewForceSize();
+                            start();
+                        });
+
+                    response.data.links.forEach(
+                        function(v)
+                        {
+                            var sourceNode = nodes.find(function(node){return v[1] == node.id});
+                            var targetNode = nodes.find(function(node){return v[2] == node.id});
+                            if(sourceNode == undefined || targetNode == undefined)
+                            {
+                                return;
+                            }
+                            edges.push({id: v[0], source: sourceNode, target: targetNode, freq: v[3]});
+                        });
+
+                    //reload();
+                    force.nodes(nodes);
+                    //calculateNewForceSize();
+
+                    start();
+                });
             }
 
         }

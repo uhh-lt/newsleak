@@ -33,6 +33,7 @@ import util.TimeRangeParser
 import scalikejdbc._
 
 import scala.collection.mutable
+import scala.math._
 
 /*
     This class encapsulates all functionality for the
@@ -101,11 +102,13 @@ class NetworkController @Inject extends Controller {
   /**
    * Map cacht Knoten deren DoI-Wert schonmal berechnet wurden. Wird mit dem Beginn jedes Guidance-Schrittes zurückgesetzt.
    */
-  var cachedDoIValues: mutable.HashMap[(Long, Long), Double] = new mutable.HashMap[(Long, Long), Double]();
+  var cachedDoIValues: mutable.HashMap[(Long, Long), Double] = new mutable.HashMap[(Long, Long), Double]()
 
-  var cachedEdgeFreq: mutable.HashMap[(Long, Long), Int] = new mutable.HashMap[(Long, Long), Int]();
+  var cachedEdgeFreq: mutable.HashMap[(Long, Long), Int] = new mutable.HashMap[(Long, Long), Int]()
 
-  var cachedDistanceValues: mutable.HashMap[Long, Int] = new mutable.HashMap[Long, Int]();
+  var cachedEdgeId: mutable.HashMap[(Long, Long), Long] = new mutable.HashMap[(Long, Long), Long]()
+
+  var cachedDistanceValues: mutable.HashMap[Long, Int] = new mutable.HashMap[Long, Int]()
 
   //var lastFound : List[(Long,Long)] = List()
   //var distToFocus = 0
@@ -398,7 +401,7 @@ class NetworkController @Inject extends Controller {
    * @return the computed degree of interest value of a given edge
    */
   def doI(edgeId: (Long, Long)): Double = {
-    cachedDoIValues.get(edgeId).get
+    cachedDoIValues(edgeId)
   }
 
   /**
@@ -423,7 +426,7 @@ class NetworkController @Inject extends Controller {
 
     for (i <- 0 until k) { //edgeArr.map ??
       val edge = pq.dequeue()
-      Logger.info("E:" + edge._1 + "," + edge._2 + " V:" + doI(edge))
+      Logger.info("E:" + edge._1 + "," + edge._2 + " V:" + doI(edge) + "freq:" + cachedEdgeFreq(edge))
 
       edgeArr(i) = edge
       //      if ( ! usedNodes.contains(edge._1)){
@@ -444,7 +447,7 @@ class NetworkController @Inject extends Controller {
     val nodes = sql"""SELECT id, name, type, frequency FROM entity WHERE id IN ($usedNodes)"""
       .map(rs => (rs.long("id"), rs.string("name"), rs.int("frequency"), rs.string("type"))).list().apply()
 
-    val result = new JsObject(Map(("nodes", Json.toJson(nodes)), ("links", Json.toJson(edgeArr.map(e => (e._1, e._2, cachedEdgeFreq.apply(e))))))) //TODO Kantenattribute müssen auch zurückgegeben werden
+    val result = new JsObject(Map(("nodes", Json.toJson(nodes)), ("links", Json.toJson(edgeArr.map(e => (cachedEdgeId.apply(e), e._1, e._2, cachedEdgeFreq.apply(e))))))) //TODO Kantenattribute müssen auch zurückgegeben werden
 
     Ok(Json.toJson(result)).as("application/json")
   }
@@ -460,25 +463,26 @@ class NetworkController @Inject extends Controller {
 
     var distToFocus = cachedDistanceValues.getOrElse(nodeId, -1) //Wenn der Knoten nicht in der Map liegt, muss es sich um dem Fokus handeln, also dist=0
     distToFocus += 1
-    val result = sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq
+    val result = sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq, relationship.id
           FROM relationship LEFT JOIN entity AS et1 ON et1.id = relationship.entity1
-          LEFT JOIN entity AS et2 ON et2.id = relationship.entity2 WHERE entity1 = $nodeId ORDER BY relationship.frequency DESC LIMIT 300""".map(rs => {
-      (rs.long(1), rs.long(2), rs.int(3), rs.int(4), rs.int(5)) //TODO Limit ist veränderbar
+          LEFT JOIN entity AS et2 ON et2.id = relationship.entity2 WHERE entity1 = $nodeId ORDER BY relationship.frequency DESC LIMIT 200""".map(rs => {
+      (rs.long(1), rs.long(2), rs.int(3), rs.int(4), rs.int(5), rs.long(6)) //TODO Limit ist veränderbar
     })
-      .toList().apply().filter(x => cachedDistanceValues.getOrElse(x._2, distToFocus + 1) > distToFocus).map(x =>
-        ((x._1, x._2), (x._3 * x._3 * x._3) / (x._4 * x._5), x._3))
+      .toList().apply().filter(x => cachedDistanceValues.getOrElse(x._2, distToFocus + 1) > distToFocus && x._3 > 0).map(x =>
+        ((x._1, x._2), 1 / -log((x._3: Double) * (x._3: Double) / ((x._4: Double) * (x._5: Double))), x._3, x._6))
 
     cachedDistanceValues ++= result.map(x => (x._1._2, distToFocus))
     cachedEdgeFreq ++= result.map(x => (x._1, x._3))
+    cachedEdgeId ++= result.map(x => (x._1, x._4))
     cachedDoIValues ++= result.map(x => (x._1, {
       val alpha = 1
       val beta = 1
       val gamma = 0
 
       val API = x._2
-      val D = -(1 - scala.math.pow(0.5, distToFocus) * x._2)
+      val D = -(1 - scala.math.pow(0.5, distToFocus) * (x._2))
       val UI = 0
-      API * alpha + D * beta + UI * gamma
+      API * alpha + beta * D + UI * gamma
     }))
 
     result.map(_._1)
