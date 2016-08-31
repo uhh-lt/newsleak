@@ -20,6 +20,7 @@ define([
     './factory/chart/ChartFactory',
     './factory/filter/FilterFactory',
     './factory/network/ToolFactory',
+    './factory/network/GraphPropertiesFactory',
     './factory/metadata/MetaFactory',
     './factory/source/SourceFactory',
     './factory/source/HighlightFactory',
@@ -58,7 +59,7 @@ define([
             'myApp.tools',
             'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
             'myApp.network', 'myApp.metadata', 'myApp.map', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
-            'myApp.tagselectfactory', 'myApp.filterfactory','myApp.metafactory', 'myApp.toolfactory',
+            'myApp.tagselectfactory', 'myApp.filterfactory','myApp.metafactory', 'myApp.toolfactory', 'myApp.graphpropertiesfactory',
             'myApp.chart', 'myApp.chartconfig', 'myApp.search'
         ]
     );

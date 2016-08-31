@@ -25,38 +25,7 @@ define([
 
     angular.module('myApp.network', ['play.routing', 'angularMoment', 'angularAwesomeSlider', 'toggle-switch']);
     angular.module('myApp.network')
-        // This factory is used to share graph properties between this module and the app.js
-        .factory('graphPropertiesShareService', function () {
-            var graphProperties = {
-                // Order: locations, orginaziations, persons, misc
-                categoryColors: ["#8dd3c7", "#fb8072","#bebada", "#ffffb3"],
-                categories:
-                [
-                	{id: 'LOC', full: 'Location'},
-                	{id: 'ORG', full: 'Organization'},
-                	{id: 'PER', full: 'Person'},
-                	{id: 'MISC', full: 'Miscellaneous'}
-                ],
-                CATEGORY_COLOR_INDEX_LOC: 0,
-                CATEGORY_COLOR_INDEX_ORG: 1,
-                CATEGORY_COLOR_INDEX_PER: 2,
-                CATEGORY_COLOR_INDEX_MISC: 3,
-                // Delivers the index of a given category name
-                getIndexOfCategory: function (category) {
-                    switch (category) {
-                        case 'LOC':
-                            return this.CATEGORY_COLOR_INDEX_LOC;
-                        case 'ORG':
-                            return this.CATEGORY_COLOR_INDEX_ORG;
-                        case 'PER':
-                            return this.CATEGORY_COLOR_INDEX_PER;
-                        default:
-                            return this.CATEGORY_COLOR_INDEX_MISC;
-                    }
-                }
-            };
-            return graphProperties;
-        })
+
         .controller('NetworkController',
         [
             '$scope',
@@ -95,6 +64,8 @@ define([
             $scope.tagSelectShared = tagSelectShareService;
             $scope.graphShared = graphPropertiesShareService;
             $scope.uiShareService = uiShareService;
+
+
 
             $scope.observer = ObserverService;
             $scope.observer_subscribe = function(history) { $scope.history = history};
@@ -141,7 +112,7 @@ define([
             toolShareService.annotateListener.push(addAnnotation);
 
             toolShareService.mergeListener.push(merge);
-            toolShareService.mergeListener.push(sendMerged);
+            //toolShareService.mergeListener.push(sendMerged);
 
             toolShareService.deleteListener.push(remove);
 
@@ -161,8 +132,10 @@ define([
 
             var nodes      = [];
             var edges      = [];
-            var color      = d3.scale.category10().range($scope.graphShared.categoryColors);
-            //console.log([color("LOC"), color("ORG"), color("PER"), color("MISC")])
+            var color      = function(type){return $scope.graphShared.categories.find(function(c){return c.id === type;}).color};
+            console.log([color("LOC"),color("ORG"),color("PER"),color("MISC")]);
+            //while(!$scope.graphShared.ready){};
+
             /*var radius     = d3.scale.sqrt()
                                     .domain([1,$scope.maxNodeFreq])
                                     .range([$scope.minNodeRadius, $scope.maxNodeRadius]);*/
@@ -178,7 +151,7 @@ define([
             $scope.zm      = d3.behavior.zoom()
                                     .scaleExtent([0.5, 3])
                                     .on('zoom', function(){
-                                        force.start();
+                                        //force.resume();
                                         currentScale = d3.event.scale;
                                         svg.selectAll('g').attr('transform', 'translate('
                                             + (-viewBoxX) + ',' + (-viewBoxY) + ')scale('
@@ -189,7 +162,7 @@ define([
             var viewBoxY   = 0;
             var drag       = d3.behavior.drag()
                                     .on('drag', function(){
-                                        force.start();
+                                        //force.resume();
                                         viewBoxX -= d3.event.dx;
                                         viewBoxY -= d3.event.dy;
                                         svg.selectAll('g').attr('transform', 'translate('
@@ -198,6 +171,16 @@ define([
                                     });
 
             var svg;
+
+            /*ObserverService.getEntityTypes().then(function(types)
+            {
+                console.log(types);
+                types.forEach(function(e)
+                {
+                    graphPropertiesShareService.categories.push({id: e, full: e, color: '#ffffb3'});
+                })
+                graphPropertiesShareService.ready = true;
+            });*/
 
 
             /**
@@ -371,7 +354,7 @@ define([
                     .endAngle(value*2*Math.PI));
             }
 
-            function updateNodeSize(node)
+            function updateNode(node)
             {
                 d3
                     .select('#nodecircle_' + node.id)
@@ -487,7 +470,7 @@ define([
                         $scope.uiShareService.mainContainerWidth,
                         $scope.uiShareService.mainContainerHeight
                     ]);
-                    force.start();
+                    //force.start();
                 }
             }
 
@@ -635,7 +618,7 @@ define([
 
                     prepareData(data);
 
-                    calculateNewForceSize();
+                    //calculateNewForceSize();
 
                     svg.selectAll("*").remove();
                     createSVG();  // Reset svg.
@@ -872,7 +855,7 @@ define([
 
                                 if(!(r/3 >= d.name.length - 1))
                                 {
-                                    console.log(d3.select(this).style('font-size').split("px")[0])
+                                    //console.log(d3.select(this).style('font-size').split("px")[0])
                                     d3.select(this).attr('y', (-r-d3.select(this).style('font-size').split("px")[0]/2) + 'px')
                                 }
 
@@ -1158,13 +1141,14 @@ define([
                     .force()
                     .nodes(nodes)
                     .links(edges)
-                    .size([300, 300])
-                    .charge(-400)
-                    .linkStrength(0.4)
+                    .size([400, 400])
+                    .charge(-0)
+                    .chargeDistance(100)
+                    .linkStrength(0.0)
                     .linkDistance(function(d) {
                         return radius(d.source.docCount)
                             + radius(d.target.docCount)
-                            + 100;
+                            + 300;
                     })
                     .on("tick", function() {
                         link.attr('x1', function (d) {return d.source.x;})
@@ -1201,6 +1185,10 @@ define([
                                 return 'rotate(0)';
                         });
                     });
+
+                    force.start();
+
+                    console.log("reload force layout");
                 //getGraph();
                 // Extend the popover to a callback when loading is done
                 var tmp = $.fn.popover.Constructor.prototype.show;
@@ -1671,7 +1659,7 @@ define([
                         d3.select(this).attr('y', (-r-d3.select(this).style('font-size').split("px")[0]/2) + 'px')
                     }
 
-                	if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
+                	//if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
                 		return d.name;
                 	/*else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
                 		return d.name.substring(0, r/3 - 3) + "...";*/
@@ -1777,7 +1765,6 @@ define([
                 while(loadingNodes)
                 {
                 }
-
                 var filters = [];
                 angular.forEach(nodes, function(node) {
                     filters.push(node.id);
@@ -1789,6 +1776,11 @@ define([
                     fulltext.push(item.data.name);
                 });
                 var entityType = "";
+
+                if(force != undefined)
+                {
+                    force.stop();
+                }
 
                 playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,entityType).get().then(function(response) {
 
@@ -1808,7 +1800,7 @@ define([
                             if(enode != undefined)
                             {
                                 enode.docCount = v.docCount;
-                                updateNodeSize(enode);
+                                updateNode(enode);
                             }
                             else
                             {
@@ -1843,13 +1835,6 @@ define([
                     //delete all nodes not used
                     //nodes.filter(function(v){return response.data.find(function(node){return node.id === v.id}) != undefined;})
 
-
-
-
-                    //reload();
-                    //force.nodes(nodes);
-                    //calculateNewForceSize();
-
                     start();
 
                     $scope.entityFilters.forEach(
@@ -1881,6 +1866,8 @@ define([
                             //force.links(edges);
                             //calculateNewForceSize();
                             start();
+
+                            //force.resume()
                         }
                     );
 
