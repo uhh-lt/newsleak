@@ -33,9 +33,10 @@ define([
                 'appData',
                 'metaShareService',
                 'sourceShareService',
-                'filterShareService',
                 'ObserverService',
-                function ($scope, $timeout, playRoutes, appData, metaShareService, sourceShareService, filterShareService, ObserverService) {
+                function ($scope, $timeout, playRoutes, appData, metaShareService, sourceShareService, ObserverService) {
+
+                    $scope.initialized = false;
 
                     $scope.frequencies = [];
                     $scope.labels = [];
@@ -106,6 +107,7 @@ define([
                         });
                         var entityType = "";
                         angular.forEach($scope.entityTypes, function(type) {
+                            $scope.metaCharts[type].showLoading('Loading ...');
                             var instances = $scope.ids[type];
                             playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),50,entityType,instances).get().then(
                                 function(result) {
@@ -139,11 +141,22 @@ define([
                                                         $scope.clickedItem(this, 'entity', type);
                                                     }
                                                 }
+                                            },
+                                            dataLabels: {
+                                                inside: true,
+                                                align: 'left',
+                                                useHTML: true,
+                                                formatter : function() {
+                                                    return $('<div/>').css({
+                                                        'color' : 'white'
+                                                    }).text(this.y)[0].outerHTML;
+                                                }
                                             }
                                         });
                                     } else {
                                         $scope.metaCharts[type].series[1].setData(data);
                                     }
+                                    $scope.metaCharts[type].hideLoading();
                                 }
                             );
                         });
@@ -177,6 +190,7 @@ define([
                             fulltext.push(item.data.name);
                         });
                         angular.forEach($scope.metadataTypes, function(type) {
+                            $scope.metaCharts[type].showLoading('Loading ...');
                             var instances = $scope.chartConfigs[type].xAxis["categories"];
                             playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext,type,facets,entities,instances,$scope.observer.getTimeRange()).get().then(
                                 function(result) {
@@ -210,56 +224,87 @@ define([
                                                         $scope.clickedItem(this, 'metadata', type);
                                                     }
                                                 }
+                                            },
+                                            dataLabels: {
+                                                inside: true,
+                                                align: 'left',
+                                                useHTML: true,
+                                                formatter : function() {
+                                                    return $('<div/>').css({
+                                                        'color' : 'white'
+                                                    }).text(this.y)[0].outerHTML;
+                                                }
                                             }
                                         });
                                     } else {
                                         $scope.metaCharts[type].series[1].setData(data);
                                     }
+                                    $scope.metaCharts[type].hideLoading();
                                 }
                             );
                         });
                     };
 
                     $scope.initEntityCharts = function () {
+                        var facets = [{'key':'dummy','data': []}];
+                        var entities = [];
+                        var fulltext = [];
+                        var timeRange = "";
+
                         $scope.observer.getEntityTypes().then(function(types) {
                             types.forEach(function (x) {
                                 $scope.chartConfigs[x] = angular.copy($scope.chartConfig);
+                                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities, timeRange,50,x).get().then(function(result) {
 
-                                playRoutes.controllers.EntityController.getEntitiesByType(x).get().then(
-                                    function (result) {
-
-                                        $scope.frequencies[x] = [];
-                                        $scope.labels[x] = [];
-                                        $scope.ids[x] = [];
-                                        result.data.forEach(function (entity) {
-                                            $scope.frequencies[x].push(entity.freq);
-                                            $scope.labels[x].push(entity.name);
-                                            $scope.ids[x].push(entity.id);
-                                        });
-
-
-                                        $scope.chartConfigs[x].xAxis["categories"] = $scope.labels[x];
-                                        $scope.chartConfigs[x]["series"] = [{
-                                            name: 'Total',
-                                            data: $scope.frequencies[x],
-                                            cursor: 'pointer',
-                                            point: {
-                                                events: {
-                                                    click: function () {
-                                                        $scope.clickedItem(this, 'entity', x);
-                                                    }
+                                    $scope.frequencies[x] = [];
+                                    $scope.labels[x] = [];
+                                    $scope.ids[x] = [];
+                                    result.data.forEach(function (entity) {
+                                        $scope.frequencies[x].push(entity.docCount);
+                                        $scope.labels[x].push(entity.name);
+                                        $scope.ids[x].push(entity.id);
+                                    });
+                                    $scope.chartConfigs[x].xAxis["categories"] = $scope.labels[x];
+                                    $scope.chartConfigs[x]["series"] = [{
+                                        name: 'Total',
+                                        data: $scope.frequencies[x],
+                                        cursor: 'pointer',
+                                        point: {
+                                            events: {
+                                                click: function () {
+                                                    $scope.clickedItem(this, 'entity', x);
                                                 }
                                             }
-                                        }];
-                                        $scope.chartConfigs[x].chart.renderTo = "chart_" + x.toLowerCase();
-
-                                        $scope.metaCharts[x] = new Highcharts.Chart($scope.chartConfigs[x]);
-                                    });
-
+                                        }
+                                    },{
+                                        name: 'Filter',
+                                        data: $scope.frequencies[x],
+                                        color: 'black',
+                                        cursor: 'pointer',
+                                        point: {
+                                            events: {
+                                                click: function () {
+                                                    $scope.clickedItem(this, 'entity', x);
+                                                }
+                                            }
+                                        },
+                                        dataLabels: {
+                                            inside: true,
+                                            align: 'left',
+                                            useHTML: true,
+                                            formatter : function() {
+                                                return $('<div/>').css({
+                                                    'color' : 'white'
+                                                }).text(this.y)[0].outerHTML;
+                                            }
+                                        }
+                                    }];
+                                    $scope.chartConfigs[x].chart.renderTo = "chart_" + x.toLowerCase();
+                                    $("#chart_" + x.toLowerCase()).css("height",$scope.frequencies[x].length * 35);
+                                    $scope.metaCharts[x] = new Highcharts.Chart($scope.chartConfigs[x]);
+                                });
                             });
-                        }
-                        )
-
+                        });
                     };
 
                     $scope.initMetadataCharts = function () {
@@ -270,6 +315,7 @@ define([
                                         $.each(result.data,function() {
                                             $.each(this, function(key, value) {
                                                 //console.log(value);
+                                            if($scope.metadataTypes.indexOf(key) != -1) {
 
                                             $scope.chartConfigs[key] = angular.copy($scope.chartConfig);
 
@@ -298,15 +344,42 @@ define([
                                                 }
                                             }
 
+                                        },{
+                                            name: 'Filter',
+                                            data: $scope.frequencies[key],
+                                            color: 'black',
+                                            cursor: 'pointer',
+                                            point: {
+                                                events: {
+                                                    click: function () {
+                                                        $scope.clickedItem(this, 'metadata', key);
+                                                    }
+                                                }
+                                            },
+                                            dataLabels: {
+                                                inside: true,
+                                                align: 'left',
+                                                useHTML: true,
+                                                formatter : function() {
+                                                    return $('<div/>').css({
+                                                        'color' : 'white'
+                                                    }).text(this.y)[0].outerHTML;
+                                                }
+                                            }
                                         }];
                                         $scope.chartConfigs[key].chart.renderTo = "chart_" + key.toLowerCase();
-                                        $("#chart_" + key.toLowerCase()).css("height",$scope.frequencies[key].length * 20);
+                                        $("#chart_" + key.toLowerCase()).css("height",$scope.frequencies[key].length * 35);
+                                                console.log($("#" +$scope.chartConfigs[key].chart.renderTo));
                                         $scope.metaCharts[key] = new Highcharts.Chart($scope.chartConfigs[key]);
+                                            }
+
                                             });
 
                                         }
                                 );
-                            })
+
+                                    });
+                            $scope.initialized = true;
                         })
                     };
 
@@ -353,7 +426,6 @@ define([
                     /** entry point here **/
                     $scope.metaShareService = metaShareService;
                     $scope.sourceShareService = sourceShareService;
-                    $scope.filterShareService = filterShareService;
 
 
                     //TODO: calc height on bar count -> scroll bar

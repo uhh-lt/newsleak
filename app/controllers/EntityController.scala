@@ -58,6 +58,7 @@ class EntityController @Inject extends Controller {
     Results.Ok(Json.toJson(Entity.getTypes().map(_.toString))).as("application/json")
   }
 
+  // scalastyle:off
   /**
    * Gets document counts for entities corresponding to their id's matching the query
    * @param fullText Full text search term
@@ -81,7 +82,6 @@ class EntityController @Inject extends Controller {
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var newSize = size
     if (filter.nonEmpty) newSize = filter.length
-    entityType.isEmpty
     val entitiesRes = if (entityType.isEmpty) {
       FacetedSearch.aggregateEntities(facets, newSize, filter).buckets.map {
         case NodeBucket(id, count) => (id, count)
@@ -93,39 +93,43 @@ class EntityController @Inject extends Controller {
         case _ => (0, 0)
       }
     }
-    var result: List[JsObject] = List()
-    val sqlResult =
-      sql"""SELECT * FROM entity
+    if (entitiesRes.nonEmpty) {
+      val sqlResult =
+        sql"""SELECT * FROM entity
           WHERE id IN (${entitiesRes.map(_._1)}) AND NOT isblacklisted
           ORDER BY frequency DESC LIMIT 50"""
-        .map(x => x.long("id") -> Entity(x))
-        .list // single, list, traversable
-        .apply
+          .map(x => x.long("id") -> Entity(x))
+          .list // single, list, traversable
+          .apply
 
-    // TODO: ordering commented out while no zerobuckets available
-    if (filter.nonEmpty) {
-      // if (false) {
-      val res = filter
-        .zip(filter.map(sqlResult.toMap))
-        .map(x => Json.obj(
+      // TODO: ordering commented out while no zerobuckets available
+      if (filter.nonEmpty) {
+        // if (false) {
+        val res = filter
+          .zip(filter.map(sqlResult.toMap))
+          .map(x => Json.obj(
+            "id" -> x._2.id,
+            "name" -> x._2.name,
+            "type" -> x._2.entityType,
+            "freq" -> x._2.frequency,
+            "docCount" -> entitiesRes.find(_._1 == x._2.id).get._2.asInstanceOf[Number].longValue
+          ))
+        Results.Ok(Json.toJson(res)).as("application/json")
+      } else {
+        val res = sqlResult.map(x => Json.obj(
           "id" -> x._2.id,
           "name" -> x._2.name,
           "type" -> x._2.entityType,
           "freq" -> x._2.frequency,
           "docCount" -> entitiesRes.find(_._1 == x._2.id).get._2.asInstanceOf[Number].longValue
         ))
-      Results.Ok(Json.toJson(res)).as("application/json")
+        Results.Ok(Json.toJson(res.sortBy(-_.value("docCount").as[Long]))).as("application/json")
+      }
     } else {
-      val res = sqlResult.map(x => Json.obj(
-        "id" -> x._2.id,
-        "name" -> x._2.name,
-        "type" -> x._2.entityType,
-        "freq" -> x._2.frequency,
-        "docCount" -> entitiesRes.find(_._1 == x._2.id).get._2.asInstanceOf[Number].longValue
-      ))
-      Results.Ok(Json.toJson(res.sortBy(-_.value("docCount").as[Long]))).as("application/json")
+      Results.Ok(Json.toJson(List[JsObject]())).as("application/json")
     }
   }
+  // scalastyle:on
 
   /**
    * get the entities, frequency to given type using an offset
@@ -147,7 +151,6 @@ class EntityController @Inject extends Controller {
         .map(x => Json.obj("id" -> x.id, "name" -> x.name, "freq" -> x.frequency))
 
     Results.Ok(Json.toJson(result)).as("application/json")
-
   }
 
   /**

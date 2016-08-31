@@ -261,7 +261,7 @@ main {
 footer {
     height: 200px;
 }
-footer > div, footer > div #chartBarchart {
+footer > div, footer > div #histogram {
     height: 100%;
     margin-top: 10px;
 }
@@ -416,7 +416,7 @@ footer > div, footer > div #chartBarchart {
     overflow-y: auto;
 }
 
-#chartBarchart .stack-label {
+#histogram .stack-label {
     text-decoration: underline;
 }
 

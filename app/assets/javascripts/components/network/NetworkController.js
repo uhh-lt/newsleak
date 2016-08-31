@@ -38,8 +38,6 @@ define([
             'graphPropertiesShareService',
             'highlightShareService',
             'uiShareService',
-            'tagSelectShareService',
-            'filterShareService',
             'toolShareService',
             'ObserverService',
         function (
@@ -53,19 +51,13 @@ define([
             graphPropertiesShareService,
             highlightShareService,
             uiShareService,
-            tagSelectShareService,
-            filterShareService,
             toolShareService,
             ObserverService
             )
         {
 
-			$scope.filterShared = filterShareService;
-            $scope.tagSelectShared = tagSelectShareService;
             $scope.graphShared = graphPropertiesShareService;
             $scope.uiShareService = uiShareService;
-
-
 
             $scope.observer = ObserverService;
             $scope.observer_subscribe = function(history) { $scope.history = history};
@@ -498,57 +490,6 @@ define([
                 calculateNewForceSize();
             });
 
-        	/**
-			 * whenever a new tag is written into the search bar, we tell
-			 * the graph to mark the nodes and if not available, we create
-			 * the associated ego networks and mark them
-			 */
-            $scope.$watch('tagSelectShared.wasChanged', function(){
-                if($scope.tagSelectShared.wasChanged)
-                {
-                	//select all nodes which have to be selected
-					var tags = $scope.tagSelectShared.tagsToSelect;
-					//console.log(tags);
-					for(var i=0; i<tags.length; i++)
-					{
-					    //console.log(tags[i].id);
-						var node = getNodeById(tags[i].id);
-						//console.log(node);
-
-
-						if(nodes == undefined)
-						{
-							//get all ego networks and after that execute a callback function
-							//which marks all selected nodes
-							getEgoNetworkById(tags[i].id,
-							(function()
-							{
-								var tag = tags[i];
-								return function(){
-								var tagnodes = getNodesByName(tag);
-								tagnodes.forEach(function(node){selectNode(node);})};
-							})());
-						}
-						else
-						{
-							//mark all existing nodes
-							nodes.forEach(function(node){selectNode(node);})
-						}
-					}
-
-					//unselect all nodes which should be unselected
-					tags = $scope.tagSelectShared.tagsToUnselect;
-					for(var i=0; i<tags.length; i++)
-					{
-						var nodes = getNodesByName(tags[i]);
-						//unmark all nodes
-                        nodes.forEach(function(node){unselectNode(node);})
-					}
-					$scope.tagSelectShared.wasChanged = false;
-					//enableOrDisableButtons();
-                }
-            });
-
 
             /*
              * This function creates the SVG where the graph will be created in.
@@ -912,7 +853,8 @@ define([
                                                 })
                         .append('span')
                         .attr('class', 'glyphicon glyphicon-plus')
-                        .style('position', 'absolute')
+                        //TODO: positioning of glyphicons in svg (absolute only works in firefox)
+                        //.style('position', 'absolute')
                         .style('left', '3px')
                         .style('top', '3px')
                         .style('text-align', 'center')
@@ -936,7 +878,7 @@ define([
 
                     node.exit().remove();
 
-                    addTooltip(node, link);  // add the tooltips to the nodes and links
+                    //addTooltip(node, link);  // add the tooltips to the nodes and links
                     enableOrDisableButtons();
 
                     $scope.isViewLoading = false;

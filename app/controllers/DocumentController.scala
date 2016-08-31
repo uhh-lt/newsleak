@@ -20,12 +20,13 @@ import javax.inject.Inject
 
 import model.Document
 import model.faceted.search.{ FacetedSearch, Facets }
-import play.api.libs.json.{ JsArray, Json, Writes }
+import play.api.libs.json.{ JsObject, JsValue, Json }
 import play.api.mvc.{ Action, Controller }
 import util.TimeRangeParser
 
 // scalastyle:off
 import scalikejdbc._
+import util.TupleWriters._
 // scalastyle:on
 
 /*
@@ -35,20 +36,6 @@ class DocumentController @Inject extends Controller {
   private implicit val session = AutoSession
 
   private val defaultPageSize = 50
-
-  // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
-  implicit def tuple3Writes[A, B, C](implicit a: Writes[A], b: Writes[B], c: Writes[C]): Writes[Tuple3[A, B, C]] = new Writes[Tuple3[A, B, C]] {
-    def writes(tuple: Tuple3[A, B, C]) = JsArray(Seq(
-      a.writes(tuple._1),
-      b.writes(tuple._2),
-      c.writes(tuple._3)
-    ))
-  }
-
-  // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
-  implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[Tuple2[A, B]] = new Writes[Tuple2[A, B]] {
-    def writes(tuple: Tuple2[A, B]) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2)))
-  }
 
   /**
    * returns the document with the id "id", if there is any
@@ -71,24 +58,27 @@ class DocumentController @Inject extends Controller {
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var pageCounter = 0
     val metadataKey = "Subject"
+    val metadataKeys = List("Subject", "Origin", "SignedBy", "Classification")
     val hitIterator = FacetedSearch.searchDocuments(facets, defaultPageSize)
     var docIds: List[Long] = List()
     while (hitIterator._2.hasNext && pageCounter <= defaultPageSize) {
       docIds ::= hitIterator._2.next()
       pageCounter += 1
     }
-    var rs: List[(Long, String)] = List()
+    var rs: Iterable[JsObject] = List()
     if (docIds.nonEmpty) {
       rs =
-        sql"""SELECT m.docid id, m.value
+        sql"""SELECT m.docid id, m.value, m.key
         FROM metadata m
-        WHERE m.key = ${metadataKey} AND m.docid IN (${docIds})"""
-          .map(rs => (rs.long("id"), rs.string("value")))
+        WHERE m.key IN (${metadataKeys}) AND m.docid IN (${docIds})"""
+          .map(rs => (rs.long("id"), rs.string("key"), rs.string("value")))
           .list()
           .apply()
+          .groupBy(_._1)
+          .map { case (id, inner) => id -> inner.map(doc => Json.obj("key" -> doc._2, "val" -> doc._3)) }
+          .map(x => Json.obj("id" -> x._1, "metadata" -> Json.toJson(x._2)))
     }
-
-    Ok(Json.toJson(Json.obj("hits" -> hitIterator._1, "docs" -> rs))).as("application/json")
+    Ok(Json.toJson(Json.obj("hits" -> hitIterator._1, "docs" -> Json.toJson(rs)))).as("application/json")
   }
 
   /**

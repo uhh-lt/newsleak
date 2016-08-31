@@ -41,12 +41,14 @@ define([
                     },
                     plotOptions: {
                         series: {
-                            stacking: 'normal'
                         },
                         bar: {
                             dataLabels: {
                                 enabled: true
-                            }
+                              //  align: 'right'
+                            },
+                            grouping: false,
+                            shadow: false
                         }
 
                     },

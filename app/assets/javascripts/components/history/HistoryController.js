@@ -75,10 +75,9 @@ define([
                 'appData',
                 'moment',
                 'FileSaver',
-                'filterShareService',
                 'ObserverService',
                 'historyFactory',
-                function ($scope, $timeout, playRoutes, appData, moment, FileSaver, filterShareService, ObserverService, historyFactory) {
+                function ($scope, $timeout, playRoutes, appData, moment, FileSaver, ObserverService, historyFactory) {
                     $scope.observer = ObserverService;
                     $scope.factory = historyFactory;
 

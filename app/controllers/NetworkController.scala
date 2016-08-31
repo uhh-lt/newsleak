@@ -20,12 +20,13 @@ import javax.inject.Inject
 
 import model.EntityType
 import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
-import play.api.libs.json.{ JsArray, JsObject, Json, Writes }
-import play.api.mvc.{ Action, Controller }
+import play.api.libs.json.{ JsObject, Json }
+import play.api.mvc.{ Action, Controller, Results }
 import util.TimeRangeParser
 
 // scalastyle:off
 import scalikejdbc._
+import util.TupleWriters._
 // scalastyle:on
 
 /*
@@ -34,33 +35,6 @@ import scalikejdbc._
 */
 class NetworkController @Inject extends Controller {
   implicit val session = AutoSession
-
-  /**
-   * this implicit writes allows us to serialize tuple4
-   * see http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
-   */
-  implicit def tuple4Writes[A, B, C, D](implicit a: Writes[A], b: Writes[B], c: Writes[C], d: Writes[D]): Writes[Tuple4[A, B, C, D]] = new Writes[Tuple4[A, B, C, D]] {
-    def writes(tuple: Tuple4[A, B, C, D]) = JsArray(Seq(
-      a.writes(tuple._1),
-      b.writes(tuple._2),
-      c.writes(tuple._3),
-      d.writes(tuple._4)
-    ))
-  }
-
-  // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
-  implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[Tuple2[A, B]] = new Writes[Tuple2[A, B]] {
-    def writes(tuple: Tuple2[A, B]) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2)))
-  }
-
-  // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
-  implicit def tuple3Writes[A, B, C](implicit a: Writes[A], b: Writes[B], c: Writes[C]): Writes[Tuple3[A, B, C]] = new Writes[Tuple3[A, B, C]] {
-    def writes(tuple: Tuple3[A, B, C]) = JsArray(Seq(
-      a.writes(tuple._1),
-      b.writes(tuple._2),
-      c.writes(tuple._3)
-    ))
-  }
 
   // TODO: fetch entity types from backend API
   /**
@@ -85,6 +59,7 @@ class NetworkController @Inject extends Controller {
    */
   val neighborRelCount = 5
 
+  // scalastyle:off
   /**
    * If leastOrMostFrequent == 0:
    * Returns entities with the highest frequency and their relationships with
@@ -155,6 +130,7 @@ class NetworkController @Inject extends Controller {
     val result = new JsObject(Map(("nodes", Json.toJson(entities)), ("links", Json.toJson(relations))))
     Ok(Json.toJson(result)).as("application/json")
   }
+  // scalastyle:on
 
   /**
    * Returns the assosciated Id with the given name
@@ -174,7 +150,9 @@ class NetworkController @Inject extends Controller {
    * @return
    */
   def getRelations(entities: List[Long], minEdgeFreq: Int, maxEdgeFreq: Int) = Action {
-    val relations = sql"""SELECT DISTINCT ON (id, frequency) id, entity1, entity2, frequency
+    if (entities.nonEmpty) {
+      val relations =
+        sql"""SELECT DISTINCT ON (id, frequency) id, entity1, entity2, frequency
         FROM relationship
         WHERE entity1 IN (${entities})
         AND entity2 IN (${entities})
@@ -182,11 +160,14 @@ class NetworkController @Inject extends Controller {
         AND frequency <= ${maxEdgeFreq}
         ORDER BY frequency DESC
         LIMIT 100"""
-      .map(rs => (rs.long("id"), rs.long("entity1"), rs.long("entity2"), rs.int("frequency")))
-      .list()
-      .apply()
+          .map(rs => (rs.long("id"), rs.long("entity1"), rs.long("entity2"), rs.int("frequency")))
+          .list()
+          .apply()
 
-    Ok(Json.toJson(relations)).as("application/json")
+      Ok(Json.toJson(relations)).as("application/json")
+    } else {
+      Results.Ok(Json.toJson(List[JsObject]())).as("application/json")
+    }
   }
 
   def induceSubgraph(
@@ -254,6 +235,7 @@ class NetworkController @Inject extends Controller {
     Ok(Json.obj("result" -> model.Entity.changeType(id, EntityType.withName(newType)))).as("application/json")
   }
 
+  // scalastyle:off
   /**
    * Returns the nodes and edges of the ego network of the node with id "id".
    * Which and how many nodes and edges are to be selected is defined by the
@@ -340,6 +322,7 @@ class NetworkController @Inject extends Controller {
 
     Ok(Json.toJson(result)).as("application/json")
   }
+  // scalastyle:on
 
   /**
    * Returns a list with "amount" relations between neighbors of the node with the id "id".
