@@ -51,7 +51,7 @@
 			'angularResizable': 'libs/angular-resizable/angular-resizable.min',
 			'bootstrapFileField': 'libs/angular-bootstrap-file-field/dist/angular-bootstrap-file-field.min',
 			'vis': 'libs/vis/dist/vis.min',
-			'ngVis': 'libs/angular-visjs/angular-vis'
+			'ngVis': 'directives/angular-vis'
 		},
 		shim: {
 			'jsRoutes': {
