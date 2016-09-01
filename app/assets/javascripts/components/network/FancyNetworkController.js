@@ -52,6 +52,25 @@ define([
             self.nodesDataset = new VisDataSet([]);
             self.edgesDataset = new VisDataSet([]);
 
+            self.physicOptions = {
+                forceAtlas2Based: {
+                    gravitationalConstant: -50,
+                    centralGravity: 0.01,
+                    springConstant: 0.08,
+                    springLength: 100,
+                    damping: 0.4,
+                    avoidOverlap: 0
+                },
+                maxVelocity: 146,
+                solver: 'forceAtlas2Based',
+                timestep: 0.35,
+                stabilization: {
+                    enabled: true,
+                    iterations: 2000,
+                    updateInterval: 25
+                }
+            };
+
 
             self.options = {
                 nodes : {
@@ -70,24 +89,7 @@ define([
                         opacity: 0.5
                     }
                 },
-                physics: {
-                    forceAtlas2Based: {
-                        gravitationalConstant: -50,
-                        centralGravity: 0.01,
-                        springConstant: 0.08,
-                        springLength: 100,
-                        damping: 0.4,
-                        avoidOverlap: 0
-                    },
-                    maxVelocity: 146,
-                    solver: 'forceAtlas2Based',
-                    timestep: 0.35,
-                    stabilization: {
-                        enabled: true,
-                        iterations: 2000,
-                        updateInterval: 25
-                    }
-                },
+                physics: self.physicOptions,
                 interaction: {
                     tooltipDelay: 200,
                     hideEdgesOnDrag: true,
@@ -121,9 +123,7 @@ define([
             };
 
 
-
             $scope.loaded = reload;
-
 
             $scope.observerService.registerObserverCallback(function() {
                 console.log("update network");
@@ -155,10 +155,12 @@ define([
                     facets = [{'key':'dummy','data': []}];
                 }
                 playRoutes.controllers.NetworkController.induceSubgraph(fulltext, facets,[],$scope.observerService.getTimeRange(),18,"").get().then(function(response) {
-                    togglePhysics(true);
+                    // Enable physics for new graph data
+                    applyPhysicsOptions(self.physicOptions);
+
                     self.nodes = response.data.entities.map(function(n) {
                         // See css property div.network-tooltip for custom tooltip styling
-                        var title = "Co-occurrence: " + n.count + "<br>Typ: " + n.type;
+                        var title = 'Co-occurrence: ' + n.count + '<br>Typ: ' + n.type;
                         return {id: n.id, label: n.label, value: n.count, group: n.group, title: title };
                     });
                     self.nodesDataset.clear();
@@ -170,30 +172,39 @@ define([
                     self.edgesDataset.clear();
                     self.edgesDataset.add(self.edges);
 
+                    console.log("" + self.nodesDataset.length + " nodes loaded");
                     // Bring graph in current viewport
                     self.network.fit();
                 });
             }
 
-            function togglePhysics(flag) {
-                console.log("Physics simultaion " + (flag? "on" : "off"));
-                $scope.graphOptions['physics'] = flag;
+            function applyPhysicsOptions(options) {
+                console.log('Physics simulation on');
+                $scope.graphOptions['physics'] = options;
+                self.network.setOptions($scope.graphOptions);
+            }
+
+            function turnPhysicsOff() {
+                console.log('Physics simulation off');
+                $scope.graphOptions['physics'] = false;
                 // Need to explicitly apply the new options since the automatic
                 // watchCollection from angular-visjs seems to be outside of the
-                // regular angular update event cycle.
+                // regular angular update event cycle. It also requires to remove
+                // the watchCollection from the options entirely!
                 self.network.setOptions($scope.graphOptions);
             }
 
             // ---------------------------------
             // Event Callbacks
             // ---------------------------------
+
             function stabilizationStart() {
-                console.log("Stabilization start");
+                console.log("Stabilization start with " + self.nodesDataset.length + " nodes");
             }
 
             function stabilizationDone() {
                 console.log("Stabilization done");
-                togglePhysics(false);
+                turnPhysicsOff();
             }
      }]);
 });
