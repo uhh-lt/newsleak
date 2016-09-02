@@ -54,21 +54,30 @@ define([
 
             self.physicOptions = {
                 forceAtlas2Based: {
-                    gravitationalConstant: -50,
+                    gravitationalConstant: -220,
                     centralGravity: 0.01,
-                    springConstant: 0.08,
+                    springConstant: 0.02,
                     springLength: 100,
                     damping: 0.4,
                     avoidOverlap: 0
                 },
+                barnesHut: {
+                    gravitationalConstant: -50,
+                    centralGravity: 0.01,
+                    springConstant: 0.08,
+                    damping: 0.4
+                },
                 maxVelocity: 146,
                 solver: 'forceAtlas2Based',
-                timestep: 0.35,
+                //solver: 'barnesHut',
+               // timestep: 0.35,
                 stabilization: {
                     enabled: true,
-                    iterations: 2000,
-                    updateInterval: 25
-                }
+                    fit: false,
+                    iterations: 2000
+                    //updateInterval: 25
+                },
+                adaptiveTimestep: true
             };
 
             self.options = {
@@ -76,20 +85,30 @@ define([
                     shape: 'dot',
                     size: 10,
                     shadow: true,
+                    //mass: 1.7,
                     font: {
-                        strokeWidth: 3,
-                        strokeColor: 'white'
+                        /*strokeWidth: 3,
+                        strokeColor: 'white'*/
+                    },
+                    scaling: {
+                        label: {
+                            min: 30,
+                            max: 45
+                        }
                     }
                 },
                 edges: {
                     color: {
-                        color: 'rgb(220,220,220)',
-                        highlight: 'lightblue',
-                        opacity: 0.5
-                    }//,
-                    //smooth: {type:'continuous'}
+                        color: 'rgb(169,169,169)', //'rgb(220,220,220)',
+                        highlight: 'blue',//,
+                        //opacity: 0.5
+                    },
+                    smooth: {type:'continuous'}
                 },
                 physics: self.physicOptions,
+                layout: {
+                    improvedLayout: false
+                },
                 interaction: {
                     tooltipDelay: 200,
                     hideEdgesOnDrag: true,
@@ -119,6 +138,7 @@ define([
             $scope.graphEvents = {
                 "startStabilizing": stabilizationStart,
                 "stabilized": stabilizationDone,
+                //"stabilizationIterationsDone": stabilizationDone,
                 "onload": onNetworkLoad,
                 "dragEnd": dragNodeDone
             };
@@ -166,10 +186,15 @@ define([
                     applyPhysicsOptions(self.physicOptions);
                     $scope.loading = true;
 
+                    var originalMax = _.max(response.data.entities, function(n) { return n.count; }).count;
+                    var originalMin = _.min(response.data.entities, function(n) { return n.count; }).count;
+
                     var nodes = response.data.entities.map(function(n) {
                         // See css property div.network-tooltip for custom tooltip styling
                         var title = 'Co-occurrence: ' + n.count + '<br>Typ: ' + n.type;
-                        return {id: n.id, label: n.label, value: n.count, group: n.group, title: title };
+                        // map counts to interval [1,2] for nodes mass
+                        var mass = ((n.count - originalMin) / (originalMax - originalMin)) * (2 - 1) + 1;
+                        return {id: n.id, label: n.label, value: n.count, group: n.group, title: title, mass: mass };
                     });
                     self.nodes = [];
                     self.nodesDataset.clear();
@@ -185,8 +210,6 @@ define([
                     // Update the maximum edge importance slider value
                     $scope.maxEdgeImportance = self.edgesDataset.max("value").value;
                     console.log("" + self.nodesDataset.length + " nodes loaded");
-
-                    //self.network.fit();
                 });
                 // Bring graph in current viewport
                 $timeout(function() { self.network.fit(); }, 0, false);
