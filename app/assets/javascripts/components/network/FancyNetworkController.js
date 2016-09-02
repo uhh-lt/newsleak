@@ -119,7 +119,8 @@ define([
             $scope.graphEvents = {
                 "startStabilizing": stabilizationStart,
                 "stabilized": stabilizationDone,
-                "onload": onNetworkLoad
+                "onload": onNetworkLoad,
+                "dragEnd": dragNodeDone
             };
 
             $scope.loaded = reload;
@@ -218,6 +219,17 @@ define([
                     self.edges = self.edgesDataset.get();
                 }
                 turnPhysicsOff();
+            }
+
+            function dragNodeDone(event) {
+                // Update node positions of the background collection whenever they are moved
+                if(event.nodes.length == 1 && $scope.graphOptions['physics'] == false) {
+                    var match = _.find(self.nodes, function (obj) {
+                        return obj.id == event.nodes[0]
+                    });
+                    match.x = event.pointer.x;
+                    match.y = event.pointer.y;
+                }
             }
 
             function handleEdgeSlider(newValue, oldValue) {
