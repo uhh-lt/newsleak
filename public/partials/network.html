@@ -24,6 +24,16 @@
 <!--<div id="network-graph" ng-show="!isViewLoading"></div>-->
 <!-- Network -->
 
+<md-toolbar>
+    <div class="md-toolbar-tools">
+        <h3><span>Network View</span></h3>
+        <div flex="20" layout layout-align="center center">
+            <span class="md-body-1">Edge Importance</span>
+        </div>
+        <md-slider flex min="1" max="80000" step ="1" md-discrete ng-model="edgeImportance" ng-init="nodeImportance='0'"  aria-label="blue"></md-slider>
+    </div>
+</md-toolbar>
+
 <div id="mynetwork">
     <vis-network data="graphData" options="graphOptions" layout-fill events="graphEvents"></vis-network>
 </div>

@@ -85,16 +85,17 @@ line {
 }
 
 /* old network */
-#network-graph {
+/*#network-graph {
     width: 100%;
     height: calc(100% - 96px);
     position: absolute;
-}
+}*/
 
 #mynetwork {
     position: absolute;
     overflow-y: hidden;
     width: 100%;
+    top: 60px;
     height: calc(100% - 60px);
     background-color:#333333;
 }

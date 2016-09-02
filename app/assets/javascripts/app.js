@@ -76,7 +76,7 @@ define([
                 },
                 'network': {
                     templateUrl: 'assets/partials/network.html',
-                    controller: 'NetworkController'
+                    controller: 'FancyNetworkController' //'NetworkController'
                 },
                 'tools': {
                     templateUrl: 'assets/partials/tools.html',
