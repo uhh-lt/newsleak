@@ -123,6 +123,13 @@ define([
                 "dragEnd": dragNodeDone
             };
 
+            /* Current value of the edge significance slider */
+            $scope.edgeImportance = 1;
+            /* Maximum edge value of the current underlying graph collection. Updated in reload method */
+            $scope.maxEdgeImportance = 80000;
+            /* Indicates whether the network is initialized or new data is being loaded */
+            $scope.loading = true;
+
             $scope.loaded = reload;
 
             $scope.observerService.registerObserverCallback(function() {
@@ -132,10 +139,6 @@ define([
 
             $scope.$watch('edgeImportance', handleEdgeSlider);
 
-
-            function onNetworkLoad(network) {
-                self.network = network;
-            }
 
             function reload() {
                 // TODO: We need this in several components helper methods would be nice ... (copied from metadataController)
@@ -161,6 +164,7 @@ define([
                 playRoutes.controllers.NetworkController.induceSubgraph(fulltext, facets,[],$scope.observerService.getTimeRange(),18,"").get().then(function(response) {
                     // Enable physics for new graph data
                     applyPhysicsOptions(self.physicOptions);
+                    $scope.loading = true;
 
                     var nodes = response.data.entities.map(function(n) {
                         // See css property div.network-tooltip for custom tooltip styling
@@ -178,6 +182,8 @@ define([
                     self.edgesDataset.clear();
                     self.edgesDataset.add(edges);
 
+                    // Update the maximum edge importance slider value
+                    $scope.maxEdgeImportance = self.edgesDataset.max("value").value;
                     console.log("" + self.nodesDataset.length + " nodes loaded");
 
                     //self.network.fit();
@@ -192,9 +198,9 @@ define([
                 self.network.setOptions($scope.graphOptions);
             }
 
-            function turnPhysicsOff() {
+            function disablePhysics() {
                 console.log('Physics simulation off');
-                $scope.graphOptions['physics'] = false;
+                $scope.graphOptions['physics']  = false;
                 // Need to explicitly apply the new options since the automatic
                 // watchCollection from angular-visjs seems to be outside of the
                 // regular angular update event cycle. It also requires to remove
@@ -203,9 +209,16 @@ define([
             }
 
 
-            // ---------------------------------
+            // ----------------------------------------------------------------------------------
             // Event Callbacks
-            // ---------------------------------
+            //
+            // These callbacks seem to be outside of the angular $digest
+            // cycles. To force new $digest use $scope.$apply(function() { /* scope action */ })
+            // ---------------------------------------------------------------------------------
+
+            function onNetworkLoad(network) {
+                self.network = network;
+            }
 
             function stabilizationStart() {
                 console.log("Stabilization start with " + self.nodesDataset.length + " nodes");
@@ -217,8 +230,19 @@ define([
                     self.network.storePositions();
                     self.nodes = self.nodesDataset.get();
                     self.edges = self.edgesDataset.get();
+
+                    // Once the stabilized event is called the first time
+                    // the network is initialized. Other stabilizing events
+                    // are triggered by the handleEdgeSlider method and only
+                    // simulate dynamic edges.
+                    $scope.$apply(function() {
+                        $scope.loading = false;
+                        // reset the current edge slider position, because the new
+                        // maximum value could be smaller than the current value.
+                        $scope.edgeImportance = 1;
+                    });
                 }
-                turnPhysicsOff();
+                disablePhysics();
             }
 
             function dragNodeDone(event) {
@@ -233,6 +257,7 @@ define([
             }
 
             function handleEdgeSlider(newValue, oldValue) {
+                console.log("Handle slider " + newValue + ", " + oldValue);
                 if(newValue > oldValue) {
                     var edgesToRemove = self.edgesDataset.get({
                         filter: function (item) {

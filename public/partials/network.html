@@ -30,7 +30,7 @@
         <div flex="20" layout layout-align="center center">
             <span class="md-body-1">Edge Importance</span>
         </div>
-        <md-slider flex min="1" max="80000" step ="1" md-discrete ng-model="edgeImportance" ng-init="nodeImportance='0'"  aria-label="blue"></md-slider>
+        <md-slider ng-disabled="loading" flex min="1" max="{{ maxEdgeImportance }}" step ="1" md-discrete ng-model="edgeImportance" aria-label="blue"></md-slider>
     </div>
 </md-toolbar>
 
