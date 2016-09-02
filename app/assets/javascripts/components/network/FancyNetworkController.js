@@ -42,7 +42,7 @@ define([
             return graphProperties;
         })
         // Network Controller
-        .controller('FancyNetworkController', ['$scope', '$timeout', 'VisDataSet', 'playRoutes', 'ObserverService', function ($scope, $timeout, VisDataSet, playRoutes, ObserverService) {
+        .controller('FancyNetworkController', ['$scope', '$timeout', 'VisDataSet', 'playRoutes', 'ObserverService', '_', function ($scope, $timeout, VisDataSet, playRoutes, ObserverService, _) {
 
             var self = this;
 
@@ -71,7 +71,6 @@ define([
                 }
             };
 
-
             self.options = {
                 nodes : {
                     shape: 'dot',
@@ -87,7 +86,8 @@ define([
                         color: 'rgb(220,220,220)',
                         highlight: 'lightblue',
                         opacity: 0.5
-                    }
+                    }//,
+                    //smooth: {type:'continuous'}
                 },
                 physics: self.physicOptions,
                 interaction: {
@@ -122,13 +122,15 @@ define([
                 "onload": onNetworkLoad
             };
 
-
             $scope.loaded = reload;
 
             $scope.observerService.registerObserverCallback(function() {
                 console.log("update network");
                 reload();
             });
+
+            $scope.$watch('edgeImportance', handleEdgeSlider);
+
 
             function onNetworkLoad(network) {
                 self.network = network;
@@ -154,28 +156,33 @@ define([
                     // TODO Can we get rid of this dummy?!
                     facets = [{'key':'dummy','data': []}];
                 }
+
                 playRoutes.controllers.NetworkController.induceSubgraph(fulltext, facets,[],$scope.observerService.getTimeRange(),18,"").get().then(function(response) {
                     // Enable physics for new graph data
                     applyPhysicsOptions(self.physicOptions);
 
-                    self.nodes = response.data.entities.map(function(n) {
+                    var nodes = response.data.entities.map(function(n) {
                         // See css property div.network-tooltip for custom tooltip styling
                         var title = 'Co-occurrence: ' + n.count + '<br>Typ: ' + n.type;
                         return {id: n.id, label: n.label, value: n.count, group: n.group, title: title };
                     });
+                    self.nodes = [];
                     self.nodesDataset.clear();
-                    self.nodesDataset.add(self.nodes);
+                    self.nodesDataset.add(nodes);
 
-                    self.edges = response.data.relations.map(function(n) {
+                    var edges = response.data.relations.map(function(n) {
                         return {from: n[0], to: n[1], value: n[2] };
                     });
+                    self.edges = [];
                     self.edgesDataset.clear();
-                    self.edgesDataset.add(self.edges);
+                    self.edgesDataset.add(edges);
 
                     console.log("" + self.nodesDataset.length + " nodes loaded");
-                    // Bring graph in current viewport
-                    self.network.fit();
+
+                    //self.network.fit();
                 });
+                // Bring graph in current viewport
+                $timeout(function() { self.network.fit(); }, 0, false);
             }
 
             function applyPhysicsOptions(options) {
@@ -194,6 +201,7 @@ define([
                 self.network.setOptions($scope.graphOptions);
             }
 
+
             // ---------------------------------
             // Event Callbacks
             // ---------------------------------
@@ -204,7 +212,57 @@ define([
 
             function stabilizationDone() {
                 console.log("Stabilization done");
+                if(self.nodes.length == 0 && self.edges.length == 0) {
+                    self.network.storePositions();
+                    self.nodes = self.nodesDataset.get();
+                    self.edges = self.edgesDataset.get();
+                }
                 turnPhysicsOff();
             }
-     }]);
+
+            function handleEdgeSlider(newValue, oldValue) {
+                if(newValue > oldValue) {
+                    var edgesToRemove = self.edgesDataset.get({
+                        filter: function (item) {
+                            return (item.value < newValue);
+                        }
+                    });
+                    self.edgesDataset.remove(edgesToRemove);
+
+                    var nodesToRemove = self.nodesDataset.get({
+                        filter: function (node) {
+                            var connecting = self.edgesDataset.get({
+                                filter: function(edge) {
+                                    return (node.id == edge.from || node.id == edge.to);
+                                }
+                            });
+                            return (connecting.length == 0);
+                        }
+                    });
+                    self.nodesDataset.remove(nodesToRemove);
+
+                } else if(newValue < oldValue) {
+                    var option = self.physicOptions;
+                    option['stabilization'] = { onlyDynamicEdges: true };
+                    applyPhysicsOptions(option);
+
+                    var edgesToAdd = new VisDataSet(self.edges).get({
+                        filter: function (item) {
+                            return (item.value >= newValue)
+                        }
+                    });
+
+                    var nodeIds = [].concat.apply([], edgesToAdd.map(function(edge) { return [edge.to, edge.from]; }));
+                    var nodesToAdd = new VisDataSet(self.nodes).get({
+                        filter: function (item) {
+                            return (_.contains(nodeIds, item.id));
+                        }
+                    });
+
+                    self.edgesDataset.update(edgesToAdd);
+                    self.nodesDataset.update(nodesToAdd);
+                    self.network.stabilize();
+                }
+            }
+        }]);
 });
