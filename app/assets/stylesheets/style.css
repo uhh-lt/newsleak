@@ -97,7 +97,8 @@ line {
     width: 100%;
     top: 60px;
     height: calc(100% - 60px);
-    background-color:#333333;
+    /*background-color:#333333;*/
+    background-color: #d1d1d1;
 }
 
 div.vis-network div.vis-navigation div.vis-button {
