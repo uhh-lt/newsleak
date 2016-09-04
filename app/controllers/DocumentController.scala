@@ -67,7 +67,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
     val metadataKeys = List("Subject", "Origin", "SignedBy", "Classification")
 
     var iteratorSession: IteratorSession = cache.get[IteratorSession](uid)
-    if (iteratorSession == null || iteratorSession.hash != facets.hashCode()) {
+    if (iteratorSession == null || iteratorSession.hash == defaultSssion.hash || iteratorSession.hash != facets.hashCode()) {
       val res = FacetedSearch.searchDocuments(facets, defaultPageSize)
       iteratorSession = IteratorSession(res._1, res._2, facets.hashCode())
       cache.set(uid, iteratorSession)
