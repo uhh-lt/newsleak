@@ -21,11 +21,8 @@
         Load more documents
         <i class="glyphicon glyphicon-repeat"></i>
     </div>
-    <div class="alert alert-info" ng-show="sourceShared.documentList.length == 0 && sourceShared.documentListWarning == ''">
+    <div class="alert alert-info" ng-show="sourceShared.documentList.length == 0">
         <p>No document for current set filters available. Filter less to get document list.</p>
-    </div>
-    <div class="alert alert-warning" ng-show="sourceShared.documentList.length == 0 && sourceShared.documentListWarning != ''">
-        <p>{{ sourceShared.documentListWarning }}</p>
     </div>
     <script type="text/ng-template" id="doc_tooltip_tmpl">
         <div>
