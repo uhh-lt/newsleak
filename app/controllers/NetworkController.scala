@@ -177,7 +177,7 @@ class NetworkController @Inject extends Controller {
     timeRange: String,
     size: Int,
     filter: List[Long]
-  ) = Action {
+  )(implicit session: DBSession = AutoSession) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var newSize = size
