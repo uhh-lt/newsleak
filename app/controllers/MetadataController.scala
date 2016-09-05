@@ -31,6 +31,8 @@ import util.TimeRangeParser
 class MetadataController @Inject extends Controller {
 
   private val defaultExcludeTypes = List("Subject", "Header", "ReferenceId", "References", "Keywords", "Entities", "Created", "EventTimes")
+  // exclusion for enron
+  // private val defaultExcludeTypes = List("Subject", "Timezone", "sender.id", "Recipients.id", "Recipients.order")
   private val defaultFetchSize = 50
 
   /**
