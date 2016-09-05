@@ -41,7 +41,11 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
   private val defaultPageSize = 50
   private val defaultFacets = Facets(List(), Map(), List(), None, None)
   private val defaultRes = FacetedSearch.searchDocuments(defaultFacets, defaultPageSize)
-  private val defaultSssion = IteratorSession(defaultRes._1, defaultRes._2, defaultFacets.hashCode())
+  private val defaultSession = IteratorSession(defaultRes._1, defaultRes._2, defaultFacets.hashCode())
+  private val metadataKeys = List("Subject", "Origin", "SignedBy", "Classification")
+  // metdatakeys for enron
+  // private val metadataKeys = List("Subject", "Origin", "SignedBy", "Classification")
+
 
   /**
    * returns the document with the id "id", if there is any
@@ -69,10 +73,9 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var pageCounter = 0
-    val metadataKeys = List("Subject", "Origin", "SignedBy", "Classification")
 
     var iteratorSession: IteratorSession = cache.get[IteratorSession](uid)
-    if (iteratorSession == null || iteratorSession.hash == defaultSssion.hash || iteratorSession.hash != facets.hashCode()) {
+    if (iteratorSession == null || iteratorSession.hash == defaultSession.hash || iteratorSession.hash != facets.hashCode()) {
       val res = FacetedSearch.searchDocuments(facets, defaultPageSize)
       iteratorSession = IteratorSession(res._1, res._2, facets.hashCode())
       cache.set(uid, iteratorSession)
