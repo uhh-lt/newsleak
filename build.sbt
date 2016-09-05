@@ -10,9 +10,7 @@ libraryDependencies ++= Seq(
   jdbc,
   cache,
   "org.postgresql" % "postgresql" % "9.4-1206-jdbc41",
-  "org.apache.lucene" % "lucene-snowball" % "3.0.3",
   "commons-io" % "commons-io" % "2.4",
-  "edu.stanford.nlp" % "stanford-corenlp" % "3.5.2",
   "org.scalikejdbc" %% "scalikejdbc" % "2.3.0",
   "org.scalikejdbc" %% "scalikejdbc-config" % "2.3.0",
   "org.scalikejdbc" %% "scalikejdbc-play-initializer" % "2.4.1",
@@ -44,7 +42,7 @@ publishArtifact in (Compile, packageDoc) := false
 // rjs = RequireJS, uglifies, shrinks to one file, replaces WebJars with CDN
 // digest = Adds hash to filename
 // gzip = Zips all assets, Asset controller serves them automatically when client accepts them
-pipelineStages := Seq(rjs, digest, gzip)
+pipelineStages := Seq(/*rjs,*/ digest, gzip)
 
 // The r.js optimizer won't find jsRoutes so we must tell it to ignore it
 RjsKeys.paths += ("jsRoutes" -> ("/jsroutes" -> "empty:"))
