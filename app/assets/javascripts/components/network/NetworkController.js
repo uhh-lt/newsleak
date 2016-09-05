@@ -125,7 +125,7 @@ define([
             var nodes      = [];
             var edges      = [];
             var color      = function(type){return $scope.graphShared.categories.find(function(c){return c.id === type;}).color};
-            console.log([color("LOC"),color("ORG"),color("PER"),color("MISC")]);
+            //console.log([color("LOC"),color("ORG"),color("PER"),color("MISC")]);
             //while(!$scope.graphShared.ready){};
 
             /*var radius     = d3.scale.sqrt()
@@ -143,7 +143,7 @@ define([
             $scope.zm      = d3.behavior.zoom()
                                     .scaleExtent([0.5, 3])
                                     .on('zoom', function(){
-                                        //force.resume();
+                                        force.resume();
                                         currentScale = d3.event.scale;
                                         svg.selectAll('g').attr('transform', 'translate('
                                             + (-viewBoxX) + ',' + (-viewBoxY) + ')scale('
@@ -154,7 +154,7 @@ define([
             var viewBoxY   = 0;
             var drag       = d3.behavior.drag()
                                     .on('drag', function(){
-                                        //force.resume();
+                                        force.resume();
                                         viewBoxX -= d3.event.dx;
                                         viewBoxY -= d3.event.dy;
                                         svg.selectAll('g').attr('transform', 'translate('
@@ -164,15 +164,16 @@ define([
 
             var svg;
 
-            /*ObserverService.getEntityTypes().then(function(types)
+            ObserverService.getEntityTypes().then(function(types)
             {
                 console.log(types);
                 types.forEach(function(e)
                 {
-                    graphPropertiesShareService.categories.push({id: e, full: e, color: '#ffffb3'});
+                    $scope.graphShared.categories.push({id: e, full: e, color: '#ffffb3'});
                 })
-                graphPropertiesShareService.ready = true;
-            });*/
+                initNetwork();
+            });
+            //initNetwork();
 
 
             /**
@@ -462,7 +463,7 @@ define([
                         $scope.uiShareService.mainContainerWidth,
                         $scope.uiShareService.mainContainerHeight
                     ]);
-                    //force.start();
+                    force.start();
                 }
             }
 
@@ -1084,8 +1085,8 @@ define([
                     .nodes(nodes)
                     .links(edges)
                     .size([400, 400])
-                    .charge(-0)
-                    .chargeDistance(100)
+                    .charge(-500)
+                    .chargeDistance(400)
                     .linkStrength(0.0)
                     .linkDistance(function(d) {
                         return radius(d.source.docCount)
@@ -1097,7 +1098,8 @@ define([
                             .attr('y1', function (d) {return d.source.y;})
                             .attr('x2', function (d) {return d.target.x;})
                             .attr('y2', function (d) {return d.target.y;});
-                        node.attr('transform', function (d) {
+                        node.attr('transform', function (d)
+                        {
                             return 'translate(' + d.x + ',' + d.y + ')';
                         });
 
@@ -1126,7 +1128,11 @@ define([
                             else
                                 return 'rotate(0)';
                         });
-                    });
+                    })
+                    /*.on("start", function()
+                    {
+                        node.attr('transform')
+                    })*/
 
                     force.start();
 
@@ -1721,7 +1727,7 @@ define([
 
                 if(force != undefined)
                 {
-                    force.stop();
+                    force.nodes().forEach(function(d){d.fixed = true;});
                 }
 
                 playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,entityType).get().then(function(response) {
@@ -1808,8 +1814,12 @@ define([
                             //force.links(edges);
                             //calculateNewForceSize();
                             start();
-
-                            //force.resume()
+                            //force.stop();
+                            $timeout
+                            (
+                                function(){force.nodes().forEach(function(d){d.fixed = false;})},
+                                5000
+                            )
                         }
                     );
 
@@ -1817,8 +1827,12 @@ define([
                 });
             };
 
-            $scope.getEntities();
-            $scope.observer.registerObserverCallback($scope.getEntities);
+            function initNetwork()
+            {
+                $scope.getEntities();
+                $scope.observer.registerObserverCallback($scope.getEntities);
+            }
+
             /**
              *  send a message to the server that the name of the entity
              *  was edited

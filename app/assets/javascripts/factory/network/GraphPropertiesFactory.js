@@ -36,9 +36,6 @@ define([
                 }
             };
 
-            var types = ObserverService.getEntityTypes();
-            console.log(types);
-
             return graphProperties;
         }])
 });
