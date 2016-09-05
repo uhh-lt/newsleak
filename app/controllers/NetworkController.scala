@@ -185,23 +185,28 @@ class NetworkController @Inject extends Controller {
     val (buckets, relations) = FacetedSearch.induceSubgraph(facets, newSize)
     val nodes = buckets.collect { case a @ NodeBucket(_, _) => a }
 
-    val nodeIdToEntity = sql"""
+    if (nodes.isEmpty) {
+      Ok(Json.toJson(Json.obj("entities" -> List[JsObject](), "relations" -> List[JsObject]()))).as("application/json")
+    } else {
+      val nodeIdToEntity =
+        sql"""
         SELECT * FROM entity
         WHERE id IN (${nodes.map(_.id)})
       """.map(x => x.long("id") -> Entity(x)).list.apply.toMap
 
-    val subgraphEntities = nodes.map {
-      case NodeBucket(id, count) =>
-        Json.obj(
-          "id" -> id,
-          "label" -> nodeIdToEntity(id).name,
-          "count" -> count,
-          "type" -> nodeIdToEntity(id).entityType.toString,
-          "group" -> nodeIdToEntity(id).entityType.id
-        )
-    }
+      val subgraphEntities = nodes.map {
+        case NodeBucket(id, count) =>
+          Json.obj(
+            "id" -> id,
+            "label" -> nodeIdToEntity(id).name,
+            "count" -> count,
+            "type" -> nodeIdToEntity(id).entityType.toString,
+            "group" -> nodeIdToEntity(id).entityType.id
+          )
+      }
 
-    Ok(Json.toJson(Json.obj("entities" -> subgraphEntities, "relations" -> relations))).as("application/json")
+      Ok(Json.toJson(Json.obj("entities" -> subgraphEntities, "relations" -> relations))).as("application/json")
+    }
   }
 
   /**
