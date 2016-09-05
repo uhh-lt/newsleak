@@ -44,8 +44,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
   private val defaultSession = IteratorSession(defaultRes._1, defaultRes._2, defaultFacets.hashCode())
   private val metadataKeys = List("Subject", "Origin", "SignedBy", "Classification")
   // metdatakeys for enron
-  // private val metadataKeys = List("Subject", "Origin", "SignedBy", "Classification")
-
+  // private val metadataKeys = List("Subject", "Timezone", "sender.name", "Recipients.email", "Recipients.name", "Recipients.type")
 
   /**
    * returns the document with the id "id", if there is any
