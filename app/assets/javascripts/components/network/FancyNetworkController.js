@@ -55,7 +55,7 @@ define([
             self.physicOptions = {
                 forceAtlas2Based: {
                     gravitationalConstant: -220,
-                    centralGravity: 0.01,
+                    centralGravity: 0.02,
                     springConstant: 0.02,
                     springLength: 100,
                     damping: 0.4,
@@ -194,6 +194,9 @@ define([
                         var title = 'Co-occurrence: ' + n.count + '<br>Typ: ' + n.type;
                         // map counts to interval [1,2] for nodes mass
                         var mass = ((n.count - originalMin) / (originalMax - originalMin)) * (2 - 1) + 1;
+                        // If all nodes have the same occurrence assign same mass. This also prevents errors
+                        // for wrong interval mappings e.g. [1,1] to [1,2] yields NaN for the mass.
+                        if(originalMin == originalMax) mass = 1;
                         return {id: n.id, label: n.label, value: n.count, group: n.group, title: title, mass: mass };
                     });
                     self.nodes = [];
@@ -208,7 +211,7 @@ define([
                     self.edgesDataset.add(edges);
 
                     // Update the maximum edge importance slider value
-                    $scope.maxEdgeImportance = self.edgesDataset.max("value").value;
+                    $scope.maxEdgeImportance = (self.edgesDataset.length > 0) ? self.edgesDataset.max("value").value : 0;
                     console.log("" + self.nodesDataset.length + " nodes loaded");
                 });
                 // Bring graph in current viewport
