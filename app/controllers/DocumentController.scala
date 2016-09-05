@@ -37,7 +37,6 @@ case class IteratorSession(hits: Long, hitIterator: Iterator[Long], hash: Long)
     This class provides operations pertaining documents.
 */
 class DocumentController @Inject() (cache: CacheApi) extends Controller {
-  private implicit val session = AutoSession
 
   private val defaultPageSize = 50
   private val defaultFacets = Facets(List(), Map(), List(), None, None)
@@ -60,7 +59,12 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
    * @param timeRange string of a time range readable for [[TimeRangeParser]]
    * @return list of matching document id's
    */
-  def getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action { implicit request =>
+  def getDocs(
+    fullText: List[String],
+    generic: Map[String, List[String]],
+    entities: List[Long],
+    timeRange: String
+  )(implicit session: DBSession = AutoSession) = Action { implicit request =>
     val uid = request.session.get("uid").getOrElse("0")
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
@@ -99,7 +103,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
    * returns a list of date-number-tuples, where date is a number of milliseconds since 1970.01.01
    * and number is the amount of documents created that day
    */
-  def getFrequencySeries = Action {
+  def getFrequencySeries(implicit session: DBSession = AutoSession) = Action {
     val rs =
       sql"""SELECT created, COUNT(created)
                                         FROM document
@@ -118,7 +122,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
    * returns a list of all document ids from documents created at a given date and a short description
    * where date is a unixtimestamp
    */
-  def getDocsByDate(date: Long) = Action {
+  def getDocsByDate(date: Long)(implicit session: DBSession = AutoSession) = Action {
     val rs =
       sql"""SELECT id, value
                               FROM document, metadata
@@ -141,7 +145,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
    * @return Returns a list containing the IDs and Subjects of the documents that match the
    *         given criterion.
    */
-  def getDocsForYearRange(fromYear: Int, toYear: Int, offset: Int, count: Int) = Action {
+  def getDocsForYearRange(fromYear: Int, toYear: Int, offset: Int, count: Int)(implicit session: DBSession = AutoSession) = Action {
     val rs =
       sql"""SELECT id, value
                 FROM document, metadata
@@ -169,7 +173,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
    * @return Returns a list containing the IDs and Subjects of the documents that match the
    *         given criterion.
    */
-  def getDocsForMonth(year: Int, month: Int, offset: Int, count: Int) = Action {
+  def getDocsForMonth(year: Int, month: Int, offset: Int, count: Int)(implicit session: DBSession = AutoSession) = Action {
     val rs =
       sql"""SELECT id, value
                 FROM document, metadata

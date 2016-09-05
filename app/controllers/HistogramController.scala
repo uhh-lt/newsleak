@@ -32,8 +32,6 @@ import scalikejdbc._
  * Created by flo on 6/20/2016.
  */
 class HistogramController @Inject extends Controller {
-  implicit val session = AutoSession
-
   private val defaultFetchSize = 50
 
   /**

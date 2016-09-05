@@ -22,7 +22,7 @@ import javax.inject.Inject
 import play.api.Play.current
 import play.api.mvc.{ Action, Controller }
 import play.api.libs.json.Json
-import scalikejdbc.AutoSession
+import scalikejdbc.{ AutoSession, DBSession }
 
 // scalastyle:off
 import util.TupleWriters._
@@ -34,24 +34,15 @@ import play.api.db._
     to the map and its features.
 */
 class MapController @Inject extends Controller {
-  private implicit val session = AutoSession
 
   /**
    * returns a list of all documents from documents for the given country.
    */
   def getDocsForCountry(countryCode: String) = Action {
-    var list: List[String] = List()
-    if (countryCode != "United States of America") {
-      // Fill with some static data until we have the database connected
-      list ::= "Yes, we can!!!!!!!!!!!!"
-      list ::= "And that is crucial!"
-      list ::= "But, it works"
-      list ::= "This is just some text for da country " + countryCode
-    }
-    Ok(Json.toJson(list)).as("application/json")
+    Ok(Json.toJson(Json.obj())).as("application/json")
   }
 
-  def getDocsByDate(date: Long) = Action {
+  def getDocsByDate(date: Long)(implicit session: DBSession = AutoSession) = Action {
     var list: List[Int] = List()
     DB.withConnection { implicit connection =>
       val stmt = connection.createStatement

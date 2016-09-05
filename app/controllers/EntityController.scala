@@ -33,8 +33,6 @@ import scalikejdbc._
  * Created by flo on 6/20/2016.
  */
 class EntityController @Inject extends Controller {
-  implicit val session = AutoSession
-
   private val defaultFetchSize = 50
 
   /**
@@ -78,7 +76,7 @@ class EntityController @Inject extends Controller {
     size: Int,
     entityType: String,
     filter: List[Long]
-  ) = Action {
+  )(implicit session: DBSession = AutoSession) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var newSize = size
@@ -141,7 +139,7 @@ class EntityController @Inject extends Controller {
    * an array of entity names and entity frequency
    * combined
    */
-  def getEntitiesWithOffset(entityType: String, offset: Int) = Action {
+  def getEntitiesWithOffset(entityType: String, offset: Int)(implicit session: DBSession = AutoSession) = Action {
     val result =
       sql"""SELECT * FROM entity
           WHERE type = ${entityType} AND NOT isblacklisted
@@ -161,7 +159,7 @@ class EntityController @Inject extends Controller {
    * @return an array of entity names and document count
    *         combined
    */
-  def getEntitiesDocCount(entityType: String) = Action {
+  def getEntitiesDocCount(entityType: String)(implicit session: DBSession = AutoSession) = Action {
     val result =
       sql"""SELECT e.id, e.name, count(d.docid) AS count
                   FROM documententity d, entity e
@@ -183,7 +181,7 @@ class EntityController @Inject extends Controller {
    * @return an array of entity names and document count
    *         combined
    */
-  def getEntitiesDocCountWithOffset(entityType: String, offset: Int) = Action {
+  def getEntitiesDocCountWithOffset(entityType: String, offset: Int)(implicit session: DBSession = AutoSession) = Action {
     val result =
       sql"""SELECT e.id, e.name, count(d.docid) AS count
                   FROM documententity d, entity e
@@ -202,7 +200,7 @@ class EntityController @Inject extends Controller {
    * @param filter List of entity id's
    * @return number of documents containing given entities
    */
-  def getEntitiesDocCountWithFilter(filter: List[(Long)]) = Action {
+  def getEntitiesDocCountWithFilter(filter: List[(Long)])(implicit session: DBSession = AutoSession) = Action {
     // TODO: prob. need a distinct
     val rs =
       sql"""SELECT count(*) FROM
