@@ -405,16 +405,19 @@ define([
 
                     $scope.reflow = function(type) {
                         $timeout(function() {
-                            $("#chart_" + type.toLowerCase()).highcharts().reflow();
+                            if($("#chart_" + type.toLowerCase()).highcharts())
+                                $("#chart_" + type.toLowerCase()).highcharts().reflow();
                         }, 100);
                     };
                     $scope.reflow = function() {
                         $timeout(function() {
-                            $("#metadata-view .active .active .meta-chart").highcharts().reflow();
+                            if($("#metadata-view .active .active .meta-chart").highcharts())
+                                $("#metadata-view .active .active .meta-chart").highcharts().reflow();
                         }, 100);
                     };
 
                     $('#metadata-view .nav-tabs a').on('shown.bs.tab', function(event){
+                        if($("#metadata-view .active .active .meta-chart").highcharts())
                         $("#metadata-view .active .active .meta-chart").highcharts().reflow();
                     });
 
