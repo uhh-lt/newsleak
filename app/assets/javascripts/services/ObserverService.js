@@ -46,7 +46,12 @@ define([
                 var deferred = $q.defer();
                 metadataTypes = [];
                 playRoutes.controllers.MetadataController.getMetadataTypes().get().then(function (response) {
-                    metadataTypes = angular.copy(response.data);
+                    //TODO: hack for ES issue
+                    metadataTypes = [];
+                    angular.forEach(response.data, function(type){
+                        metadataTypes.push(type.replace(".","_"));
+                    });
+
                     angular.forEach(metadataTypes, function (type) {
                         items['metadata'].push(type);
                         items['metadata'][type] = [];
