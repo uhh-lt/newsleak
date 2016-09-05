@@ -6,7 +6,7 @@ define([
 ], function(angular) {
     'use strict';
 
-    angular.module('myApp.network', ['ngMaterial', 'ngVis', 'play.routing', 'angularMoment']); 
+    angular.module('myApp.network', ['ngMaterial', 'ngVis', 'play.routing', 'angularMoment']);
     angular.module('myApp.network')
         // TODO This factory is crap, but referenced in the code ... remove it!
         // This factory is used to share graph properties between this module and the app.js
