@@ -55,9 +55,9 @@ define([
             self.physicOptions = {
                 forceAtlas2Based: {
                     gravitationalConstant: -220,
-                    centralGravity: 0.02,
+                    centralGravity: 0.01,
                     springConstant: 0.02,
-                    springLength: 100,
+                    springLength: 110,
                     damping: 0.4,
                     avoidOverlap: 0
                 },
