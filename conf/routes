@@ -30,10 +30,6 @@ GET    /getAutocomplete		controllers.SearchController.getAutocomplete(query: Str
 GET    /getEntities		controllers.EntityController.getEntities(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, size: Int, entityType: String, filter: List[Long])
 GET     /getEntityTypes controllers.EntityController.getEntityTypes
 GET    /getEntitiesByType		controllers.EntityController.getEntitiesByType(entityType: String)
-GET    /getEntitiesWithOffset		controllers.EntityController.getEntitiesWithOffset(entityType: String, offset: Int ?= 0)
-GET    /getEntitiesDocCount		controllers.EntityController.getEntitiesDocCount(entityType: String)
-GET    /getEntitiesDocCountWithOffset		controllers.EntityController.getEntitiesDocCountWithOffset(entityType: String, offset: Int ?= 0)
-GET    /getEntitiesDocCountWithFilter		controllers.EntityController.getEntitiesDocCountWithFilter(filter: List[Long])
 GET   /getMetadata     controllers.MetadataController.getMetadata(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
 GET   /getKeywords     controllers.MetadataController.getKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
 GET   /getMetadataTypes       controllers.MetadataController.getMetadataTypes
