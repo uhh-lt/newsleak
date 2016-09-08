@@ -94,7 +94,6 @@ class Application @Inject extends Controller {
         controllers.routes.javascript.DocumentController.getDocById,
         controllers.routes.javascript.DocumentController.getDocs,
         controllers.routes.javascript.NetworkController.getGraphData,
-        controllers.routes.javascript.MapController.getDocsForCountry,
         controllers.routes.javascript.NetworkController.getEgoNetworkData,
         controllers.routes.javascript.NetworkController.getIdsByName,
         controllers.routes.javascript.NetworkController.deleteEntityById,

@@ -19,7 +19,6 @@ GET    /getDocs           		controllers.DocumentController.getDocs(fullText: Lis
 GET    /getGraphData         	controllers.NetworkController.getGraphData(leastOrMostFrequent: Int, amount: List[Int], minEdgeFreq: Int, maxEdgeFreq: Int)
 GET    /getRelations           controllers.NetworkController.getRelations(entities: List[Long], minEdgeFreq: Int, maxEdgeFreq: Int)
 GET     /induceSubgraph         controllers.NetworkController.induceSubgraph(fullText: List[String],generic: Map[String, List[String]],entities: List[Long],timeRange: String,size: Int,filter: List[Long])
-GET    /docsByCountry         	controllers.MapController.getDocsForCountry(countryCode: String)
 GET    /getEgoNetworkData       controllers.NetworkController.getEgoNetworkData(leastOrMostFrequent: Int, id: Long, amountOfType: List[Int], existingNodes: List[Long])
 GET    /getIdsByName             controllers.NetworkController.getIdsByName(name: String)
 GET    /deleteEntityById		controllers.NetworkController.deleteEntityById(id: Long)

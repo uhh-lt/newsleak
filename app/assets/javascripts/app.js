@@ -33,7 +33,6 @@ define([
     './components/sources/SearchController',
     './components/history/HistoryController',
     './components/histogram/HistogramController',
-    './components/map/MapController',
     './services/playRoutes',
     './services/ObserverService',
     './factory/appData',
@@ -53,7 +52,7 @@ define([
             'angularMoment', 'underscore', 'myApp.data', 'myApp.observer', 'myApp.util', 'myApp.history',
             'myApp.tools',
             'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
-            'myApp.network', 'myApp.metadata', 'myApp.map', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
+            'myApp.network', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
             'myApp.metafactory', 'myApp.toolfactory',
             'myApp.histogram', 'myApp.search'
         ]
@@ -85,10 +84,6 @@ define([
                 'histogram': {
                     templateUrl: 'assets/partials/histogram.html',
                     controller: 'HistogramController'
-                },
-                'map': {
-                    templateUrl: 'assets/partials/map.html',
-                    controller: 'MapController'
                 },
                 'metadata': {
                     templateUrl: 'assets/partials/metadata.html',

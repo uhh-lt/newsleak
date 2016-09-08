@@ -46,8 +46,6 @@
 			'highcharts': 'libs/highcharts-release/highcharts',
 			'ngFileSaver': 'libs/angular-file-saver/dist/angular-file-saver.bundle.min',
 			'drilldown' : 'libs/highcharts-release/modules/drilldown',
-			'datamaps' : 'libs/datamaps/dist/datamaps.world',
-			'topojson' : 'libs/topojson/topojson',
 			'underscore': 'libs/underscore/underscore-min',
 			'd3': 'libs/d3/d3.min',
 			'angularResizable': 'libs/angular-resizable/angular-resizable.min',
@@ -116,14 +114,6 @@
 			'drilldown': {
 				exports: 'drilldown',
 				deps: ['highcharts']
-			},
-			'datamaps': {
-				exports: 'datamaps',
-				deps: ['topojson', 'd3']
-			},
-			'topojson': {
-				exports: 'topojson',
-				deps: ['d3']
 			},
 			'underscore': {
 				exports: '_'
