@@ -93,10 +93,6 @@ class Application @Inject extends Controller {
         // TODO: You need to add your routes here
         controllers.routes.javascript.DocumentController.getDocById,
         controllers.routes.javascript.DocumentController.getDocs,
-        controllers.routes.javascript.DocumentController.getFrequencySeries,
-        controllers.routes.javascript.DocumentController.getDocsByDate,
-        controllers.routes.javascript.DocumentController.getDocsForMonth,
-        controllers.routes.javascript.DocumentController.getDocsForYearRange,
         controllers.routes.javascript.NetworkController.getGraphData,
         controllers.routes.javascript.MapController.getDocsForCountry,
         controllers.routes.javascript.NetworkController.getEgoNetworkData,

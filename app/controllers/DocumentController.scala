@@ -39,9 +39,9 @@ case class IteratorSession(hits: Long, hitIterator: Iterator[Long], hash: Long)
 class DocumentController @Inject() (cache: CacheApi) extends Controller {
 
   private val defaultPageSize = 50
-  private val defaultFacets = Facets(List(), Map(), List(), None, None)
-  private val defaultRes = FacetedSearch.searchDocuments(defaultFacets, defaultPageSize)
-  private val defaultSession = IteratorSession(defaultRes._1, defaultRes._2, defaultFacets.hashCode())
+  private val defaultFacets = Facets.emptyFacets
+  private val (numberOfDocuments, documentIterator) = FacetedSearch.searchDocuments(defaultFacets, defaultPageSize)
+  private val defaultSession = IteratorSession(numberOfDocuments, documentIterator, defaultFacets.hashCode())
   private val metadataKeys = List("Subject", "Origin", "SignedBy", "Classification")
   // metdatakeys for enron
   // private val metadataKeys = List("Subject", "Timezone", "sender.name", "Recipients.email", "Recipients.name", "Recipients.type")
@@ -54,9 +54,9 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
   }
 
   /**
-   * Search for Dcoument by fulltext term and faceted search map via elastic search
+   * Search for Document by fulltext term and faceted search map via elasticsearch
    *
-   * @param fullText Full text search term
+   * @param fullText full-text search term
    * @param generic   mapping of metadata key and a list of corresponding tags
    * @param entities list of entity ids to filter
    * @param timeRange string of a time range readable for [[TimeRangeParser]]
@@ -85,112 +85,18 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
       docIds ::= iteratorSession.hitIterator.next()
       pageCounter += 1
     }
-    var rs: Iterable[JsObject] = List()
+
     if (docIds.nonEmpty) {
-      rs =
-        sql"""SELECT m.docid id, m.value, m.key
-        FROM metadata m
-        WHERE m.key IN (${metadataKeys}) AND m.docid IN (${docIds})"""
-          .map(rs => (rs.long("id"), rs.string("key"), rs.string("value")))
-          .list()
-          .apply()
-          .groupBy(_._1)
-          .map { case (id, inner) => id -> inner.map(doc => Json.obj("key" -> doc._2, "val" -> doc._3)) }
-          .map(x => Json.obj("id" -> x._1, "metadata" -> Json.toJson(x._2)))
+      val metadataTriple = Document.getMetadataForDocuments(docIds, metadataKeys)
+      val response = metadataTriple
+        .groupBy(_._1)
+        .map { case (id, inner) => id -> inner.map(doc => Json.obj("key" -> doc._2, "val" -> doc._3)) }
+        .map(x => Json.obj("id" -> x._1, "metadata" -> Json.toJson(x._2)))
+
+      Ok(Json.toJson(Json.obj("hits" -> iteratorSession.hits, "docs" -> Json.toJson(response)))).as("application/json")
+    } else {
+      // No documents found for given facets
+      Ok(Json.toJson(Json.obj("hits" -> 0, "docs" -> List[JsObject]()))).as("application/json")
     }
-    Ok(Json.toJson(Json.obj("hits" -> iteratorSession.hits, "docs" -> Json.toJson(rs)))).as("application/json")
   }
-
-  /**
-   * returns a list of date-number-tuples, where date is a number of milliseconds since 1970.01.01
-   * and number is the amount of documents created that day
-   */
-  def getFrequencySeries(implicit session: DBSession = AutoSession) = Action {
-    val rs =
-      sql"""SELECT created, COUNT(created)
-                                        FROM document
-                                        GROUP BY created
-                                        ORDER BY created ASC"""
-        .map(rs => (rs.date("created"), rs.int("count")))
-        .list()
-        .apply()
-
-    // TODO: sort by data evtually
-    // rs.sortWith((e1, e2) => (e1._1 < e2._1))
-    Ok(Json.toJson(rs)).as("application/json")
-  }
-
-  /**
-   * returns a list of all document ids from documents created at a given date and a short description
-   * where date is a unixtimestamp
-   */
-  def getDocsByDate(date: Long)(implicit session: DBSession = AutoSession) = Action {
-    val rs =
-      sql"""SELECT id, value
-                              FROM document, metadata
-                                        WHERE created = to_timestamp(${date})::date
-                                        AND id = docid AND key = 'Subject'"""
-        .map(rs => (rs.long("id"), rs.string("value")))
-        .list()
-        .apply()
-
-    Ok(Json.toJson(rs)).as("application/json")
-  }
-
-  /**
-   * Retrieves documents between two years.
-   *
-   * @param fromYear Select documents that have a created date >= this value.
-   * @param toYear   Select documents that have a created date <= this value.
-   * @param offset   The offset in the ordered list of documents
-   * @param count    The amount of documents
-   * @return Returns a list containing the IDs and Subjects of the documents that match the
-   *         given criterion.
-   */
-  def getDocsForYearRange(fromYear: Int, toYear: Int, offset: Int, count: Int)(implicit session: DBSession = AutoSession) = Action {
-    val rs =
-      sql"""SELECT id, value
-                FROM document, metadata
-                WHERE extract(year from created) >= ${fromYear}
-                AND extract(year from created) <= ${toYear}
-                AND id = docid
-                AND key = 'Subject'
-                ORDER BY created ASC
-                LIMIT ${count}
-                OFFSET ${offset}"""
-        .map(rs => (rs.long("id"), rs.string("value")))
-        .list()
-        .apply()
-    Ok(Json.toJson(rs)).as("application/json")
-  }
-
-  /**
-   * Retrieves documents for a given month in a given year.
-   *
-   * @param year   The year to get the documents for.
-   * @param month  The month to get the documents for. This value is not zero-based, thus
-   *               for January pass 1.
-   * @param offset The offset in the ordered list of documents
-   * @param count  The amount of documents
-   * @return Returns a list containing the IDs and Subjects of the documents that match the
-   *         given criterion.
-   */
-  def getDocsForMonth(year: Int, month: Int, offset: Int, count: Int)(implicit session: DBSession = AutoSession) = Action {
-    val rs =
-      sql"""SELECT id, value
-                FROM document, metadata
-                WHERE extract(year from created) = ${year}
-                AND extract(month from created) = ${month}
-                AND id = docid
-                AND key = 'Subject'
-                ORDER BY created ASC
-                LIMIT ${count}
-                OFFSET ${offset}"""
-        .map(rs => (rs.long("id"), rs.string("value")))
-        .list()
-        .apply()
-
-    Ok(Json.toJson(rs)).as("application/json")
-  }
-
 }
