@@ -1312,6 +1312,14 @@ define([
             function hideSelected(){
                 // Remove selected nodes.
                 selectedNodes.forEach(function(d){
+                    var editItem = {
+                        type: 'hide',
+                        data: {
+                            id: d.id,
+                            name: d.name + ': ' + d.type
+                        }
+                    };
+                    $scope.observer.addItem(editItem);
                     // Remove the selected node name from the words that get highlighted
                     var categoryIndex = $scope.graphShared.getIndexOfCategory(d.type);
                     var index = highlightShareService.wordsToHighlight[categoryIndex].indexOf(d.name);
@@ -1361,7 +1369,14 @@ define([
 
 				nodes.forEach(
 					function(n,i,a){
-
+                        var editItem = {
+                            type: 'delete',
+                            data: {
+                                id: n.id,
+                                name: n.name + ': ' + n.type
+                            }
+                        };
+                        $scope.observer.addItem(editItem);
 						d3.select("#node_" + n.id).remove();
 						edges.forEach(
 							function(v,i,a)
@@ -1537,6 +1552,14 @@ define([
             	{
             		return;
             	}
+                var editItem = {
+                    type: 'edit',
+                    data: {
+                        id: node.id,
+                        name: '<'+node.name+' -> '+ text+'>'
+                    }
+                };
+                $scope.observer.addItem(editItem);
 
                 var edit = text;
                 node.name = edit;
@@ -1577,10 +1600,19 @@ define([
              */
             function editType(node, type)
             {
+
             	if(node.type == type)
             	{
             		return;
             	}
+                var editItem = {
+                    type: 'edit',
+                    data: {
+                        id: node.id,
+                        name: '<'+result.node.name+' -> '+result.text+'>'
+                    }
+                };
+                $scope.observer.addItem(editItem);
 
             	node.type = type;
             	d3.select("#nodecircle_" + node.id)

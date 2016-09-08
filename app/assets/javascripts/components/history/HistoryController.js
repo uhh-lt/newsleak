@@ -48,7 +48,9 @@ define([
                         "hide": 'eye-close',
                         "edit": 'pencil',
                         "annotate": 'comment',
-                        "fulltext": 'search'
+                        "fulltext": 'search',
+                        "delete": 'remove',
+                        "openDoc": 'book'
                     },
                     typeDescriptions: {
                       'entity': 'Entity Filter',

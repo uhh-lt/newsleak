@@ -322,6 +322,7 @@ define([
                         }
 
                         // In case the document was already loaded (index > -1), open that tab
+
                         var index = $scope.sourceShared.openDocuments.IDs.indexOf(docId);
                         if (index > -1) {
                             index = getIndexForDocID(docId);
@@ -337,6 +338,14 @@ define([
                                 // Append a new tab and add the content
                                 appendNewTab(docId);
                                 appendNewTabContent(docId);
+                                var editItem = {
+                                    type: 'openDoc',
+                                    data: {
+                                        id: docId,
+                                        name: "#" + docId
+                                    }
+                                };
+                                $scope.observer.addItem(editItem);
                             });
                         }
                     };

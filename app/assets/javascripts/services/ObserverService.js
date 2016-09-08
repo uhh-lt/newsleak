@@ -31,7 +31,7 @@ define([
             //all item structured by type
             var items = [];
             //types of tracked items
-            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset"];
+            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset", "delete", "openDoc"];
             var metadataTypes = [];
             var entityTypes = [];
             var histogramLoD = [];
@@ -129,6 +129,21 @@ define([
                         //time filter
                         case types[2]:
                             if(items[item.type].length > 0) action = "replaced";
+                            break;
+                        case types[5]:
+                            action = "other";
+                            break;
+                        case types[6]:
+                            action = "other";
+                            break;
+                        case types[7]:
+                            action = "other";
+                            break;
+                        case types[11]:
+                            action = "other";
+                            break;
+                        case types[12]:
+                            action = "other";
                             break;
                     }
 
