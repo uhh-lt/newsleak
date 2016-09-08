@@ -50,7 +50,8 @@
 			'topojson' : 'libs/topojson/topojson',
 			'underscore': 'libs/underscore/underscore-min',
 			'd3': 'libs/d3/d3.min',
-			'angularResizable': 'libs/angular-resizable/angular-resizable.min'
+			'angularResizable': 'libs/angular-resizable/angular-resizable.min',
+			'bootstrapFileField': 'libs/angular-bootstrap-file-field/dist/angular-bootstrap-file-field.min'
 		},
 		shim: {
 			'jsRoutes': {
@@ -137,6 +138,9 @@
 			'angularResizable' : {
 				exports: 'angularResizable',
 				deps: ['angular']
+			},
+			'bootstrapFileField' : {
+				deps: ['angular', 'bootstrap']
 			}
 		},
 		priority: [

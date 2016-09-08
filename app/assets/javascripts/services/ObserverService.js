@@ -22,8 +22,7 @@ define([
 ], function (angular) {
     'use strict';
 
-    angular.module("myApp.observer", ['play.routing', 'angularMoment']);
-    angular.module("myApp.observer")
+    angular.module("myApp.observer", ['play.routing', 'angularMoment'])
         .factory('ObserverService', ['playRoutes', '$q', '$timeout', function(playRoutes, $q, $timeout) {
             //holds all observer functions
             var observerCallbacks = [];
@@ -275,6 +274,18 @@ define([
                                 items[type][mtype].splice(0, items[type][mtype].length);
                             });
                         }
+                    });
+                    this.notifyObservers();
+                },
+
+                loadState: function(input) {
+                    history.splice(0,  history.length);
+                    items.splice(0,  history.length);
+                    angular.forEach(input.history, function(item) {
+                        history.push(item);
+                    });
+                    angular.forEach(input.items, function(item) {
+                        items.push(item);
                     });
                     this.notifyObservers();
                 }

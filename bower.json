@@ -42,6 +42,7 @@
     "angular-ui-router": "~0.2.15",
     "angular-ui-bootstrap": "~1.3.3",
     "angular-file-saver": "~1.1.1",
+    "angular-bootstrap-file-field": "0.1.3",
     "angular-awesome-slider": "~2.4.4",
     "angular-toggle-switch": "~1.3.0"
   },
