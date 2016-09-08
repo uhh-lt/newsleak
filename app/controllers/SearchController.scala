@@ -26,9 +26,7 @@ import javax.inject.Inject
 import util.TupleWriters._
 // scalastyle:on
 
-/**
- * Created by patrick on 19.04.16.
- */
+
 class SearchController @Inject extends Controller {
 
   /**

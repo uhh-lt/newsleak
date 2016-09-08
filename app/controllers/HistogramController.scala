@@ -28,11 +28,8 @@ import util.TimeRangeParser
 import scalikejdbc._
 // scalastyle:on
 
-/**
- * Created by flo on 6/20/2016.
- */
+
 class HistogramController @Inject extends Controller {
-  private val defaultFetchSize = 50
 
   /**
    * Gets document counts for entities corresponding to their id's matching the query
@@ -66,5 +63,4 @@ class HistogramController @Inject extends Controller {
   def getHistogramLod = Action {
     Results.Ok(Json.toJson(LoD.values.toList.map(_.toString))).as("application/json")
   }
-
 }

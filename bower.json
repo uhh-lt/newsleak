@@ -1,12 +1,12 @@
 {
   "name": "new/s/leak",
   "description": "Front-End application of Newsleak",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "homepage": "https://github.com/tudarmstadt-lt/newsleak-frontend",
   "authors": [
     "To be set by next developer"
   ],
-  "license": "GPL V3.0",
+  "license": "GNU General Public License v3",
   "ignore": [
     "**/.*",
     "node_modules",

@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "description": "",
   "repository": "",
-  "license": "Apache Licence 2.0",
+  "license": "GNU General Public License v3",
   "devDependencies": {
     "bower": "^1.4.1"
   },

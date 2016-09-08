@@ -25,9 +25,6 @@ import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller, Results }
 import util.TimeRangeParser
 
-/**
- * Created by f. zouhar on 26.05.16.
- */
 class MetadataController @Inject extends Controller {
 
   private val defaultExcludeTypes = List("Subject", "Header", "ReferenceId", "References", "Keywords", "Entities", "Created", "EventTimes")
