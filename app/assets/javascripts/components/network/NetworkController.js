@@ -1609,7 +1609,7 @@ define([
                     type: 'edit',
                     data: {
                         id: node.id,
-                        name: '<'+result.node.name+' -> '+result.text+'>'
+                        name: '<'+node.type+' -> '+type+'>'
                     }
                 };
                 $scope.observer.addItem(editItem);
