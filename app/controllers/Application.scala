@@ -101,13 +101,10 @@ class Application @Inject extends Controller {
         // TODO: You need to add your routes here
         controllers.routes.javascript.DocumentController.getDocById,
         controllers.routes.javascript.DocumentController.getDocs,
-        controllers.routes.javascript.NetworkController.getGraphData,
-        controllers.routes.javascript.NetworkController.getEgoNetworkData,
         controllers.routes.javascript.NetworkController.getIdsByName,
         controllers.routes.javascript.NetworkController.deleteEntityById,
         controllers.routes.javascript.NetworkController.mergeEntitiesById,
         controllers.routes.javascript.NetworkController.changeEntityNameById,
-        controllers.routes.javascript.NetworkController.getRelations,
         controllers.routes.javascript.NetworkController.induceSubgraph,
         controllers.routes.javascript.EntityController.getEntities,
         controllers.routes.javascript.EntityController.getEntityTypes,

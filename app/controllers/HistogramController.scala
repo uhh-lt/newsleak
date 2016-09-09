@@ -28,7 +28,6 @@ import util.TimeRangeParser
 import scalikejdbc._
 // scalastyle:on
 
-
 class HistogramController @Inject extends Controller {
 
   /**
