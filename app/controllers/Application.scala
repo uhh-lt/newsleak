@@ -17,13 +17,13 @@
 
 package controllers
 
-import play.api.Logger
-import play.api.mvc.{ Action, Controller }
-import org.apache.commons.codec.binary.{ Base64, Hex, StringUtils }
 import javax.inject.Inject
 
-import util.SessionUtils.{ datasetSessionKey, currentDataset }
+import org.apache.commons.codec.binary.{ Base64, StringUtils }
+import play.api.Logger
 import play.api.libs.json.Json
+import play.api.mvc.{ Action, Controller }
+import util.SessionUtils.{ datasetSessionKey, currentDataset }
 import utils.NewsleakConfigReader
 
 import scala.util.Random
@@ -76,7 +76,7 @@ class Application @Inject extends Controller {
       }
     }
 
-    // now e check if authorization was successfull
+    // now e check if authorization was successful
     if (!authorized) {
       // send a login request
       Unauthorized(views.html.defaultpages.unauthorized())
@@ -122,7 +122,6 @@ class Application @Inject extends Controller {
         controllers.routes.javascript.SearchController.getAutocomplete,
         controllers.routes.javascript.HistogramController.getHistogram,
         controllers.routes.javascript.HistogramController.getHistogramLod
-
       )
     ).as(JAVASCRIPT)
   }

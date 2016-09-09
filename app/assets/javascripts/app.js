@@ -167,7 +167,6 @@ define([
                     }
                 });
             };
-
         }]);
 
     return app;
