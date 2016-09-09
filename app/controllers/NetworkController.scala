@@ -26,7 +26,6 @@ import play.api.mvc.{ Action, Controller }
 import util.TimeRangeParser
 
 // scalastyle:off
-import scalikejdbc._
 import util.TupleWriters._
 // scalastyle:off
 
@@ -53,7 +52,7 @@ class NetworkController @Inject extends Controller {
     timeRange: String,
     size: Int,
     filter: List[Long]
-  )(implicit session: DBSession = AutoSession) = Action {
+  ) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var newSize = size

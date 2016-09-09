@@ -67,7 +67,8 @@ define([
         .state('layout', {
             views: {
                 'header': {
-                    templateUrl: 'assets/partials/header.html'
+                    templateUrl: 'assets/partials/header.html',
+                    controller: 'AppController'
                 },
                 'documentlist': {
                     templateUrl: 'assets/partials/document_list.html',
@@ -116,8 +117,12 @@ define([
         return uiProperties;
     });
 
-    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', 'moment', 'appData', 'uiShareService',
-        function ($scope, $state, $timeout, $window, moment, appData, uiShareService) {
+    // TODO: Remove appData factory. Not used ...
+    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', 'moment', 'appData', 'uiShareService', 'ObserverService', 'playRoutes',
+        function ($scope, $state, $timeout, $window, moment, appData, uiShareService, ObserverService, playRoutes) {
+
+            $scope.selectedDataset = '';
+            $scope.datasets = ['default', 'enron'];
 
             init();
 
@@ -155,6 +160,14 @@ define([
                 //setUILayoutProperties();
             });
 
+            $scope.changeDataset = function() {
+                console.log('Changed ' + $scope.selectedDataset);
+
+                playRoutes.controllers.Application.changeDataset($scope.selectedDataset).get().then(function(response) {
+                    // Update views with new data from the changed data collection
+                    ObserverService.reset();
+                });
+            };
         }]);
 
     return app;

@@ -6,7 +6,6 @@
 # PAGES                                                                                         #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 GET         /                                                controllers.Application.index
-GET     /switchDataset                                      controllers.Application.switchDataset(dataSet: String)
 
 #comment for alternate index page
 #GET         /alt                                                controllers.Application.index_alt
@@ -15,6 +14,7 @@ GET     /switchDataset                                      controllers.Applicat
 # Play routes serving HTML to AngularJS start with /partials
 #GET			/partials/*file						                 controllers.Application.loadPublicHTML(file)
 
+GET    /changeDataset           		controllers.Application.changeDataset(name: String)
 GET    /docById           		controllers.DocumentController.getDocById(id: Int)
 GET    /getDocs           		controllers.DocumentController.getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
 GET     /induceSubgraph         controllers.NetworkController.induceSubgraph(fullText: List[String],generic: Map[String, List[String]],entities: List[Long],timeRange: String,size: Int,filter: List[Long])

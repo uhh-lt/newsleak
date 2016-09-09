@@ -17,11 +17,13 @@
 
 package controllers
 
-import play.api.Logger
-import play.api.mvc.{ Action, Controller }
-import org.apache.commons.codec.binary.{ Base64, Hex, StringUtils }
 import javax.inject.Inject
 
+import org.apache.commons.codec.binary.{Base64, StringUtils}
+import play.api.Logger
+import play.api.mvc.{Action, Controller}
+
+import utils.DBService
 import model.faceted.search.FacetedSearch
 
 import scala.util.Random
@@ -74,7 +76,7 @@ class Application @Inject extends Controller {
       }
     }
 
-    // now e check if authorization was successfull
+    // now e check if authorization was successful
     if (!authorized) {
       // send a login request
       Unauthorized(views.html.defaultpages.unauthorized())
@@ -86,9 +88,9 @@ class Application @Inject extends Controller {
     }
   }
 
-  def switchDataset(dataSet: String) = Action {
-    FacetedSearch.changeIndex(dataSet)
-    utils.DBService.changeDB(dataSet)
+  def changeDataset(name: String) = Action {
+    DBService.changeDB(name)
+    FacetedSearch.changeIndex(if (name == "default") "cable" else name)
     Ok("success").as("Text")
   }
 
@@ -99,6 +101,7 @@ class Application @Inject extends Controller {
     Ok(
       JavaScriptReverseRouter(varName)(
         // TODO: You need to add your routes here
+        controllers.routes.javascript.Application.changeDataset,
         controllers.routes.javascript.DocumentController.getDocById,
         controllers.routes.javascript.DocumentController.getDocs,
         controllers.routes.javascript.NetworkController.getIdsByName,
@@ -117,7 +120,6 @@ class Application @Inject extends Controller {
         controllers.routes.javascript.SearchController.getAutocomplete,
         controllers.routes.javascript.HistogramController.getHistogram,
         controllers.routes.javascript.HistogramController.getHistogramLod
-
       )
     ).as(JAVASCRIPT)
   }
