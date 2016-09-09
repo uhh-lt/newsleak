@@ -25,11 +25,8 @@ import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller, Results }
 import util.TimeRangeParser
 
-// scalastyle:off
-import scalikejdbc._
-// scalastyle:on
-
 class EntityController @Inject extends Controller {
+
   private val defaultFetchSize = 50
 
   /**
@@ -73,7 +70,7 @@ class EntityController @Inject extends Controller {
     size: Int,
     entityType: String,
     filter: List[Long]
-  )(implicit session: DBSession = AutoSession) = Action {
+  ) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var newSize = size

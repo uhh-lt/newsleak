@@ -26,9 +26,8 @@ import play.api.mvc.{ Action, Controller }
 import util.TimeRangeParser
 
 // scalastyle:off
-import scalikejdbc._
-import util.TupleWriters._
 import play.cache._
+import util.TupleWriters._
 // scalastyle:on
 
 case class IteratorSession(hits: Long, hitIterator: Iterator[Long], hash: Long)
@@ -67,7 +66,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String
-  )(implicit session: DBSession = AutoSession) = Action { implicit request =>
+  ) = Action { implicit request =>
     val uid = request.session.get("uid").getOrElse("0")
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)

@@ -19,12 +19,12 @@ package controllers
 
 import javax.inject.Inject
 
+
 import org.apache.commons.codec.binary.{Base64, StringUtils}
 import play.api.Logger
 import play.api.mvc.{Action, Controller}
-
-import utils.DBService
 import model.faceted.search.FacetedSearch
+import utils.DBService
 
 import scala.util.Random
 

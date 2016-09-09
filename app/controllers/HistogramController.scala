@@ -19,14 +19,10 @@ package controllers
 
 import javax.inject.Inject
 
-import model.faceted.search.{ Facets, FacetedSearch, MetaDataBucket, LoD }
+import model.faceted.search.{ FacetedSearch, Facets, LoD, MetaDataBucket }
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller, Results }
 import util.TimeRangeParser
-
-// scalastyle:off
-import scalikejdbc._
-// scalastyle:on
 
 class HistogramController @Inject extends Controller {
 
