@@ -27,9 +27,8 @@ import util.TimeRangeParser
 import util.SessionUtils.currentDataset
 
 // scalastyle:off
-import scalikejdbc._
-import util.TupleWriters._
 import play.cache._
+import util.TupleWriters._
 // scalastyle:on
 
 case class IteratorSession(hits: Long, hitIterator: Iterator[Long], hash: Long)
