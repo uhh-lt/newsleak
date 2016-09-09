@@ -17,10 +17,7 @@ GET     /changeDataset                                      controllers.Applicat
 
 GET    /docById           		controllers.DocumentController.getDocById(id: Int)
 GET    /getDocs           		controllers.DocumentController.getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
-GET    /getGraphData         	controllers.NetworkController.getGraphData(leastOrMostFrequent: Int, amount: List[Int], minEdgeFreq: Int, maxEdgeFreq: Int)
-GET    /getRelations           controllers.NetworkController.getRelations(entities: List[Long], minEdgeFreq: Int, maxEdgeFreq: Int)
 GET     /induceSubgraph         controllers.NetworkController.induceSubgraph(fullText: List[String],generic: Map[String, List[String]],entities: List[Long],timeRange: String,size: Int,filter: List[Long])
-GET    /getEgoNetworkData       controllers.NetworkController.getEgoNetworkData(leastOrMostFrequent: Int, id: Long, amountOfType: List[Int], existingNodes: List[Long])
 GET    /getIdsByName             controllers.NetworkController.getIdsByName(name: String)
 GET    /deleteEntityById		controllers.NetworkController.deleteEntityById(id: Long)
 GET	   /mergeEntitiesById		controllers.NetworkController.mergeEntitiesById(focalid: Int, ids: List[Long])
