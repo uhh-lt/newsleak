@@ -409,37 +409,44 @@ class NetworkController @Inject extends Controller {
    * @param focusId anfokussierter Knoten
    * @return sendet die Kanten+Knoten an den Benutzer
    */
-  def getGuidanceNodes(focusId: Long) = Action {
+  def getGuidanceNodes(focusId: Long, edgeAmount: Int) = Action {
     implicit val session = AutoSession
 
     Logger.info("start guidance")
     this.focusId = focusId
     cachedDoIValues.clear()
     cachedDistanceValues.clear()
-    val k = 20
-    var edgeArr = new Array[(Long, Long)](k) //(id, source, target, frequency)
+
+    var edgeSet = new mutable.HashSet[(Long, Long)]() //(id, source, target, frequency)
     var usedNodes = new mutable.HashSet[Long]()
     usedNodes += focusId
 
     var pq = mutable.PriorityQueue[(Long, Long)]()(Ordering.by[(Long, Long), Double]((x) => doI(x._1, x._2)))
     pq ++= getEdges(focusId)
 
-    for (i <- 0 until k) { //edgeArr.map ??
-      val edge = pq.dequeue()
+    for (i <- 0 until edgeAmount) { //edgeArr.map ??
+
+      var edge = pq.dequeue()
+      while (edgeSet.contains(edge)) { //therotisch kann eine Kante bis zu 2x aus pq entnommen werden. Wenn sie einmal von jedem Knoten ausgehend hinzugefügt wurde.
+        edge = pq.dequeue()
+      }
+
       Logger.info("E:" + edge._1 + "," + edge._2 + " V:" + doI(edge) + "freq:" + cachedEdgeFreq(edge))
 
-      edgeArr(i) = edge
-      //      if ( ! usedNodes.contains(edge._1)){
-      //        usedNodes += edge._1
-      //        pq ++= getEdges(edge._1)
-      //      } else
+      edgeSet += edge
+
       if (!usedNodes.contains(edge._2)) {
         usedNodes += edge._2
-        if (i < k / 2) {
-          pq ++= getEdges(edge._2)
-        }
+        //if (i < k / 2) { //nur für die ersten k/2 Kanten werden weitere Kanten gesucht
+        pq ++= getEdges(edge._2)
+        //}
+      } else if (!usedNodes.contains(edge._1)) {
+        usedNodes += edge._1
+        //if (i < k / 2) { //nur für die ersten k/2 Kanten werden weitere Kanten gesucht
+        pq ++= getEdges(edge._1)
+        //}
       }
-      Logger.info(edgeArr.toString)
+      Logger.info(edgeSet.toString)
     }
 
     //bestimme Namen, Frequenz und Typ der Knoten
@@ -447,7 +454,7 @@ class NetworkController @Inject extends Controller {
     val nodes = sql"""SELECT id, name, type, frequency FROM entity WHERE id IN ($usedNodes)"""
       .map(rs => (rs.long("id"), rs.string("name"), rs.int("frequency"), rs.string("type"))).list().apply()
 
-    val result = new JsObject(Map(("nodes", Json.toJson(nodes)), ("links", Json.toJson(edgeArr.map(e => (cachedEdgeId.apply(e), e._1, e._2, cachedEdgeFreq.apply(e))))))) //TODO Kantenattribute müssen auch zurückgegeben werden
+    val result = new JsObject(Map(("nodes", Json.toJson(nodes)), ("links", Json.toJson(edgeSet.map(e => (cachedEdgeId.apply(e), e._1, e._2, cachedEdgeFreq.apply(e))))))) //TODO Kantenattribute müssen auch zurückgegeben werden
 
     Ok(Json.toJson(result)).as("application/json")
   }
@@ -463,29 +470,40 @@ class NetworkController @Inject extends Controller {
 
     var distToFocus = cachedDistanceValues.getOrElse(nodeId, -1) //Wenn der Knoten nicht in der Map liegt, muss es sich um dem Fokus handeln, also dist=0
     distToFocus += 1
-    val result = sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq, relationship.id
+    val query1 =
+      sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq, relationship.id
           FROM relationship LEFT JOIN entity AS et1 ON et1.id = relationship.entity1
-          LEFT JOIN entity AS et2 ON et2.id = relationship.entity2 WHERE entity1 = $nodeId ORDER BY relationship.frequency DESC LIMIT 200""".map(rs => {
-      (rs.long(1), rs.long(2), rs.int(3), rs.int(4), rs.int(5), rs.long(6)) //TODO Limit ist veränderbar
-    })
-      .toList().apply().filter(x => cachedDistanceValues.getOrElse(x._2, distToFocus + 1) > distToFocus && x._3 > 0).map(x =>
-        ((x._1, x._2), 1 / -log((x._3: Double) * (x._3: Double) / ((x._4: Double) * (x._5: Double))), x._3, x._6))
+          LEFT JOIN entity AS et2 ON et2.id = relationship.entity2 WHERE entity1 = $nodeId ORDER BY efreq DESC LIMIT 20"""
+    val query2 =
+      sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq, relationship.id
+          FROM relationship LEFT JOIN entity AS et1 ON et1.id = relationship.entity1
+          LEFT JOIN entity AS et2 ON et2.id = relationship.entity2 WHERE entity2 = $nodeId ORDER BY efreq DESC LIMIT 20""" //zwei seperate SQL Abfragen sind schnelle als eine per union vereinte Abfrage
+    def useResult(sqlresult: SQL[Nothing, NoExtractor]): List[(Long, Long)] =
+      {
 
-    cachedDistanceValues ++= result.map(x => (x._1._2, distToFocus))
-    cachedEdgeFreq ++= result.map(x => (x._1, x._3))
-    cachedEdgeId ++= result.map(x => (x._1, x._4))
-    cachedDoIValues ++= result.map(x => (x._1, {
-      val alpha = 1
-      val beta = 1
-      val gamma = 0
+        val result = sqlresult.map(rs => {
+          (rs.long(1), rs.long(2), rs.int(3), rs.int(4), rs.int(5), rs.long(6)) //TODO Limit ist veränderbar
+        })
+          .toList().apply() //.filter(x => cachedDistanceValues.getOrElse(x._2, distToFocus + 1) > distToFocus && x._3 > 0)
+          .map(x => ((x._1, x._2),1 / -log((x._3: Double) * (x._3: Double) / ((x._4: Double) * (x._5: Double))), x._3, x._6))
 
-      val API = x._2
-      val D = -(1 - scala.math.pow(0.5, distToFocus) * (x._2))
-      val UI = 0
-      API * alpha + beta * D + UI * gamma
-    }))
+        cachedDistanceValues ++= result.map(x => (x._1._2, distToFocus)) //TODO nur aktualisieren wenn der Wert kleiner als der vorherige ist
+        cachedEdgeFreq ++= result.map(x => (x._1, x._3))
+        cachedEdgeId ++= result.map(x => (x._1, x._4))
+        cachedDoIValues ++= result.map(x => (x._1, {
+          val alpha = 1
+          val beta = 0
+          val gamma = 0
 
-    result.map(_._1)
+          val API = x._2
+          val D = 0 //-(1 - scala.math.pow(0.5, distToFocus) * (x._2))
+          val UI = 0
+          API * alpha + beta * D + UI * gamma
+        }))
+
+        result.map(_._1)
+      }
+    useResult(query1) ++ useResult(query2)
   }
 
 }

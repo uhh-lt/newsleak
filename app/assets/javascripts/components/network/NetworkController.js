@@ -1634,118 +1634,119 @@ define([
 
             function getEntities() {
                 console.log("reload entities");
-                var entities = [];
-                angular.forEach($scope.entityFilters, function(item) {
-                    entities.push(item.data.id);
-                });
-                var facets = [];
-                if($scope.metadataFilters.length > 0) {
-                    angular.forEach($scope.metadataFilters, function(metaType) {
-                        if($scope.metadataFilters[metaType].length > 0) {
-                            var keys = [];
-                            angular.forEach($scope.metadataFilters[metaType], function(x) {
-                                keys.push(x.data.name);
-                            });
-                            facets.push({key: metaType, data: keys});
-                        }
-                    });
-                    if(facets == 0) facets = [{'key':'dummy','data': []}];
-
-                } else {
-                    facets = [{'key':'dummy','data': []}];
-                }
-
-                while(loadingNodes)
-                {
-                }
-
-                var filters = [];
-                angular.forEach(nodes, function(node) {
-                    filters.push(node.id);
-                });
-
-                var size = 20;
-                var fulltext = [];
-                angular.forEach($scope.fulltextFilters, function(item) {
-                    fulltext.push(item.data.name);
-                });
-                var entityType = "";
-
-                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,entityType).get().then(function(response) {
-
-                    //to prevent invisible selections
-                    unselectNodes();
-                    unselectEdges();
-
-                    var tmpnodes = nodes;
-
-                    //delete all nodes and edges
-                    nodes = [];
-
-                    response.data.forEach(
-                        function(v)
-                        {
-                            /*var enode = tmpnodes.find(function(node){return node.id === v.id;});
-                            if(enode != undefined)
-                            {
-                                enode.docCount = v.docCount;
-                                nodes.push(enode);
-                                return;
-                            }*/
-
-                            nodes.push({
-                            	id: v.id,
-                            	name: v.name,
-                            	freq: v.freq,
-                            	type: v.type,
-                            	docCount: v.docCount,
-                                size: 2,
-                            });
-                        }
-                    );
-
-
-
-
-                    //reload();
-                    force.nodes(nodes);
-                    //calculateNewForceSize();
-
-                    start();
-
-                    $scope.entityFilters.forEach(
-                                            function(v)
-                                            {
-                                                console.log(v)
-                                                selectNode(v.data)
-                                            }
-                    )
-                    console.log($scope.entityFilters)
-
-                    playRoutes.controllers.NetworkController.getRelations(response.data.map(function(v){return v.id}), toolShareService.sliderEdgeMinFreq(), toolShareService.sliderEdgeMaxFreq()).get().then(
-                        function(response)
-                        {
-                            edges=[];
-                            response.data.forEach(
-                                function(v)
-                                {
-                                    var sourceNode = nodes.find(function(node){return v[1] == node.id});
-                                    var targetNode = nodes.find(function(node){return v[2] == node.id});
-                                    if(sourceNode == undefined || targetNode == undefined)
-                                    {
-                                        return;
-                                    }
-                                    edges.push({id: v[0], source: sourceNode, target: targetNode, freq: v[3]});
-                                }
-                            )
-                            force.links(edges);
-                            //calculateNewForceSize();
-                            start();
-                        }
-                    );
-
-
-                });
+                getGuidanceNodes(135603)//Darmstadt!
+                // var entities = [];
+                // angular.forEach($scope.entityFilters, function(item) {
+                //     entities.push(item.data.id);
+                // });
+                // var facets = [];
+                // if($scope.metadataFilters.length > 0) {
+                //     angular.forEach($scope.metadataFilters, function(metaType) {
+                //         if($scope.metadataFilters[metaType].length > 0) {
+                //             var keys = [];
+                //             angular.forEach($scope.metadataFilters[metaType], function(x) {
+                //                 keys.push(x.data.name);
+                //             });
+                //             facets.push({key: metaType, data: keys});
+                //         }
+                //     });
+                //     if(facets == 0) facets = [{'key':'dummy','data': []}];
+                //
+                // } else {
+                //     facets = [{'key':'dummy','data': []}];
+                // }
+                //
+                // while(loadingNodes)
+                // {
+                // }
+                //
+                // var filters = [];
+                // angular.forEach(nodes, function(node) {
+                //     filters.push(node.id);
+                // });
+                //
+                // var size = 20;
+                // var fulltext = [];
+                // angular.forEach($scope.fulltextFilters, function(item) {
+                //     fulltext.push(item.data.name);
+                // });
+                // var entityType = "";
+                //
+                // playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,entityType).get().then(function(response) {
+                //
+                //     //to prevent invisible selections
+                //     unselectNodes();
+                //     unselectEdges();
+                //
+                //     var tmpnodes = nodes;
+                //
+                //     //delete all nodes and edges
+                //     nodes = [];
+                //
+                //     response.data.forEach(
+                //         function(v)
+                //         {
+                //             /*var enode = tmpnodes.find(function(node){return node.id === v.id;});
+                //             if(enode != undefined)
+                //             {
+                //                 enode.docCount = v.docCount;
+                //                 nodes.push(enode);
+                //                 return;
+                //             }*/
+                //
+                //             nodes.push({
+                //             	id: v.id,
+                //             	name: v.name,
+                //             	freq: v.freq,
+                //             	type: v.type,
+                //             	docCount: v.docCount,
+                //                 size: 2,
+                //             });
+                //         }
+                //     );
+                //
+                //
+                //
+                //
+                //     //reload();
+                //     force.nodes(nodes);
+                //     //calculateNewForceSize();
+                //
+                //     start();
+                //
+                //     $scope.entityFilters.forEach(
+                //                             function(v)
+                //                             {
+                //                                 console.log(v)
+                //                                 selectNode(v.data)
+                //                             }
+                //     )
+                //     console.log($scope.entityFilters)
+                //
+                //     playRoutes.controllers.NetworkController.getRelations(response.data.map(function(v){return v.id}), toolShareService.sliderEdgeMinFreq(), toolShareService.sliderEdgeMaxFreq()).get().then(
+                //         function(response)
+                //         {
+                //             edges=[];
+                //             response.data.forEach(
+                //                 function(v)
+                //                 {
+                //                     var sourceNode = nodes.find(function(node){return v[1] == node.id});
+                //                     var targetNode = nodes.find(function(node){return v[2] == node.id});
+                //                     if(sourceNode == undefined || targetNode == undefined)
+                //                     {
+                //                         return;
+                //                     }
+                //                     edges.push({id: v[0], source: sourceNode, target: targetNode, freq: v[3]});
+                //                 }
+                //             )
+                //             force.links(edges);
+                //             //calculateNewForceSize();
+                //             start();
+                //         }
+                //     );
+                //
+                //
+                // });
             };
 
             $scope.getEntities();
@@ -1771,7 +1772,8 @@ define([
             }
 
             function getGuidanceNodes(node){
-                playRoutes.controllers.NetworkController.getGuidanceNodes(node).get().then(function(response) {
+                console.log(toolShareService.sliderEdgeAmount());
+                playRoutes.controllers.NetworkController.getGuidanceNodes(node,toolShareService.sliderEdgeAmount()).get().then(function(response) {
 
                     //to prevent invisible selections
                     unselectNodes();

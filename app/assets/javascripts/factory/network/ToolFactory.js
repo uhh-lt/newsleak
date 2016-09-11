@@ -55,6 +55,8 @@ define([
                     sliderEdgeMinFreq: function(){return 1500},
                     sliderEdgeMaxFreq: function(){return 81337},
 
+                    sliderEdgeAmount: function () {return 20},
+
                     updateGraph: function(){},
                     getSelectedNodes: function(){return []},
                     getSelectedElementsText: function(){return ""}

@@ -76,6 +76,8 @@ define([
             toolShareService.sliderEdgeMinFreq = function(){return $scope.sliderEdgeFrequency.value.split(";")[0]}
             toolShareService.sliderEdgeMaxFreq = function(){return $scope.sliderEdgeFrequency.value.split(";")[1]}
 
+            toolShareService.sliderEdgeAmount = function () {return $scope.sliderEdgeAmount.value}
+
             $scope.toolShareService = toolShareService;
 
             // A slider for choosing the minimum and maximum frequency of a displayed edge.
@@ -98,6 +100,28 @@ define([
                     },
                     callback: function(value, released){
                         toolShareService.updateGraph();
+                    }
+                }
+            }
+            $scope.sliderEdgeAmount = {
+                //value: "1500;"+$scope.maxEdgeFreq,
+                value: "20",
+                options: {
+                    from: 5,
+                    to: 40,
+                    step: 1,
+                    dimension: "displayed Edges",
+                    limits: false,
+                    scale: [5, /*$scope.maxEdgeFreq*/ 40],
+                    css: {
+                        background: {"background-color": "silver"},
+                        range: {"background-color": "#7CB5EC"},
+                        default: {"background-color": "silver"},
+                        after: {"background-color": "#7CB5EC"},
+                        pointer: {"background-color": "#2759AC"}
+                    },
+                    callback: function(value, released){
+                        //toolShareService.updateGraph();
                     }
                 }
             }
