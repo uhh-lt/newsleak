@@ -53,7 +53,7 @@ class Application @Inject extends Controller {
 
     var authorized = false
     // TODO: commented out for disable auth
-    // authorized = true
+    authorized = true
 
     // if we have an authorization code, we check it
     if (request.headers.toMap.contains("Authorization")) {
