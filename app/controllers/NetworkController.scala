@@ -17,23 +17,24 @@
 package controllers
 
 import javax.inject.Inject
+
+import controllers.network.NSession
 // to read files
 
 // scalastyle:off
 
 import model.EntityType
 import model.faceted.search.{FacetedSearch, Facets, NodeBucket}
-import play.api.Logger
 import play.api.libs.json.Writes._
-import play.api.libs.json.{JsArray, JsObject, Json, Writes}
+import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.{Action, Controller}
 import util.TimeRangeParser
+import util.TupleWriters._
 //import scalikejdbc._
 
 import scalikejdbc._
 
 import scala.collection.mutable
-import scala.math._
 
 /*
     This class encapsulates all functionality for the
@@ -44,33 +45,7 @@ class NetworkController @Inject extends Controller {
 
   // TODO: fetch entity types from backend API
 
-  /**
-   * this implicit writes allows us to serialize tuple4
-   * see http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
-   */
-  implicit def tuple4Writes[A, B, C, D](implicit a: Writes[A], b: Writes[B], c: Writes[C], d: Writes[D]): Writes[(A, B, C, D)] = new Writes[(A, B, C, D)] {
-    def writes(tuple: (A, B, C, D)) = JsArray(Seq(
-      a.writes(tuple._1),
-      b.writes(tuple._2),
-      c.writes(tuple._3),
-      d.writes(tuple._4)
-    ))
-  }
-
-  implicit def tuple3Writes[A, B, C](implicit a: Writes[A], b: Writes[B], c: Writes[C]): Writes[(A, B, C)] = new Writes[(A, B, C)] {
-    def writes(tuple: (A, B, C)) = JsArray(Seq(
-      a.writes(tuple._1),
-      b.writes(tuple._2),
-      c.writes(tuple._3)
-    ))
-  }
-
-  implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[(A, B)] = new Writes[(A, B)] {
-    def writes(tuple: (A, B)) = JsArray(Seq(
-      a.writes(tuple._1),
-      b.writes(tuple._2)
-    ))
-  }
+  var NSessionMap: mutable.HashMap[String, NSession] = new mutable.HashMap[String, NSession]()
 
   /**
    * the strings for different types
@@ -93,25 +68,6 @@ class NetworkController @Inject extends Controller {
    * of the ego node).
    */
   val neighborRelCount = 5
-
-  /**
-   * Knoten der gerade anfokussiert wird
-   */
-  var focusId: Long = -1
-
-  /**
-   * Map cacht Knoten deren DoI-Wert schonmal berechnet wurden. Wird mit dem Beginn jedes Guidance-Schrittes zurückgesetzt.
-   */
-  var cachedDoIValues: mutable.HashMap[(Long, Long), Double] = new mutable.HashMap[(Long, Long), Double]()
-
-  var cachedEdgeFreq: mutable.HashMap[(Long, Long), Int] = new mutable.HashMap[(Long, Long), Int]()
-
-  var cachedEdgeId: mutable.HashMap[(Long, Long), Long] = new mutable.HashMap[(Long, Long), Long]()
-
-  var cachedDistanceValues: mutable.HashMap[Long, Int] = new mutable.HashMap[Long, Int]()
-
-  //var lastFound : List[(Long,Long)] = List()
-  //var distToFocus = 0
 
   /**
    * If leastOrMostFrequent == 0:
@@ -397,113 +353,12 @@ class NetworkController @Inject extends Controller {
 
   /**
    *
-   * @param edgeId Kante, Tuple der Form (source,target)
-   * @return the computed degree of interest value of a given edge
-   */
-  def doI(edgeId: (Long, Long)): Double = {
-    cachedDoIValues(edgeId)
-  }
-
-  /**
-   *
    * @param focusId anfokussierter Knoten
    * @return sendet die Kanten+Knoten an den Benutzer
    */
-  def getGuidanceNodes(focusId: Long, edgeAmount: Int) = Action {
-    implicit val session = AutoSession
-
-    Logger.info("start guidance")
-    this.focusId = focusId
-    cachedDoIValues.clear()
-    cachedDistanceValues.clear()
-
-    var edgeSet = new mutable.HashSet[(Long, Long)]() //(id, source, target, frequency)
-    var usedNodes = new mutable.HashSet[Long]()
-    usedNodes += focusId
-
-    var pq = mutable.PriorityQueue[(Long, Long)]()(Ordering.by[(Long, Long), Double]((x) => doI(x._1, x._2)))
-    pq ++= getEdges(focusId)
-
-    for (i <- 0 until edgeAmount) { //edgeArr.map ??
-
-      var edge = pq.dequeue()
-      while (edgeSet.contains(edge)) { //therotisch kann eine Kante bis zu 2x aus pq entnommen werden. Wenn sie einmal von jedem Knoten ausgehend hinzugefügt wurde.
-        edge = pq.dequeue()
-      }
-
-      Logger.info("E:" + edge._1 + "," + edge._2 + " V:" + doI(edge) + "freq:" + cachedEdgeFreq(edge))
-
-      edgeSet += edge
-
-      if (!usedNodes.contains(edge._2)) {
-        usedNodes += edge._2
-        //if (i < k / 2) { //nur für die ersten k/2 Kanten werden weitere Kanten gesucht
-        pq ++= getEdges(edge._2)
-        //}
-      } else if (!usedNodes.contains(edge._1)) {
-        usedNodes += edge._1
-        //if (i < k / 2) { //nur für die ersten k/2 Kanten werden weitere Kanten gesucht
-        pq ++= getEdges(edge._1)
-        //}
-      }
-      Logger.info(edgeSet.toString)
-    }
-
-    //bestimme Namen, Frequenz und Typ der Knoten
-    Logger.info("ggN SQL: SELECT id, name, type, frequency FROM entity WHERE id IN ")
-    val nodes = sql"""SELECT id, name, type, frequency FROM entity WHERE id IN ($usedNodes)"""
-      .map(rs => (rs.long("id"), rs.string("name"), rs.int("frequency"), rs.string("type"))).list().apply()
-
-    val result = new JsObject(Map(("nodes", Json.toJson(nodes)), ("links", Json.toJson(edgeSet.map(e => (cachedEdgeId.apply(e), e._1, e._2, cachedEdgeFreq.apply(e))))))) //TODO Kantenattribute müssen auch zurückgegeben werden
-
-    Ok(Json.toJson(result)).as("application/json")
-  }
-
-  /**
-   *
-   * @param nodeId Knoten
-   * @return die an den Knoten angrenzenden Kanten in einer Liste
-   */
-  private def getEdges(nodeId: Long): List[(Long, Long)] = {
-    import scalikejdbc._
-    implicit val session = AutoSession
-
-    var distToFocus = cachedDistanceValues.getOrElse(nodeId, -1) //Wenn der Knoten nicht in der Map liegt, muss es sich um dem Fokus handeln, also dist=0
-    distToFocus += 1
-    val query1 =
-      sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq, relationship.id
-          FROM relationship LEFT JOIN entity AS et1 ON et1.id = relationship.entity1
-          LEFT JOIN entity AS et2 ON et2.id = relationship.entity2 WHERE entity1 = $nodeId ORDER BY efreq DESC LIMIT 20"""
-    val query2 =
-      sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq, relationship.id
-          FROM relationship LEFT JOIN entity AS et1 ON et1.id = relationship.entity1
-          LEFT JOIN entity AS et2 ON et2.id = relationship.entity2 WHERE entity2 = $nodeId ORDER BY efreq DESC LIMIT 20""" //zwei seperate SQL Abfragen sind schnelle als eine per union vereinte Abfrage
-    def useResult(sqlresult: SQL[Nothing, NoExtractor]): List[(Long, Long)] =
-      {
-
-        val result = sqlresult.map(rs => {
-          (rs.long(1), rs.long(2), rs.int(3), rs.int(4), rs.int(5), rs.long(6)) //TODO Limit ist veränderbar
-        })
-          .toList().apply() //.filter(x => cachedDistanceValues.getOrElse(x._2, distToFocus + 1) > distToFocus && x._3 > 0)
-          .map(x => ((x._1, x._2),1 / -log((x._3: Double) * (x._3: Double) / ((x._4: Double) * (x._5: Double))), x._3, x._6))
-
-        cachedDistanceValues ++= result.map(x => (x._1._2, distToFocus)) //TODO nur aktualisieren wenn der Wert kleiner als der vorherige ist
-        cachedEdgeFreq ++= result.map(x => (x._1, x._3))
-        cachedEdgeId ++= result.map(x => (x._1, x._4))
-        cachedDoIValues ++= result.map(x => (x._1, {
-          val alpha = 1
-          val beta = 0
-          val gamma = 0
-
-          val API = x._2
-          val D = 0 //-(1 - scala.math.pow(0.5, distToFocus) * (x._2))
-          val UI = 0
-          API * alpha + beta * D + UI * gamma
-        }))
-
-        result.map(_._1)
-      }
-    useResult(query1) ++ useResult(query2)
+  def getGuidanceNodes(focusId: Long, edgeAmount: Int, sessionId: String) = Action {
+    val ns = NSessionMap.getOrElseUpdate(sessionId, new NSession)
+    Ok(Json.toJson(ns.getGuidanceNodes(focusId, edgeAmount))).as("application/json")
   }
 
 }

@@ -87,6 +87,8 @@ define([
             )
         {
 
+            var sessionid = Math.random().toString(36).substr(2, 5);
+
             $scope.graphShared = graphPropertiesShareService;
             $scope.uiShareService = uiShareService;
 
@@ -1773,7 +1775,7 @@ define([
 
             function getGuidanceNodes(node){
                 console.log(toolShareService.sliderEdgeAmount());
-                playRoutes.controllers.NetworkController.getGuidanceNodes(node,toolShareService.sliderEdgeAmount()).get().then(function(response) {
+                playRoutes.controllers.NetworkController.getGuidanceNodes(node,toolShareService.sliderEdgeAmount(), sessionid ).get().then(function(response) {
 
                     //to prevent invisible selections
                     unselectNodes();
