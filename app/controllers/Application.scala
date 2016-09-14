@@ -22,6 +22,8 @@ import play.api.mvc.{ Action, Controller }
 import org.apache.commons.codec.binary.{ Base64, Hex, StringUtils }
 import javax.inject.Inject
 
+import model.faceted.search.FacetedSearch
+
 import scala.util.Random
 
 /*
@@ -82,6 +84,12 @@ class Application @Inject extends Controller {
         "uid" -> uid
       )
     }
+  }
+
+  def switchDataset(dataSet: String) = Action {
+    FacetedSearch.changeIndex(dataSet)
+    utils.DBService.changeDB(dataSet)
+    Ok("success").as("Text")
   }
 
   def jsRoutes(varName: String = "jsRoutes") = Action { implicit request =>
