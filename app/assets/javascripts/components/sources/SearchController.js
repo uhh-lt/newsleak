@@ -91,6 +91,14 @@ define([
                         $scope.searchQuery = "";
                     };
 
+                    $scope.startGuidance = function (item) {
+                        console.log("send event startGuidance");
+                        $("#autocomplete").css('z-index','-1');
+                        $scope.searchTags = [];
+                        
+                        $scope.$emit('startGuidance-up', item.id);
+                    };
+
                     $scope.addFilter = function(item) {
                         $scope.observer.addItem({
                             type: 'entity',

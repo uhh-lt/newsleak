@@ -1,9 +1,9 @@
 <div style="padding: 10px;">
-	<!--
+
 	<div id="search-group">
 		<div class="input-group">
 			<span class="input-group-addon">Search:</span>
-			<input ng-model="searchQuery" class="form-control" placeholder="Add filter" ng-keyup="autocomplete(searchQuery)" ng-blur="resetAutoComplete()"/>
+			<input ng-model="searchQuery" class="form-control" placeholder="Set guidance starting point" ng-keyup="autocomplete(searchQuery)" ng-blur="resetAutoComplete()"/>
 
 		</div>
 
@@ -11,7 +11,7 @@
 
 	<div id="search-scroll">
 	<div id="autocomplete" class="list-group">
-		<button class="list-group-item" ng-repeat="data in searchTags" ng-click="addFilter(data)">
+		<button class="list-group-item" ng-repeat="data in searchTags" ng-click="startGuidance(data)">
 			<div class="search-item-container" title="{{data.type}}">
 				<svg width="32" height="32">
 					<g transform="translate(16,16)">
@@ -22,7 +22,7 @@
 		</button>
 	</div>
 	</div>
-	-->
+
 	<form ng-submit="addFulltext(fulltextInput)">
 	<div class="input-group">
 			<input type="text" class="form-control" placeholder="Search for..." ng-model="fulltextInput" ui-keypress="{13:'addFulltexta(fulltextInput)'}">

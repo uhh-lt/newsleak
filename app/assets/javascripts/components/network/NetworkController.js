@@ -119,6 +119,11 @@ define([
             // gets updated by toggle
             $scope.freqSorting = {least: false};
 
+            $scope.$on('startGuidance-down', function(event, arg) {
+                console.log("received event startGuidance");
+                console.log(arg);
+                getGuidanceNodes(arg)});
+
             var selectedNodes = new Array();
             $scope.selectedNodes = selectedNodes;
             var selectedEdges = new Array();
@@ -516,9 +521,9 @@ define([
 
                 loadingNodes = true;
                 //902475 = USA
-                playRoutes.controllers.NetworkController.getGuidanceNodes(902475).get().then(function(response) {
-                    console.log(response.data);
-                });
+                //playRoutes.controllers.NetworkController.getGuidanceNodes(902475).get().then(function(response) {
+                //    console.log(response.data);
+                //});
                 playRoutes.controllers.NetworkController.getGraphData(leastOrMostFrequent, sliderValue, sliderEdgeMinFreq, sliderEdgeMaxFreq).get().then(function(response) {
                 //playRoutes.controllers.EntityController.getEntities(nodes., sliderEdgeMinFreq, sliderEdgeMaxFreq).get().then(function(response) {
                     var data = response.data;
