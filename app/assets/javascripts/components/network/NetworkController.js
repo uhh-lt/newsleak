@@ -1779,8 +1779,13 @@ define([
             }
 
             function getGuidanceNodes(node){
-                console.log(toolShareService.sliderEdgeAmount());
-                playRoutes.controllers.NetworkController.getGuidanceNodes(node,toolShareService.sliderEdgeAmount(), sessionid ).get().then(function(response) {
+                var uiStr= "";
+                for (var i=0;i<toolShareService.UIitems.length;i++){
+                    uiStr+=toolShareService.UIitems[i].toString()+';';
+                }
+                var flatUIitems = [].concat.apply([], toolShareService.UIitems).toString();
+
+                playRoutes.controllers.NetworkController.getGuidanceNodes(node,toolShareService.sliderEdgeAmount(),uiStr, sessionid ).get().then(function(response) {
 
                     //to prevent invisible selections
                     unselectNodes();

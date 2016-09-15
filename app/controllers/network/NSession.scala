@@ -19,6 +19,7 @@ import scala.math._
  */
 class NSession {
   implicit val session = AutoSession
+  val typeIndex = collection.immutable.HashMap("PER" -> 0, "ORG" -> 1, "LOC" -> 2, "MISC" -> 3)
 
   /**
    * Knoten der gerade anfokussiert wird
@@ -36,6 +37,8 @@ class NSession {
 
   var cachedDistanceValues: mutable.HashMap[Long, Int] = new mutable.HashMap[Long, Int]()
 
+  var uiMatrix = Array.ofDim[Double](4, 4)
+
   /**
    *
    * @param edgeId Kante, Tuple der Form (source,target)
@@ -50,10 +53,12 @@ class NSession {
    * @param focusId anfokussierter Knoten
    * @return sendet die Kanten+Knoten an den Benutzer
    */
-  def getGuidanceNodes(focusId: Long, edgeAmount: Int): json.JsValue = {
+  def getGuidanceNodes(focusId: Long, edgeAmount: Int, uiMatrix: Array[Array[Double]]): json.JsValue = {
 
     Logger.info("start guidance")
+    Logger.info(uiMatrix.deep.mkString("\n"))
     this.focusId = focusId
+    this.uiMatrix = uiMatrix
     cachedDoIValues.clear()
     cachedDistanceValues.clear()
 
@@ -109,41 +114,46 @@ class NSession {
     var distToFocus = cachedDistanceValues.getOrElse(nodeId, -1) //Wenn der Knoten nicht in der Map liegt, muss es sich um dem Fokus handeln, also dist=0
     distToFocus += 1
     val query1 =
-      sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq, relationship.id
+      sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq, relationship.id, et1.type, et2.type
           FROM relationship LEFT JOIN entity AS et1 ON et1.id = relationship.entity1
           LEFT JOIN entity AS et2 ON et2.id = relationship.entity2 WHERE entity1 = $nodeId ORDER BY efreq DESC LIMIT 100"""
     val query2 =
-      sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq, relationship.id
+      sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq, relationship.id, et1.type, et2.type
           FROM relationship LEFT JOIN entity AS et1 ON et1.id = relationship.entity1
           LEFT JOIN entity AS et2 ON et2.id = relationship.entity2 WHERE entity2 = $nodeId ORDER BY efreq DESC LIMIT 100""" //zwei seperate SQL Abfragen sind schnelle als eine per union vereinte Abfrage
     def useResult(sqlresult: SQL[Nothing, NoExtractor]): List[(Long, Long)] =
       {
 
         val result = sqlresult.map(rs => {
-          (rs.long(1), rs.long(2), rs.int(3), rs.int(4), rs.int(5), rs.long(6)) //TODO Limit ist veränderbar
+          (rs.long(1), rs.long(2), rs.int(3), rs.int(4), rs.int(5), rs.long(6), rs.string(7), rs.string(8)) //TODO Limit ist veränderbar
         })
           .toList().apply() //.filter(x => cachedDistanceValues.getOrElse(x._2, distToFocus + 1) > distToFocus && x._3 > 0)
-          .map(x => ((x._1, x._2), 1 / -log((x._3: Double) * (x._3: Double) / ((x._4: Double) * (x._5: Double))), x._3, x._6))
+          .map(x => ((x._1, x._2), 1 / -log((x._3: Double) * (x._3: Double) / ((x._4: Double) * (x._5: Double))), x._3, x._6, x._7, x._8))
 
         val use2ndNode = if (result.nonEmpty) nodeId == result.head._1._1 else false //Wenn nodeId der erste Knoten im Kantentupel ist, müssen wir die Distanzen der zweiten Knoten überprüfen
 
         result.foreach(x =>
           if (cachedDistanceValues.getOrElseUpdate(if (use2ndNode) x._1._2 else x._1._1, distToFocus) > distToFocus) {
             cachedDistanceValues(if (use2ndNode) x._1._2 else x._1._1) = distToFocus
+            //TODO Distanzen müssen rekursiv geupdatet werden
           })
 
-        cachedDistanceValues ++= result.map(x => (x._1._2, distToFocus)) //TODO nur aktualisieren wenn der Wert kleiner als der vorherige ist
         cachedEdgeFreq ++= result.map(x => (x._1, x._3))
         cachedEdgeId ++= result.map(x => (x._1, x._4))
         cachedDoIValues ++= result.map(x => (x._1, {
-          val alpha = 1
-          val beta = 0
-          val gamma = 0
+          if (uiMatrix(typeIndex(x._5))(typeIndex(x._6)) == Double.NegativeInfinity) {
+            Double.NegativeInfinity //Wenn Kanten dieses Types nicht berücksichtig werden sollen, setze den DoI Wert auf -inf
+          } else {
+            val alpha = 1
+            val beta = 0
+            val gamma = 1
 
-          val API = x._2
-          val D = 0 //-(1 - scala.math.pow(0.5, distToFocus) * (x._2))
-          val UI = 0
-          API * alpha + beta * D + UI * gamma
+            val API = x._2
+            val D = 0 //-(1 - scala.math.pow(0.5, distToFocus) * (x._2))
+
+            val UI = x._2 * uiMatrix(typeIndex(x._5))(typeIndex(x._6))
+            API * alpha + beta * D + UI * gamma
+          }
         }))
 
         result.map(_._1)

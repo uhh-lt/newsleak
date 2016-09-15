@@ -80,6 +80,35 @@ define([
 
             $scope.toolShareService = toolShareService;
 
+            $scope.categories = [{name:'-', img: '-'},{name:'PER', img: 'person'/*'face'*/, val: 1},{name:'ORG', img: 'account_balance', val: 1},
+                {name:'LOC', img: 'place', val: 1},{name:'MISC', img: 'reorder', val: 1}];
+
+            var UIgeneralItems = [1,1,1,1];
+            var priorityToColor = ["red","white","green","blue"];
+
+            $scope.setUI = function (x,y) {
+                if ((x==0 || y==0) && !(x==0 && y==0)){
+                    var prio = (UIgeneralItems[x + y -1] + 1) % 4;
+                    UIgeneralItems[x + y -1] = prio;
+                    x = x+y;
+                    for (var i = 0; i<UIgeneralItems.length+1; i++){
+                        if (i != UIgeneralItems.length) {
+                            toolShareService.UIitems[i][x - 1] = prio;
+                            toolShareService.UIitems[x - 1][i] = prio;
+                        }
+                        document.getElementById(x + '.' + i).style.backgroundColor = priorityToColor[prio];
+                        document.getElementById(i + '.' + x).style.backgroundColor = priorityToColor[prio];
+                    }
+                } else {
+                    var prio = (toolShareService.UIitems[x - 1][y - 1] + 1) % 4;
+                    toolShareService.UIitems[y - 1][x - 1] = prio;
+                    toolShareService.UIitems[x - 1][y - 1] = prio;
+                    document.getElementById(x + '.' + y).style.backgroundColor = priorityToColor[prio];
+                    document.getElementById(y + '.' + x).style.backgroundColor = priorityToColor[prio];
+                }
+            //console.log(toolShareService.UIitems);
+            };
+
             // A slider for choosing the minimum and maximum frequency of a displayed edge.
             $scope.sliderEdgeFrequency = {
                 //value: "1500;"+$scope.maxEdgeFreq,

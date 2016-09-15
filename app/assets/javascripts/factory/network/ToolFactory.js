@@ -42,6 +42,13 @@ define([
                     //(nodeArray)
                     hideListener: [],
 
+                    UIitems : [
+                        [1, 1, 1, 1],
+                        [1, 1, 1, 1],
+                        [1, 1, 1, 1],
+                        [1, 1, 1, 1]
+                    ],
+
                     freqSortingLeast: false,
                     isViewLoading: function(){return true;},
                     getEgoNetwork: function(){},

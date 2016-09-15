@@ -15,30 +15,46 @@
  -->
 
 <div class="container-fluid" ng-if="!toolShareService.isViewLoading()">
-  <div class="row">
-    <div id="demo" class="collapse col-md-10">
+  <div class="row" >
+    <div id="demo" class="collapse col-md-12" style="margin-bottom: 0px; margin-top: 5px;">
       <!--<div class="slider-container">
-        <input ng-model="sliderCountriesCitiesAmount.value" type="text"
-               slider options="sliderCountriesCitiesAmount.options"/>
+  <input ng-model="sliderCountriesCitiesAmount.value" type="text"
+         slider options="sliderCountriesCitiesAmount.options"/>
+</div>
+<div class="slider-container">
+  <input ng-model="sliderOrganizationsAmount.value" type="text"
+         slider options="sliderOrganizationsAmount.options"/>
+</div>
+<div class="slider-container">
+  <input ng-model="sliderPersonsAmount.value" type="text"
+         slider options="sliderPersonsAmount.options"/>
+</div>
+<div class="slider-container">
+  <input ng-model="sliderMiscellaneousAmount.value" type="text"
+         slider options="sliderMiscellaneousAmount.options"/>
+</div>
+-->    <div class="col-md-9" style="padding-right: 50px;">
+        <div class="slider-container">
+          <input ng-model="sliderEdgeAmount.value" type="text" slider options="sliderEdgeAmount.options"/>
+        </div>
+        <div class="slider-container">
+          <input ng-model="sliderEdgeFrequency.value" type="text" slider options="sliderEdgeFrequency.options"/>
+        </div>
       </div>
-      <div class="slider-container">
-        <input ng-model="sliderOrganizationsAmount.value" type="text"
-               slider options="sliderOrganizationsAmount.options"/>
-      </div>
-      <div class="slider-container">
-        <input ng-model="sliderPersonsAmount.value" type="text"
-               slider options="sliderPersonsAmount.options"/>
-      </div>
-      <div class="slider-container">
-        <input ng-model="sliderMiscellaneousAmount.value" type="text"
-               slider options="sliderMiscellaneousAmount.options"/>
-      </div>
--->
-      <div class="slider-container">
-        <input ng-model="sliderEdgeAmount.value" type="text" slider options="sliderEdgeAmount.options"/>
-      </div>
-      <div class="slider-container">
-        <input ng-model="sliderEdgeFrequency.value" type="text" slider options="sliderEdgeFrequency.options"/>
+      <div class="col-md-3">
+      <table style="float: right">
+        <tr ng-repeat-start="(xIndex, x) in categories" ng-if="$first">
+          <td ng-repeat="c in categories" id="{{xIndex}}.{{$index}}" ng-click="setUI(xIndex,$index)">
+            <i class="material-icons">{{c.img}}</i>
+          </td>
+        </tr>
+        <tr ng-repeat-end="(xIndex, x) in categories" ng-if="!$first">
+          <td ng-repeat-start="y in categories" ng-if="$first" id="{{xIndex}}.{{$index}}" ng-click="setUI(xIndex,$index)">
+            <i class="material-icons">{{x.img}}</i>
+          </td>
+          <td ng-repeat-end="y in categories" ng-if="!$first" id="{{xIndex}}.{{$index}}" ng-click="setUI(xIndex,$index)"></td>
+        </tr>
+      </table>
       </div>
       <!--<toggle-switch
               class="toggle-switch"
