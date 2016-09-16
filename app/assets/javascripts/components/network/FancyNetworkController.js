@@ -147,6 +147,12 @@ define([
             $scope.edgeImportance = 1;
             /* Maximum edge value of the current underlying graph collection. Updated in reload method */
             $scope.maxEdgeImportance = 80000;
+            /* */
+            $scope.numPer = 6;
+            $scope.numOrg = 6;
+            $scope.numLoc = 6;
+            $scope.numMisc = 6;
+
             /* Indicates whether the network is initialized or new data is being loaded */
             $scope.loading = true;
 
