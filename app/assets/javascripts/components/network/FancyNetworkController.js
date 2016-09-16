@@ -169,23 +169,7 @@ define([
             function reload() {
                 // TODO: We need this in several components helper methods would be nice ... (copied from metadataController)
                 var fulltext = $scope.fulltextFilters.map(function(f) { return f.data.name; });
-                var facets = [];
-                if($scope.metadataFilters.length > 0) {
-                    angular.forEach($scope.metadataFilters, function(metaType) {
-                        if($scope.metadataFilters[metaType].length > 0) {
-                            var keys = [];
-                            angular.forEach($scope.metadataFilters[metaType], function(x) {
-                                keys.push(x.data.name);
-                            });
-                            facets.push({key: metaType, data: keys});
-                        }
-                    });
-                    if(facets == 0) facets = [{'key':'dummy','data': []}];
-
-                } else {
-                    // TODO Can we get rid of this dummy?!
-                    facets = [{'key':'dummy','data': []}];
-                }
+                var facets = $scope.observerService.getFacets();
 
                 playRoutes.controllers.NetworkController.induceSubgraph(fulltext, facets,[],$scope.observerService.getTimeRange(),18,"").get().then(function(response) {
                     // Enable physics for new graph data
