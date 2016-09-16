@@ -26,19 +26,24 @@ define([
         .factory('ObserverService', ['playRoutes', '$q', '$timeout', function(playRoutes, $q, $timeout) {
             //holds all observer functions
             var observerCallbacks = [];
+            //holds subscriber functions
+            var subscriber = [];
             //all items in order
             var history = [];
             //all item structured by type
-            var items = [];
+            var items = {};
             //types of tracked items
             var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset", "delete", "openDoc"];
             var metadataTypes = [];
             var entityTypes = [];
             var histogramLoD = [];
             types.forEach(function(type) {
-                items[type] = [];
+                if(type != types[1])
+                    items[type] = [];
+                else
+                    items[type] = {};
             });
-            items[types[1]] = metadataTypes;
+            //items[types[1]] = metadataTypes;
 
             //fetch metadata Types dynamically
             function updateMetadataTypes() {
@@ -52,7 +57,6 @@ define([
                     });
 
                     angular.forEach(metadataTypes, function (type) {
-                        items['metadata'].push(type);
                         items['metadata'][type] = [];
                     });
                     deferred.resolve(metadataTypes);
@@ -221,15 +225,52 @@ define([
 
                 //TODO: replace type by array to more then one type can be subscribed in a merged item array
                 subscribeItems: function (_subscriber, type) {
+                    subscriber.push({
+                        func: _subscriber,
+                        type: type
+                    });
                     _subscriber(items[type]);
                 },
 
                 subscribeAllItems: function(_subscriber) {
+                    subscriber.push({
+                        func: _subscriber,
+                        type: 'all'
+                    });
                     _subscriber(items);
                 },
 
                 subscribeHistory: function (_subscriber) {
+                    subscriber.push({
+                        func: _subscriber,
+                        type: 'history'
+                    });
                     _subscriber(history);
+                },
+
+                subscribeReset: function(_subscriber) {
+                    subscriber.push({
+                        func: _subscriber,
+                        type: 'reset'
+                    });
+                },
+
+                refreshSubscribers: function() {
+                  angular.forEach(subscriber, function(_subscriber) {
+                      switch(_subscriber.type) {
+                          case 'reset':
+                              _subscriber.func();
+                              break;
+                          case 'all':
+                              _subscriber.func(items);
+                              break;
+                          case 'history':
+                              _subscriber.func(history);
+                              break;
+                          default:
+                              _subscriber.func(items[_subscriber.type]);
+                      }
+                  });
                 },
 
                 getTypes: function() {
@@ -254,6 +295,27 @@ define([
                 getTimeRange: function() {
                     if(items["time"].length == 0) return ""; else return items["time"][items["time"].length-1].data.name;
                 },
+
+                getFacets: function() {
+                    var facets = [];
+                    if(items.metadata) {
+                        $.each(items.metadata, function(metaType,val) {
+                            if(items.metadata[metaType].length > 0) {
+                                var keys = [];
+                                angular.forEach(items.metadata[metaType], function(x) {
+                                    keys.push(x.data.name);
+                                });
+                                facets.push({key: metaType, data: keys});
+                            }
+                        });
+                        if(facets == 0) facets = [{'key':'dummy','data': []}];
+
+                    } else {
+                        facets = [{'key':'dummy','data': []}];
+                    }
+                    return facets;
+                },
+
                 drillUpTimeFilter: function() {
                     this.removeItem(items["time"][items["time"].length-1].id,'time');
                     while(items["time"][items["time"].length-1] && items["time"][items["time"].length-1].data.lod == "month")
@@ -267,42 +329,77 @@ define([
                     return promiseLoD;
                 },
 
+                initTypes: function() {
+                    promiseMetadata = updateMetadataTypes();
+                    promiseEntities = updateEntityTypes();
+                    promiseLoD = updateLoD();
+                },
+
                 reset: function() {
                     var rootThis = this;
                     history.forEach(function(item) {
                         if(item.active)
                             rootThis.removeItem(item.id, item.type);
                     });
-
-                    this.addItem({
-                        type: 'reset',
-                        active: false,
-                        data: {
-                            name: "Filter reseted"
-                        }
-                    });
+                    items = {};
                     types.forEach(function(type) {
-                        if(type != types[1])
-                            items[type].splice(0,items[type].length);
-                        else {
-                            angular.forEach(metadataTypes, function (mtype) {
-                                items[type][mtype].splice(0, items[type][mtype].length);
-                            });
-                        }
+                        items[type] = [];
                     });
-                    this.notifyObservers();
+                    this.initTypes();
+
+
+                    $q.all([
+                        promiseEntities, promiseLoD, promiseMetadata
+                    ]).then(function(values) {
+                        console.log(rootThis);
+                        rootThis.refreshSubscribers();
+                        rootThis.notifyObservers();
+                        rootThis.addItem({
+                            type: 'reset',
+                            active: false,
+                            data: {
+                                name: "Filter reseted"
+                            }
+                        });
+                    });
+
                 },
 
                 loadState: function(input) {
-                    history.splice(0,  history.length);
-                    items.splice(0,  history.length);
-                    angular.forEach(input.history, function(item) {
-                        history.push(item);
+                    var rootThis = this;
+                    history = [];
+                    items =  {};
+                    types.forEach(function(type) {
+                        if(type != types[1])
+                            items[type] = [];
+                        else
+                            items[type] = {};
                     });
-                    angular.forEach(input.items, function(item) {
-                        items.push(item);
-                    });
-                    this.notifyObservers();
+                    this.initTypes();
+
+                    $q.all([
+                        promiseEntities, promiseLoD, promiseMetadata
+                    ]).then(function() {
+                            angular.forEach(input.history, function (item) {
+                                history.push(item);
+                            });
+                            types.forEach(function (type) {
+                                $.each(input.items[type], function (index, item) {
+                                    if (type != types[1])
+                                        items[type].push(item);
+                                    else {
+                                        if(item[0])
+                                            items[type][item[0].data.type] = angular.copy(item);
+
+                                    }
+                                });
+                            });
+                        lastAdded = history[history.length-1].id;
+                        lastRemoved = -1;
+                        rootThis.refreshSubscribers();
+                        rootThis.notifyObservers();
+                        }
+                    );
                 }
             }
         }]);

@@ -1660,22 +1660,7 @@ define([
                 angular.forEach($scope.entityFilters, function(item) {
                     entities.push(item.data.id);
                 });
-                var facets = [];
-                if($scope.metadataFilters.length > 0) {
-                    angular.forEach($scope.metadataFilters, function(metaType) {
-                        if($scope.metadataFilters[metaType].length > 0) {
-                            var keys = [];
-                            angular.forEach($scope.metadataFilters[metaType], function(x) {
-                                keys.push(x.data.name);
-                            });
-                            facets.push({key: metaType, data: keys});
-                        }
-                    });
-                    if(facets == 0) facets = [{'key':'dummy','data': []}];
-
-                } else {
-                    facets = [{'key':'dummy','data': []}];
-                }
+                var facets = $scope.observer.getFacets();
 
                 while(loadingNodes)
                 {
@@ -1738,11 +1723,9 @@ define([
                     $scope.entityFilters.forEach(
                                             function(v)
                                             {
-                                                console.log(v)
                                                 selectNode(v.data)
                                             }
                     )
-                    console.log($scope.entityFilters)
 
                     playRoutes.controllers.NetworkController.getRelations(response.data.map(function(v){return v.id}), toolShareService.sliderEdgeMinFreq(), toolShareService.sliderEdgeMaxFreq()).get().then(
                         function(response)

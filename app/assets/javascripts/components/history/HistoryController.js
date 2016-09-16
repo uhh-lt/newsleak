@@ -57,7 +57,9 @@ define([
                       'metadata': 'Metadata Filter',
                       'time': 'Time Range',
                       'annotate': 'Entity Annotated',
-                      'fulltext': 'Fulltext Search'
+                      'fulltext': 'Fulltext Search',
+                      'openDoc': 'Document opened',
+                      'edit': "Entity edited"
                     },
                     actions: {
                         'added': 'plus',
@@ -86,10 +88,9 @@ define([
                     $scope.factory = historyFactory;
 
                     $scope.observer_subscribe = function(history) { $scope.history = history};
-                    $scope.observer_subscribe_items = function(items) { $scope.items = items};
+                    $scope.observer_subscribe_items = function(items) { $scope.historyItems = items};
                     $scope.observer.subscribeHistory($scope.observer_subscribe);
                     $scope.observer.subscribeAllItems($scope.observer_subscribe_items);
-                    
                     $scope.removeItem = function(item) {
                         $scope.observer.removeItem(item.id, item.type);
                     };
@@ -129,11 +130,12 @@ define([
 
                     $scope.saveHistory =  function() {
                         console.log("save state");
-                        var data = new Blob([$.toJSON({
+                        var json = JSON.stringify({
                             history: $scope.history,
-                            items: $scope.history
-                        })],
-                        { type: 'text/plain;charset=utf-8' });
+                            items: $scope.historyItems
+                        },null, 4);
+                        var data = new Blob([json],
+                        { type: 'application/json;charset=utf-8' });
                         FileSaver.saveAs(data, "saver.json");
                     };
 
@@ -141,7 +143,7 @@ define([
                         console.log("load state");
                         $scope.reader  = new FileReader();
                         $scope.reader.onload = function(){
-                            $scope.observer.loadState(jQuery.parseJSON($scope.reader.result));
+                            $scope.observer.loadState(jQuery.parseJSON(angular.copy($scope.reader.result)));
                             $scope.uploadFile = undefined;
                         };
                         $scope.waitForFile = setInterval(function() {

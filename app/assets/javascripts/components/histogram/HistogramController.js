@@ -235,22 +235,7 @@ define([
                     angular.forEach($scope.entityFilters, function(item) {
                         entities.push(item.data.id);
                     });
-                    var facets = [];
-                    if($scope.metadataFilters.length > 0) {
-                        angular.forEach($scope.metadataFilters, function(metaType) {
-                            if($scope.metadataFilters[metaType].length > 0) {
-                                var keys = [];
-                                angular.forEach($scope.metadataFilters[metaType], function(x) {
-                                    keys.push(x.data.name);
-                                });
-                                facets.push({key: metaType, data: keys});
-                            }
-                        });
-                        if(facets == 0) facets = $scope.emptyFacets;
-
-                    } else {
-                        facets = $scope.emptyFacets;
-                    }
+                    var facets = $scope.observer.getFacets();
                     var fulltext = [];
                     angular.forEach($scope.fulltextFilters, function(item) {
                         fulltext.push(item.data.name);
