@@ -80,7 +80,7 @@ class Application @Inject extends Controller {
       Unauthorized(views.html.defaultpages.unauthorized())
         .withHeaders("WWW-Authenticate" -> "Basic realm=\"new/s/leak\"")
     } else {
-      Ok(views.html.index()).withSession(
+      Ok(views.html.index()).withNewSession.withSession(
         "uid" -> uid
       )
     }
