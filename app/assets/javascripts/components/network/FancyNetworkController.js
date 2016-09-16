@@ -156,8 +156,6 @@ define([
             /* Indicates whether the network is initialized or new data is being loaded */
             $scope.loading = true;
 
-            $scope.loaded = reload;
-
             $scope.observerService.registerObserverCallback(function() {
                 console.log("update network");
                 reload();
