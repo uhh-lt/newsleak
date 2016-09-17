@@ -76,13 +76,13 @@ class Application @Inject extends Controller {
       }
     }
 
-    // now e check if authorization was successful
+    // now check if authorization was successful
     if (!authorized) {
       // send a login request
       Unauthorized(views.html.defaultpages.unauthorized())
         .withHeaders("WWW-Authenticate" -> "Basic realm=\"new/s/leak\"")
     } else {
-      Ok(views.html.index()).withNewSession.withSession(
+      Ok(views.html.index()).withSession(
         "uid" -> uid,
         datasetSessionKey -> NewsleakConfigReader.config.getString("es.index.default")
       )

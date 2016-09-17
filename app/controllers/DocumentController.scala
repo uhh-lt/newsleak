@@ -20,11 +20,11 @@ package controllers
 import javax.inject.Inject
 
 import model.Document
-import model.faceted.search.{ FacetedSearch, Facets, SearchHitIterator }
+import model.faceted.search.{ FacetedSearch, Facets }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller }
-import util.TimeRangeParser
 import util.SessionUtils.currentDataset
+import util.{ SessionUtils, TimeRangeParser }
 
 // scalastyle:off
 import play.cache._
@@ -47,35 +47,37 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
   // private val metadataKeys = List("Subject", "Timezone", "sender.name", "Recipients.email", "Recipients.name", "Recipients.type")
 
   /**
-   * returns the document with the id "id", if there is any
-   */
+    * returns the document with the id "id", if there is any
+    */
   def getDocById(id: Int) = Action { implicit request =>
-    Ok(Json.toJson(Document.fromDBName(currentDataset).getById(id).map(doc => (doc.id, doc.created.toString(), doc.content)))).as("application/json")
+    val docSearch = Document.fromDBName(currentDataset)
+    Ok(Json.toJson(docSearch.getById(id).map(doc => (doc.id, doc.created.toString(), doc.content)))).as("application/json")
   }
 
   /**
-   * Search for Document by fulltext term and faceted search map via elasticsearch
-   *
-   * @param fullText full-text search term
-   * @param generic   mapping of metadata key and a list of corresponding tags
-   * @param entities list of entity ids to filter
-   * @param timeRange string of a time range readable for [[TimeRangeParser]]
-   * @return list of matching document id's
-   */
+    * Search for Document by fulltext term and faceted search map via elasticsearch
+    *
+    * @param fullText full-text search term
+    * @param generic   mapping of metadata key and a list of corresponding tags
+    * @param entities list of entity ids to filter
+    * @param timeRange string of a time range readable for [[TimeRangeParser]]
+    * @return list of matching document id's
+    */
   def getDocs(
-    fullText: List[String],
-    generic: Map[String, List[String]],
-    entities: List[Long],
-    timeRange: String
-  ) = Action { implicit request =>
+               fullText: List[String],
+               generic: Map[String, List[String]],
+               entities: List[Long],
+               timeRange: String
+             ) = Action { implicit request =>
     val uid = request.session.get("uid").getOrElse("0")
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var pageCounter = 0
 
+    val facetSearch = FacetedSearch.fromIndexName(currentDataset)
     var iteratorSession: IteratorSession = cache.get[IteratorSession](uid)
     if (iteratorSession == null || iteratorSession.hash == defaultSession.hash || iteratorSession.hash != facets.hashCode()) {
-      val res = FacetedSearch.fromIndexName(currentDataset).searchDocuments(facets, defaultPageSize)
+      val res = facetSearch.searchDocuments(facets, defaultPageSize)
       iteratorSession = IteratorSession(res._1, res._2, facets.hashCode())
       cache.set(uid, iteratorSession)
     }
@@ -90,7 +92,9 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
       cache.set(uid, newIteratorSession)
     }
     if (docIds.nonEmpty) {
-      val metadataTriple = Document.fromDBName(currentDataset).getMetadataForDocuments(docIds, metadataKeys)
+      val docSearch = Document.fromDBName(currentDataset)
+
+      val metadataTriple = docSearch.getMetadataForDocuments(docIds, metadataKeys)
       val response = metadataTriple
         .groupBy(_._1)
         .map { case (id, inner) => id -> inner.map(doc => Json.obj("key" -> doc._2, "val" -> doc._3)) }

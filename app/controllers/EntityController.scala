@@ -23,21 +23,21 @@ import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
 import model.{ Entity, EntityType }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller, Results }
-import util.TimeRangeParser
 import util.SessionUtils.currentDataset
+import util.TimeRangeParser
 
 class EntityController @Inject extends Controller {
 
   private val defaultFetchSize = 50
 
   /**
-   * get the entities, frequency to given type
-   *
-   * @param entityType entity type
-   * @return
-   * an array of entity names and entity frequency
-   * combined
-   */
+    * get the entities, frequency to given type
+    *
+    * @param entityType entity type
+    * @return
+    * an array of entity names and entity frequency
+    * combined
+    */
   def getEntitiesByType(entityType: String) = Action { implicit request =>
     val entities = Entity.fromDBName(currentDataset).getOrderedByFreqDesc(EntityType.withName(entityType), defaultFetchSize)
       .map(x => Json.obj("id" -> x.id, "name" -> x.name, "freq" -> x.frequency))
@@ -45,24 +45,30 @@ class EntityController @Inject extends Controller {
   }
 
   /**
-   * Get all entity types
-   * @return list of entity types
-   */
+    * Get all entity types
+    * @return list of entity types
+    */
   def getEntityTypes = Action { implicit request =>
     Results.Ok(Json.toJson(Entity.fromDBName(currentDataset).getTypes().map(_.toString))).as("application/json")
   }
 
+  // TODO Json writer for model types ...
+  def getEntitiesByDoc(id: Long) = Action { implicit request =>
+    val res = Entity.fromDBName(currentDataset).getByDocId(id).map(e => Json.obj("id" -> e.id, "name" -> e.name, "type" -> e.entityType))
+    Results.Ok(Json.toJson(res)).as("application/json")
+  }
+
   // scalastyle:off
   /**
-   * Gets document counts for entities corresponding to their id's matching the query
-   * @param fullText Full text search term
-   * @param generic   mapping of metadata key and a list of corresponding tags
-   * @param entities list of entity ids to filter
-   * @param timeRange string of a time range readable for [[TimeRangeParser]]
-   * @param size amount of entities to fetch
-   * @param filter provide a list of entities you want to aggregate
-   * @return list of matching entity id's and their overall frequency as well as document count for the applied filters
-   */
+    * Gets document counts for entities corresponding to their id's matching the query
+    * @param fullText Full text search term
+    * @param generic   mapping of metadata key and a list of corresponding tags
+    * @param entities list of entity ids to filter
+    * @param timeRange string of a time range readable for [[TimeRangeParser]]
+    * @param size amount of entities to fetch
+    * @param filter provide a list of entities you want to aggregate
+    * @return list of matching entity id's and their overall frequency as well as document count for the applied filters
+    */
   def getEntities(
                    fullText: List[String],
                    generic: Map[String, List[String]],
