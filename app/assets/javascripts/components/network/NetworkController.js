@@ -1829,7 +1829,7 @@ define([
                             {
                                 return;
                             }
-                            edges.push({id: v[0], source: sourceNode, target: targetNode, freq: v[3]});
+                            edges.push({id: edges.length, source: sourceNode, target: targetNode, freq: v[3]});
                         });
 
                     //reload();

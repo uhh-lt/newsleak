@@ -357,7 +357,7 @@ class NetworkController @Inject extends Controller {
    * @return sendet die Kanten+Knoten an den Benutzer
    */
   def getGuidanceNodes(focusId: Long, edgeAmount: Int, uiString: String, sessionId: String) = Action {
-    val prioToFactor: collection.immutable.HashMap[Int, Double] = collection.immutable.HashMap(0 -> Double.NegativeInfinity, 1 -> 1, 2 -> 2, 3 -> 4) //den Prioritäten(0-3) werden auf einem Faktor abgebildet.
+    val prioToFactor: collection.immutable.HashMap[Int, Double] = collection.immutable.HashMap(0 -> Double.NegativeInfinity, 1 -> 1, 2 -> 2, 3 -> 4) //die Prioritäten(0-3) werden auf Faktoren abgebildet.
 
     val uiMatrix: Array[Array[Double]] = uiString.split(";").map(_.split(",").map(_.toInt).map(prioToFactor(_)))
     val ns = NSessionMap.getOrElseUpdate(sessionId, new NSession)
