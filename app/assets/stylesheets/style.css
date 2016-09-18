@@ -61,7 +61,7 @@ html, body {
 
 /*
     ======================================
-    Network Graph
+    Network
     ======================================
 */
 
@@ -104,6 +104,40 @@ line {
 div.vis-network div.vis-navigation div.vis-button {
     background-color: white;
     margin-bottom: 20px;
+}
+
+div.popupMenu {
+    position: absolute;
+    top:0px;
+    left:0px;
+    /*width:90px;
+    height:100px;*/
+    display: block;
+    background-color: #f2f2f2;
+    border-radius: 4px;
+
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    min-width: 150px;
+    border: 1px solid #d4d4d4;
+
+    z-index:1200;
+}
+
+div.popupMenu ul {
+    list-style-type: none;
+    margin: 4px 0px;
+    padding: 0px;
+    cursor: default;
+}
+
+div.popupMenu ul li {
+    padding: 4px 16px;
+}
+
+div.popupMenu ul li:hover {
+    background-color: #4677f8;
+    color: #fefefe;
 }
 
 #merge-node
@@ -213,16 +247,6 @@ div.tooltip {
 #legend-content svg {
     display: block;
     margin: auto;
-}
-
-/*
-    ======================================
-    Map
-    ======================================
-*/
-
-#map-container {
-    margin: 0 10px;
 }
 
 /*

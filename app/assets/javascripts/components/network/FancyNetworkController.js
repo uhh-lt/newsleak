@@ -140,7 +140,10 @@ define([
                 "stabilized": stabilizationDone,
                 //"stabilizationIterationsDone": stabilizationDone,
                 "onload": onNetworkLoad,
-                "dragEnd": dragNodeDone
+                "dragEnd": dragNodeDone,
+                "oncontext": showContextMenu,
+                "click": clickEvent,
+                "dragging": dragEvent
             };
 
             /* Current value of the edge significance slider */
@@ -209,6 +212,41 @@ define([
                 $scope.reloadGraph();
             });
 
+
+            function hideNode(nodeId) {
+                // Hide given node
+                self.nodesDataset.remove(nodeId);
+                var match = _.find(self.nodes, function (obj) {
+                    return obj.id == nodeId;
+                });
+                // Update node state in background collection
+                match.hidden = true;
+                // Identify all adjacent edges from background collection
+                var adjacentEdges = new VisDataSet(self.edges).get({
+                    filter: function(edge) {
+                        return (edge.to == nodeId || edge.from == nodeId)
+                    }
+                }).map(function(edge) { return edge.id; });
+                // Hide adjacent edges
+                self.edges.forEach(function(edge) {
+                    if(_.contains(adjacentEdges, edge.id)) {
+                        edge.hidden = true;
+                    }
+                });
+                self.edgesDataset.remove(adjacentEdges);
+                // Update new edge max value from non hidden edges
+                var max = new VisDataSet(self.edges.filter(function(edge) { return !edge.hidden })).max("value").value;
+                $scope.maxEdgeImportance = max;
+                // Update view
+                /*if($scope.edgeImportance > max) {
+                    handleEdgeSlider(max, $scope.edgeImportance)
+                }*/
+            }
+
+            function addNodeFilter(nodeId) {
+
+            }
+
             function applyPhysicsOptions(options) {
                 console.log('Physics simulation on');
                 $scope.graphOptions['physics'] = options;
@@ -264,6 +302,14 @@ define([
                 disablePhysics();
             }
 
+            function clickEvent(event) {
+                closeContextMenu();
+            }
+
+            function dragEvent(event) {
+                closeContextMenu();
+            }
+
             function dragNodeDone(event) {
                 // Update node positions of the background collection whenever they are moved
                 if(event.nodes.length == 1 && $scope.graphOptions['physics'] == false) {
@@ -304,20 +350,87 @@ define([
 
                     var edgesToAdd = new VisDataSet(self.edges).get({
                         filter: function (item) {
-                            return (item.value >= newValue)
+                            return (item.value >= newValue && !item.hidden)
                         }
                     });
 
                     var nodeIds = [].concat.apply([], edgesToAdd.map(function(edge) { return [edge.to, edge.from]; }));
                     var nodesToAdd = new VisDataSet(self.nodes).get({
                         filter: function (item) {
-                            return (_.contains(nodeIds, item.id));
+                            // Add nodes to the network if there is a connecting edge and the
+                            // node is not hidden by the user
+                            return (_.contains(nodeIds, item.id) && !item.hidden);
                         }
                     });
 
                     self.edgesDataset.update(edgesToAdd);
                     self.nodesDataset.update(nodesToAdd);
                     self.network.stabilize();
+                }
+            }
+
+            function showContextMenu(params) {
+                params.event.preventDefault();
+                closeContextMenu();
+
+                var xDom = params.pointer.DOM.x;
+                var yDom = params.pointer.DOM.y;
+                var nodeId = self.network.getNodeAt({ x: xDom, y: yDom });
+
+                //maybe underscore js provides better handling of such cases
+                if(typeof nodeId !== "undefined") {
+                    var container = document.getElementById('mynetwork');
+
+                    var offsetLeft = container.offsetLeft;
+                    var offsetTop = container.offsetTop;
+
+                    self.popupMenu = document.createElement("div");
+                    self.popupMenu.className = 'popupMenu';
+                    self.popupMenu.style.left = xDom - offsetLeft + 'px';
+                    self.popupMenu.style.top =  yDom - offsetTop +'px';
+
+                    var ul = document.createElement('ul');
+                    self.popupMenu.appendChild(ul);
+
+                    var menu = [
+                        {
+                            title: 'Add as filter',
+                            action: function(value, nodeId) {
+                                alert(value + nodeId);
+                            }
+                        },
+                        {
+                            title: 'Hide',
+                            action: function(value, nodeId) {
+                                hideNode(nodeId);
+                            }
+                        },
+                        {
+                            title: 'Blacklist',
+                            action: function(value, nodeId) {
+                                alert(value + nodeId);
+                            }
+                        }
+                    ];
+
+                    for (var i = 0; i < menu.length; i++) {
+                        var li = document.createElement('li');
+                        ul.appendChild(li);
+                        li.innerHTML = li.innerHTML + menu[i].title;
+                        (function(value, nodeId, action){
+                            li.addEventListener("click", function() {
+                                closeContextMenu();
+                                action(value, nodeId);
+                            }, false);})(menu[i].title, nodeId, menu[i].action);
+                    }
+                    container.appendChild(self.popupMenu);
+                }
+            }
+
+            function closeContextMenu() {
+                if (self.popupMenu !== undefined) {
+                    self.popupMenu.parentNode.removeChild(self.popupMenu);
+                    self.popupMenu = undefined;
                 }
             }
         }]);
