@@ -36,7 +36,6 @@ define([
     './components/histogram/HistogramController',
     './services/playRoutes',
     './services/ObserverService',
-    './factory/appData',
     './factory/util',
     './services/underscore-module',
     'ui-layout',
@@ -52,7 +51,7 @@ define([
     var app = angular.module('myApp',
         [
             'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable','ngMaterial',
-            'angularMoment', 'underscore', 'myApp.data', 'myApp.observer', 'myApp.util', 'myApp.history',
+            'angularMoment', 'underscore', 'myApp.observer', 'myApp.util', 'myApp.history',
             'myApp.tools',
             'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
             'myApp.network', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
@@ -117,8 +116,9 @@ define([
         return uiProperties;
     });
 
-    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', 'moment', 'appData', 'uiShareService', 'ObserverService', 'playRoutes',
-        function ($scope, $state, $timeout, $window, moment, appData, uiShareService, ObserverService, playRoutes) {
+    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', 'moment', 'uiShareService', 'ObserverService', 'playRoutes',
+        function ($scope, $state, $timeout, $window, moment, uiShareService, ObserverService, playRoutes) {
+
             $scope.selectedDataset = '';
             $scope.datasets = ['cable', 'enron'];
 

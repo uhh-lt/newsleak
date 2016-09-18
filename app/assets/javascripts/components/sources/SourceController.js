@@ -18,7 +18,6 @@
 define([
     'angular',
     'ngSanitize',
-    '../../factory/appData',
     '../../factory/util',
     'ui-bootstrap',
     'toggle-switch'

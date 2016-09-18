@@ -36,7 +36,6 @@
 			'ui-bootstrap': 'libs/angular-bootstrap/ui-bootstrap-tpls.min',
 			'toggle-switch': 'libs/angular-toggle-switch/angular-toggle-switch.min',
 			'ngSanitize': 'libs/angular-sanitize/angular-sanitize.min',
-			'scDateTime': 'libs/sc-date-time/dist/sc-date-time',
 			'moment': 'libs/moment/min/moment.min',
 			'ui-layout': 'libs/angular-ui-layout/src/ui-layout',
 			'ui-router': 'libs/angular-ui-router/release/angular-ui-router.min',
@@ -103,15 +102,12 @@
 				exports: 'angular',
 				deps: ['angular']
 			},
-			'scDateTime': {
-				deps: ['angular']
-			},
 			'highcharts': {
 				exports: 'Highcharts',
 				deps: ['jquery']
 			},
 			'ngMaterial': {
-				deps: ['angular','ngAria','ngMessages','ngAnimate']
+				deps: ['angular', 'ngAria', 'ngMessages', 'ngAnimate']
 			},
 			'drilldown': {
 				exports: 'drilldown',
