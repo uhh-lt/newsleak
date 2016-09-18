@@ -156,15 +156,9 @@ define([
             /* Indicates whether the network is initialized or new data is being loaded */
             $scope.loading = true;
 
-            $scope.observerService.registerObserverCallback(function() {
-                console.log("update network");
-                reload();
-            });
-
             $scope.$watch('edgeImportance', handleEdgeSlider);
 
-
-            function reload() {
+            $scope.reloadGraph = function() {
                 // TODO: We need this in several components helper methods would be nice ... (copied from metadataController)
                 var fulltext = $scope.fulltextFilters.map(function(f) { return f.data.name; });
                 var facets = $scope.observerService.getFacets();
@@ -202,9 +196,18 @@ define([
                     $scope.maxEdgeImportance = (self.edgesDataset.length > 0) ? self.edgesDataset.max("value").value : 0;
                     console.log("" + self.nodesDataset.length + " nodes loaded");
                 });
-                // Bring graph in current viewport
+                // Bring graph before stabilization in current viewport
                 $timeout(function() { self.network.fit(); }, 0, false);
-            }
+            };
+
+
+            // Initialize graph
+            $scope.reloadGraph();
+
+            $scope.observerService.registerObserverCallback(function() {
+                console.log("update network");
+                $scope.reloadGraph();
+            });
 
             function applyPhysicsOptions(options) {
                 console.log('Physics simulation on');
@@ -220,6 +223,8 @@ define([
                 // regular angular update event cycle. It also requires to remove
                 // the watchCollection from the options entirely!
                 self.network.setOptions($scope.graphOptions);
+                // Bring graph in current viewport
+                $timeout(function() { self.network.fit(); }, 0, false);
             }
 
 
