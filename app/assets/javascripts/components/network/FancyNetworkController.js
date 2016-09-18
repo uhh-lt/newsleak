@@ -182,7 +182,15 @@ define([
                         // If all nodes have the same occurrence assign same mass. This also prevents errors
                         // for wrong interval mappings e.g. [1,1] to [1,2] yields NaN for the mass.
                         if(originalMin == originalMax) mass = 1;
-                        return {id: n.id, label: n.label, value: n.count, group: n.group, title: title, mass: mass };
+                        return {
+                            id: n.id,
+                            label: n.label,
+                            type: n.type,
+                            value: n.count,
+                            group: n.group,
+                            title: title,
+                            mass: mass
+                        };
                     });
                     self.nodes = [];
                     self.nodesDataset.clear();
@@ -244,7 +252,8 @@ define([
             }
 
             function addNodeFilter(nodeId) {
-
+                var entity = new VisDataSet(self.nodes).get(nodeId);
+                $scope.observerService.addItem({type: 'entity', data: {id: entity.id, name: entity.label, type: entity.type}});
             }
 
             function applyPhysicsOptions(options) {
@@ -396,7 +405,8 @@ define([
                         {
                             title: 'Add as filter',
                             action: function(value, nodeId) {
-                                alert(value + nodeId);
+                                //alert(value + nodeId);
+                                addNodeFilter(nodeId);
                             }
                         },
                         {
