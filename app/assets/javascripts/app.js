@@ -43,6 +43,7 @@ define([
     'ui-bootstrap',
     'angularResizable',
     'ngMaterial',
+    'angularScreenfull',
     'ngVis',
     'vis'
 ], function (angular) {
@@ -52,7 +53,7 @@ define([
         [
             'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable','ngMaterial',
             'angularMoment', 'underscore', 'myApp.observer', 'myApp.util', 'myApp.history',
-            'myApp.tools',
+            'myApp.tools', 'angularScreenfull',
             'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
             'myApp.network', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
             'myApp.metafactory', 'myApp.toolfactory',

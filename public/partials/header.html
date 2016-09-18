@@ -15,7 +15,7 @@
   ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<div class="navbar navbar-inverse titlebar">
+<div class="navbar navbar-inverse titlebar" show-if-fullscreen=false>
 
   <div class="container-fluid">
     <a class="navbar-brand title" href="#">new/s/leak</a>
@@ -49,6 +49,13 @@
       <a href="http://www.spiegel.de/" target="_blank" data-toggle="tooltip" title="Der Spiegel">
         <img style="height: 43px; object-fit:contain" src="./assets/images/logo_der_spiegel.png">
       </a>
+
+      <md-button class="md-raised" aria-label="Fullscreen" ngsf-toggle-fullscreen>
+        <md-tooltip show-if-fullscreen=false> Enter Fullscreen </md-tooltip>
+        <md-tooltip show-if-fullscreen=true> Exit Fullscreen </md-tooltip>
+        <md-icon md-font-icon="fa fa-desktop fa-2x" show-if-fullscreen=false></md-icon>
+        <md-icon md-font-icon="fa fa-times fa-2x" show-if-fullscreen=true></md-icon>
+      </md-button>
 
       <a class="btn btn-default navbar-btn" href="http://newsleak.io/projekt/" target="_blank"
           type="button" data-toggle="tooltip" title="More informations about new/s/leak">
