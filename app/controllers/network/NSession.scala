@@ -1,9 +1,10 @@
 // scalastyle:off
 package controllers.network
 
+import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
 import play.api.Logger
 import play.api.libs.json
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{ JsObject, Json }
 import scalikejdbc._
 
 import scala.math.Ordering
@@ -24,9 +25,6 @@ class NSession {
    * Gibt an wie viele Iterationen schon vollzogen wurdn
    */
   var iter: Int = 0
-  /**
-   * Knoten der gerade anfokussiert wird
-   */
 
   var nodes = new mutable.HashMap[Long, Node]()
   var edges = new mutable.HashMap[(Node, Node), Edge]()
@@ -45,8 +43,8 @@ class NSession {
     iter += 1
     edges.clear
     nodes.clear
-    val nodeTuple = sql"""SELECT id, name, type, frequency FROM entity WHERE id = $focusId"""
-      .map(rs => (rs.long("id"), rs.string("name"), rs.int("frequency"), rs.string("type"))).list().apply().head
+    val nodeTuple = sql"""SELECT id, name, type, dococc FROM entity_ext WHERE id = $focusId"""
+      .map(rs => (rs.long("id"), rs.string("name"), rs.int("dococc"), rs.string("type"))).list().apply().head
     val startNode = new Node(nodeTuple._1, nodeTuple._3, 0, nodeTuple._4, iter)
     Logger.info("start guidance")
     Logger.info(uiMatrix.deep.mkString("\n"))
@@ -55,6 +53,7 @@ class NSession {
     var edgeMap = new mutable.HashMap[(Node, Node), Edge]() //(id, source, target, frequency)
     var usedNodes = new mutable.HashSet[Node]()
     usedNodes += startNode
+    nodes += ((focusId, startNode))
 
     var pq = mutable.PriorityQueue[Edge]()(Ordering.by[Edge, Double](_.getDoi))
     pq ++= getEdges(startNode)
@@ -86,12 +85,12 @@ class NSession {
     }
 
     //bestimme Namen, Frequenz und Typ der Knoten
-    Logger.info("ggN SQL: SELECT id, name, type, frequency FROM entity WHERE id IN ")
-    val nodesTuple = sql"""SELECT id, name, type, frequency FROM entity WHERE id IN (${usedNodes.map(_.getId)})"""
-      .map(rs => (rs.long("id"), rs.string("name"), rs.int("frequency"), rs.string("type"))).list().apply()
+    //TODO Diese SQL Abfrage ist überflüssig
+    val nodesTuple = sql"""SELECT id, name, type, dococc FROM entity_ext WHERE id IN (${usedNodes.map(_.getId)})"""
+      .map(rs => (rs.long("id"), rs.string("name"), rs.int("dococc"), rs.string("type"))).list.apply
     Logger.info(nodesTuple.toString)
-    val result = new JsObject(Map(("nodes", Json.toJson(nodesTuple)), ("links", Json.toJson(edgeMap.values.map(e => (0, e.getNodes._1.getId, e.getNodes._2.getId, e.getDocOcc)))))) //TODO Kantenattribute müssen auch zurückgegeben werden
-
+    val result = new JsObject(Map(("nodes", Json.toJson(nodesTuple)), ("links", Json.toJson(edgeMap.values.map(e => (0, e.getNodes._1.getId, e.getNodes._2.getId, e.getDocOcc))))))
+    Logger.info("" + edgeMap.size)
     Json.toJson(result)
   }
 
@@ -104,38 +103,23 @@ class NSession {
 
     var distToFocus: Int = node.getDistance //Wenn der Knoten nicht in der Map liegt, muss es sich um dem Fokus handeln, also dist=0
     distToFocus += 1
-    val query1 =
-      sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq, relationship.id, et1.type, et2.type
-          FROM relationship LEFT JOIN entity AS et1 ON et1.id = relationship.entity1
-          LEFT JOIN entity AS et2 ON et2.id = relationship.entity2 WHERE entity1 = ${node.getId} ORDER BY efreq DESC LIMIT 100"""
-    val query2 =
-      sql"""SELECT entity1, entity2, relationship.frequency AS efreq, et1.frequency AS n1freq, et2.frequency AS n2freq, relationship.id, et1.type, et2.type
-          FROM relationship LEFT JOIN entity AS et1 ON et1.id = relationship.entity1
-          LEFT JOIN entity AS et2 ON et2.id = relationship.entity2 WHERE entity2 = ${node.getId} ORDER BY efreq DESC LIMIT 100""" //zwei seperate SQL Abfragen sind schnelle als eine per union vereinte Abfrage
-    def useResult(sqlresult: SQL[Nothing, NoExtractor]): mutable.HashMap[(Node, Node), Edge] =
-      {
-        var newEdges = new mutable.HashMap[(Node, Node), Edge]()
-        val result = sqlresult.map(rs => {
-          //e1.id,e2.id,r.freq,e1.freq,e2.freq,r.id,e1.type,e2.type
-          (rs.long(1), rs.long(2), rs.int(3), rs.int(4), rs.int(5), rs.long(6), rs.string(7), rs.string(8)) //TODO Limit ist veränderbar
-        })
-          .toList().apply()
-        val use2ndNode = if (result.nonEmpty) node.getId == result.head._1 else false //Wenn nodeId der erste Knoten im Kantentupel ist, müssen wir die Distanzen der zweiten Knoten überprüfen
+    val nodeBuckets = FacetedSearch.aggregateEntities(Facets(List(), Map(), List(node.getId), None, None), 100, List(), 1).buckets
+    val edgeFreqTuple = nodeBuckets.collect { case NodeBucket(id, docOccurrence) => (id, docOccurrence.toInt) }.filter(_._1 != node.getId)
+    val nodeMap: mutable.HashMap[Long, Node] = new mutable.HashMap[Long, Node]()
+    nodeMap ++= sql"""SELECT id, name, type, dococc FROM entity_ext WHERE id IN (${edgeFreqTuple.map(_._1)})"""
+      .map(rs => (rs.long(1), rs.string(2), rs.string(3), rs.int(4))).list.apply.map(x => (x._1, new Node(x._1, x._4, distToFocus, x._3, iter)))
 
-        result.foreach(r => {
-          var n = new Node(if (!use2ndNode) r._1 else r._2, if (!use2ndNode) r._4 else r._5, distToFocus, if (!use2ndNode) r._7 else r._8, iter)
-          n = nodes.getOrElseUpdate(n.getId, n)
-          n.update(distToFocus,iter)
-          newEdges += (((node, n), new Edge(node, n, r._3, uiMatrix(typeIndex(r._7))(typeIndex(r._8)))))
-        })
-        //.filter(x => cachedDistanceValues.getOrElse(x._2, distToFocus + 1) > distToFocus && x._3 > 0)
+    var newEdges = new mutable.HashMap[(Node, Node), Edge]()
+    edgeFreqTuple.foreach(et => {
+      var n = nodeMap(et._1)
+      n = nodes.getOrElseUpdate(n.getId, n)
+      n.update(distToFocus, iter)
+      newEdges += (((node, n), new Edge(node, n, et._2, uiMatrix(typeIndex(node.getCategory))(typeIndex(n.getCategory)))))
+    })
 
-        //TODO Distanzen müssen rekursiv geupdatet werden
+    //TODO Distanzen müssen rekursiv geupdatet werden
 
-        newEdges
-      }
-
-    (useResult(query1).values ++ useResult(query2).values).toList
+    newEdges.values.toList
   }
 
 }
