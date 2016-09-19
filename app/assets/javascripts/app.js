@@ -62,7 +62,15 @@ define([
         ]
     );
 
-    app.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
+    app.config(['$stateProvider', '$urlRouterProvider', '$mdThemingProvider', function($stateProvider, $urlRouterProvider, $mdThemingProvider) {
+
+        $mdThemingProvider.theme('control-theme')
+            .primaryPalette('yellow')
+            .dark()
+            .backgroundPalette('blue-grey', {
+                'default': '200'
+            });
+
         $stateProvider
         .state('layout', {
             views: {
