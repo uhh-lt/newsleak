@@ -3,28 +3,38 @@
  */
 package controllers.network
 
-import scala.math.log
+import math.log
+import math.pow
+import math.min
 
 /**
  * Created by martin on 17.09.16.
  */
 class Edge(n1: Node, n2: Node, docOcc: Int, ui: Double) {
+  private val docs = 251287 // Anzahl der Dokumente in der SQL DB
+  private var API = 0.0
   // Logger.info("" + n1 + n2)
   // assert(n1.getId < n2.getId)
   // val id: Double = (n1.getId:Double) + math.pow(n2.getId:Double,7)
-  private var api = 1 / -log((docOcc: Double) * (docOcc: Double) / ((n1.getDocOcc: Double) * n2.getDocOcc: Double))
-  private var dist = math.min(n1.getDistance, n2.getDistance)
+  private var dist = min(n1.getDistance, n2.getDistance)
+  private var doiDebugString = ""
   private val doi = if (ui == Double.NegativeInfinity) {
     Double.NegativeInfinity // Wenn Kanten dieses Types nicht berücksichtig werden sollen, setze den DoI Wert auf -inf
   } else {
+    val pmi2 = log(((docOcc: Double) / docs * (docOcc: Double) / docs) / ((n1.getDocOcc: Double) / docs * (n2.getDocOcc: Double) / docs))
+    val npmi2 = pmi2 / (-log((docOcc: Double) / docs * (docOcc: Double) / docs))
+    val npmi2plus = (npmi2 + 1) / 2
+
     val alpha = 1
-    val beta = 0
-    val gamma = 1
+    val beta = 1
+    val gamma = 0
 
-    val D = 0 // -(1 - scala.math.pow(0.5, distToFocus) * (x._2))
+    val API = npmi2plus
+    val D = -(1 - pow(0.5, dist)) * npmi2plus
+    val UI = API * ui
 
-    val UI = api * ui
-    api * alpha + beta * D + UI * gamma
+    doiDebugString = " api: " + API
+    API * alpha + beta * D + UI * gamma
   }
 
   def getNodes: (Node, Node) = {
@@ -38,8 +48,10 @@ class Edge(n1: Node, n2: Node, docOcc: Int, ui: Double) {
     doi
   }
 
-  override def toString: String = {
-    n1.toString + n2.toString + "doi: " + doi
+  def toString(showNodes: Boolean = false): String = {
+    if (showNodes) n1.toString + n2.toString else "" + "doi: " + doi + doiDebugString
   }
+
+  override def toString: String = toString(false)
 
 }

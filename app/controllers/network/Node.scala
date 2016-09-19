@@ -6,10 +6,14 @@ package controllers.network
 /**
  * Created by martin on 17.09.16.
  */
-class Node(id: Long, docOcc: Int, var distance: Int, category: String = "unknown",var iter: Int) {
+class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: String = "unknown", var iter: Int) {
 
   def getId: Long = {
     id
+  }
+
+  def getName: String = {
+    name
   }
 
   def getDocOcc: Int = {
@@ -29,8 +33,7 @@ class Node(id: Long, docOcc: Int, var distance: Int, category: String = "unknown
       if (distance < this.distance) {
         // TODO Kanten müssen rekursiv geupdatet werden
         this.distance = distance
-      }
-      else {
+      } else {
         this.distance = distance
       }
   }

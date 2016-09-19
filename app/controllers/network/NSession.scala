@@ -45,7 +45,7 @@ class NSession {
     nodes.clear
     val nodeTuple = sql"""SELECT id, name, type, dococc FROM entity_ext WHERE id = $focusId"""
       .map(rs => (rs.long("id"), rs.string("name"), rs.int("dococc"), rs.string("type"))).list().apply().head
-    val startNode = new Node(nodeTuple._1, nodeTuple._3, 0, nodeTuple._4, iter)
+    val startNode = new Node(nodeTuple._1, nodeTuple._2, nodeTuple._3, 0, nodeTuple._4, iter)
     Logger.info("start guidance")
     Logger.info(uiMatrix.deep.mkString("\n"))
     this.uiMatrix = uiMatrix
@@ -85,11 +85,7 @@ class NSession {
     }
 
     //bestimme Namen, Frequenz und Typ der Knoten
-    //TODO Diese SQL Abfrage ist überflüssig
-    val nodesTuple = sql"""SELECT id, name, type, dococc FROM entity_ext WHERE id IN (${usedNodes.map(_.getId)})"""
-      .map(rs => (rs.long("id"), rs.string("name"), rs.int("dococc"), rs.string("type"))).list.apply
-    Logger.info(nodesTuple.toString)
-    val result = new JsObject(Map(("nodes", Json.toJson(nodesTuple)), ("links", Json.toJson(edgeMap.values.map(e => (0, e.getNodes._1.getId, e.getNodes._2.getId, e.getDocOcc))))))
+    val result = new JsObject(Map(("nodes", Json.toJson(usedNodes.map(n => { (n.getId, n.getName, n.getDocOcc, n.getCategory) }))), ("links", Json.toJson(edgeMap.values.map(e => (0, e.getNodes._1.getId, e.getNodes._2.getId, e.getDocOcc))))))
     Logger.info("" + edgeMap.size)
     Json.toJson(result)
   }
@@ -107,7 +103,7 @@ class NSession {
     val edgeFreqTuple = nodeBuckets.collect { case NodeBucket(id, docOccurrence) => (id, docOccurrence.toInt) }.filter(_._1 != node.getId)
     val nodeMap: mutable.HashMap[Long, Node] = new mutable.HashMap[Long, Node]()
     nodeMap ++= sql"""SELECT id, name, type, dococc FROM entity_ext WHERE id IN (${edgeFreqTuple.map(_._1)})"""
-      .map(rs => (rs.long(1), rs.string(2), rs.string(3), rs.int(4))).list.apply.map(x => (x._1, new Node(x._1, x._4, distToFocus, x._3, iter)))
+      .map(rs => (rs.long(1), rs.string(2), rs.string(3), rs.int(4))).list.apply.map(x => (x._1, new Node(x._1, x._2, x._4, distToFocus, x._3, iter)))
 
     var newEdges = new mutable.HashMap[(Node, Node), Edge]()
     edgeFreqTuple.foreach(et => {
