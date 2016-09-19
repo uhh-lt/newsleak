@@ -162,51 +162,58 @@ define([
             $scope.$watch('edgeImportance', handleEdgeSlider);
 
             $scope.reloadGraph = function() {
-                // TODO: We need this in several components helper methods would be nice ... (copied from metadataController)
                 var fulltext = $scope.fulltextFilters.map(function(f) { return f.data.name; });
                 var facets = $scope.observerService.getFacets();
 
-                playRoutes.controllers.NetworkController.induceSubgraph(fulltext, facets,[],$scope.observerService.getTimeRange(),18,"").get().then(function(response) {
-                    // Enable physics for new graph data
-                    applyPhysicsOptions(self.physicOptions);
-                    $scope.loading = true;
+                 var fraction = [
+                    {"key": "PER", "data": $scope.numPer },
+                    {"key": "ORG", "data": $scope.numOrg },
+                    {"key": "LOC", "data": $scope.numLoc },
+                    {"key": "MISC", "data": $scope.numMisc }
+                ];
 
-                    var originalMax = _.max(response.data.entities, function(n) { return n.count; }).count;
-                    var originalMin = _.min(response.data.entities, function(n) { return n.count; }).count;
+                // TODO entities filter []
+                playRoutes.controllers.NetworkController.induceSubgraph(fulltext, facets, [], $scope.observerService.getTimeRange(), fraction, []).get().then(function(response) {
+                        // Enable physics for new graph data
+                        applyPhysicsOptions(self.physicOptions);
+                        $scope.loading = true;
 
-                    var nodes = response.data.entities.map(function(n) {
-                        // See css property div.network-tooltip for custom tooltip styling
-                        var title = 'Co-occurrence: ' + n.count + '<br>Typ: ' + n.type;
-                        // map counts to interval [1,2] for nodes mass
-                        var mass = ((n.count - originalMin) / (originalMax - originalMin)) * (2 - 1) + 1;
-                        // If all nodes have the same occurrence assign same mass. This also prevents errors
-                        // for wrong interval mappings e.g. [1,1] to [1,2] yields NaN for the mass.
-                        if(originalMin == originalMax) mass = 1;
-                        return {
-                            id: n.id,
-                            label: n.label,
-                            type: n.type,
-                            value: n.count,
-                            group: n.group,
-                            title: title,
-                            mass: mass
-                        };
+                        var originalMax = _.max(response.data.entities, function(n) { return n.count; }).count;
+                        var originalMin = _.min(response.data.entities, function(n) { return n.count; }).count;
+
+                        var nodes = response.data.entities.map(function(n) {
+                            // See css property div.network-tooltip for custom tooltip styling
+                            var title = 'Co-occurrence: ' + n.count + '<br>Typ: ' + n.type;
+                            // map counts to interval [1,2] for nodes mass
+                            var mass = ((n.count - originalMin) / (originalMax - originalMin)) * (2 - 1) + 1;
+                            // If all nodes have the same occurrence assign same mass. This also prevents errors
+                            // for wrong interval mappings e.g. [1,1] to [1,2] yields NaN for the mass.
+                            if(originalMin == originalMax) mass = 1;
+                            return {
+                                id: n.id,
+                                label: n.label,
+                                type: n.type,
+                                value: n.count,
+                                group: n.group,
+                                title: title,
+                                mass: mass
+                            };
+                        });
+                        self.nodes = [];
+                        self.nodesDataset.clear();
+                        self.nodesDataset.add(nodes);
+
+                        var edges = response.data.relations.map(function(n) {
+                            return {from: n[0], to: n[1], value: n[2] };
+                        });
+                        self.edges = [];
+                        self.edgesDataset.clear();
+                        self.edgesDataset.add(edges);
+
+                        // Update the maximum edge importance slider value
+                        $scope.maxEdgeImportance = (self.edgesDataset.length > 0) ? self.edgesDataset.max("value").value : 0;
+                        console.log("" + self.nodesDataset.length + " nodes loaded");
                     });
-                    self.nodes = [];
-                    self.nodesDataset.clear();
-                    self.nodesDataset.add(nodes);
-
-                    var edges = response.data.relations.map(function(n) {
-                        return {from: n[0], to: n[1], value: n[2] };
-                    });
-                    self.edges = [];
-                    self.edgesDataset.clear();
-                    self.edgesDataset.add(edges);
-
-                    // Update the maximum edge importance slider value
-                    $scope.maxEdgeImportance = (self.edgesDataset.length > 0) ? self.edgesDataset.max("value").value : 0;
-                    console.log("" + self.nodesDataset.length + " nodes loaded");
-                });
                 // Bring graph before stabilization in current viewport
                 $timeout(function() { self.network.fit(); }, 0, false);
             };

@@ -26,24 +26,25 @@
 
 <md-toolbar>
     <div class="md-toolbar-tools" md-theme="control-theme">
+        <!-- TODO Generate in for loop -->
         <md-input-container layout flex="10">
             <label>#Per</label>
-            <input ng-model="numPer" type="number" step="1">
+            <input ng-model="numPer" ng-change="reloadGraph()" type="number" step="1" min="0" ng-model-options="{updateOn: 'default blur', debounce: {default: 100, blur: 0} }">
         </md-input-container>
 
         <md-input-container layout flex="10">
             <label>#Org</label>
-            <input ng-model="numOrg" type="number" step="1">
+            <input ng-model="numOrg" ng-change="reloadGraph()" type="number" step="1" min="0" ng-model-options="{updateOn: 'default blur', debounce: {default: 100, blur: 0} }">
         </md-input-container>
 
         <md-input-container layout flex="10">
             <label>#Loc</label>
-            <input ng-model="numLoc" type="number" step="1">
+            <input ng-model="numLoc" ng-change="reloadGraph()" type="number" step="1" min="0" ng-model-options="{updateOn: 'default blur', debounce: {default: 100, blur: 0} }">
         </md-input-container>
 
         <md-input-container layout flex="10">
             <label>#Misc</label>
-            <input ng-model="numMisc" type="number" step="1">
+            <input ng-model="numMisc" ng-change="reloadGraph()" type="number" step="1" min="0" ng-model-options="{updateOn: 'default blur', debounce: {default: 100, blur: 0} }">
         </md-input-container>
 
         <!--<h3><span>Network View</span></h3>-->
