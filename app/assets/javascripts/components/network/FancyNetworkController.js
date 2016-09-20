@@ -46,6 +46,9 @@ define([
 
             var self = this;
 
+            /* Entity types to their id */
+            self.types = {};
+
             /* Background collection */
             self.nodes = new VisDataSet([]);
             self.edges = new VisDataSet([]);
@@ -180,6 +183,9 @@ define([
                         applyPhysicsOptions(self.physicOptions);
                         $scope.loading = true;
 
+                        // Assignment from entity types to their id for coloring
+                        self.types = response.data.types;
+
                         var originalMax = _.max(response.data.entities, function(n) { return n.count; }).count;
                         var originalMin = _.min(response.data.entities, function(n) { return n.count; }).count;
 
@@ -260,25 +266,24 @@ define([
                     templateUrl: 'assets/partials/editNode.html',
                     controller: ['$scope', '$mdDialog', 'playRoutes', 'e',
                         function($scope, $mdDialog, playRoutes, e) {
-
                             $scope.title = e.label;
                             $scope.entity = e;
                             
-                            $scope.apply = function () {
-                              // Only if label and type is different from previous
-                                $mdDialog.hide($scope.entity);
-                            };
-
-                            $scope.closeClick = function() {
-                                $mdDialog.cancel();
-                            };
+                            $scope.apply = function () { $mdDialog.hide($scope.entity); };
+                            $scope.closeClick = function() { $mdDialog.cancel(); };
                         }],
-                    locals: {
-                        e: entity
-                    }
+                    locals: { e: entity }
                 }).then(function(response) {
-                    self.nodesDataset.update(response);
-                    self.nodes.update(response);
+                    // Adapt tooltip and node color
+                    var modified = _.extend(response, {
+                        group: self.types[response.type],
+                        title: 'Co-occurrence: ' + response.value + '<br>Typ: ' + response.type
+                    });
+                    self.nodesDataset.update(modified);
+                    self.nodes.update(modified);
+                    // Store changes
+                    playRoutes.controllers.NetworkController.changeEntityNameById(response.id, response.label).get().then(function(response) { /* Error handling */ });
+                    playRoutes.controllers.NetworkController.changeEntityTypeById(response.id, response.type).get().then(function(response) { /* Error handling */ });
                 }, function() { /* cancel click */ });
             }
 
