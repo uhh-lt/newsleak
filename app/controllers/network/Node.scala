@@ -6,7 +6,8 @@ package controllers.network
 /**
  * Created by martin on 17.09.16.
  */
-class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: String = "unknown", var iter: Int) {
+class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: String, var iter: Int) {
+  var connectedEdges = 0
 
   def getId: Long = {
     id
@@ -28,6 +29,14 @@ class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: Str
     distance
   }
 
+  def incConn() = {
+    connectedEdges += 1
+  }
+
+  def getConn: Int = {
+    connectedEdges
+  }
+
   def update(distance: Int, iter: Int) = {
     if (iter == this.iter)
       if (distance < this.distance) {
@@ -39,6 +48,6 @@ class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: Str
   }
 
   override def toString: String = {
-    "(S Id: " + id + ")"
+    "(Name: " + name + ")"
   }
 }

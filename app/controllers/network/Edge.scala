@@ -49,7 +49,7 @@ class Edge(n1: Node, n2: Node, docOcc: Int, ui: Double) {
   }
 
   def toString(showNodes: Boolean = false): String = {
-    if (showNodes) n1.toString + n2.toString else "" + "doi: " + doi + doiDebugString
+    if (showNodes) n1.toString + n2.toString else { "" } + "doi: " + doi + doiDebugString
   }
 
   override def toString: String = toString(false)

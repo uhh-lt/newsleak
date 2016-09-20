@@ -24,10 +24,10 @@ import controllers.network.NSession
 // scalastyle:off
 
 import model.EntityType
-import model.faceted.search.{FacetedSearch, Facets, NodeBucket}
+import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
 import play.api.libs.json.Writes._
-import play.api.libs.json.{JsObject, Json}
-import play.api.mvc.{Action, Controller}
+import play.api.libs.json.{ JsObject, Json }
+import play.api.mvc.{ Action, Controller }
 import util.TimeRangeParser
 import util.TupleWriters._
 //import scalikejdbc._
