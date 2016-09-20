@@ -10,9 +10,9 @@ import math.min
 /**
  * Created by martin on 17.09.16.
  */
-class Edge(n1: Node, n2: Node, docOcc: Int, ui: Double) {
+class Edge(n1: Node, n2: Node, docOcc: Int, ui: Double, oldDoi: Double) {
   private val docs = 251287 // Anzahl der Dokumente in der SQL DB
-  private var API = 0.0
+
   // Logger.info("" + n1 + n2)
   // assert(n1.getId < n2.getId)
   // val id: Double = (n1.getId:Double) + math.pow(n2.getId:Double,7)
@@ -27,11 +27,11 @@ class Edge(n1: Node, n2: Node, docOcc: Int, ui: Double) {
 
     val alpha = 1
     val beta = 1
-    val gamma = 0
+    val gamma = 1
 
     val API = npmi2plus
     val D = -(1 - pow(0.5, dist)) * npmi2plus
-    val UI = API * ui
+    val UI = /* API * ui + */ oldDoi * 0.1
 
     doiDebugString = " api: " + API
     API * alpha + beta * D + UI * gamma
@@ -49,7 +49,7 @@ class Edge(n1: Node, n2: Node, docOcc: Int, ui: Double) {
   }
 
   def toString(showNodes: Boolean = false): String = {
-    if (showNodes) n1.toString + n2.toString else { "" } + "doi: " + doi + doiDebugString
+    (if (showNodes) { n1.toString + n2.toString } else { "" }) + "doi: " + doi + doiDebugString
   }
 
   override def toString: String = toString(false)

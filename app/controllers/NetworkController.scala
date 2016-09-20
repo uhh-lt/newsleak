@@ -356,12 +356,12 @@ class NetworkController @Inject extends Controller {
    * @param focusId anfokussierter Knoten
    * @return sendet die Kanten+Knoten an den Benutzer
    */
-  def getGuidanceNodes(focusId: Long, edgeAmount: Int, uiString: String, sessionId: String) = Action {
+  def getGuidanceNodes(focusId: Long, edgeAmount: Int, uiString: String, useOldEdges: Boolean, sessionId: String) = Action {
     val prioToFactor: collection.immutable.HashMap[Int, Double] = collection.immutable.HashMap(0 -> Double.NegativeInfinity, 1 -> 1, 2 -> 2, 3 -> 4) //die Prioritäten(0-3) werden auf Faktoren abgebildet.
 
-    val uiMatrix: Array[Array[Double]] = uiString.split(";").map(_.split(",").map(_.toInt).map(prioToFactor(_)))
+    val uiMatrix: Array[Array[Double]] = uiString.split(";").map(_.split(",").map(_.toInt).map(prioToFactor))
     val ns = NSessionMap.getOrElseUpdate(sessionId, new NSession)
-    Ok(Json.toJson(ns.getGuidanceNodes(focusId, edgeAmount, uiMatrix))).as("application/json")
+    Ok(Json.toJson(ns.getGuidanceNodes(focusId, edgeAmount, uiMatrix, useOldEdges))).as("application/json")
   }
 
 }

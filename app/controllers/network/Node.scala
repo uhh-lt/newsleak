@@ -38,13 +38,16 @@ class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: Str
   }
 
   def update(distance: Int, iter: Int) = {
-    if (iter == this.iter)
+    if (iter == this.iter) {
       if (distance < this.distance) {
         // TODO Kanten müssen rekursiv geupdatet werden
         this.distance = distance
-      } else {
-        this.distance = distance
       }
+    } else {
+      this.iter = iter
+      connectedEdges = 0
+      this.distance = distance
+    }
   }
 
   override def toString: String = {

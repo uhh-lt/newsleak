@@ -29,6 +29,7 @@ class NSession {
 
   var nodes = new mutable.HashMap[Long, Node]()
   var edges = new mutable.HashMap[(Node, Node), Edge]()
+  var oldEdges = new mutable.HashMap[(Node, Node), Edge]()
 
   /**
    * Map cacht Knoten deren DoI-Wert schonmal berechnet wurden. Wird mit dem Beginn jedes Guidance-Schrittes zurückgesetzt.
@@ -40,13 +41,20 @@ class NSession {
    * @param focusId anfokussierter Knoten
    * @return sendet die Kanten+Knoten an den Benutzer
    */
-  def getGuidanceNodes(focusId: Long, edgeAmount: Int, uiMatrix: Array[Array[Double]]): json.JsValue = {
+  def getGuidanceNodes(focusId: Long, edgeAmount: Int, uiMatrix: Array[Array[Double]], useOldEdges: Boolean): json.JsValue = {
     iter += 1
+    //nodes.clear
     edges.clear
-    nodes.clear
-    val nodeTuple = sql"""SELECT id, name, type, dococc FROM entity_ext WHERE id = $focusId"""
-      .map(rs => (rs.long("id"), rs.string("name"), rs.int("dococc"), rs.string("type"))).list().apply().head
-    val startNode = new Node(nodeTuple._1, nodeTuple._2, nodeTuple._3, 0, nodeTuple._4, iter)
+    if (!useOldEdges) {
+      oldEdges.clear
+    }
+
+    //TODO Node Extraktion in Funktion auslagern
+    var startNode = sql"""SELECT id, name, type, dococc FROM entity_ext WHERE id = $focusId"""
+      .map(rs => (rs.long("id"), rs.string("name"), rs.int("dococc"), rs.string("type"))).first().apply().map(t => new Node(t._1, t._2, t._3, 0, t._4, iter)).get
+    startNode = nodes.getOrElseUpdate(focusId, startNode)
+    startNode.update(0, iter)
+
     Logger.info("start guidance")
     //Logger.info(uiMatrix.deep.mkString("\n"))
     this.uiMatrix = uiMatrix
@@ -54,7 +62,7 @@ class NSession {
     var usedEdges = new mutable.HashMap[(Node, Node), Edge]()
     var usedNodes = new mutable.HashSet[Node]()
     usedNodes += startNode
-    nodes += ((focusId, startNode))
+    //nodes += ((focusId, startNode))
 
     var pq = mutable.PriorityQueue[Edge]()(Ordering.by[Edge, Double](_.getDoi))
     pq ++= getEdges(startNode)
@@ -64,16 +72,19 @@ class NSession {
     loop.breakable {
       for (i <- 0 until edgeAmount) {
         //edgeArr.map ??
-
-        val edgeO = pq.find(e => !{
+        object pqIter extends Iterator[Edge] { // ACHTUNG pq gibt mit .find() nicht nach DoI geordnet aus! Deswegen ist das hier notwendig
+          def hasNext = pq.nonEmpty
+          def next = pq.dequeue()
+        }
+        val edgeO = pqIter.find(e => !{
           Logger.info("" + e.toString(true) + "E1:" + e.getNodes._1.getConn + "E2:" + e.getNodes._2.getConn)
-          usedEdges.contains(e.getNodes) || usedEdges.contains((e.getNodes._2, e.getNodes._1)) || e.getNodes._1.getConn == EpN || e.getNodes._2.getConn == EpN
+          usedEdges.contains(e.getNodes) || usedEdges.contains(e.getNodes.swap) || e.getNodes._1.getConn == EpN || e.getNodes._2.getConn == EpN
         })
-        if (edgeO.isEmpty) {
+
+        val edge = edgeO.getOrElse({
           Logger.warn("Es wurden weniger Kanten als geplant ausgegeben da der Priority Queue leer ist. EpN hochsetzen?")
           loop.break()
-        }
-        val edge = edgeO.get
+        })
 
         edge.getNodes._1.incConn()
         edge.getNodes._2.incConn()
@@ -101,6 +112,7 @@ class NSession {
     //bestimme Namen, Frequenz und Typ der Knoten
     val result = new JsObject(Map(("nodes", Json.toJson(usedNodes.map(n => { (n.getId, n.getName, n.getDocOcc, n.getCategory) }))), ("links", Json.toJson(usedEdges.values.map(e => (0, e.getNodes._1.getId, e.getNodes._2.getId, e.getDocOcc))))))
     Logger.info("" + usedEdges.size)
+    oldEdges = usedEdges
     Json.toJson(result)
   }
 
@@ -124,7 +136,13 @@ class NSession {
       var n = nodeMap(et._1)
       n = nodes.getOrElseUpdate(n.getId, n)
       n.update(distToFocus, iter)
-      newEdges += (((node, n), new Edge(node, n, et._2, uiMatrix(typeIndex(node.getCategory))(typeIndex(n.getCategory)))))
+      var oldDoi = 0.0
+      if (oldEdges.contains((node, n))) {
+        oldDoi = oldEdges((node, n)).getDoi
+      } else if (oldEdges.contains((n, node))) {
+        oldDoi = oldEdges((n, node)).getDoi
+      }
+      newEdges += (((node, n), new Edge(node, n, et._2, uiMatrix(typeIndex(node.getCategory))(typeIndex(n.getCategory)), oldDoi)))
     })
 
     //TODO Distanzen müssen rekursiv geupdatet werden

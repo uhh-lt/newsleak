@@ -122,7 +122,7 @@ define([
             $scope.$on('startGuidance-down', function(event, arg) {
                 console.log("received event startGuidance");
                 console.log(arg);
-                getGuidanceNodes(arg)});
+                getGuidanceNodes(arg,false)});
 
             var selectedNodes = new Array();
             $scope.selectedNodes = selectedNodes;
@@ -1778,14 +1778,15 @@ define([
                 )
             }
 
-            function getGuidanceNodes(node){
+            function getGuidanceNodes(node,useOldEdges){
                 var uiStr= "";
                 for (var i=0;i<toolShareService.UIitems.length;i++){
                     uiStr+=toolShareService.UIitems[i].toString()+';';
                 }
-                var flatUIitems = [].concat.apply([], toolShareService.UIitems).toString();
+                useOldEdges = typeof useOldEdges !== 'undefined' ? useOldEdges : true;
 
-                playRoutes.controllers.NetworkController.getGuidanceNodes(node,toolShareService.sliderEdgeAmount(),uiStr, sessionid ).get().then(function(response) {
+
+                playRoutes.controllers.NetworkController.getGuidanceNodes(node,toolShareService.sliderEdgeAmount(),uiStr,useOldEdges, sessionid ).get().then(function(response) {
 
                     //to prevent invisible selections
                     unselectNodes();
