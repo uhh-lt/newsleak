@@ -42,13 +42,15 @@ define([
             return graphProperties;
         })
         // Network Controller
-        .controller('FancyNetworkController', ['$scope', '$timeout', 'VisDataSet', 'playRoutes', 'ObserverService', '_', function ($scope, $timeout, VisDataSet, playRoutes, ObserverService, _) {
+        .controller('FancyNetworkController', ['$scope', '$timeout', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', function ($scope, $timeout, $mdDialog, VisDataSet, playRoutes, ObserverService, _) {
 
             var self = this;
 
-            self.nodes = [];
-            self.edges = [];
+            /* Background collection */
+            self.nodes = new VisDataSet([]);
+            self.edges = new VisDataSet([]);
 
+            /* Graph collection filtered during runtime */
             self.nodesDataset = new VisDataSet([]);
             self.edgesDataset = new VisDataSet([]);
 
@@ -199,14 +201,15 @@ define([
                                 mass: mass
                             };
                         });
-                        self.nodes = [];
+                        self.nodes.clear();
                         self.nodesDataset.clear();
                         self.nodesDataset.add(nodes);
 
                         var edges = response.data.relations.map(function(n) {
                             return {from: n[0], to: n[1], value: n[2] };
                         });
-                        self.edges = [];
+
+                        self.edges.clear();
                         self.edgesDataset.clear();
                         self.edgesDataset.add(edges);
 
@@ -231,36 +234,52 @@ define([
             function hideNode(nodeId) {
                 // Hide given node
                 self.nodesDataset.remove(nodeId);
-                var match = _.find(self.nodes, function (obj) {
-                    return obj.id == nodeId;
-                });
-                // Update node state in background collection
-                match.hidden = true;
-                // Identify all adjacent edges from background collection
-                var adjacentEdges = new VisDataSet(self.edges).get({
+                self.nodes.update({id: nodeId, hidden: true});
+
+                var adjacentEdges = self.edges.get({
                     filter: function(edge) {
                         return (edge.to == nodeId || edge.from == nodeId)
                     }
-                }).map(function(edge) { return edge.id; });
+                }).map(function(edge) { return _.extend(edge, { hidden: true }); });
                 // Hide adjacent edges
-                self.edges.forEach(function(edge) {
-                    if(_.contains(adjacentEdges, edge.id)) {
-                        edge.hidden = true;
-                    }
-                });
+                self.edges.update(adjacentEdges);
                 self.edgesDataset.remove(adjacentEdges);
                 // Update new edge max value from non hidden edges
-                var max = new VisDataSet(self.edges.filter(function(edge) { return !edge.hidden })).max("value").value;
+                var max = new VisDataSet(self.edges.get({ filter: function(edge) { return !edge.hidden; }})).max("value").value;
                 $scope.maxEdgeImportance = max;
-                // Update view
-                /*if($scope.edgeImportance > max) {
-                    handleEdgeSlider(max, $scope.edgeImportance)
-                }*/
             }
 
             function addNodeFilter(nodeId) {
-                var entity = new VisDataSet(self.nodes).get(nodeId);
-                $scope.observerService.addItem({type: 'entity', data: {id: entity.id, name: entity.label, type: entity.type}});
+                var entity = self.nodes.get(nodeId);
+                $scope.observerService.addItem({ type: 'entity', data: { id: entity.id, name: entity.label, type: entity.type }});
+            }
+
+            function editNode(nodeId) {
+                var entity = self.nodes.get(nodeId);
+                $mdDialog.show({
+                    templateUrl: 'assets/partials/editNode.html',
+                    controller: ['$scope', '$mdDialog', 'playRoutes', 'e',
+                        function($scope, $mdDialog, playRoutes, e) {
+
+                            $scope.title = e.label;
+                            $scope.entity = e;
+                            
+                            $scope.apply = function () {
+                              // Only if label and type is different from previous
+                                $mdDialog.hide($scope.entity);
+                            };
+
+                            $scope.closeClick = function() {
+                                $mdDialog.cancel();
+                            };
+                        }],
+                    locals: {
+                        e: entity
+                    }
+                }).then(function(response) {
+                    self.nodesDataset.update(response);
+                    self.nodes.update(response);
+                }, function() { /* cancel click */ });
             }
 
             function applyPhysicsOptions(options) {
@@ -301,8 +320,8 @@ define([
                 console.log("Stabilization done");
                 if(self.nodes.length == 0 && self.edges.length == 0) {
                     self.network.storePositions();
-                    self.nodes = self.nodesDataset.get();
-                    self.edges = self.edgesDataset.get();
+                    self.nodes = new VisDataSet(self.nodesDataset.get());
+                    self.edges = new VisDataSet(self.edgesDataset.get());
 
                     // Once the stabilized event is called the first time
                     // the network is initialized. Other stabilizing events
@@ -329,9 +348,7 @@ define([
             function dragNodeDone(event) {
                 // Update node positions of the background collection whenever they are moved
                 if(event.nodes.length == 1 && $scope.graphOptions['physics'] == false) {
-                    var match = _.find(self.nodes, function (obj) {
-                        return obj.id == event.nodes[0]
-                    });
+                    var match = self.nodes.get(event.nodes[0]);
                     match.x = event.pointer.canvas.x;
                     match.y = event.pointer.canvas.y;
                 }
@@ -364,14 +381,14 @@ define([
                     option['stabilization'] = { onlyDynamicEdges: true };
                     applyPhysicsOptions(option);
 
-                    var edgesToAdd = new VisDataSet(self.edges).get({
+                    var edgesToAdd = self.edges.get({
                         filter: function (item) {
                             return (item.value >= newValue && !item.hidden)
                         }
                     });
 
                     var nodeIds = [].concat.apply([], edgesToAdd.map(function(edge) { return [edge.to, edge.from]; }));
-                    var nodesToAdd = new VisDataSet(self.nodes).get({
+                    var nodesToAdd = self.nodes.get({
                         filter: function (item) {
                             // Add nodes to the network if there is a connecting edge and the
                             // node is not hidden by the user
@@ -412,8 +429,13 @@ define([
                         {
                             title: 'Add as filter',
                             action: function(value, nodeId) {
-                                //alert(value + nodeId);
                                 addNodeFilter(nodeId);
+                            }
+                        },
+                        {
+                            title: 'Edit node',
+                            action: function(value, nodeId) {
+                                editNode(nodeId);
                             }
                         },
                         {
