@@ -128,21 +128,23 @@ class NSession {
     val nodeBuckets = FacetedSearch.aggregateEntities(Facets(List(), Map(), List(node.getId), None, None), 100, List(), 1).buckets
     val edgeFreqTuple = nodeBuckets.collect { case NodeBucket(id, docOccurrence) => (id, docOccurrence.toInt) }.filter(_._1 != node.getId)
     val nodeMap: mutable.HashMap[Long, Node] = new mutable.HashMap[Long, Node]()
-    nodeMap ++= sql"""SELECT id, name, type, dococc FROM entity_ext WHERE id IN (${edgeFreqTuple.map(_._1)})"""
+    nodeMap ++= sql"""SELECT id, name, type, dococc FROM entity_ext WHERE id IN (${edgeFreqTuple.map(_._1)}) AND dococc IS NOT NULL"""
       .map(rs => (rs.long(1), rs.string(2), rs.string(3), rs.int(4))).list.apply.map(x => (x._1, new Node(x._1, x._2, x._4, distToFocus, x._3, iter)))
 
     var newEdges = new mutable.HashMap[(Node, Node), Edge]()
     edgeFreqTuple.foreach(et => {
-      var n = nodeMap(et._1)
-      n = nodes.getOrElseUpdate(n.getId, n)
-      n.update(distToFocus, iter)
-      var oldDoi = 0.0
-      if (oldEdges.contains((node, n))) {
-        oldDoi = oldEdges((node, n)).getDoi
-      } else if (oldEdges.contains((n, node))) {
-        oldDoi = oldEdges((n, node)).getDoi
+      if (nodeMap.contains(et._1)) {
+        var n = nodeMap(et._1)
+        n = nodes.getOrElseUpdate(n.getId, n)
+        n.update(distToFocus, iter)
+        var oldDoi = 0.0
+        if (oldEdges.contains((node, n))) {
+          oldDoi = oldEdges((node, n)).getDoi
+        } else if (oldEdges.contains((n, node))) {
+          oldDoi = oldEdges((n, node)).getDoi
+        }
+        newEdges += (((node, n), new Edge(node, n, et._2, uiMatrix(typeIndex(node.getCategory))(typeIndex(n.getCategory)), oldDoi)))
       }
-      newEdges += (((node, n), new Edge(node, n, et._2, uiMatrix(typeIndex(node.getCategory))(typeIndex(n.getCategory)), oldDoi)))
     })
 
     //TODO Distanzen müssen rekursiv geupdatet werden
