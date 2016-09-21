@@ -122,6 +122,25 @@ define([
                 }
             };
 
+            self.nodeMenu = [{
+                    title: 'Add as filter',
+                    action: function(value, nodeId) { addNodeFilter(nodeId); }
+                }, {
+                    title: 'Edit node',
+                    action: function(value, nodeId) { editNode(nodeId); }
+                }, {
+                    title: 'Hide',
+                    action: function(value, nodeId) { hideNode(nodeId); }
+                }, {
+                    title: 'Blacklist',
+                    action: function(value, nodeId) { alert(value + nodeId); }
+            }];
+
+            self.edgeMenu = [{
+                title: 'Add as filter',
+                action: function(value, edgeId) { addEdgeFilter(edgeId); }
+            }];
+
             $scope.observerService = ObserverService;
             // TOdo camelcase, only add if the event was add
 
@@ -146,7 +165,8 @@ define([
                 //"stabilizationIterationsDone": stabilizationDone,
                 "onload": onNetworkLoad,
                 "dragEnd": dragNodeDone,
-                "oncontext": showContextMenu,
+                //"oncontext": showContextMenu,
+                "oncontext": onContext,
                 "click": clickEvent,
                 "dragging": dragEvent
             };
@@ -260,6 +280,15 @@ define([
                 $scope.observerService.addItem({ type: 'entity', data: { id: entity.id, name: entity.label, type: entity.type }});
             }
 
+            function addEdgeFilter(edgeId) {
+                var edge = self.edges.get(edgeId);
+                var from = self.nodes.get(edge.from);
+                var to = self.nodes.get(edge.to);
+                // TODO This fires two events. Would be better to have a addItems method
+                $scope.observerService.addItem({ type: 'entity', data: { id: from.id, name: from.label, type: from.type }});
+                $scope.observerService.addItem({ type: 'entity', data: { id: to.id, name: to.label, type: to.type }});
+            }
+
             function editNode(nodeId) {
                 var entity = self.nodes.get(nodeId);
                 $mdDialog.show({
@@ -360,6 +389,7 @@ define([
             }
 
             function handleEdgeSlider(newValue, oldValue) {
+                closeContextMenu();
                 console.log("Handle slider " + newValue + ", " + oldValue);
                 if(newValue > oldValue) {
                     var edgesToRemove = self.edgesDataset.get({
@@ -407,68 +437,52 @@ define([
                 }
             }
 
-            function showContextMenu(params) {
+            function onContext(params) {
                 params.event.preventDefault();
                 closeContextMenu();
 
-                var xDom = params.pointer.DOM.x;
-                var yDom = params.pointer.DOM.y;
-                var nodeId = self.network.getNodeAt({ x: xDom, y: yDom });
+                var position = { x: params.pointer.DOM.x, y: params.pointer.DOM.y };
+                var nodeIdOpt = self.network.getNodeAt(position);
+                var edgeIdOpt = self.network.getEdgeAt(position);
 
-                //maybe underscore js provides better handling of such cases
-                if(typeof nodeId !== "undefined") {
-                    var container = document.getElementById('mynetwork');
-
-                    var offsetLeft = container.offsetLeft;
-                    var offsetTop = container.offsetTop;
-
-                    self.popupMenu = document.createElement("div");
-                    self.popupMenu.className = 'popupMenu';
-                    self.popupMenu.style.left = xDom - offsetLeft + 'px';
-                    self.popupMenu.style.top =  yDom - offsetTop +'px';
-
-                    var ul = document.createElement('ul');
-                    self.popupMenu.appendChild(ul);
-
-                    var menu = [
-                        {
-                            title: 'Add as filter',
-                            action: function(value, nodeId) {
-                                addNodeFilter(nodeId);
-                            }
-                        },
-                        {
-                            title: 'Edit node',
-                            action: function(value, nodeId) {
-                                editNode(nodeId);
-                            }
-                        },
-                        {
-                            title: 'Hide',
-                            action: function(value, nodeId) {
-                                hideNode(nodeId);
-                            }
-                        },
-                        {
-                            title: 'Blacklist',
-                            action: function(value, nodeId) {
-                                alert(value + nodeId);
-                            }
-                        }
-                    ];
-
-                    for (var i = 0; i < menu.length; i++) {
-                        var li = document.createElement('li');
-                        ul.appendChild(li);
-                        li.innerHTML = li.innerHTML + menu[i].title;
-                        (function(value, nodeId, action){
-                            li.addEventListener("click", function() {
-                                closeContextMenu();
-                                action(value, nodeId);
-                            }, false);})(menu[i].title, nodeId, menu[i].action);
-                    }
-                    container.appendChild(self.popupMenu);
+                // Node selected
+                if(!_.isUndefined(nodeIdOpt)) {
+                    self.network.selectNodes([nodeIdOpt]);
+                    showContextMenu(_.extend(position, { id: nodeIdOpt }), self.nodeMenu);
+                } else if(!_.isUndefined(edgeIdOpt)) {
+                    self.network.selectEdges([edgeIdOpt]);
+                    showContextMenu(_.extend(position, { id: edgeIdOpt }), self.edgeMenu);
                 }
+                else {
+                    // Nop
+                }
+            }
+
+            function showContextMenu(params, menu) {
+                var container = document.getElementById('mynetwork');
+
+                var offsetLeft = container.offsetLeft;
+                var offsetTop = container.offsetTop;
+
+                self.popupMenu = document.createElement("div");
+                self.popupMenu.className = 'popupMenu';
+                self.popupMenu.style.left = params.x - offsetLeft + 'px';
+                self.popupMenu.style.top =  params.y - offsetTop +'px';
+
+                var ul = document.createElement('ul');
+                self.popupMenu.appendChild(ul);
+
+                for (var i = 0; i < menu.length; i++) {
+                    var li = document.createElement('li');
+                    ul.appendChild(li);
+                    li.innerHTML = li.innerHTML + menu[i].title;
+                    (function(value, id, action){
+                        li.addEventListener("click", function() {
+                            closeContextMenu();
+                            action(value, id);
+                        }, false);})(menu[i].title, params.id, menu[i].action);
+                }
+                container.appendChild(self.popupMenu);
             }
 
             function closeContextMenu() {
