@@ -19,14 +19,12 @@ define([
     'angular',
     'ngSanitize',
     '../../factory/util',
-    'ui-bootstrap',
-    'toggle-switch',
     'ngMaterial',
     'ngMdIcons'
 ], function (angular) {
     'use strict';
 
-    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'toggle-switch', 'ui.bootstrap', 'ngMaterial', 'ngMdIcons'])
+    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ngMdIcons'])
         .controller('DocumentController',
             [
                 '$scope',
@@ -62,7 +60,6 @@ define([
                     $scope.uiShareService = uiShareService;
                     $scope.graphPropertiesShared = graphPropertiesShareService;
 
-
                     $scope.tabs = $scope.sourceShared.tabs;
 
                     $scope.removeTab = function (tab) {
@@ -71,17 +68,6 @@ define([
                     };
 
                     $scope.observer = ObserverService;
-
-                    /**
-                     * subscribe entity and metadata filters
-                     */
-                    $scope.observer_subscribe_entity = function(items) { $scope.entityFilters = items};
-                    $scope.observer_subscribe_metadata = function(items) { $scope.metadataFilters = items};
-                    $scope.observer_subscribe_fulltext = function(items) { $scope.fulltextFilters = items};
-                    $scope.observer.subscribeItems($scope.observer_subscribe_entity,"entity");
-                    $scope.observer.subscribeItems($scope.observer_subscribe_metadata,"metadata");
-                    $scope.observer.subscribeItems($scope.observer_subscribe_fulltext,"fulltext");
-
 
 
                     /**

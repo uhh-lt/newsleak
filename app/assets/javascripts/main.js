@@ -35,7 +35,6 @@
 			'ngMdIcons': 'libs/angular-material-icons/angular-material-icons.min',
 			'bootstrap': 'libs/bootstrap/dist/js/bootstrap.min',
 			'ui-bootstrap': 'libs/angular-bootstrap/ui-bootstrap-tpls.min',
-			'toggle-switch': 'libs/angular-toggle-switch/angular-toggle-switch.min',
 			'ngSanitize': 'libs/angular-sanitize/angular-sanitize.min',
 			'moment': 'libs/moment/min/moment.min',
 			'ui-layout': 'libs/angular-ui-layout/src/ui-layout',
@@ -90,10 +89,6 @@
 			},
 			'ui-bootstrap': {
 				deps: ['angular', 'bootstrap', 'ngAnimate']
-			},
-			'toggle-switch': {
-				exports: 'angular',
-				deps: ['angular']
 			},
 			'ngSanitize': {
 				exports: 'angular',

@@ -65,6 +65,7 @@ html, body {
     ======================================
 */
 
+
 line {
     /* Should be the same as edgeLegend#fill */
     stroke: #b0b0b0;
@@ -97,7 +98,6 @@ line {
     width: 100%;
     top: 60px;
     height: calc(100% - 60px);
-    /*background-color:#333333;*/
     background-color: #d1d1d1;
 }
 
@@ -136,8 +136,7 @@ div.popupMenu ul li:hover {
     color: #fefefe;
 }
 
-#merge-node
-{
+#merge-node {
 	width: 200px;
 	height: 200px;
 }
@@ -245,15 +244,6 @@ div.tooltip {
     margin: auto;
 }
 
-/*
-    ======================================
-    Map
-    ======================================
-*/
-
-#map-container {
-    margin: 0 10px;
-}
 
 /*
     ======================================
@@ -356,35 +346,6 @@ footer > div, footer > div #histogram {
     margin-right: -10px;
 }
 
-/*
-    ======================================
-    The tabs as well as the tab containers
-    ======================================
-*/
-.nav-tabs .closeTab {
-    margin-left: 5px;
-    margin-top: -3px;
-}
-
-.document-source-content {
-    height: calc(100% - 71px);
-    padding-left: 15px;
-    padding-top: 10px;
-}
-
-#network-maps-container {
-    height: 100%;
-}
-
-/* Give us more space between the tabs and the tab content */
-#network-maps-container .tab-content {
-    height: calc(100% - 78px);
-    padding-top: 20px;
-}
-
-#network-maps-container .tab-content .tab-pane {
-    height: 100%;
-}
 
 /*
     ======================================
@@ -394,19 +355,6 @@ footer > div, footer > div #histogram {
 
 .highlight-general {
     font-weight: bold;
-}
-
-.toggle-switch .switch-left {
-    background: #337ab7;
-}
-
-.source-buttons-area {
-    padding: 15px;
-}
-
-.toggle-switch {
-    top: 11px;
-    position: relative;
 }
 
 /*

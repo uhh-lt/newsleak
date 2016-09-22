@@ -18,15 +18,12 @@
 define([
     'angular',
     'ngSanitize',
-    '../../factory/util',
-    'ui-bootstrap',
-    'toggle-switch',
     'ngMaterial',
     'ngMdIcons'
 ], function (angular) {
     'use strict';
 
-    angular.module('myApp.source', ['play.routing', 'ngSanitize', 'toggle-switch', 'ui.bootstrap', 'ngMaterial', 'ngMdIcons'])
+    angular.module('myApp.source', ['play.routing', 'ngSanitize', 'ngMaterial', 'ngMdIcons'])
         .config(['$uibTooltipProvider', function($uibTooltipProvider) {
             //$uibTooltipProvider.setTriggers({'mouseenter': 'mouseleave'});
             console.log("config");
@@ -40,7 +37,6 @@ define([
                 '$sce',
                 '$timeout',
                 'playRoutes',
-                'util',
                 '_',
                 'sourceShareService',
                 'highlightShareService',
@@ -54,7 +50,6 @@ define([
                           $sce,
                           $timeout,
                           playRoutes,
-                          util,
                           _,
                           sourceShareService,
                           highlightShareService,

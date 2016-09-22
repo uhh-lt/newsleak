@@ -19,9 +19,6 @@ package util
 
 import play.api.libs.json.{ JsArray, Writes }
 
-/**
- * Created by flo on 8/1/2016.
- */
 object TupleWriters {
   // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
 
@@ -45,5 +42,4 @@ object TupleWriters {
       d.writes(tuple._4)
     ))
   }
-
 }

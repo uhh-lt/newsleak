@@ -19,9 +19,6 @@ package util
 
 import play.api.mvc.QueryStringBindable
 
-/**
- * Created by flo on 6/19/2016.
- */
 object Binders {
 
   implicit def queryMapBinder(implicit stringBinder: QueryStringBindable[String]) = new QueryStringBindable[Map[String, String]] {
