@@ -103,6 +103,7 @@ class Application @Inject extends Controller {
     Ok(
       JavaScriptReverseRouter(varName)(
         // TODO: You need to add your routes here
+        controllers.routes.javascript.Application.changeDataset,
         controllers.routes.javascript.DocumentController.getDocById,
         controllers.routes.javascript.DocumentController.getDocs,
         controllers.routes.javascript.NetworkController.getGraphData,
