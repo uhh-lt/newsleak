@@ -144,22 +144,23 @@ define([
             $scope.zm      = d3.behavior.zoom()
                                     .scaleExtent([0.5, 3])
                                     .on('zoom', function(){
-                                        force.resume();
+                                        force.alpha(0.01)
                                         currentScale = d3.event.scale;
                                         svg.selectAll('g').attr('transform', 'translate('
-                                            + (-viewBoxX) + ',' + (-viewBoxY) + ')scale('
+                                            + (-viewBoxX) + ',' + (-viewBoxY) + ')' + 'scale('
                                             + d3.event.scale + ')');
+                                        //force.alpha(0.0);
                                     });
             // For dragging
             var viewBoxX   = 0;
             var viewBoxY   = 0;
             var drag       = d3.behavior.drag()
                                     .on('drag', function(){
-                                        force.resume();
+                                        force.alpha(0.01);
                                         viewBoxX -= d3.event.dx;
                                         viewBoxY -= d3.event.dy;
                                         svg.selectAll('g').attr('transform', 'translate('
-                                            + (-viewBoxX) + ',' + (-viewBoxY) + ')scale('
+                                            + (-viewBoxX) + ',' + (-viewBoxY) + ')' + 'scale('
                                             + currentScale + ')');
                                     });
 
@@ -1484,14 +1485,24 @@ define([
 				focalNode.freq = focalNode.freq + freqsum;
 				d3.select("#nodecircle_" + focalNode.id).attr('r', function(d){return radius(d.docCount);});
 
+                var edgesToDelete = [];
+
 				edges.forEach(
 					function(v,i,a)
 					{
+					    /*if(entityids.indexOf(v.source.id) != -1 || entityids.indexOf(v.target.id) != -1)
+					    {
+					        console.log(v)
+					    }*/
+					    /*if((v.source.name == "USG" || v.target.name == "USG") && (v.source.name == "Commission" || v.target.name == "Commission"))
+					    {
+					        console.log(v)
+					    }*/
 
 						//if we have on both sides a node we want to delete or the focal node
 						if(
 							(entityids.indexOf(v.source.id) != -1 && entityids.indexOf(v.target.id) != -1) ||
-							(v.source.id == focalNode.id && entityids.indexOf(v.target.id) != -1) ||
+							(entityids.indexOf(v.target.id) != -1 && v.source.id == focalNode.id) ||
 							(entityids.indexOf(v.source.id) != -1 && v.target.id == focalNode.id)
 						)
 						{
@@ -1500,29 +1511,38 @@ define([
                            	d3.select("#edgeline_" + v.id).remove();
                             d3.select("#edgelabel_" + v.id).remove();
                             //console.log("both sides")
-                            //console.log(v)
+                            /*if(v.source.name == "Sipdis" || v.target.name == "Sipdis")
+                            {
+                                console.log(v)
+                            }*/
 
-                            edges.splice(i, 1)
+                            edgesToDelete.push(v);
+                            //edges.splice(i, 1)
 						}
 						else if(entityids.indexOf(v.source.id) != -1 || entityids.indexOf(v.target.id) != -1)
 						{
-							console.log(v)
+							//console.log(v)
 							//get an existing edge between the focalNode and the node not to delete
 							var existingEdge = edges.filter(
 								function(e,i,a)
 								{
-									if(entityids.indexOf(v.source.id) != -1)
+									if(entityids.indexOf(v.source.id) != -1 || entityids.indexOf(v.target.id) != -1)
 									{
 										return (e.source.id == v.target.id && e.target.id == focalNode.id) ||
-												(e.source.id == focalNode.id && e.target.id == v.target.id)
+										        (e.source.id == v.source.id && e.target.id == focalNode.id) ||
+												(e.source.id == focalNode.id && e.target.id == v.target.id) ||
+                                                (e.source.id == focalNode.id && e.target.id == v.source.id)
 									}
 									else
 									{
-										return (e.source.id == v.source.id && e.target.id == focalNode.id) ||
-                                        		(e.source.id == focalNode.id && e.target.id == v.source.id)
+										/*return (e.source.id == v.source.id && e.target.id == focalNode.id) ||
+                                        		(e.source.id == focalNode.id && e.target.id == v.source.id);*/
+                                        return false;
 									}
 								}
 							);
+							//console.log(v)
+							//console.log(existingEdge);
 
 							//if we havent found a node
 							if(existingEdge.length == 0)
@@ -1536,20 +1556,23 @@ define([
 								var edge = existingEdge[0];
 								edge.freq = edge.freq + v.freq;
 
-								d3.select("#edgeline_" + edge.id).style('stroke-width', function (d) {return edgeScale(d.freq)+'px';});
-								d3.select("#edgelabel_" + edge.id).select("textPath").text(function(d,i){return d.freq;});
+								//d3.select("#edgeline_" + edge.id).style('stroke-width', function (d) {return edgeScale(d.freq)+'px';});
+								//d3.select("#edgelabel_" + edge.id).select("textPath").text(function(d,i){return d.freq;});
 
 								//we remove the edge
                                 d3.select("#edgepath_" + v.id).remove();
                                 d3.select("#edgeline_" + v.id).remove();
                                 d3.select("#edgelabel_" + v.id).remove();
 
-                                edges.splice(i, 1)
+                                edgesToDelete.push(v);
+                                //edges.splice(i, 1)
 							}
 
 						}
 					}
 				);
+
+				edgesToDelete.forEach(function(e){edges.splice(edges.indexOf(e), 1)});
 
 				unselectNodes()
 				selectNode(focalNode);

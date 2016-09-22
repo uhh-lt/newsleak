@@ -133,6 +133,30 @@ define([
                         });
                     };
 
+                    $scope.updateHighlighting = function()
+                    {
+                        $scope.sourceShared.openDocuments.contents.forEach
+                        (
+                            function(doc, idx, contents)
+                            {
+                                doc = $scope.sourceShared.openDocuments.nonHighlightedContents[idx];
+
+                                if(!$scope.sourceShared.openDocuments.displayHighlightedText[idx])
+                                {
+                                    return;
+                                }
+
+                                $scope.entityFilters.forEach
+                                (
+                                    function(filter)
+                                    {
+                                        doc.replace(filter, '<span class="highlight-general" style="text-decoration: none; border-bottom: 3px solid #ffffff">' + filter + '</span>')
+                                    }
+                                )
+                            }
+                        );
+                    }
+
                     //initial document list load
                     $scope.updateDocumentList();
 
@@ -177,13 +201,16 @@ define([
 
                     //subscribe to update document list on filter change
                     $scope.observer.registerObserverCallback($scope.updateDocumentList);
+                    $scope.observer.registerObserverCallback($scope.updateHighlighting);
+
+
 
 
                     /**
                      * Whenever the array that holds the words to highlight is changed, update
                      * all open source documents where highlight mode is currently enabled.
                      */
-                    $scope.$watch('highlightShared.wasChanged', function () {
+                    /*$scope.$watch('highlightShared.wasChanged', function () {
                         if ($scope.highlightShared.wasChanged) {
                             for (var i = 0; i < $scope.sourceShared.openDocuments.contents.length; i++) {
                                 if ($scope.sourceShared.openDocuments.displayHighlightedText[i]) {
@@ -193,7 +220,8 @@ define([
                             }
                             $scope.highlightShared.wasChanged = false;
                         }
-                    });
+                    });*/
+
 
 
                     // Retrieve the content of the source view
