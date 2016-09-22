@@ -151,9 +151,9 @@ class NetworkController @Inject extends Controller {
    * @param maxEdgeFreq maximum Edge Frequency
    * @return
    */
-  def getRelations(entities: List[Long], minEdgeFreq: Int, maxEdgeFreq: Int)(implicit session: DBSession = AutoSession) = Action {
+  def getRelations(entities: List[Long], minEdgeFreq: Int, maxEdgeFreq: Int)(implicit session: DBSession = AutoSession) = Action { implicit request =>
     if (entities.nonEmpty) {
-      val res = Relationship.getRelations(entities, minEdgeFreq, maxEdgeFreq).map(rs => (rs.id, rs.e1, rs.e2, rs.frequency))
+      val res = Relationship.fromDBName(currentDataset).getRelations(entities, minEdgeFreq, maxEdgeFreq).map(rs => (rs.id, rs.e1, rs.e2, rs.frequency))
       Ok(Json.toJson(res)).as("application/json")
 
     } else {
