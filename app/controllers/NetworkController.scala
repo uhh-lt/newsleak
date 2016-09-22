@@ -1,17 +1,18 @@
 /*
- * Copyright 2015 Technische Universitaet Darmstadt
+ * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package controllers
@@ -34,7 +35,6 @@ import util.TupleWriters._
     network graph.
 */
 class NetworkController @Inject extends Controller {
-  implicit val session = AutoSession
 
   // TODO: fetch entity types from backend API
   /**
@@ -71,7 +71,7 @@ class NetworkController @Inject extends Controller {
    * amountOfType[0] = contries/cities, amountOfType[1] = organizations,
    * amountOfType[2] = persons, amountOfType[3] = miscellaneous.
    */
-  def getGraphData(leastOrMostFrequent: Int, amountOfType: List[Int], minEdgeFreq: Int, maxEdgeFreq: Int) = Action {
+  def getGraphData(leastOrMostFrequent: Int, amountOfType: List[Int], minEdgeFreq: Int, maxEdgeFreq: Int)(implicit session: DBSession = AutoSession) = Action {
     // a list of tuples of id, name, frequency and type (an "entity")
     var entities: List[(Long, String, Int, String)] = List()
     // a list of tuples of id, source, target and frequency (a "relation")
@@ -79,7 +79,7 @@ class NetworkController @Inject extends Controller {
 
     val sorting = if (leastOrMostFrequent == 0) sqls"desc" else sqls"asc"
 
-    val locationCount = amountOfType(0)
+    val locationCount = amountOfType.head
     val orgCount = amountOfType(1)
     val personCount = amountOfType(2)
     val miscCount = amountOfType(3)
@@ -149,7 +149,7 @@ class NetworkController @Inject extends Controller {
    * @param maxEdgeFreq maximum Edge Frequency
    * @return
    */
-  def getRelations(entities: List[Long], minEdgeFreq: Int, maxEdgeFreq: Int) = Action {
+  def getRelations(entities: List[Long], minEdgeFreq: Int, maxEdgeFreq: Int)(implicit session: DBSession = AutoSession) = Action {
     if (entities.nonEmpty) {
       val relations =
         sql"""SELECT DISTINCT ON (id, frequency) id, entity1, entity2, frequency
@@ -249,7 +249,7 @@ class NetworkController @Inject extends Controller {
    *
    * "existingNodes" the ids of the nodes that are already in the ego network.
    */
-  def getEgoNetworkData(leastOrMostFrequent: Int, id: Long, amountOfType: List[Int], existingNodes: List[Long]) = Action {
+  def getEgoNetworkData(leastOrMostFrequent: Int, id: Long, amountOfType: List[Int], existingNodes: List[Long])(implicit session: DBSession = AutoSession) = Action {
     // a list of tuples of id, name, frequency and type (an "entity")
     var entities: List[(Long, String, Int, String)] = List()
     // a list of tuples of id, source, target and frequency (a "relation")
@@ -332,7 +332,7 @@ class NetworkController @Inject extends Controller {
     entities: List[(Long, String, Int, String)],
     amount: Int,
     id: Long
-  ): List[(Long, Long, Long, Int)] = {
+  )(implicit session: DBSession = AutoSession): List[(Long, Long, Long, Int)] = {
     if (entities.nonEmpty) {
       sql"""SELECT DISTINCT ON(id, frequency) id, entity1, entity2, frequency
           FROM relationship

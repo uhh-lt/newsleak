@@ -1,32 +1,37 @@
+/*
+ * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /**
  * Created by flo on 6/10/16.
  */
-/*
- * Copyright 2016 Technische Universitaet Darmstadt
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+
 
 define([
     'angular',
     'angularMoment',
     'jquery-json',
     'ui-bootstrap',
-    'ngAnimate'
+    'ngAnimate',
+    'ngFileSaver',
+    'bootstrapFileField'
 ], function(angular) {
     'use strict';
 
-    angular.module("myApp.history", ['play.routing', 'angularMoment', 'ngFileSaver', 'ui.bootstrap','ngAnimate'])
+    angular.module("myApp.history", ['ngFileSaver', 'ui.bootstrap','ngAnimate', 'bootstrap.fileField'])
         .config(function($uibTooltipProvider) {
         })
         .factory('historyFactory', [
@@ -43,14 +48,18 @@ define([
                         "hide": 'eye-close',
                         "edit": 'pencil',
                         "annotate": 'comment',
-                        "fulltext": 'search'
+                        "fulltext": 'search',
+                        "delete": 'remove',
+                        "openDoc": 'book'
                     },
                     typeDescriptions: {
                       'entity': 'Entity Filter',
                       'metadata': 'Metadata Filter',
                       'time': 'Time Range',
                       'annotate': 'Entity Annotated',
-                      'fulltext': 'Fulltext Search'
+                      'fulltext': 'Fulltext Search',
+                      'openDoc': 'Document opened',
+                      'edit': "Entity edited"
                     },
                     actions: {
                         'added': 'plus',
@@ -71,19 +80,17 @@ define([
             [
                 '$scope',
                 '$timeout',
-                'playRoutes',
-                'appData',
-                'moment',
                 'FileSaver',
                 'ObserverService',
                 'historyFactory',
-                function ($scope, $timeout, playRoutes, appData, moment, FileSaver, ObserverService, historyFactory) {
+                function ($scope, $timeout, FileSaver, ObserverService, historyFactory) {
                     $scope.observer = ObserverService;
                     $scope.factory = historyFactory;
 
                     $scope.observer_subscribe = function(history) { $scope.history = history};
+                    $scope.observer_subscribe_items = function(items) { $scope.historyItems = items};
                     $scope.observer.subscribeHistory($scope.observer_subscribe);
-                    
+                    $scope.observer.subscribeAllItems($scope.observer_subscribe_items);
                     $scope.removeItem = function(item) {
                         $scope.observer.removeItem(item.id, item.type);
                     };
@@ -115,6 +122,37 @@ define([
 
                     $scope.getTypeDescription = function(x) {
                         return $scope.factory.typeDescriptions[x];
+                    };
+
+                    $scope.setFilterState = function() {
+                        //FileSaver.saveAs(new Blob([$.toJSON(savedata)], {type: 'text/plain;charset=UTF-8'}), "filters_" + Date.now() + ".txt")
+                    };
+
+                    $scope.saveHistory =  function() {
+                        console.log("save state");
+                        var json = JSON.stringify({
+                            history: $scope.history,
+                            items: $scope.historyItems
+                        },null, 4);
+                        var data = new Blob([json],
+                        { type: 'application/json;charset=utf-8' });
+                        FileSaver.saveAs(data, "saver.json");
+                    };
+
+                    $scope.loadHistory = function() {
+                        console.log("load state");
+                        $scope.reader  = new FileReader();
+                        $scope.reader.onload = function(){
+                            $scope.observer.loadState(jQuery.parseJSON(angular.copy($scope.reader.result)));
+                            $scope.uploadFile = undefined;
+                        };
+                        $scope.waitForFile = setInterval(function() {
+                            if($scope.uploadFile) {
+                                clearInterval($scope.waitForFile);
+                                $scope.reader.readAsText($scope.uploadFile);
+                            }
+                        }, 500);
+
                     }
                 }
             ]

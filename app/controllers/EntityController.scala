@@ -1,17 +1,18 @@
 /*
- * Copyright 2015 Technische Universitaet Darmstadt
+ * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package controllers
@@ -28,12 +29,7 @@ import util.TimeRangeParser
 import scalikejdbc._
 // scalastyle:on
 
-/**
- * Created by flo on 6/20/2016.
- */
 class EntityController @Inject extends Controller {
-  implicit val session = AutoSession
-
   private val defaultFetchSize = 50
 
   /**
@@ -77,31 +73,19 @@ class EntityController @Inject extends Controller {
     size: Int,
     entityType: String,
     filter: List[Long]
-  ) = Action {
+  )(implicit session: DBSession = AutoSession) = Action {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var newSize = size
     if (filter.nonEmpty) newSize = filter.length
-    val entitiesRes = if (entityType.isEmpty) {
-      FacetedSearch.aggregateEntities(facets, newSize, filter).buckets.map {
-        case NodeBucket(id, count) => (id, count)
-        case _ => (0, 0)
-      }
+    val entitiesRes: List[(Long, Long)] = if (entityType.isEmpty) {
+      FacetedSearch.aggregateEntities(facets, newSize, filter).buckets.collect { case NodeBucket(id, count) => (id, count) }
     } else {
-      FacetedSearch.aggregateEntitiesByType(facets, EntityType.withName(entityType), newSize, filter).buckets.map {
-        case NodeBucket(id, count) => (id, count)
-        case _ => (0, 0)
-      }
+      FacetedSearch.aggregateEntitiesByType(facets, EntityType.withName(entityType), newSize, filter).buckets.collect { case NodeBucket(id, count) => (id, count) }
     }
     if (entitiesRes.nonEmpty) {
-      val sqlResult =
-        sql"""SELECT * FROM entity
-          WHERE id IN (${entitiesRes.map(_._1)}) AND NOT isblacklisted
-          ORDER BY frequency DESC LIMIT 50"""
-          .map(x => x.long("id") -> Entity(x))
-          .list // single, list, traversable
-          .apply
-
+      val ids = entitiesRes.map(_._1).take(defaultFetchSize)
+      val sqlResult = Entity.getByIds(ids).map(e => e.id -> e)
       // TODO: ordering commented out while no zerobuckets available
       if (filter.nonEmpty) {
         // if (false) {
@@ -130,90 +114,4 @@ class EntityController @Inject extends Controller {
     }
   }
   // scalastyle:on
-
-  /**
-   * get the entities, frequency to given type using an offset
-   *
-   * @param entityType entity type
-   * @param offset   offset for beginning index
-   * @return
-   * an array of entity names and entity frequency
-   * combined
-   */
-  def getEntitiesWithOffset(entityType: String, offset: Int) = Action {
-    val result =
-      sql"""SELECT * FROM entity
-          WHERE type = ${entityType} AND NOT isblacklisted
-          ORDER BY frequency DESC LIMIT 50 OFFSET ${offset}"""
-        .map(Entity(_))
-        .list
-        .apply()
-        .map(x => Json.obj("id" -> x.id, "name" -> x.name, "freq" -> x.frequency))
-
-    Results.Ok(Json.toJson(result)).as("application/json")
-  }
-
-  /**
-   * get the entities and count of corresponding documents to given type
-   *
-   * @param entityType entity type
-   * @return an array of entity names and document count
-   *         combined
-   */
-  def getEntitiesDocCount(entityType: String) = Action {
-    val result =
-      sql"""SELECT e.id, e.name, count(d.docid) AS count
-                  FROM documententity d, entity e
-                  WHERE e.type = ${entityType} AND d.entityid = e.id
-                  GROUP BY e.id ORDER BY count DESC LIMIT 50;"""
-        .map(rs => Json.obj("id" -> rs.long("id"), "name" -> rs.string("name"), "freq" -> rs.int("count")))
-        .list()
-        .apply()
-
-    Results.Ok(Json.toJson(result)).as("application/json")
-  }
-
-  /**
-   * get the entities and count of corresponding documents to given type
-   * using an offset
-   *
-   * @param entityType entity type
-   * @param offset   offset for beginning index
-   * @return an array of entity names and document count
-   *         combined
-   */
-  def getEntitiesDocCountWithOffset(entityType: String, offset: Int) = Action {
-    val result =
-      sql"""SELECT e.id, e.name, count(d.docid) AS count
-                  FROM documententity d, entity e
-                  WHERE e.type = ${entityType} AND d.entityid = e.id
-                  GROUP BY e.id ORDER BY count DESC LIMIT 50 OFFSET ${offset};"""
-        .map(rs => Json.obj("id" -> rs.long("id"), "name" -> rs.string("name"), "freq" -> rs.int("count")))
-        .list()
-        .apply()
-
-    Results.Ok(Json.toJson(result)).as("application/json")
-  }
-
-  /**
-   * Number of Documents containing given entity id's
-   *
-   * @param filter List of entity id's
-   * @return number of documents containing given entities
-   */
-  def getEntitiesDocCountWithFilter(filter: List[(Long)]) = Action {
-    // TODO: prob. need a distinct
-    val rs =
-      sql"""SELECT count(*) FROM
-        (SELECT d.docid AS ids, count(d.entityid) AS count_ent
-        FROM documententity d
-        WHERE d.entityid IN (${filter})
-        GROUP BY d.docid
-        HAVING count(d.entityid) >= ${filter.length}) foo;"""
-        .map(rs => rs.int("count"))
-        .single()
-        .apply()
-
-    Results.Ok(Json.toJson(rs)).as("application/json")
-  }
 }

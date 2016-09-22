@@ -1,17 +1,18 @@
 /*
- * Copyright 2016 Technische Universitaet Darmstadt
+ * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 define([
@@ -36,6 +37,7 @@ define([
                 '$compile',
                 '$templateRequest',
                 '$sce',
+                '$timeout',
                 'playRoutes',
                 'util',
                 '_',
@@ -49,6 +51,7 @@ define([
                           $compile,
                           $templateRequest,
                           $sce,
+                          $timeout,
                           playRoutes,
                           util,
                           _,
@@ -61,27 +64,20 @@ define([
                     $scope.highlightShared = highlightShareService;
                     $scope.uiShareService = uiShareService;
                     $scope.graphPropertiesShared = graphPropertiesShareService;
-                    $scope.test = "Hi :D";
+                    $scope.docsLoading = false;
+                    $scope.showLoading = false;
+                    $scope.noMoreDocs = false;
+                    $scope.iteratorEmpty = false;
+
+                    $scope.popover = {
+                        template: 'doc_tooltip_tmpl',
+                            placement: 'right',
+                            trigger: 'None',
+                            isOpen: [],
+                            promises: []
+                    };
 
                     $scope.highlightState = {on: true};
-
-                    var placeholderTags = [
-                        {text: 'Türkei'},
-                        {text: 'Paris'},
-                        {text: 'Wirtschaft'},
-                        {text: 'Obama'},
-                        {text: 'Merkel'},
-                        {text: 'Balkan'},
-                        {text: 'U.S.'},
-                        {text: 'Bush'},
-                        {text: 'Iran'},
-                        {text: 'Iraq'}
-                    ];
-
-                    /**
-                     * This array holds the current tags.
-                     */
-                    $scope.tags = [/*"Obama", "Merkel", "Balkan"*/];
 
                     $scope.observer = ObserverService;
                     /**
@@ -108,41 +104,76 @@ define([
                      * load document list for current filtering
                      */
                     $scope.updateDocumentList = function() {
+                        $scope.docsLoading = true;
+                        $scope.showLoading = true;
                         console.log("reload doc list");
                         var entities = [];
                         angular.forEach($scope.entityFilters, function(item) {
                             entities.push(item.data.id);
                         });
-                        var facets = [];
-                        if($scope.metadataFilters.length > 0) {
-                            angular.forEach($scope.metadataFilters, function(metaType) {
-                                if($scope.metadataFilters[metaType].length > 0) {
-                                    var keys = [];
-                                    angular.forEach($scope.metadataFilters[metaType], function(x) {
-                                        keys.push(x.data.name);
-                                    });
-                                    facets.push({key: metaType, data: keys});
-                                }
-                            });
-                            if(facets == 0) facets = [{'key':'dummy','data': []}];
-
-                        } else {
-                            facets = [{'key':'dummy','data': []}];
-                        }
+                        var facets = $scope.observer.getFacets();
                         var fulltext = [];
                         angular.forEach($scope.fulltextFilters, function(item) {
                            fulltext.push(item.data.name);
                         });
                         playRoutes.controllers.DocumentController.getDocs(fulltext,facets,entities,$scope.observer.getTimeRange()).get().then(function(x) {
                             // console.log(x.data);
-                            $scope.sourceShared.reset(0);
+                            $scope.sourceShared.reset();
                             $scope.sourceShared.addDocs(x.data.docs);
                             $scope.hits = x.data.hits;
+                            if($scope.sourceShared.documentsInDB == -1)
+                                $scope.sourceShared.documentsInDB = x.data.hits;
+                            $(".docs-ul").scrollTop(0);
+                            $scope.docsLoading = false;
+                            $scope.showLoading = false;
+                            if(x.data.hits <= 50)
+                                $scope.iteratorEmpty = true;
+                            else
+                                $scope.iteratorEmpty = false;
                         });
                     };
 
                     //initial document list load
                     $scope.updateDocumentList();
+
+                    $scope.loadMore = function () {
+                        console.log("reload doc list");
+                        if(!$scope.iteratorEmpty) {
+                            $scope.docsLoading = true;
+                            var entities = [];
+                            angular.forEach($scope.entityFilters, function (item) {
+                                entities.push(item.data.id);
+                            });
+                            var facets = [];
+                            if ($scope.metadataFilters.length > 0) {
+                                angular.forEach($scope.metadataFilters, function (metaType) {
+                                    if ($scope.metadataFilters[metaType].length > 0) {
+                                        var keys = [];
+                                        angular.forEach($scope.metadataFilters[metaType], function (x) {
+                                            keys.push(x.data.name);
+                                        });
+                                        facets.push({key: metaType, data: keys});
+                                    }
+                                });
+                                if (facets == 0) facets = [{'key': 'dummy', 'data': []}];
+
+                            } else {
+                                facets = [{'key': 'dummy', 'data': []}];
+                            }
+                            var fulltext = [];
+                            angular.forEach($scope.fulltextFilters, function (item) {
+                                fulltext.push(item.data.name);
+                            });
+                            playRoutes.controllers.DocumentController.getDocs(fulltext, facets, entities, $scope.observer.getTimeRange()).get().then(function (x) {
+                                if (x.data.docs.length == 0)
+                                    $scope.iteratorEmpty = true;
+                                else
+                                    $scope.sourceShared.addDocs(x.data.docs);
+                                $scope.docsLoading = false;
+
+                            });
+                        }
+                    };
 
                     //subscribe to update document list on filter change
                     $scope.observer.registerObserverCallback($scope.updateDocumentList);
@@ -276,6 +307,7 @@ define([
                         }
 
                         // In case the document was already loaded (index > -1), open that tab
+
                         var index = $scope.sourceShared.openDocuments.IDs.indexOf(docId);
                         if (index > -1) {
                             index = getIndexForDocID(docId);
@@ -291,6 +323,14 @@ define([
                                 // Append a new tab and add the content
                                 appendNewTab(docId);
                                 appendNewTabContent(docId);
+                                var editItem = {
+                                    type: 'openDoc',
+                                    data: {
+                                        id: docId,
+                                        name: "#" + docId
+                                    }
+                                };
+                                $scope.observer.addItem(editItem);
                             });
                         }
                     };
@@ -387,12 +427,31 @@ define([
                                 view: 'search'
                             }
                         });
-                        console.log("Added filter")
-
-                        //TODO: replace tagService with observer
-                        $scope.addedTag(item);
+                        console.log("Added filter");
                         $("#autocomplete").css('z-index','-1');
                         $scope.searchTags = [];
+                    };
+
+                    $(".docs-ul").on('scroll',function() {
+                        if(!$scope.docsLoading) {
+                            if(($(this).find("ul").height() - $(this).scrollTop()) < 1000)
+                                $scope.loadMore();
+                        }
+
+
+                    });
+
+                    $scope.hidePopover = function(id) {
+                        $scope.popover.promises[id] = $timeout(function() { $scope.hideFunction(id)}, 10);
+                    };
+
+                    $scope.showPopover = function(id) {
+                        if($scope.popover.promises[id] != undefined) $timeout.cancel($scope.popover.promises[id]);
+                        $scope.popover.isOpen[id] = true;
+                    };
+
+                    $scope.hideFunction = function(x) {
+                        $scope.popover.isOpen[x] = false;
                     };
 
                     // The close click on a tab

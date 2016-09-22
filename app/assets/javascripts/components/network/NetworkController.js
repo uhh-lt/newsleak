@@ -1,17 +1,18 @@
 /*
- * Copyright 2016 Technische Universitaet Darmstadt
+ * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 define([
@@ -589,7 +590,7 @@ define([
             		d3.select('#nodebuttonicon_' + node.id).attr('class', 'glyphicon glyphicon-minus');
 
             		node.expanded = true;
-            		console.log(nodes);
+            		//console.log(nodes);
             	});
             }
 
@@ -612,7 +613,7 @@ define([
             		}
             	);
 
-				console.log(nodes);
+				//console.log(nodes);
 				var deletenodes = [];
             	nodes.forEach(
             		function(v,i,a)
@@ -622,7 +623,7 @@ define([
             				return;
             			}
 
-            			console.log(v);
+            			//console.log(v);
             			if(v.collapseParent.length > 1 && v.collapseParent.indexOf(node.id) != -1)
             			{
             				v.collapseParent.splice(v.collapseParent.indexOf(node.id), 1)
@@ -1370,6 +1371,14 @@ define([
             function hideSelected(){
                 // Remove selected nodes.
                 selectedNodes.forEach(function(d){
+                    var editItem = {
+                        type: 'hide',
+                        data: {
+                            id: d.id,
+                            name: d.name + ': ' + d.type
+                        }
+                    };
+                    $scope.observer.addItem(editItem);
                     // Remove the selected node name from the words that get highlighted
                     var categoryIndex = $scope.graphShared.getIndexOfCategory(d.type);
                     var index = highlightShareService.wordsToHighlight[categoryIndex].indexOf(d.name);
@@ -1419,7 +1428,14 @@ define([
 
 				nodes.forEach(
 					function(n,i,a){
-
+                        var editItem = {
+                            type: 'delete',
+                            data: {
+                                id: n.id,
+                                name: n.name + ': ' + n.type
+                            }
+                        };
+                        $scope.observer.addItem(editItem);
 						d3.select("#node_" + n.id).remove();
 						edges.forEach(
 							function(v,i,a)
@@ -1595,6 +1611,14 @@ define([
             	{
             		return;
             	}
+                var editItem = {
+                    type: 'edit',
+                    data: {
+                        id: node.id,
+                        name: '<'+node.name+' -> '+ text+'>'
+                    }
+                };
+                $scope.observer.addItem(editItem);
 
                 var edit = text;
                 node.name = edit;
@@ -1642,10 +1666,19 @@ define([
              */
             function editType(node, type)
             {
+
             	if(node.type == type)
             	{
             		return;
             	}
+                var editItem = {
+                    type: 'edit',
+                    data: {
+                        id: node.id,
+                        name: '<'+node.type+' -> '+type+'>'
+                    }
+                };
+                $scope.observer.addItem(editItem);
 
             	node.type = type;
             	d3.select("#nodecircle_" + node.id)
@@ -1693,22 +1726,7 @@ define([
                 angular.forEach($scope.entityFilters, function(item) {
                     entities.push(item.data.id);
                 });
-                var facets = [];
-                if($scope.metadataFilters.length > 0) {
-                    angular.forEach($scope.metadataFilters, function(metaType) {
-                        if($scope.metadataFilters[metaType].length > 0) {
-                            var keys = [];
-                            angular.forEach($scope.metadataFilters[metaType], function(x) {
-                                keys.push(x.data.name);
-                            });
-                            facets.push({key: metaType, data: keys});
-                        }
-                    });
-                    if(facets == 0) facets = [{'key':'dummy','data': []}];
-
-                } else {
-                    facets = [{'key':'dummy','data': []}];
-                }
+                var facets = $scope.observer.getFacets();
 
                 while(loadingNodes)
                 {
@@ -1788,11 +1806,9 @@ define([
                     $scope.entityFilters.forEach(
                                             function(v)
                                             {
-                                                console.log(v)
                                                 selectNode(v.data)
                                             }
                     )
-                    console.log($scope.entityFilters)
 
                     playRoutes.controllers.NetworkController.getRelations(response.data.map(function(v){return v.id}), toolShareService.sliderEdgeMinFreq(), toolShareService.sliderEdgeMaxFreq()).get().then(
                         function(response)

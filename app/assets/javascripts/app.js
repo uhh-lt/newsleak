@@ -1,17 +1,18 @@
 /*
- * Copyright 2016 Technische Universitaet Darmstadt
+ * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 define([
@@ -31,11 +32,9 @@ define([
     './components/network/EditModalController',
     './components/network/ConfirmModalController',
     './components/metadata/MetadataController',
-    './components/filter/FilterController',
     './components/sources/SearchController',
     './components/history/HistoryController',
     './components/histogram/HistogramController',
-    './components/map/MapController',
     './services/playRoutes',
     './services/ObserverService',
     './factory/appData',
@@ -44,7 +43,6 @@ define([
     'ui-layout',
     'ui-router',
     'ui-bootstrap',
-    'ng-tags-input',
     'angularResizable',
     'ngMaterial'
 ], function (angular) {
@@ -52,12 +50,12 @@ define([
 
     var app = angular.module('myApp',
         [
-            'ui.layout', 'ui.router', 'ui.bootstrap', 'ngTagsInput', 'play.routing','angularResizable','ngMaterial',
-            'angularMoment', 'underscore', 'myApp.data', 'myApp.observer', 'myApp.util', 'myApp.filter', 'myApp.history',
+            'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable','ngMaterial',
+            'angularMoment', 'underscore', 'myApp.data', 'myApp.observer', 'myApp.util', 'myApp.history',
             'myApp.tools',
             'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
-            'myApp.network', 'myApp.metadata', 'myApp.map', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
-            'myApp.filterfactory','myApp.metafactory', 'myApp.toolfactory', 'myApp.graphpropertiesfactory',
+            'myApp.network', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
+            'myApp.metafactory', 'myApp.toolfactory', 'myApp.graphpropertiesfactory',
             'myApp.histogram', 'myApp.search'
         ]
     );

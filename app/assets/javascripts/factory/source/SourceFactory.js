@@ -1,61 +1,33 @@
 /*
- * Copyright 2016 Technische Universitaet Darmstadt
+ * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 define([
-    'angular',
-    'angularMoment',
+    'angular'
 ], function (angular) {
     'use strict';
-
-    angular.module('myApp.sourcefactory', ['play.routing']);
-    angular.module('myApp.sourcefactory')
+    angular.module('myApp.sourcefactory', [])
         // We use this factory to share source objects between this module and the chart module
-        .factory('sourceShareService', ['playRoutes' ,function (playRoutes) {
+        .factory('sourceShareService', [function () {
             var sourceShareService = {
-                documentOperations: undefined,
                 documentList: [],
-                documentListInfo: '',
-                documentListWarning: '',
+                documentsInDB: -1,
                 openDocuments: {IDs: [], contents: [], nonHighlightedContents: [], displayHighlightedText: []},
-                /*
-                 For loading more documents (used when a decade, year or month bar was clicked).
-                 index is the start value that is passed to the backend and used as the first
-                 LIMIT parameter.
-                 lastCategoryFetched is 0 when a decade bar was clicked, 1 on year click and 2 on month click,
-                 -1 otherwise.
-                 */
-                index: -1,
-                numberOfDocsToFetch: 100,
-                lastCategoryFetched: -1,
-                showReloadButton: 0,
-                fromYear: 0,
-                toYear: 0,
-                month: 0,
-                day: 0,
-                // The next values should be read-only!
-                CATEGORY_DECADE: 0,
-                CATEGORY_YEAR: 1,
-                CATEGORY_MONTH: 2,
-                CATEGORY_DAY: 3,
-                reset: function (category) {
+                reset: function () {
                     this.documentList = [];
-                    this.showReloadButton = -1;
-                    this.lastCategoryFetched = category;
-                    this.index = 0;
-                    this.numberOfDocsToFetch = 100;
                 },
                 /**
                  * Append documents to the scope variable.
@@ -63,8 +35,8 @@ define([
                  * @param data - The documents to add.
                  */
                 addDocs: function (data) {
-                if (data.length > 0) {
-                    angular.forEach(data, function(doc) {
+                    if (data.length > 0) {
+                        angular.forEach(data, function(doc) {
                         var currentDoc = {
                             id: doc.id,
                             metadata: {}
@@ -74,18 +46,9 @@ define([
                         });
                         sourceShareService.documentList.push(currentDoc);
                     });
-
-                    sourceShareService.showReloadButton = 1;
-                    // Compute the next range of documents to fetch
-                    sourceShareService.numberOfDocsToFetch = sourceShareService.numberOfDocsToFetch * 2;
-                } else {
-                    sourceShareService.showReloadButton = 0;
+                    }
                 }
-            }
             };
-
-
-
             return sourceShareService;
         }])
 });
