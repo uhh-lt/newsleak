@@ -28,7 +28,10 @@ import util.TimeRangeParser
 
 class MetadataController @Inject extends Controller {
 
-  private val defaultExcludeTypes = List("Subject", "Header", "ReferenceId", "References", "Keywords", "Entities", "Created", "EventTimes")
+  private val defaultExcludeTypes = Map(
+    "cable" -> List("Subject", "Header", "ReferenceId", "References", "Keywords", "Entities", "Created", "EventTimes"),
+    "enron" -> List("Subject", "Timezone", "sender.id", "Recipients.id", "Recipients.order")
+  )
   // exclusion for enron
   // private val defaultExcludeTypes = List("Subject", "Timezone", "sender.id", "Recipients.id", "Recipients.order")
   private val defaultFetchSize = 50
@@ -38,7 +41,11 @@ class MetadataController @Inject extends Controller {
    * @return list of metadata types
    */
   def getMetadataTypes = Action { implicit request =>
-    Results.Ok(Json.toJson(Document.fromDBName(currentDataset).getMetadataKeysAndTypes().map(x => x._1).filter(!defaultExcludeTypes.contains(_)))).as("application/json")
+    Results.Ok(Json.toJson(Document
+      .fromDBName(currentDataset)
+      .getMetadataKeysAndTypes()
+      .map(x => x._1)
+      .filter(!defaultExcludeTypes(currentDataset).contains(_)))).as("application/json")
   }
 
   /**
@@ -52,7 +59,7 @@ class MetadataController @Inject extends Controller {
   def getMetadata(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    val res = FacetedSearch.fromIndexName(currentDataset).aggregateAll(facets, defaultFetchSize, defaultExcludeTypes)
+    val res = FacetedSearch.fromIndexName(currentDataset).aggregateAll(facets, defaultFetchSize, defaultExcludeTypes(currentDataset))
       .map(agg => Json.obj(agg.key -> agg.buckets.map {
         case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
         case _ => Json.obj()
