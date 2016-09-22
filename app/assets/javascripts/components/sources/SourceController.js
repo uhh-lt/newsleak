@@ -185,13 +185,10 @@ define([
                     $scope.observer.registerObserverCallback($scope.updateDocumentList);
 
                     $scope.loadFullDocument = function (docId) {
-                        playRoutes.controllers.DocumentController.getDocById(docId).get().then(function (response) {
-                            $scope.sourceShared.tabs.push({
-                                id: docId,
-                                title: docId,
-                                content: response.data[2]
-                            });
+                        // Focus open tab if document is already opened
+                        if($scope.isDocumentOpen(docId)) {
 
+                        } else {
                             var editItem = {
                                 type: 'openDoc',
                                 data: {
@@ -200,7 +197,14 @@ define([
                                 }
                             };
                             $scope.observer.addItem(editItem);
-                        });
+
+                            playRoutes.controllers.DocumentController.getDocById(docId).get().then(function (response) {
+                                var content = response.data[2];
+                                playRoutes.controllers.EntityController.getEntitiesByDoc(docId).get().then(function (response) {
+                                    $scope.sourceShared.tabs.push({ id: docId, title: docId, content: content, entities: response.data });
+                                });
+                            });
+                        }
                     };
 
 

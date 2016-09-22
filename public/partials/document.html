@@ -27,7 +27,8 @@
 
     <md-tab-body>
         <md-content flex layout-padding>
-            <div ng-bind-html="renderDoc(tab.content)"></div>
+            <!-- TODO WHy is this called three times although I use one time binding -->
+            <div ng-bind-html="::renderDoc(tab)"></div>
         </md-content>
     </md-tab-body>
 </md-tab>

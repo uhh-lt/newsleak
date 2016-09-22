@@ -68,14 +68,7 @@ define([
                     $scope.removeTab = function (tab) {
                         var index = $scope.tabs.indexOf(tab);
                         $scope.tabs.splice(index, 1);
-
-                        $scope.sourceShared.openDocuments.IDs[tab.id] = undefined;
-                        $scope.sourceShared.openDocuments.contents[tab.id] = undefined;
-                        $scope.sourceShared.openDocuments.nonHighlightedContents[tab.id] = undefined;
-                        $scope.sourceShared.openDocuments.displayHighlightedText[tab.id] = undefined;
                     };
-
-                    $scope.highlightState = {on: true};
 
                     $scope.observer = ObserverService;
 
@@ -90,21 +83,6 @@ define([
                     $scope.observer.subscribeItems($scope.observer_subscribe_fulltext,"fulltext");
 
 
-                    /**
-                     * Whenever the array that holds the words to highlight is changed, update
-                     * all open source documents where highlight mode is currently enabled.
-                     */
-                    $scope.$watch('highlightShared.wasChanged', function () {
-                        if ($scope.highlightShared.wasChanged) {
-                            for (var i = 0; i < $scope.sourceShared.openDocuments.contents.length; i++) {
-                                if ($scope.sourceShared.openDocuments.displayHighlightedText[i]) {
-                                    $scope.sourceShared.openDocuments.contents[i] =
-                                        $sce.trustAsHtml(getHighlightedText($scope.sourceShared.openDocuments.nonHighlightedContents[i]));
-                                }
-                            }
-                            $scope.highlightShared.wasChanged = false;
-                        }
-                    });
 
                     /**
                      * Applies the highlighting and underlining to the given text.
@@ -112,22 +90,31 @@ define([
                      * @param toFormat - The string to apply the highlighting and underlining to.
                      * @return string - Returns the highlighted and underlined text.
                      */
-                    var getHighlightedText = function (toFormat) {
+                    var getHighlightedText = function (toFormat, wordsToUnderline) {
                         toFormat = toFormat.replace(/\n/g, "<br>");
                         var highlightedText = toFormat;
                         for (var i = 0; i < graphPropertiesShareService.categoryColors.length; i++) {
                             highlightedText = util.highlight(
                                 highlightedText,
-                                $scope.highlightShared.wordsToHighlight[i],
-                                $scope.highlightShared.wordsToUnderline[i],
+                                [],
+                                wordsToUnderline[i],
                                 graphPropertiesShareService.categoryColors[i]
                             );
                         }
                         return highlightedText;
                     };
 
-                    $scope.renderDoc = function(content) {
-                        return $sce.trustAsHtml(getHighlightedText(content));
+                    $scope.renderDoc = function(doc) {
+
+                        var marker = [[], [], [], []];
+                        doc.entities.forEach(function(e) {
+                            var index = graphPropertiesShareService.getIndexOfCategory(e.type);
+                            marker[index].push(e.name);
+                        });
+                        console.log("Caööööö");
+
+                        //return $sce.trustAsHtml(getFormattedSource(doc.content));
+                        return $sce.trustAsHtml(getHighlightedText(doc.content, marker));
                     };
 
 
@@ -141,36 +128,6 @@ define([
                      */
                     var getFormattedSource = function (toFormat) {
                         return toFormat.replace(/\n/g, '<br>');
-                    };
-
-
-                    /**
-                     *  Target of the "Load more documents" button
-                     */
-                    $scope.retrieveNextDocSet = function () {
-                        $scope.sourceShared.fetchNextDocs();
-                    };
-
-
-                    /**
-                     * Target for the click of "Toggle Highlighting".
-                     */
-                    $scope.toggleHighlighting = function () {
-                        // Show content depending on highlight.
-                        // All documents have to be updated since the toggle is not
-                        // specific for one document but for all simultaneously.
-                        for (var i = 0; i < $scope.sourceShared.openDocuments.contents.length; i++) {
-                            if ($scope.sourceShared.openDocuments.IDs[i] != undefined) {
-                                if ($scope.highlightState.on) {
-                                    $scope.sourceShared.openDocuments.contents[i] = $sce.trustAsHtml(getHighlightedText($scope.sourceShared.openDocuments.nonHighlightedContents[i]));
-                                    $scope.sourceShared.openDocuments.displayHighlightedText[i] = true;
-                                }
-                                else {
-                                    $scope.sourceShared.openDocuments.contents[i] = $sce.trustAsHtml($scope.sourceShared.openDocuments.nonHighlightedContents[i]);
-                                    $scope.sourceShared.openDocuments.displayHighlightedText[i] = false;
-                                }
-                            }
-                        }
                     };
 
 
