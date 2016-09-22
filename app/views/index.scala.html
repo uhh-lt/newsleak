@@ -59,8 +59,32 @@
                 </nav>
 
                 <main id="center-box" resizable r-directions="['right']" r-flex="true" flex="none">
-                    <!-- div id="network"  ng-include=" 'assets/partials/network.html' " onload="loaded()" ng-controller="FancyNetworkController"></div>-->
-                    <div id="network" ui-view="network"></div>
+                    <md-tabs md-selected="0" md-border-bottom md-autoselect layout-fill>
+
+                        <md-tab flex label="Network">
+                            <div id="network" ui-view="network"></div>
+                        </md-tab>
+
+                        <div id="docii" ui-view="document"></div>
+
+                        <!--<md-tab ng-repeat="tab in tabs">
+                            <md-tab-label>
+                                <section layout="row">
+                                    {{ tab.title }}
+                                    <md-button class="md-icon-button" ng-click="removeTab(tab)" aria-label="close" style="padding-top: 0px;">
+                                        <ng-md-icon size="20" icon="close"></ng-md-icon>
+                                    </md-button>
+                                </section>
+                            </md-tab-label>
+
+                            <md-tab-body>
+                                <md-content flex layout-padding>
+                                    <div ng-bind-html="tab.content"></div>
+                                </md-content>
+                            </md-tab-body>
+                        </md-tab>-->
+
+                   </md-tabs>
                 </main>
 
                 <aside id="right-side" flex="" layout="column">

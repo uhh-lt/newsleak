@@ -32,19 +32,20 @@
             </ul>
         </div>
     </script>
+
     <div ng-show="sourceShared.documentList.length > 0" class="docs-ul">
         <b style="text-decoration: underline;">{{ sourceShared.documentListInfo }}</b>
         <ul id="document-list">
             <li ng-repeat="item in sourceShared.documentList"
-                ng-class="{true: 'doc-list-highlight', false: 'doc-list-no-highlight'}[sourceShared.openDocuments.IDs.indexOf(item.id) > -1]"
+                ng-class="{true: 'doc-list-highlight', false: 'doc-list-no-highlight'}[isDocumentOpen(item.id)]"
                 ng-mouseleave="hidePopover(item.id)"
                 ng-mouseenter="showPopover(item.id)"
                 uib-popover-template="'doc_tooltip_tmpl'"
                 popover-trigger="none"
                 popover-title="Metadata for #{{item.id}}"
                 popover-placement="right"
-                popover-is-open="popover.isOpen[{{item.id}}]"
-                >
+                popover-is-open="popover.isOpen[{{item.id}}]">
+
                 <a href="#" ng-click="loadFullDocument(item.id)">
                     {{ item.metadata.Subject }} #{{item.id}}
                 </a>

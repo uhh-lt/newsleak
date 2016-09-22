@@ -20,11 +20,13 @@ define([
     'ngSanitize',
     '../../factory/util',
     'ui-bootstrap',
-    'toggle-switch'
+    'toggle-switch',
+    'ngMaterial',
+    'ngMdIcons'
 ], function (angular) {
     'use strict';
 
-    angular.module('myApp.source', ['play.routing', 'ngSanitize', 'toggle-switch', 'ui.bootstrap'])
+    angular.module('myApp.source', ['play.routing', 'ngSanitize', 'toggle-switch', 'ui.bootstrap', 'ngMaterial', 'ngMdIcons'])
         .config(['$uibTooltipProvider', function($uibTooltipProvider) {
             //$uibTooltipProvider.setTriggers({'mouseenter': 'mouseleave'});
             console.log("config");
@@ -76,9 +78,18 @@ define([
                             promises: []
                     };
 
+                   // $scope.tabs = [{id: 1, title: 1, content: "Hallo"}];
+
+                    /*$scope.removeTab = function (tab) {
+                        var index = $scope.tabs.indexOf(tab);
+                        $scope.tabs.splice(index, 1);
+                    };*/
+
                     $scope.highlightState = {on: true};
 
                     $scope.observer = ObserverService;
+
+                    console.log("Instantiated SourceController");
                     /**
                      * subscribe entity and metadata filters
                      */
@@ -322,6 +333,13 @@ define([
                                 // Append a new tab and add the content
                                 appendNewTab(docId);
                                 appendNewTabContent(docId);
+
+                                //console.log(getHighlightedText(response.data[2]));
+                                //$scope.tabs.push({id: docId, title: docId, content: $sce.trustAsHtml(getHighlightedText(response.data[2])) });
+                                //$scope.tabs.push({id: docId, title: docId, content: "A" });
+
+                                $scope.sourceShared.tabs.push({id: docId, title: docId, content: $sce.trustAsHtml(getHighlightedText(response.data[2])) });
+                                //console.log($scope.tabs);
                                 var editItem = {
                                     type: 'openDoc',
                                     data: {
@@ -329,7 +347,7 @@ define([
                                         name: "#" + docId
                                     }
                                 };
-                                $scope.observer.addItem(editItem);
+                               $scope.observer.addItem(editItem);
                             });
                         }
                     };
@@ -373,6 +391,11 @@ define([
                     $scope.createEntity = function () {
                         console.log("createEntity TODO");
                         alert("TODO: create a entity");
+                    };
+
+                    $scope.isDocumentOpen = function(id) {
+                        var ids = $scope.sourceShared.tabs.map(function(t) { return t.id} );
+                        return _.contains(ids, id);
                     };
 
                     /**

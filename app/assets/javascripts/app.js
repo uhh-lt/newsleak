@@ -23,6 +23,7 @@ define([
     './factory/source/SourceFactory',
     './factory/source/HighlightFactory',
     './components/sources/SourceController',
+    './components/sources/DocumentController',
     //'./components/network/NetworkController',
     './components/network/FancyNetworkController',
     './components/network/ToolController',
@@ -42,7 +43,9 @@ define([
     'ui-router',
     'ui-bootstrap',
     'angularResizable',
+    'ngSanitize',
     'ngMaterial',
+    'ngMdIcons',
     'angularScreenfull',
     'ngVis',
     'vis'
@@ -51,12 +54,12 @@ define([
 
     var app = angular.module('myApp',
         [
-            'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable','ngMaterial',
+            'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial', 'ngMdIcons',
             'angularMoment', 'underscore', 'myApp.observer', 'myApp.util', 'myApp.history',
             'myApp.tools', 'angularScreenfull',
             'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
             'myApp.network', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
-            'myApp.metafactory', 'myApp.toolfactory',
+            'myApp.metafactory', 'myApp.toolfactory', 'myApp.document',
             'myApp.histogram', 'myApp.search',
             'ngVis'
         ]
@@ -82,6 +85,10 @@ define([
                     templateUrl: 'assets/partials/document_list.html',
                     controller: 'SourceController'
                 },
+                'document': {
+                    templateUrl: 'assets/partials/document.html',
+                    controller: 'DocumentController'
+                },
                 'network': {
                     templateUrl: 'assets/partials/network.html',
                     controller: 'FancyNetworkController' //'NetworkController'
@@ -90,10 +97,10 @@ define([
                     templateUrl: 'assets/partials/tools.html',
                     controller: 'ToolController'
                 },
-                'source': {
+                /*'source': {
                     templateUrl: 'assets/partials/source.html',
                     controller: 'SourceController'
-                },
+                },*/
                 'histogram': {
                     templateUrl: 'assets/partials/histogram.html',
                     controller: 'HistogramController'
@@ -131,6 +138,8 @@ define([
             $scope.selectedDataset = '';
             $scope.datasets = ['cable', 'enron'];
 
+            //$scope.tabs = [];
+
             init();
 
             function init() {
@@ -166,6 +175,11 @@ define([
             $scope.$on('ui.layout.resize', function (e, beforeContainer, afterContainer) {
                 //setUILayoutProperties();
             });
+
+            /*$scope.removeTab = function (tab) {
+                var index = $scope.tabs.indexOf(tab);
+                $scope.tabs.splice(index, 1);
+            };*/
 
             $scope.changeDataset = function() {
                 console.log('Changed ' + $scope.selectedDataset);

@@ -32,6 +32,7 @@
 			'ngAria': 'libs/angular-aria/angular-aria',
 			'ngMessages': 'libs/angular-messages/angular-messages.min',
 			'ngMaterial': 'libs/angular-material/angular-material.min',
+			'ngMdIcons': 'libs/angular-material-icons/angular-material-icons.min',
 			'bootstrap': 'libs/bootstrap/dist/js/bootstrap.min',
 			'ui-bootstrap': 'libs/angular-bootstrap/ui-bootstrap-tpls.min',
 			'toggle-switch': 'libs/angular-toggle-switch/angular-toggle-switch.min',
@@ -108,6 +109,9 @@
 			},
 			'ngMaterial': {
 				deps: ['angular', 'ngAria', 'ngMessages', 'ngAnimate']
+			},
+			'ngMdIcons': {
+				deps: ['angular']
 			},
 			'drilldown': {
 				exports: 'drilldown',
