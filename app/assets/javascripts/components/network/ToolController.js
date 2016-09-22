@@ -100,7 +100,7 @@ define([
                             if (prio == 0){
                                 document.getElementById(x + '.' + i + '.icon').style.visibility = "visible";
                                 document.getElementById(i + '.' + x + '.icon').style.visibility = "visible";
-                            } else if (prio == 1){
+                            } else {
                                 document.getElementById(x + '.' + i + '.icon').style.visibility = "hidden";
                                 document.getElementById(i + '.' + x + '.icon').style.visibility = "hidden";
                             }
