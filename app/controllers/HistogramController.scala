@@ -23,11 +23,11 @@ import model.faceted.search.{ Facets, FacetedSearch, MetaDataBucket, LoD }
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller, Results }
 import util.TimeRangeParser
+import util.SessionUtils.currentDataset
 
 // scalastyle:off
 import scalikejdbc._
 // scalastyle:on
-
 
 class HistogramController @Inject extends Controller {
 
@@ -46,10 +46,10 @@ class HistogramController @Inject extends Controller {
     entities: List[Long],
     timeRange: String,
     lod: String
-  ) = Action {
+  ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    val res = FacetedSearch.histogram(facets, LoD.withName(lod)).buckets.map {
+    val res = FacetedSearch.fromIndexName(currentDataset).histogram(facets, LoD.withName(lod)).buckets.map {
       case MetaDataBucket(key, count) => Json.obj("range" -> key, "count" -> count)
       case _ => Json.obj("" -> 0)
     }

@@ -24,6 +24,7 @@ import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
 import model.Relationship
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller, Results }
+import util.SessionUtils.currentDataset
 import util.TimeRangeParser
 
 // scalastyle:off
@@ -139,8 +140,8 @@ class NetworkController @Inject extends Controller {
    * @param name
    * @return
    */
-  def getIdsByName(name: String) = Action {
-    Ok(Json.obj("ids" -> model.Entity.getByName(name).map(_.id))).as("application/json")
+  def getIdsByName(name: String) = Action { implicit request =>
+    Ok(Json.obj("ids" -> model.Entity.fromDBName(currentDataset).getByName(name).map(_.id))).as("application/json")
   }
 
   /**
@@ -167,12 +168,12 @@ class NetworkController @Inject extends Controller {
     timeRange: String,
     size: Int,
     filter: List[Long]
-  ) = Action {
+  ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var newSize = size
     if (filter.nonEmpty) newSize = filter.length
-    val res = FacetedSearch.induceSubgraph(facets, newSize)
+    val res = FacetedSearch.fromIndexName(currentDataset).induceSubgraph(facets, newSize)
     val subgraphEntities = res._1.map {
       case NodeBucket(id, count) => Json.obj("id" -> id, "count" -> count)
       case _ => Json.obj()
@@ -187,8 +188,8 @@ class NetworkController @Inject extends Controller {
    * @param id the id of the entity to delete
    * @return if the deletion succeeded
    */
-  def deleteEntityById(id: Long) = Action {
-    Ok(Json.obj("result" -> model.Entity.delete(id))).as("application/json")
+  def deleteEntityById(id: Long) = Action { implicit request =>
+    Ok(Json.obj("result" -> model.Entity.fromDBName(currentDataset).delete(id))).as("application/json")
   }
 
   /**
@@ -199,8 +200,8 @@ class NetworkController @Inject extends Controller {
    *                the focal entity
    * @return if the merging succeeded
    */
-  def mergeEntitiesById(focalid: Int, ids: List[Long]) = Action {
-    Ok(Json.obj("result" -> model.Entity.merge(focalid, ids))).as("application/json")
+  def mergeEntitiesById(focalid: Int, ids: List[Long]) = Action { implicit request =>
+    Ok(Json.obj("result" -> model.Entity.fromDBName(currentDataset).merge(focalid, ids))).as("application/json")
   }
 
   /**
@@ -210,8 +211,8 @@ class NetworkController @Inject extends Controller {
    * @param newName the new name of the entity
    * @return if the change succeeded
    */
-  def changeEntityNameById(id: Long, newName: String) = Action {
-    Ok(Json.obj("result" -> model.Entity.changeName(id, newName))).as("application/json")
+  def changeEntityNameById(id: Long, newName: String) = Action { implicit request =>
+    Ok(Json.obj("result" -> model.Entity.fromDBName(currentDataset).changeName(id, newName))).as("application/json")
   }
 
   /**
@@ -221,8 +222,8 @@ class NetworkController @Inject extends Controller {
    * @param newType the new type of the entity
    * @return if the change succeeded
    */
-  def changeEntityTypeById(id: Long, newType: String) = Action {
-    Ok(Json.obj("result" -> model.Entity.changeType(id, EntityType.withName(newType)))).as("application/json")
+  def changeEntityTypeById(id: Long, newType: String) = Action { implicit request =>
+    Ok(Json.obj("result" -> model.Entity.fromDBName(currentDataset).changeType(id, EntityType.withName(newType)))).as("application/json")
   }
 
   // scalastyle:off

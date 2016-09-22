@@ -24,6 +24,7 @@ import model.{ Entity, EntityType }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller, Results }
 import util.TimeRangeParser
+import util.SessionUtils.currentDataset
 
 // scalastyle:off
 import scalikejdbc._
@@ -40,8 +41,8 @@ class EntityController @Inject extends Controller {
    * an array of entity names and entity frequency
    * combined
    */
-  def getEntitiesByType(entityType: String) = Action {
-    val entities = Entity.getOrderedByFreqDesc(EntityType.withName(entityType), defaultFetchSize)
+  def getEntitiesByType(entityType: String) = Action { implicit request =>
+    val entities = Entity.fromDBName(currentDataset).getOrderedByFreqDesc(EntityType.withName(entityType), defaultFetchSize)
       .map(x => Json.obj("id" -> x.id, "name" -> x.name, "freq" -> x.frequency))
     Results.Ok(Json.toJson(entities)).as("application/json")
   }
@@ -50,8 +51,8 @@ class EntityController @Inject extends Controller {
    * Get all entity types
    * @return list of entity types
    */
-  def getEntityTypes = Action {
-    Results.Ok(Json.toJson(Entity.getTypes().map(_.toString))).as("application/json")
+  def getEntityTypes = Action { implicit request =>
+    Results.Ok(Json.toJson(Entity.fromDBName(currentDataset).getTypes().map(_.toString))).as("application/json")
   }
 
   // scalastyle:off
@@ -73,19 +74,19 @@ class EntityController @Inject extends Controller {
     size: Int,
     entityType: String,
     filter: List[Long]
-  )(implicit session: DBSession = AutoSession) = Action {
+  ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var newSize = size
     if (filter.nonEmpty) newSize = filter.length
     val entitiesRes: List[(Long, Long)] = if (entityType.isEmpty) {
-      FacetedSearch.aggregateEntities(facets, newSize, filter).buckets.collect { case NodeBucket(id, count) => (id, count) }
+      FacetedSearch.fromIndexName(currentDataset).aggregateEntities(facets, newSize, filter).buckets.collect { case NodeBucket(id, count) => (id, count) }
     } else {
-      FacetedSearch.aggregateEntitiesByType(facets, EntityType.withName(entityType), newSize, filter).buckets.collect { case NodeBucket(id, count) => (id, count) }
+      FacetedSearch.fromIndexName(currentDataset).aggregateEntitiesByType(facets, EntityType.withName(entityType), newSize, filter).buckets.collect { case NodeBucket(id, count) => (id, count) }
     }
     if (entitiesRes.nonEmpty) {
       val ids = entitiesRes.map(_._1).take(defaultFetchSize)
-      val sqlResult = Entity.getByIds(ids).map(e => e.id -> e)
+      val sqlResult = Entity.fromDBName(currentDataset).getByIds(ids).map(e => e.id -> e)
       // TODO: ordering commented out while no zerobuckets available
       if (filter.nonEmpty) {
         // if (false) {
