@@ -24,7 +24,7 @@ import model.faceted.search.{ FacetedSearch, Facets }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller }
 import util.SessionUtils.currentDataset
-import util.{ SessionUtils, TimeRangeParser }
+import util.TimeRangeParser
 
 // scalastyle:off
 import play.cache._
@@ -47,28 +47,28 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
   // private val metadataKeys = List("Subject", "Timezone", "sender.name", "Recipients.email", "Recipients.name", "Recipients.type")
 
   /**
-    * returns the document with the id "id", if there is any
-    */
+   * returns the document with the id "id", if there is any
+   */
   def getDocById(id: Int) = Action { implicit request =>
     val docSearch = Document.fromDBName(currentDataset)
     Ok(Json.toJson(docSearch.getById(id).map(doc => (doc.id, doc.created.toString(), doc.content)))).as("application/json")
   }
 
   /**
-    * Search for Document by fulltext term and faceted search map via elasticsearch
-    *
-    * @param fullText full-text search term
-    * @param generic   mapping of metadata key and a list of corresponding tags
-    * @param entities list of entity ids to filter
-    * @param timeRange string of a time range readable for [[TimeRangeParser]]
-    * @return list of matching document id's
-    */
+   * Search for Document by fulltext term and faceted search map via elasticsearch
+   *
+   * @param fullText full-text search term
+   * @param generic   mapping of metadata key and a list of corresponding tags
+   * @param entities list of entity ids to filter
+   * @param timeRange string of a time range readable for [[TimeRangeParser]]
+   * @return list of matching document id's
+   */
   def getDocs(
-               fullText: List[String],
-               generic: Map[String, List[String]],
-               entities: List[Long],
-               timeRange: String
-             ) = Action { implicit request =>
+    fullText: List[String],
+    generic: Map[String, List[String]],
+    entities: List[Long],
+    timeRange: String
+  ) = Action { implicit request =>
     val uid = request.session.get("uid").getOrElse("0")
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
