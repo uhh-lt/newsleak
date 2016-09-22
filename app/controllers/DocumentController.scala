@@ -20,10 +20,11 @@ package controllers
 import javax.inject.Inject
 
 import model.Document
-import model.faceted.search.{ FacetedSearch, Facets }
+import model.faceted.search.{ FacetedSearch, Facets, SearchHitIterator }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller }
 import util.TimeRangeParser
+import util.SessionUtils.currentDataset
 
 // scalastyle:off
 import scalikejdbc._
@@ -40,7 +41,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
 
   private val defaultPageSize = 50
   private val defaultFacets = Facets.emptyFacets
-  private val (numberOfDocuments, documentIterator) = FacetedSearch.searchDocuments(defaultFacets, defaultPageSize)
+  private val (numberOfDocuments, documentIterator) = FacetedSearch.fromIndexName("cable").searchDocuments(defaultFacets, defaultPageSize)
   private val defaultSession = IteratorSession(numberOfDocuments, documentIterator, defaultFacets.hashCode())
   private val metadataKeys = List("Subject", "Origin", "SignedBy", "Classification")
   // metdatakeys for enron
@@ -49,8 +50,8 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
   /**
    * returns the document with the id "id", if there is any
    */
-  def getDocById(id: Int) = Action {
-    Ok(Json.toJson(Document.getById(id).map(doc => (doc.id, doc.created.toString(), doc.content)))).as("application/json")
+  def getDocById(id: Int) = Action { implicit request =>
+    Ok(Json.toJson(Document.fromDBName(currentDataset).getById(id).map(doc => (doc.id, doc.created.toString(), doc.content)))).as("application/json")
   }
 
   /**
@@ -67,7 +68,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String
-  )(implicit session: DBSession = AutoSession) = Action { implicit request =>
+  ) = Action { implicit request =>
     val uid = request.session.get("uid").getOrElse("0")
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
@@ -75,7 +76,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
 
     var iteratorSession: IteratorSession = cache.get[IteratorSession](uid)
     if (iteratorSession == null || iteratorSession.hash == defaultSession.hash || iteratorSession.hash != facets.hashCode()) {
-      val res = FacetedSearch.searchDocuments(facets, defaultPageSize)
+      val res = FacetedSearch.fromIndexName(currentDataset).searchDocuments(facets, defaultPageSize)
       iteratorSession = IteratorSession(res._1, res._2, facets.hashCode())
       cache.set(uid, iteratorSession)
     }
@@ -87,7 +88,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
     }
 
     if (docIds.nonEmpty) {
-      val metadataTriple = Document.getMetadataForDocuments(docIds, metadataKeys)
+      val metadataTriple = Document.fromDBName(currentDataset).getMetadataForDocuments(docIds, metadataKeys)
       val response = metadataTriple
         .groupBy(_._1)
         .map { case (id, inner) => id -> inner.map(doc => Json.obj("key" -> doc._2, "val" -> doc._3)) }

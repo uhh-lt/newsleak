@@ -21,6 +21,14 @@
     
     <a class="navbar-brand title" href="#">new/s/leak</a>
 
+    <md-input-container md-theme="control-theme">
+      <md-select ng-model="selectedDataset" ng-change="changeDataset()" aria-label="dataset">
+        <md-option ng-repeat="data in datasets" ng-value="data" ng-selected="$index === 0">
+          {{data}}
+        </md-option>
+      </md-select>
+    </md-input-container>
+
     <div class="navbar-right links">
       <a href="https://en.wikipedia.org/wiki/Volkswagen_Foundation" target="_blank" data-toggle="tooltip" title="Volkswagen Foundation">
         <img style="height: 43px; object-fit:contain" src="./assets/images/logo_vw_stiftung.png">
