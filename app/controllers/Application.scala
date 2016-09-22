@@ -22,7 +22,9 @@ import play.api.mvc.{ Action, Controller }
 import org.apache.commons.codec.binary.{ Base64, Hex, StringUtils }
 import javax.inject.Inject
 
-import model.faceted.search.FacetedSearch
+import util.SessionUtils.{ datasetSessionKey, currentDataset }
+import play.api.libs.json.Json
+import utils.NewsleakConfigReader
 
 import scala.util.Random
 
@@ -81,20 +83,22 @@ class Application @Inject extends Controller {
         .withHeaders("WWW-Authenticate" -> "Basic realm=\"new/s/leak\"")
     } else {
       Ok(views.html.index()).withNewSession.withSession(
-        "uid" -> uid
+        "uid" -> uid,
+        datasetSessionKey -> NewsleakConfigReader.config.getString("es.index.default")
       )
     }
   }
 
-  def switchDataset(dataSet: String) = Action {
-    FacetedSearch.changeIndex(dataSet)
-    utils.DBService.changeDB(dataSet)
-    Ok("success").as("Text")
+  def changeDataset(name: String) = Action { implicit request =>
+    Ok(Json.obj("newDataset" -> name, "oldDataset" -> currentDataset))
+      .withSession(request.session + (datasetSessionKey, name))
   }
 
+  // scalastyle:off
   def jsRoutes(varName: String = "jsRoutes") = Action { implicit request =>
     // Note: feature warning is produced by play itself
     import play.api.routing._
+    // scalastyle:on
 
     Ok(
       JavaScriptReverseRouter(varName)(

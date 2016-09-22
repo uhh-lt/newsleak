@@ -6,7 +6,7 @@
 # PAGES                                                                                         #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 GET         /                                                controllers.Application.index
-GET     /switchDataset                                      controllers.Application.switchDataset(dataSet: String)
+GET     /changeDataset                                      controllers.Application.changeDataset(name: String)
 
 #comment for alternate index page
 #GET         /alt                                                controllers.Application.index_alt

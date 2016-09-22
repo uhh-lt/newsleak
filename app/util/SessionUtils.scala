@@ -15,32 +15,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package controllers
+package util
 
-import play.api.mvc.{ Action, Controller, Results }
-import model.Entity
-import play.api.libs.json.Json
-import javax.inject.Inject
+import play.api.mvc.{ AnyContent, Request }
 
-import util.SessionUtils.currentDataset
+object SessionUtils {
 
-// scalastyle:off
-import util.TupleWriters._
-// scalastyle:on
-
-class SearchController @Inject extends Controller {
-
-  /**
-   * get the autocomplete tags to this query
-   *
-   * @param query the query to get the autocomplete
-   *              tags for
-   * @return
-   *         an array of entity names and entity types
-   *         combined
-   */
-  def getAutocomplete(query: String) = Action { implicit request =>
-    Results.Ok(Json.obj("entities" -> Entity.fromDBName(currentDataset).getByNamePattern(query)
-      .map(entity => (entity.id, entity.name, entity.entityType.toString)))).as("application/json")
-  }
+  val datasetSessionKey = "dataset"
+  def currentDataset(implicit request: Request[AnyContent]): String = request.session.get(datasetSessionKey).get
 }
