@@ -84,7 +84,7 @@ define([
                 {name:'LOC', img: 'place', val: 1},{name:'MISC', img: 'reorder', val: 1}];
 
             var UIgeneralItems = [1,1,1,1];
-            var priorityToColor = ["red","white","green","blue"];
+            var priorityToColor = ["white","white","#83a2d6","#2759ac"];
 
             $scope.setUI = function (x,y) {
                 if ((x==0 || y==0) && !(x==0 && y==0)){
@@ -96,11 +96,27 @@ define([
                             toolShareService.UIitems[i][x - 1] = prio;
                             toolShareService.UIitems[x - 1][i] = prio;
                         }
+                        if (i != 0){
+                            if (prio == 0){
+                                document.getElementById(x + '.' + i + '.icon').style.visibility = "visible";
+                                document.getElementById(i + '.' + x + '.icon').style.visibility = "visible";
+                            } else if (prio == 1){
+                                document.getElementById(x + '.' + i + '.icon').style.visibility = "hidden";
+                                document.getElementById(i + '.' + x + '.icon').style.visibility = "hidden";
+                            }
+                        }
                         document.getElementById(x + '.' + i).style.backgroundColor = priorityToColor[prio];
                         document.getElementById(i + '.' + x).style.backgroundColor = priorityToColor[prio];
                     }
                 } else {
                     var prio = (toolShareService.UIitems[x - 1][y - 1] + 1) % 4;
+                    if (prio == 0){
+                        document.getElementById(x + '.' + y + '.icon').style.visibility = "visible";
+                        document.getElementById(y + '.' + x + '.icon').style.visibility = "visible";
+                    } else if (prio == 1){
+                        document.getElementById(x + '.' + y + '.icon').style.visibility = "hidden";
+                        document.getElementById(y + '.' + x + '.icon').style.visibility = "hidden";
+                    }
                     toolShareService.UIitems[y - 1][x - 1] = prio;
                     toolShareService.UIitems[x - 1][y - 1] = prio;
                     document.getElementById(x + '.' + y).style.backgroundColor = priorityToColor[prio];

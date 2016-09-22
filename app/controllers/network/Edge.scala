@@ -31,7 +31,7 @@ class Edge(n1: Node, n2: Node, docOcc: Int, ui: Double, oldDoi: Double) {
 
     val API = npmi2plus
     val D = -(1 - pow(0.5, dist)) * npmi2plus
-    val UI = /* API * ui + */ oldDoi * 0.1
+    val UI = npmi2plus * ui + oldDoi * 0.1
 
     doiDebugString = " api: " + API
     API * alpha + beta * D + UI * gamma
