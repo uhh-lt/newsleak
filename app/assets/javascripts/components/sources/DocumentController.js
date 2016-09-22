@@ -79,7 +79,6 @@ define([
 
                     $scope.observer = ObserverService;
 
-                    console.log("Instantiated DocumentController");
                     /**
                      * subscribe entity and metadata filters
                      */
@@ -125,6 +124,10 @@ define([
                             );
                         }
                         return highlightedText;
+                    };
+
+                    $scope.renderDoc = function(content) {
+                        return $sce.trustAsHtml(getHighlightedText(content));
                     };
 
 
@@ -188,48 +191,6 @@ define([
                         console.log("createEntity TODO");
                         alert("TODO: create a entity");
                     };
-
-                    /**
-                     * This function is used for autocompleting the tags
-                     */
-                    $scope.autocomplete = function (query) {
-                        // filter tags, only show those that contain query
-                        $scope.searchTags = [];
-                        $("#autocomplete").css('z-index','1000');
-
-                        if(query.length >= 3) playRoutes.controllers.SearchController.getAutocomplete(query).get().then(
-                            function (tags) {
-                                var limit = 0;
-
-                                tags.data.entities.forEach
-                                (
-                                    function (currentValue, index, array) {
-                                        if (limit == 10) {
-                                            return;
-                                        }
-
-                                        $scope.searchTags.push(
-                                            {
-                                                id: currentValue[0],
-                                                text: currentValue[1],
-                                                type: currentValue[2],
-                                                color: graphPropertiesShareService.categoryColors[
-                                                    graphPropertiesShareService.getIndexOfCategory(
-                                                        currentValue[2]
-                                                    )
-                                                    ]
-                                            });
-                                        limit = limit + 1;
-                                    }
-                                );
-                            }
-                        );
-                    };
-
-                    $scope.resetAutoComplete = function() {
-                        $scope.searchQuery = "";
-                    };
                 }
             ]);
-
 });

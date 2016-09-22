@@ -97,10 +97,6 @@ define([
                     templateUrl: 'assets/partials/tools.html',
                     controller: 'ToolController'
                 },
-                /*'source': {
-                    templateUrl: 'assets/partials/source.html',
-                    controller: 'SourceController'
-                },*/
                 'histogram': {
                     templateUrl: 'assets/partials/histogram.html',
                     controller: 'HistogramController'
@@ -138,8 +134,6 @@ define([
             $scope.selectedDataset = '';
             $scope.datasets = ['cable', 'enron'];
 
-            //$scope.tabs = [];
-
             init();
 
             function init() {
@@ -175,11 +169,6 @@ define([
             $scope.$on('ui.layout.resize', function (e, beforeContainer, afterContainer) {
                 //setUILayoutProperties();
             });
-
-            /*$scope.removeTab = function (tab) {
-                var index = $scope.tabs.indexOf(tab);
-                $scope.tabs.splice(index, 1);
-            };*/
 
             $scope.changeDataset = function() {
                 console.log('Changed ' + $scope.selectedDataset);
