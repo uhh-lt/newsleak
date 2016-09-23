@@ -25,6 +25,7 @@ define([
     './components/sources/SourceController',
     './components/sources/DocumentController',
     './components/network/FancyNetworkController',
+    './components/network/GraphConfig',
     './components/network/ToolController',
     './components/network/TextModalController',
     './components/network/MergeModalController',
@@ -54,7 +55,7 @@ define([
     var app = angular.module('myApp',
         [
             'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial', 'ngMdIcons',
-            'angularMoment', 'underscore', 'myApp.observer', 'myApp.util', 'myApp.history',
+            'angularMoment', 'underscore', 'myApp.observer', 'myApp.util', 'myApp.history', 'myApp.networkConfig',
             'myApp.tools', 'angularScreenfull',
             'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
             'myApp.network', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',

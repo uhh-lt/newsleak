@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 define([
     'angular',
     'ngMaterial',
@@ -42,7 +59,7 @@ define([
             return graphProperties;
         })
         // Network Controller
-        .controller('FancyNetworkController', ['$scope', '$timeout', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', function ($scope, $timeout, $mdDialog, VisDataSet, playRoutes, ObserverService, _) {
+        .controller('FancyNetworkController', ['$scope', '$timeout', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', function ($scope, $timeout, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties) {
 
             var self = this;
 
@@ -57,70 +74,8 @@ define([
             self.nodesDataset = new VisDataSet([]);
             self.edgesDataset = new VisDataSet([]);
 
-            self.physicOptions = {
-                forceAtlas2Based: {
-                    gravitationalConstant: -220,
-                    centralGravity: 0.01,
-                    springConstant: 0.02,
-                    springLength: 110,
-                    damping: 0.4,
-                    avoidOverlap: 0
-                },
-                barnesHut: {
-                    gravitationalConstant: -50,
-                    centralGravity: 0.01,
-                    springConstant: 0.08,
-                    damping: 0.4
-                },
-                maxVelocity: 146,
-                solver: 'forceAtlas2Based',
-                //solver: 'barnesHut',
-               // timestep: 0.35,
-                stabilization: {
-                    enabled: true,
-                    fit: false,
-                    iterations: 2000
-                    //updateInterval: 25
-                },
-                adaptiveTimestep: true
-            };
+            self.physicOptions = physicOptions;
 
-            self.options = {
-                nodes : {
-                    shape: 'dot',
-                    size: 10,
-                    shadow: true,
-                    //mass: 1.7,
-                    font: {
-                        /*strokeWidth: 3,
-                        strokeColor: 'white'*/
-                    },
-                    scaling: {
-                        label: {
-                            min: 30,
-                            max: 45
-                        }
-                    }
-                },
-                edges: {
-                    color: {
-                        color: 'rgb(169,169,169)', //'rgb(220,220,220)',
-                        highlight: 'blue',//,
-                        //opacity: 0.5
-                    },
-                    smooth: {type:'continuous'}
-                },
-                physics: self.physicOptions,
-                layout: {
-                    improvedLayout: false
-                },
-                interaction: {
-                    tooltipDelay: 200,
-                    hideEdgesOnDrag: true,
-                    navigationButtons: true,
-                    keyboard: false
-                }
-            };
 
             self.nodeMenu = [{
                     title: 'Add as filter',
@@ -160,7 +115,7 @@ define([
                 edges: self.edgesDataset
             };
 
-            $scope.graphOptions = self.options;
+            $scope.graphOptions = graphProperties.options;
             $scope.graphEvents = {
                 "startStabilizing": stabilizationStart,
                 "stabilized": stabilizationDone,
@@ -326,7 +281,7 @@ define([
 
             function disablePhysics() {
                 console.log('Physics simulation off');
-                $scope.graphOptions['physics']  = false;
+                $scope.graphOptions['physics'] = false;
                 // Need to explicitly apply the new options since the automatic
                 // watchCollection from angular-visjs seems to be outside of the
                 // regular angular update event cycle. It also requires to remove
