@@ -58,7 +58,8 @@
                 </nav>
 
                 <main id="center-box" resizable r-directions="['right']" r-flex="true" flex="none">
-                    <md-tabs md-selected="0" md-border-bottom md-autoselect layout-fill>
+                    <!-- selectedTab is defined in AppController -->
+                    <md-tabs md-selected="selectedTab.index" md-border-bottom md-autoselect layout-fill>
 
                         <md-tab flex label="Network">
                             <div id="network" ui-view="network"></div>

@@ -24,7 +24,6 @@ define([
     './factory/source/HighlightFactory',
     './components/sources/SourceController',
     './components/sources/DocumentController',
-    //'./components/network/NetworkController',
     './components/network/FancyNetworkController',
     './components/network/ToolController',
     './components/network/TextModalController',
@@ -91,7 +90,7 @@ define([
                 },
                 'network': {
                     templateUrl: 'assets/partials/network.html',
-                    controller: 'FancyNetworkController' //'NetworkController'
+                    controller: 'FancyNetworkController'
                 },
                 'tools': {
                     templateUrl: 'assets/partials/tools.html',
@@ -131,6 +130,9 @@ define([
     app.controller('AppController', ['$scope', '$state', '$timeout', '$window', 'moment', 'uiShareService', 'ObserverService', 'playRoutes',
         function ($scope, $state, $timeout, $window, moment, uiShareService, ObserverService, playRoutes) {
 
+            /* Select graph tab on startup. In order to update the value from the child scope we need
+             * an object here. */
+            $scope.selectedTab = { index: 0 };
             $scope.selectedDataset = '';
             $scope.datasets = ['cable', 'enron'];
 
@@ -138,22 +140,23 @@ define([
 
             function init() {
                 $state.go('layout');
+                // TODO Don't know what the resizing is about
                 // $timeout in order to have the right values right from the beginning on
-                $timeout(function() {
+                /*$timeout(function() {
                     setUILayoutProperties(parseInt($('#network-maps-container').css('width')), parseInt($('#network-maps-container').css('height'))-96);
-                }, 100);
+                }, 100); */
             }
 
             $scope.$on("angular-resizable.resizeEnd", function (event, args) {
                 if(args.id == 'center-box') setUILayoutProperties(args.width, false);
-                if(args.id == 'footer') setUILayoutProperties(false, parseInt($('#network-maps-container').css('height'))-96);
+                //if(args.id == 'footer') setUILayoutProperties(false, parseInt($('#network-maps-container').css('height'))-96);
                 $("#histogram").highcharts().reflow();
                 $("#metadata-view .active .active .meta-chart").highcharts().reflow();
             });
 
-            angular.element($window).bind('resize', function () {
+            /*angular.element($window).bind('resize', function () {
                 setUILayoutProperties(parseInt($('#network-maps-container').css('width')), parseInt($('#network-maps-container').css('height'))-96);
-            });
+            });*/
 
             /**
              * This function sets properties that describe the dimensions of the UI layout.

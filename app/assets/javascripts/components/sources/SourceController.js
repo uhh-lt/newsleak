@@ -182,7 +182,9 @@ define([
                     $scope.loadFullDocument = function (docId) {
                         // Focus open tab if document is already opened
                         if($scope.isDocumentOpen(docId)) {
-
+                            var index = _.findIndex($scope.sourceShared.tabs, function(t) { return t.id == docId; });
+                            // Skip first network tab
+                            $scope.selectedTab.index = index + 1;
                         } else {
                             var editItem = {
                                 type: 'openDoc',
@@ -204,14 +206,12 @@ define([
 
 
                     $scope.isDocumentOpen = function (id) {
-                        var ids = $scope.sourceShared.tabs.map(function (t) {
-                            return t.id
-                        });
-                        return _.contains(ids, id);
+                        var index = _.findIndex($scope.sourceShared.tabs, function(t) { return t.id == id; });
+                        return index != -1;
                     };
 
                     /**
-                     * This function is used for autocompleting the tags
+                     * This function provides autocomplete behaviour for the tags
                      */
                     $scope.autocomplete = function (query) {
                         // filter tags, only show those that contain query
@@ -271,8 +271,6 @@ define([
                             if (($(this).find("ul").height() - $(this).scrollTop()) < 1000)
                                 $scope.loadMore();
                         }
-
-
                     });
 
                     $scope.hidePopover = function (id) {
