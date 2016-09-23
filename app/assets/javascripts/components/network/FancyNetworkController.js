@@ -150,8 +150,10 @@ define([
                 $scope.fulltextFilters = items;//items.map(function(f) { return f.data.name; });
             };
             $scope.observer_subscribe_metadata = function(items) { $scope.metadataFilters = items};
+            $scope.observer_subscribe_entity = function(items) { $scope.entityFilters = items};
             $scope.observerService.subscribeItems($scope.observer_subscribe_fulltext, "fulltext");
             $scope.observerService.subscribeItems($scope.observer_subscribe_metadata, "metadata");
+            $scope.observerService.subscribeItems($scope.observer_subscribe_entity, "entity");
 
             $scope.graphData = {
                 nodes: self.nodesDataset,
@@ -187,7 +189,8 @@ define([
             $scope.$watch('edgeImportance', handleEdgeSlider);
 
             $scope.reloadGraph = function() {
-                var fulltext = $scope.fulltextFilters.map(function(f) { return f.data.name; });
+                var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.name; });
+                var entities = $scope.entityFilters.map(function(v) { return v.data.id; });
                 var facets = $scope.observerService.getFacets();
 
                  var fraction = [
@@ -197,8 +200,7 @@ define([
                     {"key": "MISC", "data": $scope.numMisc }
                 ];
 
-                // TODO entities filter []
-                playRoutes.controllers.NetworkController.induceSubgraph(fulltext, facets, [], $scope.observerService.getTimeRange(), fraction, []).get().then(function(response) {
+                playRoutes.controllers.NetworkController.induceSubgraph(fulltext, facets, entities, $scope.observerService.getTimeRange(), fraction, []).get().then(function(response) {
                         // Enable physics for new graph data
                         applyPhysicsOptions(self.physicOptions);
                         $scope.loading = true;

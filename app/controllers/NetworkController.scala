@@ -57,8 +57,6 @@ class NetworkController @Inject extends Controller {
   ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    // var newSize = size
-    // if (filter.nonEmpty) newSize = filter.length
 
     val sizes = nodeFraction.map { case (t, s) => withName(t) -> s.toInt }
     val (buckets, relations) = FacetedSearch.
