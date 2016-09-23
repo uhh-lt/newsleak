@@ -32,8 +32,6 @@ class MetadataController @Inject extends Controller {
     "cable" -> List("Subject", "Header", "ReferenceId", "References", "Keywords", "Entities", "Created", "EventTimes"),
     "enron" -> List("Subject", "Timezone", "sender.id", "Recipients.id", "Recipients.order")
   )
-  // exclusion for enron
-  // private val defaultExcludeTypes = List("Subject", "Timezone", "sender.id", "Recipients.id", "Recipients.order")
   private val defaultFetchSize = 50
 
   /**

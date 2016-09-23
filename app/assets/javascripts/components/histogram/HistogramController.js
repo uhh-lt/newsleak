@@ -120,19 +120,13 @@ define([
                 $scope.drilldown = false;
                 $scope.drillup = false;
                 $scope.factory = HistogramFactory;
-                $scope.chartConfig = angular.copy(HistogramFactory.chartConfig.options);
+
                 $scope.observer = ObserverService;
 
-                $scope.data = [];
-                $scope.dataFilter = [];
-                //current Level of Detail in Histogram
-                $scope.currentLoD = "";
-                $scope.currentRange = "";
-
-                $scope.emptyFacets = [{'key':'dummy','data': []}];
 
                 // fetch levels of detail from the backend
                 $scope.observer.getHistogramLod().then(function(lod) {
+                    $scope.initController();
                     $scope.lod  = angular.copy(lod);
                     $scope.currentLoD = $scope.lod[0];
                     $scope.updateHistogram();
@@ -171,9 +165,21 @@ define([
                 $scope.clickedItem = function (category) {
                     $scope.addTimeFilter(category.name);
                 };
+                $scope.initController = function() {
+                    $scope.initialized = false;
+                    $scope.chartConfig = angular.copy(HistogramFactory.chartConfig.options);
+
+                    $scope.data = [];
+                    $scope.dataFilter = [];
+                    //current Level of Detail in Histogram
+                    $scope.currentLoD = "";
+                    $scope.currentRange = "";
+                };
 
 
                 $scope.initHistogram = function() {
+
+
                     $scope.chartConfig["series"] = [{
                         name: 'Overview',
                         data: $scope.data,
@@ -240,8 +246,6 @@ define([
                     angular.forEach($scope.fulltextFilters, function(item) {
                         fulltext.push(item.data.name);
                     });
-                    //TODO: figure out: time filter vs. time range for histogram
-                    //playRoutes.controllers.HistogramController.getHistogram(fulltext,facets,entities,$scope.observer.getTimeRange(),$scope.currentLoD).get().then(function(respone) {
                     playRoutes.controllers.HistogramController.getHistogram(fulltext,facets,entities,$scope.currentRange,$scope.currentLoD).get().then(function(respone) {
                         var overallPromise = $q.defer();
                         if($scope.drilldown ||  $scope.drillup) {
@@ -334,8 +338,10 @@ define([
 
 
                 $scope.observer.registerObserverCallback(function() {
-                    if(!$scope.drilldown && !$scope.drillup)
-                        $scope.updateHistogram()
+                    if(!$scope.drilldown && !$scope.drillup) {
+                        $scope.updateHistogram();
+                        console.log("update histotime: " + $scope.observer.getTimeRange());
+                    }
                 });
 
                 $scope.drillDown = function(e, chart) {
