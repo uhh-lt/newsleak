@@ -119,19 +119,31 @@ define([
                 $scope.initialized = false;
                 $scope.drilldown = false;
                 $scope.drillup = false;
+
+                $scope.emptyFacets = [{'key':'dummy','data': []}];
                 $scope.factory = HistogramFactory;
 
                 $scope.observer = ObserverService;
 
+                $scope.initController = function() {
+                    $scope.initialized = false;
+                    $scope.chartConfig = angular.copy(HistogramFactory.chartConfig.options);
 
+                    $scope.data = [];
+                    $scope.dataFilter = [];
+                    //current Level of Detail in Histogram
+                    $scope.currentLoD = "";
+                    $scope.currentRange = "";
+
+                    $scope.observer.getHistogramLod().then(function(lod) {
+                        $scope.lod  = angular.copy(lod);
+                        $scope.currentLoD = $scope.lod[0];
+                        $scope.updateHistogram();
+                    });
+                };
                 // fetch levels of detail from the backend
-                $scope.observer.getHistogramLod().then(function(lod) {
-                    $scope.initController();
-                    $scope.lod  = angular.copy(lod);
-                    $scope.currentLoD = $scope.lod[0];
-                    $scope.updateHistogram();
-                });
 
+                $scope.initController();
 
                 /**
                  * subscribe entity and metadata filters
@@ -165,20 +177,10 @@ define([
                 $scope.clickedItem = function (category) {
                     $scope.addTimeFilter(category.name);
                 };
-                $scope.initController = function() {
-                    $scope.initialized = false;
-                    $scope.chartConfig = angular.copy(HistogramFactory.chartConfig.options);
-
-                    $scope.data = [];
-                    $scope.dataFilter = [];
-                    //current Level of Detail in Histogram
-                    $scope.currentLoD = "";
-                    $scope.currentRange = "";
-                };
-
 
                 $scope.initHistogram = function() {
-
+                    if($scope.histogram)
+                        $scope.histogram.destroy();
 
                     $scope.chartConfig["series"] = [{
                         name: 'Overview',
@@ -339,8 +341,12 @@ define([
 
                 $scope.observer.registerObserverCallback(function() {
                     if(!$scope.drilldown && !$scope.drillup) {
-                        $scope.updateHistogram();
                         console.log("update histotime: " + $scope.observer.getTimeRange());
+                        if($scope.observer.getTimeRange() == "" && $scope.currentLoD != 'overview') {
+                            $scope.initController();
+                        }
+                        $scope.updateHistogram();
+
                     }
                 });
 
