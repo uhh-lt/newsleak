@@ -18,7 +18,6 @@
 define([
     'angular',
     'angularMoment',
-    './factory/filter/FilterFactory',
     './factory/network/ToolFactory',
     './factory/network/GraphPropertiesFactory',
     './factory/metadata/MetaFactory',
@@ -88,17 +87,9 @@ define([
                     templateUrl: 'assets/partials/histogram.html',
                     controller: 'HistogramController'
                 },
-                'map': {
-                    templateUrl: 'assets/partials/map.html',
-                    controller: 'MapController'
-                },
                 'metadata': {
                     templateUrl: 'assets/partials/metadata.html',
                     controller: 'MetadataController'
-                },
-                'filter': {
-                	templateUrl: 'assets/partials/filter.html',
-                	controller: 'FilterController'
                 },
                 'history': {
                     templateUrl: 'assets/partials/history.html',

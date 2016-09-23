@@ -166,7 +166,7 @@ define([
 
             var svg;
 
-            ObserverService.getEntityTypes().then(function(types)
+            /*ObserverService.getEntityTypes().then(function(types)
             {
                 console.log(types);
                 types.forEach(function(e)
@@ -174,8 +174,10 @@ define([
                     $scope.graphShared.categories.push({id: e, full: e, color: '#ffffb3'});
                 })
                 initNetwork();
-            });
-            //initNetwork();
+            });*/
+            initNetwork();
+
+
 
 
             /**
@@ -1074,7 +1076,7 @@ define([
 
             $scope.loaded = reload;
 
-            /** 
+            /**
              * Create an example graph; we use a trick (namely the $timeout even with 0ms)
              * to render it only after the DOM is fully loaded.
              * Also, initialize the legend popover
@@ -1868,9 +1870,11 @@ define([
 
             function initNetwork()
             {
-                $scope.getEntities();
+                getEntities();
                 $scope.observer.registerObserverCallback($scope.getEntities);
             }
+            //$scope.getEntities();
+            //$scope.observer.registerObserverCallback($scope.getEntities);
 
             /**
              *  send a message to the server that the name of the entity

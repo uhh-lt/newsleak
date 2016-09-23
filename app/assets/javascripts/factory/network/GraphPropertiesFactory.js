@@ -11,11 +11,9 @@ define([
         .factory(
         'graphPropertiesShareService',
         [
-            'ObserverService',
 
         function
         (
-            ObserverService
         )
         {
             var ready = false;
@@ -29,7 +27,6 @@ define([
                     {id: 'PER', full: 'Person', color: '#bebada'},
                     {id: 'MISC', full: 'Miscellaneous', color: '#ffffb3'}
                 ],
-                ready: false,
                 // Delivers the index of a given category name
                 getIndexOfCategory: function (category) {
                     return this.categories.findIndex(function(e){return e.id == category});

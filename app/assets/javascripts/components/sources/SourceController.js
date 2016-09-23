@@ -135,22 +135,39 @@ define([
 
                     $scope.updateHighlighting = function()
                     {
+
                         $scope.sourceShared.openDocuments.contents.forEach
                         (
                             function(doc, idx, contents)
                             {
+                                console.log($scope.entityFilters);
                                 doc = $scope.sourceShared.openDocuments.nonHighlightedContents[idx];
+                                $scope.sourceShared.openDocuments.contents[idx] = $scope.sourceShared.openDocuments.nonHighlightedContents[idx];
 
                                 if(!$scope.sourceShared.openDocuments.displayHighlightedText[idx])
                                 {
                                     return;
                                 }
+                                console.log($scope.entityFilters);
 
                                 $scope.entityFilters.forEach
                                 (
                                     function(filter)
                                     {
-                                        doc.replace(filter, '<span class="highlight-general" style="text-decoration: none; border-bottom: 3px solid #ffffff">' + filter + '</span>')
+                                        console.log(filter.data.name);
+                                        /*$scope.sourceShared.openDocuments.contents[idx] =
+                                            $sce.trustAsHtml(
+                                                doc.replace(
+                                                    filter.data.name,
+                                                    //'<span style="text-decoration: none;border-bottom: 1px solid ' +
+                                                    '<span style="background-color: ' +
+                                                     $scope.graphPropertiesShared.categories.find(function(c){return c.id === filter.data.type;}).color
+                                                    ';">' +
+                                                    filter.data.name +
+                                                    '</span>'
+                                                )
+                                            )
+                                        ;*/
                                     }
                                 )
                             }
@@ -361,6 +378,8 @@ define([
                                 $scope.observer.addItem(editItem);
                             });
                         }
+
+                        //$scope.updateHighlighting()
                     };
 
 
@@ -374,15 +393,17 @@ define([
                         for (var i = 0; i < $scope.sourceShared.openDocuments.contents.length; i++) {
                             if ($scope.sourceShared.openDocuments.IDs[i] != undefined) {
                                 if ($scope.highlightState.on) {
-                                    $scope.sourceShared.openDocuments.contents[i] = $sce.trustAsHtml(getHighlightedText($scope.sourceShared.openDocuments.nonHighlightedContents[i]));
+                                    //$scope.sourceShared.openDocuments.contents[i] = $sce.trustAsHtml(getHighlightedText($scope.sourceShared.openDocuments.nonHighlightedContents[i]));
                                     $scope.sourceShared.openDocuments.displayHighlightedText[i] = true;
                                 }
                                 else {
-                                    $scope.sourceShared.openDocuments.contents[i] = $sce.trustAsHtml($scope.sourceShared.openDocuments.nonHighlightedContents[i]);
+                                    //$scope.sourceShared.openDocuments.contents[i] = $sce.trustAsHtml($scope.sourceShared.openDocuments.nonHighlightedContents[i]);
                                     $scope.sourceShared.openDocuments.displayHighlightedText[i] = false;
                                 }
                             }
                         }
+
+                        //$scope.updateHighlighting()
                     };
 
 
