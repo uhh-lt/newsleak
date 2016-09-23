@@ -375,7 +375,7 @@ define([
                         else
                             items[type] = {};
                     });
-                    this.initTypes();
+                    //this.initTypes();
 
                     $q.all([
                         promiseEntities, promiseLoD, promiseMetadata

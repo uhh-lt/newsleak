@@ -29,11 +29,12 @@ define([
             [
                 '$scope',
                 '$timeout',
+                '$q',
                 'playRoutes',
                 'metaShareService',
                 'sourceShareService',
                 'ObserverService',
-                function ($scope, $timeout, playRoutes, metaShareService, sourceShareService, ObserverService) {
+                function ($scope, $timeout, $q, playRoutes, metaShareService, sourceShareService, ObserverService) {
 
 
                     $scope.chartConfig = metaShareService.chartConfig;
@@ -58,7 +59,9 @@ define([
 
 
                     $scope.initMetadataView = function () {
-                        $scope.initialized = false;
+                        $scope.initializedMeta = false;
+                        $scope.initializedEntity = false;
+                        $scope.promiseMetacharts = undefined;
 
                         $scope.frequencies = [];
                         $scope.labels = [];
@@ -67,14 +70,14 @@ define([
                         $scope.metaCharts = [];
 
                         $scope.observer.getEntityTypes().then(function (types) {
-                            $scope.entityTypes = types
+                            $scope.entityTypes = types;
+                            $scope.initEntityCharts();
                         });
                         $scope.observer.getMetadataTypes().then(function (types) {
-                            $scope.metadataTypes = types
+                            $scope.metadataTypes = types;
+                            $scope.initMetadataCharts();
                         });
 
-                        $scope.initEntityCharts();
-                        $scope.initMetadataCharts();
                     };
 
                     $scope.observer.subscribeReset($scope.initMetadataView);
@@ -101,7 +104,7 @@ define([
                     };
 
                     $scope.updateEntityCharts = function () {
-                        if ($scope.initialized) {
+                        if ($scope.initializedEntity) {
                             var entities = [];
                             angular.forEach($scope.entityFilters, function (item) {
                                 entities.push(item.data.id);
@@ -113,7 +116,8 @@ define([
                             });
                             var entityType = "";
                             angular.forEach($scope.entityTypes, function (type) {
-                                $scope.metaCharts[type].showLoading('Loading ...');
+                                if($scope.metaCharts[type])
+                                     $scope.metaCharts[type].showLoading('Loading ...');
                                 var instances = $scope.ids[type];
                                 playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, $scope.observer.getTimeRange(), 50, entityType, instances).get().then(
                                     function (result) {
@@ -171,7 +175,7 @@ define([
                     };
 
                     $scope.updateMetadataCharts = function () {
-                        if ($scope.initialized) {
+                        if ($scope.initializedMeta) {
 
                             var entities = [];
                             angular.forEach($scope.entityFilters, function (item) {
@@ -183,6 +187,7 @@ define([
                                 fulltext.push(item.data.name);
                             });
                             angular.forEach($scope.metadataTypes, function (type) {
+                                console.log(type);
                                 $scope.metaCharts[type].showLoading('Loading ...');
                                 var instances = $scope.chartConfigs[type].xAxis["categories"];
                                 playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext, type, facets, entities, instances, $scope.observer.getTimeRange()).get().then(
@@ -297,8 +302,13 @@ define([
                                     $scope.chartConfigs[x].chart.renderTo = "chart_" + x.toLowerCase();
                                     $("#chart_" + x.toLowerCase()).css("height", $scope.frequencies[x].length * 35);
                                     $scope.metaCharts[x] = new Highcharts.Chart($scope.chartConfigs[x]);
+
                                 });
                             });
+                            $scope.initializedEntity = true;
+                            //$q.all($scope.initializedEntity).then(function() {
+
+                           //});
                         });
                     };
 
@@ -376,7 +386,7 @@ define([
                                     );
 
                                 });
-                            $scope.initialized = true;
+                            $scope.initializedMeta = true;
                         })
                     };
 
