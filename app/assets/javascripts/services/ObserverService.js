@@ -34,6 +34,7 @@ define([
             var items = {};
             //types of tracked items
             var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset", "delete", "openDoc"];
+            var notfiyTypes = ["entity", "metadata", "time", "fulltext", "reset"];
             var metadataTypes = [];
             var entityTypes = [];
             var histogramLoD = [];
@@ -184,8 +185,8 @@ define([
                             break;
                     }
 
-
-                    this.notifyObservers();
+                    if(notfiyTypes.indexOf(item.type) >= 0)
+                        this.notifyObservers();
                     console.log("added to history: " + item.data.name);
                     return (lastAdded);
                 },
