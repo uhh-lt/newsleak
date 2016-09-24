@@ -86,7 +86,10 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
       docIds ::= iteratorSession.hitIterator.next()
       pageCounter += 1
     }
-
+    if (docIds.size < 50) {
+      val newIteratorSession = IteratorSession(iteratorSession.hits, iteratorSession.hitIterator, -1)
+      cache.set(uid, newIteratorSession)
+    }
     if (docIds.nonEmpty) {
       val metadataTriple = Document.fromDBName(currentDataset).getMetadataForDocuments(docIds, metadataKeys)
       val response = metadataTriple
