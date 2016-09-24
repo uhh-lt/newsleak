@@ -341,13 +341,12 @@ define([
 
                 $scope.observer.registerObserverCallback(function() {
                     if(!$scope.drilldown && !$scope.drillup) {
-                        console.log("update histotime: " + $scope.observer.getTimeRange());
-                        if($scope.observer.getTimeRange() == "" && $scope.currentLoD != 'overview') {
-                            $scope.initController();
-                        }
                         $scope.updateHistogram();
-
                     }
+                });
+
+                $scope.observer.subscribeReset(function() {
+                    $scope.initController();
                 });
 
                 $scope.drillDown = function(e, chart) {
