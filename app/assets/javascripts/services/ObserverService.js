@@ -191,7 +191,7 @@ define([
                     return (lastAdded);
                 },
 
-                removeItem: function (id, type) {
+                removeItem: function (id, type, notify = true) {
                     var toBeRemoved = history[history.findIndex(function (item) {
                         return id == item.id;
                     })];
@@ -217,7 +217,8 @@ define([
                             }), 1);
                     }
                     lastRemoved = id;
-                    this.notifyObservers();
+                    if(notify)
+                        this.notifyObservers();
                     console.log("removed from history: " + lastRemoved);
                 },
 
@@ -320,7 +321,7 @@ define([
                 drillUpTimeFilter: function() {
                     this.removeItem(items["time"][items["time"].length-1].id,'time');
                     while(items["time"][items["time"].length-1] && items["time"][items["time"].length-1].data.lod == "month")
-                        this.removeItem(items["time"][items["time"].length-1].id,'time');
+                        this.removeItem(items["time"][items["time"].length-1].id,'time',false);
                 },
                 /**
                  * after async type load, you get the types (promise.then(function(lod) [}))

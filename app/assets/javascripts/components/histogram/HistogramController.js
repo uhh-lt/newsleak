@@ -187,11 +187,7 @@ define([
                         data: $scope.data,
                         cursor: 'pointer',
                         point: {
-                            events: {
-                                click: function(e) {
-                                    //$scope.clickedItem(this);
-                                }
-                            }
+
                         }
                     },{
                         name:  'Overview',
@@ -199,11 +195,7 @@ define([
                         color: 'black',
                         cursor: 'pointer',
                         point: {
-                            events: {
-                                click: function(e) {
-                                    //clickedItem(this);
-                                }
-                            }
+
                         },
                         dataLabels: {
                             inside: true,
@@ -312,7 +304,8 @@ define([
                                     point: {
                                         events: {
                                             click: function () {
-                                                $scope.clickedItem(this);
+                                                if($scope.lod.indexOF$scope.currentLoD == $scope.lod[$scope.lod.length -1])
+                                                    $scope.clickedItem(this.name);
                                             }
                                         }
                                     }
@@ -351,15 +344,19 @@ define([
 
                 $scope.drillDown = function(e, chart) {
                     if (!e.seriesOptions && !$scope.drilldown) {
-                        $scope.clickedItem(e.point.name);
                         console.log("histogram drilldown");
                         $scope.drilldown = true;
-                        $scope.currentLoD = $scope.lod[$scope.lod.indexOf($scope.currentLoD) + 1];
+                        if($scope.lod[$scope.lod.length -1] != $scope.currentLoD) {
+                            $scope.currentLoD = $scope.lod[$scope.lod.indexOf($scope.currentLoD) + 1];
+                        }
+                        if($scope.lod[$scope.lod.length -1] != $scope.currentLoD)
+                            $scope.clickedItem(e.point.name);
                         if($scope.lod.indexOf($scope.currentLoD) == 0)
                             $scope.currentRange = "";
                         else
                             $scope.currentRange = e.point.name;
                         //$scope.addTimeFilter(e.point.name);
+
                         $scope.updateHistogram().then(function (res) {
 
                             $scope.drilldown = false;
@@ -371,7 +368,8 @@ define([
                                 point: {
                                     events: {
                                         click: function(e) {
-                                            //$scope.clickedItem(this);
+                                            if($scope.lod[$scope.lod.length -1] == $scope.currentLoD)
+                                                $scope.clickedItem(this.name);
                                         }
                                     }
                                 }
@@ -384,7 +382,8 @@ define([
                                 point: {
                                     events: {
                                         click: function(e) {
-                                           // $scope.clickedItem(this);
+                                            if($scope.lod[$scope.lod.length -1] == $scope.currentLoD)
+                                                $scope.clickedItem(this.name);
                                         }
                                     }
                                 },
@@ -427,9 +426,7 @@ define([
                                 cursor: 'pointer',
                                 point: {
                                     events: {
-                                        click: function () {
-                                           // $scope.clickedItem(this);
-                                        }
+
                                     }
                                 }
                             };
