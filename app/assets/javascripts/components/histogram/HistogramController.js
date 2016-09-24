@@ -175,7 +175,7 @@ define([
                 Highcharts.setOptions($scope.factory.highchartsOptions);
 
                 $scope.clickedItem = function (category) {
-                    $scope.addTimeFilter(category.name);
+                    $scope.addTimeFilter(category);
                 };
 
                 $scope.initHistogram = function() {
@@ -189,7 +189,7 @@ define([
                         point: {
                             events: {
                                 click: function(e) {
-                                    $scope.clickedItem(this);
+                                    //$scope.clickedItem(this);
                                 }
                             }
                         }
@@ -201,7 +201,7 @@ define([
                         point: {
                             events: {
                                 click: function(e) {
-                                    $scope.clickedItem(this);
+                                    //clickedItem(this);
                                 }
                             }
                         },
@@ -350,9 +350,9 @@ define([
                 });
 
                 $scope.drillDown = function(e, chart) {
-                    console.log("histogram drilldown");
-
-                    if (!e.seriesOptions) {
+                    if (!e.seriesOptions && !$scope.drilldown) {
+                        $scope.clickedItem(e.point.name);
+                        console.log("histogram drilldown");
                         $scope.drilldown = true;
                         $scope.currentLoD = $scope.lod[$scope.lod.indexOf($scope.currentLoD) + 1];
                         if($scope.lod.indexOf($scope.currentLoD) == 0)
@@ -371,7 +371,7 @@ define([
                                 point: {
                                     events: {
                                         click: function(e) {
-                                            $scope.clickedItem(this);
+                                            //$scope.clickedItem(this);
                                         }
                                     }
                                 }
@@ -384,7 +384,7 @@ define([
                                 point: {
                                     events: {
                                         click: function(e) {
-                                            $scope.clickedItem(this);
+                                           // $scope.clickedItem(this);
                                         }
                                     }
                                 },
@@ -404,6 +404,8 @@ define([
                             chart.addSingleSeriesAsDrilldown(e.point, series[1]);
                             chart.applyDrilldown();
                         });
+                    } else {
+                        console.log('canceled dup drilldown');
                     }
                 };
 
@@ -426,7 +428,7 @@ define([
                                 point: {
                                     events: {
                                         click: function () {
-                                            $scope.clickedItem(this);
+                                           // $scope.clickedItem(this);
                                         }
                                     }
                                 }
