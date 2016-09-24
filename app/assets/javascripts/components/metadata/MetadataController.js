@@ -187,7 +187,7 @@ define([
                                 fulltext.push(item.data.name);
                             });
                             angular.forEach($scope.metadataTypes, function (type) {
-                                console.log(type);
+                                //console.log(type);
                                 $scope.metaCharts[type].showLoading('Loading ...');
                                 var instances = $scope.chartConfigs[type].xAxis["categories"];
                                 playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext, type, facets, entities, instances, $scope.observer.getTimeRange()).get().then(
