@@ -112,7 +112,7 @@ define([
                     });
                 },
                 
-                addItem: function (item) {
+                addItem: function (item, notify = true) {
 
 
                     //looking for already existing items
@@ -185,7 +185,7 @@ define([
                             break;
                     }
 
-                    if(notfiyTypes.indexOf(item.type) >= 0)
+                    if(notfiyTypes.indexOf(item.type) >= 0 && notify)
                         this.notifyObservers();
                     console.log("added to history: " + item.data.name);
                     return (lastAdded);
