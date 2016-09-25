@@ -342,6 +342,7 @@ define([
                     var match = self.nodes.get(event.nodes[0]);
                     match.x = event.pointer.canvas.x;
                     match.y = event.pointer.canvas.y;
+                    self.nodes.update(match);
                 }
             }
 
