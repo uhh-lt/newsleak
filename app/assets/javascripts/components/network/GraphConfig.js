@@ -21,7 +21,7 @@ define([
     'use strict';
 
     // TODO Figure out how to use myApp.network module here
-    angular.module('myApp.networkConfig', [])
+    angular.module('myApp.graphConfig', [])
         .constant('physicOptions', {
             forceAtlas2Based: {
                 gravitationalConstant: -220,
@@ -68,7 +68,7 @@ define([
                         color: 'rgb(169,169,169)',
                         highlight: 'blue'
                     },
-                    smooth: {type:'continuous'}
+                    smooth: { type:'continuous' }
                 },
                 layout: {
                     improvedLayout: false
@@ -81,6 +81,6 @@ define([
                 }
             }
         )
-        // Constants can't have dependencies. Inject 'graphOptions' and use options to obtain complete graph config
-        .service('graphProperties', function(generalOptions, physicOptions, _) { this.options = _.extend(generalOptions, { physics: physicOptions });})
+        // Constants can't have dependencies. Inject 'graphProperties' and use options to obtain complete graph config
+        .service('graphProperties', function(generalOptions, physicOptions, _) { this.options = _.extend(generalOptions, { physics: physicOptions }); })
 });

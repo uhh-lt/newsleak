@@ -59,6 +59,10 @@ html, body {
     color: #fafafa;
 }
 
+.md-button.md-small {
+    min-width: 3%;
+}
+
 /*
     ======================================
     Network

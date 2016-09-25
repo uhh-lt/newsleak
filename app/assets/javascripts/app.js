@@ -55,7 +55,7 @@ define([
     var app = angular.module('myApp',
         [
             'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial', 'ngMdIcons',
-            'angularMoment', 'underscore', 'myApp.observer', 'myApp.util', 'myApp.history', 'myApp.networkConfig',
+            'angularMoment', 'underscore', 'myApp.observer', 'myApp.util', 'myApp.history', 'myApp.graphConfig',
             'myApp.tools', 'angularScreenfull',
             'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
             'myApp.network', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
