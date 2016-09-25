@@ -69,6 +69,11 @@ define([
 
                     $scope.observer = ObserverService;
 
+                    // Remove all open documents when reset is issued, but keep
+                    // old bindings to the array.
+                    $scope.observer.subscribeReset(function() { $scope.tabs.length = 0; });
+
+
                     /**
                      * Applies the highlighting and underlining to the given text.
                      *
@@ -90,7 +95,6 @@ define([
                     };
 
                     $scope.renderDoc = function(doc) {
-
                         var marker = [[], [], [], []];
                         doc.entities.forEach(function(e) {
                             var index = graphPropertiesShareService.getIndexOfCategory(e.type);
