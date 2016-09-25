@@ -34,33 +34,18 @@ html, body {
     ======================================
 */
 
-/* For the links to facebook and NLP group */
-.links {
-    margin-right: 3px;
-}
-
-/* The whole header itself */
-.titlebar {
-    margin-bottom: 0;
-    border-radius: 0;
-    padding-left: 10px;
-    padding-right: 10px;
-    background-color: #2759AC;
-    border-color: #2759AC;
-}
-
-/* Format the title that is on the left hand side of the header */
-.title {
-    font-size: 300%;
-    font-family: "American Typeriter"
-}
-
-.navbar-inverse .navbar-brand {
-    color: #fafafa;
-}
-
 .md-button.md-small {
     min-width: 3%;
+}
+
+.md-small-toolbar {
+    min-height: 50px;
+    height: 50px;
+}
+
+.institute-logo {
+    height: 36px;
+    object-fit:contain;
 }
 
 /*
@@ -74,27 +59,6 @@ line {
     /* Should be the same as edgeLegend#fill */
     stroke: #b0b0b0;
 }
-
-.dropdown-button-menu
-{
-	padding: 0px 0px 0px 0px;
-}
-
-.node circle {
-    stroke: #000;
-    stroke-width: 1.5px;
-}
-
-.node text {
-    pointer-events: none;
-}
-
-/* old network */
-/*#network-graph {
-    width: 100%;
-    height: calc(100% - 96px);
-    position: absolute;
-}*/
 
 #mynetwork {
     position: absolute;
@@ -138,52 +102,6 @@ div.popupMenu ul li {
 div.popupMenu ul li:hover {
     background-color: #4677f8;
     color: #fefefe;
-}
-
-#merge-node {
-	width: 200px;
-	height: 200px;
-}
-
-div.tooltip {
-    position: absolute;
-    text-align: center;
-    width: 150px;
-    padding: 2px;
-    font: 12px sans-serif;
-    color: white;
-    background: black;
-    border: 1px;
-    border-radius: 8px;
-    pointer-events: none;
-}
-
-#network-graph .glyphicon {
-    position: static;
-}
-#network-graph body {
-    position: static;
-}
-
-.tooltipImportantText {
-    color: #FFA836;
-}
-
-/* The containers that hold the slider elements */
-.slider-container {
-    margin-bottom: 10px;
-    margin-left: 20px;
-    margin-top: 10px;
-    margin-right: 10px;
-}
-
-.collapse {
-    margin: 20px;
-}
-
-.loading-network-image {
-    margin: auto;
-    width: 300px;
 }
 
 /*
@@ -278,30 +196,37 @@ div.tooltip {
     Angular Material UI Layout
     ======================================
 */
-#wrapper {
 
+#wrapper {
     height: 100%;
     width: 100%;
 }
+
 #flex-body {
     height: calc(100% - 350px);
 }
+
 main {
     width: 50%;
     margin-top: 10px;
 }
+
 #document {
     width: 250px;
 }
+
 #document, #right-side {
     width: 25%;
 }
+
 #metadata-view {
     height: 100%;
 }
+
 footer {
     height: 200px;
 }
+
 footer > div, footer > div #histogram {
     height: 100%;
     margin-top: 10px;
@@ -329,7 +254,7 @@ footer > div, footer > div #histogram {
 .rg-left span, .rg-right span {
     border-width: 0 1px;
     top: 50%;
-    margin:  -10px 0 0  2.5px;
+    margin:  -10px 0 0 2.5px;
     height: 20px;
     width: 3px;
 }
@@ -377,7 +302,6 @@ footer > div, footer > div #histogram {
 
 #document-list {
     padding-left: 30px;
-
 }
 
 #document-list li.doc-list-highlight {
@@ -401,8 +325,8 @@ footer > div, footer > div #histogram {
 
 .load-more-button {
     width: 100%;
-
 }
+
 .docs-loading {
     position: absolute;
     height: 100%;
@@ -413,6 +337,7 @@ footer > div, footer > div #histogram {
     opacity: 0.5;
     text-align: center;
 }
+
 .docs-loading span {
     font-weight: bold;
     position: relative;
@@ -435,18 +360,17 @@ footer > div, footer > div #histogram {
     ======================================
 */
 
-#filter-view > div:first-child{
+#filter-view > div:first-child {
     height: 100%;
 }
-#filterList
-{
+
+#filterList {
 	padding: 5px 5px;
 	list-style-type: none;
     height: 80%;
 }
 
-.filterListItem
-{
+.filterListItem {
 	margin: 0 2px 2px 0;
 	font-weight: normal;
 }
@@ -459,22 +383,28 @@ footer > div, footer > div #histogram {
 #metadata {
     height: 100%;
 }
+
 #metadata-overview, #metadata_tabs, #metadata-overview2 {
     height: calc(100% - 74px);
 }
+
 #metadata_tabs .meta-chart-container {
     height: 100%;
     overflow: hidden;
 }
+
 #metadata_tabs .tab-content, #metadata-overview .tab-pane {
     height: 100%;
 }
+
 #metadata_tabs {
     height: calc(100% - 50px);
 }
+
 #metadata_tabs .tab-pane {
     height: 100%;
 }
+
 #metadata_tabs .scroll-chart {
     height: 100%;
     overflow-y: auto;
@@ -500,12 +430,15 @@ footer > div, footer > div #histogram {
     Search
     ======================================
 */
+
 #search-bar .suggestion-item {
     border-bottom: 1px solid #d7d7d7;
 }
+
 #search-bar #search-scroll {
 
 }
+
 #search-bar #search-group {
 
 }
@@ -523,22 +456,27 @@ footer > div, footer > div #histogram {
 #search-bar #autocomplete .list-group-item {
     padding: 5px 10px;
 }
+
 #search-bar .search-item-container{
     height: 32px;
 }
+
 #search-bar .search-item-container > span {
     position: relative;
     top: -8px;
     left: 5px;
 }
+
 .autocomplete-left {
     float: left;
 }
+
 /*
     ======================================
     History
     ======================================
 */
+
 #history {
     margin-left: 10px;
 }
@@ -549,6 +487,7 @@ ul#historyList {
     padding: 3px 10px;
     margin: 0 0 0 10px;
 }
+
 /* TODO: calculate remaining space for items */
 #historyList > li {
     background-color: #2759AC;
@@ -567,19 +506,23 @@ ul#historyList {
     width: 150px;
     width: auto;
 }
+
 #historyList li span {
     margin-left: 5px;
 }
+
 #historyList li i {
     color: white;
 }
+
 #historyList li i.type-icon {
     font-size: 16px;
-
 }
+
 #historyList li i.action-icon {
     font-size: 8px;
 }
+
 #historyList .popover-title {
     color: white;
     background-color: #2759AC;
