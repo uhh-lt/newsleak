@@ -69,7 +69,6 @@ define([
 
                     $scope.observer = ObserverService;
 
-
                     /**
                      * Applies the highlighting and underlining to the given text.
                      *
@@ -97,9 +96,6 @@ define([
                             var index = graphPropertiesShareService.getIndexOfCategory(e.type);
                             marker[index].push(e.name);
                         });
-                        console.log("Caööööö");
-
-                        //return $sce.trustAsHtml(getFormattedSource(doc.content));
                         return $sce.trustAsHtml(getHighlightedText(doc.content, marker));
                     };
 
