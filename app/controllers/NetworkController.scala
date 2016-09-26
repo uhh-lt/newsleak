@@ -57,11 +57,12 @@ class NetworkController @Inject extends Controller {
   ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-
     val sizes = nodeFraction.map { case (t, s) => withName(t) -> s.toInt }
+
+    val blacklistedIds = Entity.fromDBName(currentDataset).getBlacklisted().map(_.id)
     val (buckets, relations) = FacetedSearch.
       fromIndexName(currentDataset).
-      induceSubgraph(facets, sizes)
+      induceSubgraph(facets, sizes, blacklistedIds)
     val nodes = buckets.collect { case a @ NodeBucket(_, _) => a }
 
     if (nodes.isEmpty) {
@@ -71,8 +72,7 @@ class NetworkController @Inject extends Controller {
       val nodeIdToEntity = Entity.fromDBName(currentDataset).getByIds(ids).map(e => e.id -> e).toMap
 
       val graphEntities = nodes.collect {
-        // Ignore blacklisted nodes
-        case NodeBucket(id, count) if nodeIdToEntity.contains(id) =>
+        case NodeBucket(id, count) =>
           val node = nodeIdToEntity(id)
           Json.obj(
             "id" -> id,
@@ -83,7 +83,7 @@ class NetworkController @Inject extends Controller {
           )
       }
       // Ignore relations that connect blacklisted nodes
-      val graphRelations = relations.filter { case (from, to, _) => nodeIdToEntity.contains(from) && nodeIdToEntity.contains(to) }
+      val graphRelations = relations.filterNot { case (from, to, _) => blacklistedIds.contains(from) && blacklistedIds.contains(to) }
 
       val types = Json.obj(
         Person.toString -> Person.id,

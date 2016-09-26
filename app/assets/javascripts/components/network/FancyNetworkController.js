@@ -88,7 +88,7 @@ define([
                     action: function(value, nodeId) { hideNode(nodeId); }
                 }, {
                     title: 'Blacklist',
-                    action: function(value, nodeId) { alert(value + nodeId); }
+                    action: function(value, nodeId) { blacklistNode(nodeId); }
             }];
 
             self.edgeMenu = [{
@@ -230,6 +230,13 @@ define([
                 // Update new edge max value from non hidden edges
                 var max = new VisDataSet(self.edges.get({ filter: function(edge) { return !edge.hidden; }})).max("value").value;
                 $scope.maxEdgeImportance = max;
+            }
+
+            function blacklistNode(nodeId) {
+                // Remove node from the visual interface
+                hideNode(nodeId);
+                // Mark node as blacklisted
+                playRoutes.controllers.NetworkController.deleteEntityById(nodeId).get().then(function(response) { /* Error handling */ });
             }
 
             function addNodeFilter(nodeId) {

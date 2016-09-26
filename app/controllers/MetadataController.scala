@@ -85,7 +85,7 @@ class MetadataController @Inject extends Controller {
   ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    val agg = FacetedSearch.fromIndexName(currentDataset).aggregate(facets, key, defaultFetchSize, instances)
+    val agg = FacetedSearch.fromIndexName(currentDataset).aggregate(facets, key, defaultFetchSize, instances, Nil)
     if (instances.isEmpty) {
       val res = Json.obj(key -> agg.buckets.map {
         case MetaDataBucket(metaKey, count) => Json.obj("key" -> metaKey, "count" -> count)
