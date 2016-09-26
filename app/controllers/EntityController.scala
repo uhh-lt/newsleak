@@ -46,16 +46,28 @@ class EntityController @Inject extends Controller {
 
   /**
    * Get all entity types
+   *
    * @return list of entity types
    */
   def getEntityTypes = Action { implicit request =>
     Results.Ok(Json.toJson(Entity.fromDBName(currentDataset).getTypes().map(_.toString))).as("application/json")
   }
 
+  def getBlacklistedEntities = Action { implicit request =>
+    val entities = Entity.fromDBName(currentDataset).getBlacklisted()
+      .map(x => Json.obj("id" -> x.id, "name" -> x.name, "freq" -> x.frequency, "type" -> x.entityType))
+    Results.Ok(Json.toJson(entities)).as("application/json")
+  }
+
   // TODO Json writer for model types ...
   def getEntitiesByDoc(id: Long) = Action { implicit request =>
     val res = Entity.fromDBName(currentDataset).getByDocId(id).map(e => Json.obj("id" -> e.id, "name" -> e.name, "type" -> e.entityType))
     Results.Ok(Json.toJson(res)).as("application/json")
+  }
+
+  def undoBlacklistingByIds(ids: List[Long]) = Action { implicit request =>
+    ids.foreach(Entity.fromDBName(currentDataset).undoDelete(_))
+    Ok("success").as("Text")
   }
 
   // scalastyle:off

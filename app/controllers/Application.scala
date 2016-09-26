@@ -114,6 +114,8 @@ class Application @Inject extends Controller {
         controllers.routes.javascript.EntityController.getEntities,
         controllers.routes.javascript.EntityController.getEntityTypes,
         controllers.routes.javascript.EntityController.getEntitiesByType,
+        controllers.routes.javascript.EntityController.getBlacklistedEntities,
+        controllers.routes.javascript.EntityController.undoBlacklistingByIds,
         controllers.routes.javascript.EntityController.getEntitiesByDoc,
         controllers.routes.javascript.NetworkController.changeEntityTypeById,
         controllers.routes.javascript.MetadataController.getMetadata,

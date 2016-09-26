@@ -43,6 +43,7 @@ class NetworkController @Inject extends Controller {
    * @param name
    * @return
    */
+  // TODO: These methods should actually part of the entity controller
   def getIdsByName(name: String) = Action { implicit request =>
     Ok(Json.obj("ids" -> Entity.fromDBName(currentDataset).getByName(name).map(_.id))).as("application/json")
   }
