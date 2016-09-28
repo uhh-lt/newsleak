@@ -108,6 +108,7 @@ define([
                         'dragging',
                         'dragEnd',
                         'hoverNode',
+                        'hoverEdge',
                         'blurNode',
                         'zoom',
                         'showPopup',
