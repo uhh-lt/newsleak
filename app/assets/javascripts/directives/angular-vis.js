@@ -110,6 +110,7 @@ define([
                         'hoverNode',
                         'hoverEdge',
                         'blurNode',
+                        'blurEdge',
                         'zoom',
                         'showPopup',
                         'hidePopup',

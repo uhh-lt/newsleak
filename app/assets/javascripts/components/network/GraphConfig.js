@@ -75,6 +75,7 @@ define([
                 },
                 interaction: {
                     tooltipDelay: 200,
+                    hover: true,
                     hideEdgesOnDrag: true,
                     navigationButtons: true,
                     keyboard: false

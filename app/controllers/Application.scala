@@ -111,6 +111,7 @@ class Application @Inject extends Controller {
         controllers.routes.javascript.NetworkController.mergeEntitiesById,
         controllers.routes.javascript.NetworkController.changeEntityNameById,
         controllers.routes.javascript.NetworkController.induceSubgraph,
+        controllers.routes.javascript.NetworkController.getEdgeKeywords,
         controllers.routes.javascript.EntityController.getEntities,
         controllers.routes.javascript.EntityController.getEntityTypes,
         controllers.routes.javascript.EntityController.getEntitiesByType,

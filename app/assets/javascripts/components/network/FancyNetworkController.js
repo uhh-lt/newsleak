@@ -125,7 +125,8 @@ define([
                 //"oncontext": showContextMenu,
                 "oncontext": onContext,
                 "click": clickEvent,
-                "dragging": dragEvent
+                "dragging": dragEvent,
+                "hoverEdge": hoverEdge
             };
 
             /* Current value of the edge significance slider */
@@ -333,6 +334,24 @@ define([
                     });
                 }
                 disablePhysics();
+            }
+
+            function hoverEdge(event) {
+                var edge = self.edgesDataset.get(event.edge);
+                // Only fetch keywords if not already fetched
+                if(_.has(edge, "title")) {
+                    return;
+                }
+                // TODO REfactor same as load
+                var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.name; });
+                var entities = $scope.entityFilters.map(function(v) { return v.data.id; });
+                var facets = $scope.observerService.getFacets();
+
+                playRoutes.controllers.NetworkController.getEdgeKeywords(fulltext, facets, entities, $scope.observerService.getTimeRange(), edge.from, edge.to, 4).get().then(function(response) {
+                    var formattedTerms = response.data.map(function(t) { return '' +  t.term + ': ' + t.score; });
+                    // TODO Add to background collection otherwise it will be re-fetched.
+                    self.edgesDataset.update({ id: event.edge, title: formattedTerms.join() });
+                });
             }
 
             function clickEvent(event) {

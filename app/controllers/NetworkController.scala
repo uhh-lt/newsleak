@@ -21,7 +21,7 @@ import javax.inject.Inject
 
 import model.Entity
 import model.EntityType._
-import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
+import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket, NodeBucket }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller }
 import util.SessionUtils.currentDataset
@@ -43,9 +43,34 @@ class NetworkController @Inject extends Controller {
    * @param name
    * @return
    */
+
   // TODO: These methods should actually part of the entity controller
   def getIdsByName(name: String) = Action { implicit request =>
     Ok(Json.obj("ids" -> Entity.fromDBName(currentDataset).getByName(name).map(_.id))).as("application/json")
+  }
+
+  def getEdgeKeywords(
+    fullText: List[String],
+    generic: Map[String, List[String]],
+    entities: List[Long],
+    timeRange: String,
+    first: Long,
+    second: Long,
+    numberOfTerms: Int
+  ) = Action { implicit request =>
+
+    val times = TimeRangeParser.parseTimeRange(timeRange)
+    val facets = Facets(fullText, generic, entities, times.from, times.to)
+    val agg = FacetedSearch
+      .fromIndexName(currentDataset)
+      // Only consider documents where the two entities occur
+      .aggregateKeywords(facets.withEntities(List(first, second)), numberOfTerms, Nil)
+
+    val terms = agg.buckets.collect {
+      case a @ MetaDataBucket(term, score) =>
+        Json.obj("term" -> term, "score" -> score)
+    }
+    Ok(Json.toJson(terms)).as("application/json")
   }
 
   def induceSubgraph(
@@ -61,9 +86,9 @@ class NetworkController @Inject extends Controller {
     val sizes = nodeFraction.map { case (t, s) => withName(t) -> s.toInt }
 
     val blacklistedIds = Entity.fromDBName(currentDataset).getBlacklisted().map(_.id)
-    val (buckets, relations) = FacetedSearch.
-      fromIndexName(currentDataset).
-      induceSubgraph(facets, sizes, blacklistedIds)
+    val (buckets, relations) = FacetedSearch
+      .fromIndexName(currentDataset)
+      .induceSubgraph(facets, sizes, blacklistedIds)
     val nodes = buckets.collect { case a @ NodeBucket(_, _) => a }
 
     if (nodes.isEmpty) {

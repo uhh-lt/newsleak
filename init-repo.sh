@@ -18,3 +18,9 @@ fi
 
 echo "Installing required npm packages..."
 npm install
+
+# Download custom visjs build
+wget -O dist.zip https://www.dropbox.com/s/wnqno2a5b43ccaq/dist.zip?dl=0
+# Overwrite visjs
+unzip -d ./app/assets/javascripts/libs/vis/ -o dist.zip
+rm dist.zip
