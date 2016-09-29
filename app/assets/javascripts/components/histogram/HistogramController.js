@@ -127,6 +127,7 @@ define([
 
                 $scope.initController = function() {
                     $scope.initialized = false;
+                    var defer = $q.defer();
                     $scope.chartConfig = angular.copy(HistogramFactory.chartConfig.options);
 
                     $scope.data = [];
@@ -138,8 +139,11 @@ define([
                     $scope.observer.getHistogramLod().then(function(lod) {
                         $scope.lod  = angular.copy(lod);
                         $scope.currentLoD = $scope.lod[0];
-                        $scope.updateHistogram();
+                        $scope.updateHistogram().then(function(val) {
+                            defer.resolve("init");
+                        });
                     });
+                    return defer.promise;
                 };
                 // fetch levels of detail from the backend
 
@@ -230,7 +234,8 @@ define([
                     if($scope.histogram)
                         $scope.histogram.showLoading('Loading ...');
                     console.log("reload histogram");
-                    var deferred = $q.defer();
+                     var promise = $q.defer();
+
                     var entities = [];
                     angular.forEach($scope.entityFilters, function(item) {
                         entities.push(item.data.id);
@@ -319,11 +324,11 @@ define([
 
                             $scope.histogram.hideLoading();
 
-                            deferred.resolve('success');
+                            promise.resolve('suc: histogram');
                         });
 
                     });
-                    return deferred.promise;
+                    return  promise.promise;
                 };
 
                 $scope.updateLoD = function(lod) {
@@ -334,12 +339,12 @@ define([
 
                 $scope.observer.registerObserverCallback(function() {
                     if(!$scope.drilldown && !$scope.drillup) {
-                        $scope.updateHistogram();
+                        return $scope.updateHistogram();
                     }
                 });
 
                 $scope.observer.subscribeReset(function() {
-                    $scope.initController();
+                    return $scope.initController();
                 });
 
                 $scope.drillDown = function(e, chart) {

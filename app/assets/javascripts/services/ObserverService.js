@@ -97,7 +97,8 @@ define([
 
             return {
                 /**
-                 * register an observer with callback function
+                 * register an observer with callback function for updating views
+                 * IMPORTANT: the callback function has to return an promise
                  */
                 registerObserverCallback: function(callback){
                     observerCallbacks.push(callback);
@@ -107,9 +108,12 @@ define([
                  * call all observer callback functions
                  */
                 notifyObservers: function(){
+                    var callBackPromises = [];
                     angular.forEach(observerCallbacks, function(callback){
-                        $timeout(callback,0);
+                        callBackPromises.push(callback());
                     });
+                    var promise = $q.all(callBackPromises);
+                    return promise;
                 },
                 
                 addItem: function (item, notify = true) {
@@ -250,6 +254,10 @@ define([
                     _subscriber(history);
                 },
 
+                /**
+                 * IMPORTANT: the callback function has to return an promise
+                 * @param _subscriber
+                 */
                 subscribeReset: function(_subscriber) {
                     subscriber.push({
                         func: _subscriber,
@@ -258,10 +266,11 @@ define([
                 },
 
                 refreshSubscribers: function() {
+                    var proms = [];
                   angular.forEach(subscriber, function(_subscriber) {
                       switch(_subscriber.type) {
                           case 'reset':
-                              _subscriber.func();
+                              proms.push(_subscriber.func());
                               break;
                           case 'all':
                               _subscriber.func(items);
@@ -273,6 +282,7 @@ define([
                               _subscriber.func(items[_subscriber.type]);
                       }
                   });
+                    return $q.all(proms);
                 },
 
                 getTypes: function() {
@@ -353,16 +363,16 @@ define([
                     $q.all([
                         promiseEntities, promiseLoD, promiseMetadata
                     ]).then(function(values) {
-                        console.log(rootThis);
-                        rootThis.refreshSubscribers();
-                        rootThis.notifyObservers();
+                        rootThis.refreshSubscribers().then(function(val) {
+                            rootThis.notifyObservers();
+                        });
                         rootThis.addItem({
                             type: 'reset',
                             active: false,
                             data: {
                                 name: "Filter reseted"
                             }
-                        });
+                        }, false);
                     });
 
                 },
@@ -398,8 +408,9 @@ define([
                             });
                         lastAdded = history[history.length-1].id;
                         lastRemoved = -1;
-                        rootThis.refreshSubscribers();
-                        rootThis.notifyObservers();
+                        rootThis.refreshSubscribers().then(function(val) {
+                            rootThis.notifyObservers();
+                        });
                         }
                     );
                 }
