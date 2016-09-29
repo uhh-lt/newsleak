@@ -33,7 +33,7 @@
     "jquery-json": "~2.5.1",
     "sc-date-time": "~1.1.3",
     "angular-d3js": "*",
-    "d3": "3.5.1",
+    "d3": "3.5.17",
     "angular-bootstrap": "~1.3.3",
     "angular-resizable": "*",
     "bootstrap": "~3.3.6",

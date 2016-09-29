@@ -38,6 +38,7 @@ define([
                 '$templateRequest',
                 '$sce',
                 '$timeout',
+                '$q',
                 'playRoutes',
                 'util',
                 '_',
@@ -52,6 +53,7 @@ define([
                           $templateRequest,
                           $sce,
                           $timeout,
+                          $q,
                           playRoutes,
                           util,
                           _,
@@ -107,6 +109,7 @@ define([
                         $scope.docsLoading = true;
                         $scope.showLoading = true;
                         console.log("reload doc list");
+                        $scope.defered = $q.defer();
                         var entities = [];
                         angular.forEach($scope.entityFilters, function(item) {
                             entities.push(item.data.id);
@@ -126,11 +129,13 @@ define([
                             $(".docs-ul").scrollTop(0);
                             $scope.docsLoading = false;
                             $scope.showLoading = false;
+                            $scope.defered.resolve("suc: docs");
                             if(x.data.hits <= 50)
                                 $scope.iteratorEmpty = true;
                             else
                                 $scope.iteratorEmpty = false;
                         });
+                        return $scope.defered.promise;
                     };
 
                     //initial document list load

@@ -34,6 +34,7 @@ define([
             var items = {};
             //types of tracked items
             var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset", "delete", "openDoc"];
+            var notfiyTypes = ["entity", "metadata", "time", "fulltext", "reset"];
             var metadataTypes = [];
             var entityTypes = [];
             var histogramLoD = [];
@@ -96,7 +97,8 @@ define([
 
             return {
                 /**
-                 * register an observer with callback function
+                 * register an observer with callback function for updating views
+                 * IMPORTANT: the callback function has to return an promise
                  */
                 registerObserverCallback: function(callback){
                     observerCallbacks.push(callback);
@@ -106,12 +108,15 @@ define([
                  * call all observer callback functions
                  */
                 notifyObservers: function(){
+                    var callBackPromises = [];
                     angular.forEach(observerCallbacks, function(callback){
-                        $timeout(callback,0);
+                        callBackPromises.push(callback());
                     });
+                    var promise = $q.all(callBackPromises);
+                    return promise;
                 },
                 
-                addItem: function (item) {
+                addItem: function (item, notify = true) {
 
 
                     //looking for already existing items
@@ -184,13 +189,13 @@ define([
                             break;
                     }
 
-
-                    this.notifyObservers();
+                    if(notfiyTypes.indexOf(item.type) >= 0 && notify)
+                        this.notifyObservers();
                     console.log("added to history: " + item.data.name);
                     return (lastAdded);
                 },
 
-                removeItem: function (id, type) {
+                removeItem: function (id, type, notify = true) {
                     var toBeRemoved = history[history.findIndex(function (item) {
                         return id == item.id;
                     })];
@@ -216,7 +221,8 @@ define([
                             }), 1);
                     }
                     lastRemoved = id;
-                    this.notifyObservers();
+                    if(notify)
+                        this.notifyObservers();
                     console.log("removed from history: " + lastRemoved);
                 },
 
@@ -248,6 +254,10 @@ define([
                     _subscriber(history);
                 },
 
+                /**
+                 * IMPORTANT: the callback function has to return an promise
+                 * @param _subscriber
+                 */
                 subscribeReset: function(_subscriber) {
                     subscriber.push({
                         func: _subscriber,
@@ -256,10 +266,11 @@ define([
                 },
 
                 refreshSubscribers: function() {
+                    var proms = [];
                   angular.forEach(subscriber, function(_subscriber) {
                       switch(_subscriber.type) {
                           case 'reset':
-                              _subscriber.func();
+                              proms.push(_subscriber.func());
                               break;
                           case 'all':
                               _subscriber.func(items);
@@ -271,6 +282,7 @@ define([
                               _subscriber.func(items[_subscriber.type]);
                       }
                   });
+                    return $q.all(proms);
                 },
 
                 getTypes: function() {
@@ -319,7 +331,7 @@ define([
                 drillUpTimeFilter: function() {
                     this.removeItem(items["time"][items["time"].length-1].id,'time');
                     while(items["time"][items["time"].length-1] && items["time"][items["time"].length-1].data.lod == "month")
-                        this.removeItem(items["time"][items["time"].length-1].id,'time');
+                        this.removeItem(items["time"][items["time"].length-1].id,'time',false);
                 },
                 /**
                  * after async type load, you get the types (promise.then(function(lod) [}))
@@ -351,16 +363,16 @@ define([
                     $q.all([
                         promiseEntities, promiseLoD, promiseMetadata
                     ]).then(function(values) {
-                        console.log(rootThis);
-                        rootThis.refreshSubscribers();
-                        rootThis.notifyObservers();
+                        rootThis.refreshSubscribers().then(function(val) {
+                            rootThis.notifyObservers();
+                        });
                         rootThis.addItem({
                             type: 'reset',
                             active: false,
                             data: {
                                 name: "Filter reseted"
                             }
-                        });
+                        }, false);
                     });
 
                 },
@@ -375,7 +387,7 @@ define([
                         else
                             items[type] = {};
                     });
-                    this.initTypes();
+                    //this.initTypes();
 
                     $q.all([
                         promiseEntities, promiseLoD, promiseMetadata
@@ -396,8 +408,9 @@ define([
                             });
                         lastAdded = history[history.length-1].id;
                         lastRemoved = -1;
-                        rootThis.refreshSubscribers();
-                        rootThis.notifyObservers();
+                        rootThis.refreshSubscribers().then(function(val) {
+                            rootThis.notifyObservers();
+                        });
                         }
                     );
                 }

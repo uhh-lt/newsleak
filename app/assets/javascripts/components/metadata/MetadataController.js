@@ -29,11 +29,12 @@ define([
             [
                 '$scope',
                 '$timeout',
+                '$q',
                 'playRoutes',
                 'metaShareService',
                 'sourceShareService',
                 'ObserverService',
-                function ($scope, $timeout, playRoutes, metaShareService, sourceShareService, ObserverService) {
+                function ($scope, $timeout, $q, playRoutes, metaShareService, sourceShareService, ObserverService) {
 
 
                     $scope.chartConfig = metaShareService.chartConfig;
@@ -58,7 +59,10 @@ define([
 
 
                     $scope.initMetadataView = function () {
-                        $scope.initialized = false;
+                        $scope.initializedMeta = false;
+                        $scope.initializedEntity = false;
+                        $scope.promiseMetaCharts = undefined;
+                        $scope.promiseEntityCharts = undefined;
 
                         $scope.frequencies = [];
                         $scope.labels = [];
@@ -66,15 +70,22 @@ define([
                         $scope.chartConfigs = [];
                         $scope.metaCharts = [];
 
+                        var defer1 = $q.defer();
+                        var defer2 = $q.defer();
+                        var prom = $q.all([defer1.promise, defer2.promise]);
                         $scope.observer.getEntityTypes().then(function (types) {
-                            $scope.entityTypes = types
+                            $scope.entityTypes = types;
+                            $scope.initEntityCharts().then(function() {
+                                defer1.resolve("initEntity");
+                            });
                         });
                         $scope.observer.getMetadataTypes().then(function (types) {
-                            $scope.metadataTypes = types
+                            $scope.metadataTypes = types;
+                            $scope.initMetadataCharts().then(function() {
+                                defer2.resolve("initMeta");
+                            });
                         });
-
-                        $scope.initEntityCharts();
-                        $scope.initMetadataCharts();
+                        return prom;
                     };
 
                     $scope.observer.subscribeReset($scope.initMetadataView);
@@ -101,7 +112,8 @@ define([
                     };
 
                     $scope.updateEntityCharts = function () {
-                        if ($scope.initialized) {
+                        if ($scope.initializedEntity) {
+                            $scope.promiseEntityCharts =  $q.defer();
                             var entities = [];
                             angular.forEach($scope.entityFilters, function (item) {
                                 entities.push(item.data.id);
@@ -112,9 +124,15 @@ define([
                                 fulltext.push(item.data.name);
                             });
                             var entityType = "";
+                            $scope.entityPromises = [];
+                            $scope.entityPromisesLocal = [];
                             angular.forEach($scope.entityTypes, function (type) {
-                                $scope.metaCharts[type].showLoading('Loading ...');
+                                if($scope.metaCharts[type])
+                                     $scope.metaCharts[type].showLoading('Loading ...');
                                 var instances = $scope.ids[type];
+                                var promise = $q.defer();
+                                $scope.entityPromisesLocal[type] = promise;
+                                $scope.entityPromises.push(promise.promise);
                                 playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, $scope.observer.getTimeRange(), 50, entityType, instances).get().then(
                                     function (result) {
                                         //result.data[type].forEach(function(x) {
@@ -163,6 +181,7 @@ define([
                                             $scope.metaCharts[type].series[1].setData(data);
                                         }
                                         $scope.metaCharts[type].hideLoading();
+                                        $scope.entityPromisesLocal[type].resolve("suc: " + type);
                                     }
                                 );
                             });
@@ -171,7 +190,7 @@ define([
                     };
 
                     $scope.updateMetadataCharts = function () {
-                        if ($scope.initialized) {
+                        if ($scope.initializedMeta) {
 
                             var entities = [];
                             angular.forEach($scope.entityFilters, function (item) {
@@ -182,7 +201,13 @@ define([
                             angular.forEach($scope.fulltextFilters, function (item) {
                                 fulltext.push(item.data.name);
                             });
+                            $scope.metaPromises = [];
+                            $scope.metaPromisesLocal = [];
                             angular.forEach($scope.metadataTypes, function (type) {
+                                var promise = $q.defer();
+                                $scope.metaPromisesLocal[type] = promise;
+                                $scope.metaPromises.push(promise.promise);
+                                //console.log(type);
                                 $scope.metaCharts[type].showLoading('Loading ...');
                                 var instances = $scope.chartConfigs[type].xAxis["categories"];
                                 playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext, type, facets, entities, instances, $scope.observer.getTimeRange()).get().then(
@@ -233,9 +258,11 @@ define([
                                             $scope.metaCharts[type].series[1].setData(data);
                                         }
                                         $scope.metaCharts[type].hideLoading();
+                                        $scope.metaPromisesLocal[type].resolve("suc: " + type);
                                     }
                                 );
                             });
+                            return $scope.metaPromises;
                         }
 
                     };
@@ -245,9 +272,12 @@ define([
                         var entities = [];
                         var fulltext = [];
                         var timeRange = "";
-
+                        var deferred = [];
+                        var proms = [];
                         $scope.observer.getEntityTypes().then(function (types) {
                             types.forEach(function (x) {
+                                deferred[x] = $q.defer();
+                                proms.push(deferred[x].promise);
                                 $scope.chartConfigs[x] = angular.copy($scope.chartConfig);
                                 playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, timeRange, 50, x).get().then(function (result) {
 
@@ -297,12 +327,17 @@ define([
                                     $scope.chartConfigs[x].chart.renderTo = "chart_" + x.toLowerCase();
                                     $("#chart_" + x.toLowerCase()).css("height", $scope.frequencies[x].length * 35);
                                     $scope.metaCharts[x] = new Highcharts.Chart($scope.chartConfigs[x]);
+                                    deferred[x].resolve(x);
                                 });
                             });
+                            $scope.initializedEntity = true;
+
                         });
+                        return $q.all(proms);
                     };
 
                     $scope.initMetadataCharts = function () {
+                        var defer = $q.defer();
                         $scope.observer.getMetadataTypes().then(function () {
                             playRoutes.controllers.MetadataController.getMetadata(undefined, [{
                                 'key': 'dummy',
@@ -374,15 +409,18 @@ define([
 
                                         }
                                     );
-
+                                    defer.resolve("metainit");
                                 });
-                            $scope.initialized = true;
-                        })
+                            $scope.initializedMeta = true;
+                        });
+                        return defer.promise;
                     };
 
                     $scope.updateMetadataView = function () {
                         $scope.updateEntityCharts();
                         $scope.updateMetadataCharts();
+                        $scope.promise = $q.all($scope.entityPromises.concat($scope.metaPromises));
+                        return $scope.promise;
                     };
 
 

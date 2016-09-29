@@ -49,7 +49,14 @@ html, body {
     border-color: #2759AC;
 }
 
-/* Format the title that is on the left hand side of the header */
+.titlebar #select_value_label_0 .md-text, .titlebar #select_value_label_0 .md-select-icon {
+    color: white;
+}
+.titlebar md-input-container {
+    margin: 0
+}
+
+    /* Format the title that is on the left hand side of the header */
 .title {
     font-size: 300%;
     font-family: "American Typeriter"

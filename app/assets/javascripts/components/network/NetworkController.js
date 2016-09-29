@@ -64,6 +64,7 @@ define([
             '$timeout',
             '$uibModal',
             '$window',
+            '$q',
             'playRoutes',
             'appData',
             'moment',
@@ -77,6 +78,7 @@ define([
             $timeout,
             $uibModal,
             $window,
+            $q,
             playRoutes,
             appData,
             moment,
@@ -144,7 +146,7 @@ define([
 
             toolShareService.hideListener.push(hideSelected);
 
-            toolShareService.updateGraph = getEntities;
+            toolShareService.updateGraph = $scope.getEntities;
             toolShareService.isViewLoading = function(){return $scope.isViewLoading};
             toolShareService.enableOrDisableButtons = enableOrDisableButtons;
 
@@ -1652,10 +1654,10 @@ define([
             /**
              * load entities for current filtering (called on filter update)
              */
-            $scope.getEntities = getEntities;
 
-            function getEntities() {
+            $scope.getEntities = function getEntities() {
                 console.log("reload entities");
+                $scope.promise = $q.defer();
                 var entities = [];
                 angular.forEach($scope.entityFilters, function(item) {
                     entities.push(item.data.id);
@@ -1746,11 +1748,13 @@ define([
                             force.links(edges);
                             //calculateNewForceSize();
                             start();
+                            $scope.promise.resolve("suc: network");
                         }
                     );
 
 
                 });
+                return $scope.promise.promise;
             };
 
             $scope.getEntities();
