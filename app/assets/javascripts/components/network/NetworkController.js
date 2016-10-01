@@ -114,6 +114,13 @@ define([
             $scope.minEdgeWidth  = 3;
             $scope.maxEdgeWidth  = 10;
 
+            function fireEvent_updateDocs() {
+                console.log(selectedNodes);
+                $scope.$emit('updateDocs-up', selectedNodes.map(function(n){
+                    return n.id
+                }));
+            }
+
             // determines the display of most or least frequency entities/edges
             // gets updated by toggle
             $scope.freqSorting = {least: false};
@@ -263,6 +270,8 @@ define([
                     highlightShareService.wordsToHighlight[i] = [];
                 }
                 highlightShareService.wasChanged = true;
+                selectedNodes = []
+                fireEvent_updateDocs();
             }
 
 
@@ -302,6 +311,10 @@ define([
                      highlightShareService.wordsToHighlight[$scope.graphShared.getIndexOfCategory(node.type)].push(node.name);
                      highlightShareService.wasChanged = true;
                 }
+
+                fireEvent_updateDocs();
+                console.log("doc update up");
+                console.log(selectedNodes)
             }
 
             /**
@@ -324,6 +337,7 @@ define([
                     highlightShareService.wordsToHighlight[$scope.graphShared.getIndexOfCategory(node.type)].splice(index, 1);
                     highlightShareService.wasChanged = true;
                 }
+                fireEvent_updateDocs();
             }
 
             /**
@@ -691,6 +705,8 @@ define([
                                             .attr('font-weight', 'normal');
                             }
                             enableOrDisableButtons();
+                            selectedNodes.push(d.source,d.target)
+                            fireEvent_updateDocs();
                         });
                     // remove old links
                     link.exit().remove();
@@ -762,7 +778,7 @@ define([
                                 time = moment();
                             })
                             .on('mouseup', function (d) {
-                                d3.seletct(this).classed("fixed", d.fixed = true);  // Fix nodes that where moved.
+                                d3.select(this).classed("fixed", d.fixed = true);  // Fix nodes that where moved.
                                 // On mouseup check if it was a click or dragging a circle and in case of click invoke the callback
                                 var now = moment();
                                 if (time + 500 > now) {

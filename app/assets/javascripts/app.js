@@ -148,6 +148,9 @@ define([
             $scope.$on('startGuidance-up', function( event, data ) {//das ermöglicht es das der NetworkController ein vom SearchController ausgelöstes Event behandeln kann
                 $scope.$broadcast('startGuidance-down', data);
             });
+            $scope.$on('updateDocs-up', function( event, data ) {
+                $scope.$broadcast('updateDocs-down', data);
+            });
 
             $scope.$on("angular-resizable.resizeEnd", function (event, args) {
                 if(args.id == 'center-box') setUILayoutProperties(args.width, false);
