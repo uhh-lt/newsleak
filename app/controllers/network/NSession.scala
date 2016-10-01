@@ -19,7 +19,7 @@ import scala.collection.mutable
 class NSession {
   implicit val session = AutoSession
   val typeIndex = collection.immutable.HashMap("PER" -> 0, "ORG" -> 1, "LOC" -> 2, "MISC" -> 3)
-  val EpN = 4 //Kanten pro Knoten
+  //val EpN = 4 //Kanten pro Knoten
 
   /**
    * Gibt an wie viele Iterationen schon vollzogen wurdn
@@ -40,7 +40,7 @@ class NSession {
    * @param focusId anfokussierter Knoten
    * @return sendet die Kanten+Knoten an den Benutzer
    */
-  def getGuidanceNodes(focusId: Long, edgeAmount: Int, uiMatrix: Array[Array[Int]], useOldEdges: Boolean): json.JsValue = {
+  def getGuidanceNodes(focusId: Long, edgeAmount: Int, epn: Int, uiMatrix: Array[Array[Int]], useOldEdges: Boolean): json.JsValue = {
     iter += 1
     //nodes.clear
     edges.clear
@@ -77,7 +77,7 @@ class NSession {
         }
         val edgeO = pqIter.find(e => !{
           Logger.info("" + e.toString(true) + "E1:" + e.getNodes._1.getConn + "E2:" + e.getNodes._2.getConn)
-          usedEdges.contains(e.getNodes) || usedEdges.contains(e.getNodes.swap) || e.getNodes._1.getConn == EpN || e.getNodes._2.getConn == EpN
+          usedEdges.contains(e.getNodes) || usedEdges.contains(e.getNodes.swap) || e.getNodes._1.getConn == epn || e.getNodes._2.getConn == epn
         })
 
         val edge = edgeO.getOrElse({

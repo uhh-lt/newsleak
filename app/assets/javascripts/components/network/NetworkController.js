@@ -1847,7 +1847,7 @@ define([
                 useOldEdges = typeof useOldEdges !== 'undefined' ? useOldEdges : true;
 
 
-                playRoutes.controllers.NetworkController.getGuidanceNodes(focusNodeId,toolShareService.sliderEdgeAmount(),uiStr,useOldEdges, sessionid ).get().then(function(response) {
+                playRoutes.controllers.NetworkController.getGuidanceNodes(focusNodeId, toolShareService.sliderEdgeAmount(), toolShareService.sliderEdgesPerNode(), uiStr,useOldEdges, sessionid).get().then(function(response) {
 
                     //to prevent invisible selections
                     unselectNodes();

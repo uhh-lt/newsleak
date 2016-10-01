@@ -354,13 +354,18 @@ class NetworkController @Inject extends Controller {
   /**
    *
    * @param focusId anfokussierter Knoten
-   * @return sendet die Kanten+Knoten an den Benutzer
+   * @param edgeAmount Gesamtanzahl der Kanten im Subgraph
+   * @param epn maximale Anzahl der Kanten pro Knoten
+   * @param uiString User Interesse an verschiedenen Kantentypen (als String gespeicherte Matrix die mit , und ; getrennt ist=
+   * @param useOldEdges true: alte DoI fliessen in Berechnung der neuen DoI-Werte ein
+   * @param sessionId SessionId
+   * @return sendet den gebildeten Supgraph in Form von Kanten+Knoten an den Benutzer
    */
-  def getGuidanceNodes(focusId: Long, edgeAmount: Int, uiString: String, useOldEdges: Boolean, sessionId: String) = Action {
+  def getGuidanceNodes(focusId: Long, edgeAmount: Int, epn: Int, uiString: String, useOldEdges: Boolean, sessionId: String) = Action {
 
     val uiMatrix: Array[Array[Int]] = uiString.split(";").map(_.split(",").map(_.toInt))
     val ns = NSessionMap.getOrElseUpdate(sessionId, new NSession)
-    Ok(Json.toJson(ns.getGuidanceNodes(focusId, edgeAmount, uiMatrix, useOldEdges))).as("application/json")
+    Ok(Json.toJson(ns.getGuidanceNodes(focusId, edgeAmount, epn, uiMatrix, useOldEdges))).as("application/json")
   }
 
 }

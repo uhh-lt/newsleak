@@ -73,10 +73,11 @@ define([
             toolShareService.sliderPersonsValue = function(){return $scope.sliderPersonsAmount.value;}
             toolShareService.sliderMiscellaneousValue = function(){return $scope.sliderMiscellaneousAmount.value;}
 
-            toolShareService.sliderEdgeMinFreq = function(){return $scope.sliderEdgeFrequency.value.split(";")[0]}
+            toolShareService.sliderEdgeMinFreq = function(){return $scope.sliderEdgeFrequency.value.split(";")[0]};
             toolShareService.sliderEdgeMaxFreq = function(){return $scope.sliderEdgeFrequency.value.split(";")[1]}
 
-            toolShareService.sliderEdgeAmount = function () {return $scope.sliderEdgeAmount.value}
+            toolShareService.sliderEdgeAmount = function () {return $scope.sliderEdgeAmount.value};
+            toolShareService.sliderEdgesPerNode = function () {return $scope.sliderEdgesPerNode.value};
 
             $scope.toolShareService = toolShareService;
 
@@ -147,7 +148,7 @@ define([
                         toolShareService.updateGraph();
                     }
                 }
-            }
+            };
             $scope.sliderEdgeAmount = {
                 //value: "1500;"+$scope.maxEdgeFreq,
                 value: "20",
@@ -155,7 +156,7 @@ define([
                     from: 5,
                     to: 40,
                     step: 1,
-                    dimension: "displayed Edges",
+                    dimension: " displayed Edges",
                     limits: false,
                     scale: [5, /*$scope.maxEdgeFreq*/ 40],
                     css: {
@@ -169,7 +170,29 @@ define([
                         //toolShareService.updateGraph();
                     }
                 }
-            }
+            };
+            $scope.sliderEdgesPerNode = {
+                //value: "1500;"+$scope.maxEdgeFreq,
+                value: "4",
+                options: {
+                    from: 1,
+                    to: 10,
+                    step: 1,
+                    dimension: " Edges per Node (max)",
+                    limits: false,
+                    scale: [1, 10],
+                    css: {
+                        background: {"background-color": "silver"},
+                        range: {"background-color": "#7CB5EC"},
+                        default: {"background-color": "silver"},
+                        after: {"background-color": "#7CB5EC"},
+                        pointer: {"background-color": "#2759AC"}
+                    },
+                    callback: function(value, released){
+                        //toolShareService.updateGraph();
+                    }
+                }
+            };
 
             $scope.getEgoNetwork = function()
             {
