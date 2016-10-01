@@ -84,7 +84,7 @@ define([
                 {name:'LOC', img: 'place', val: 1},{name:'MISC', img: 'reorder', val: 1}];
 
             var UIgeneralItems = [1,1,1,1];
-            var priorityToColor = ["white","white","#83a2d6","#2759ac"];
+            // var priorityToColor = ["white","white","#83a2d6","#2759ac"];
 
             $scope.setUI = function (x,y) {
                 if ((x==0 || y==0) && !(x==0 && y==0)){
@@ -105,8 +105,8 @@ define([
                                 document.getElementById(i + '.' + x + '.icon').style.visibility = "hidden";
                             }
                         }
-                        document.getElementById(x + '.' + i).style.backgroundColor = priorityToColor[prio];
-                        document.getElementById(i + '.' + x).style.backgroundColor = priorityToColor[prio];
+                        document.getElementById(x + '.' + i).style.backgroundColor = toolShareService.priorityToColor[prio];
+                        document.getElementById(i + '.' + x).style.backgroundColor = toolShareService.priorityToColor[prio];
                     }
                 } else {
                     var prio = (toolShareService.UIitems[x - 1][y - 1] + 1) % 4;
@@ -119,8 +119,8 @@ define([
                     }
                     toolShareService.UIitems[y - 1][x - 1] = prio;
                     toolShareService.UIitems[x - 1][y - 1] = prio;
-                    document.getElementById(x + '.' + y).style.backgroundColor = priorityToColor[prio];
-                    document.getElementById(y + '.' + x).style.backgroundColor = priorityToColor[prio];
+                    document.getElementById(x + '.' + y).style.backgroundColor = toolShareService.priorityToColor[prio];
+                    document.getElementById(y + '.' + x).style.backgroundColor = toolShareService.priorityToColor[prio];
                 }
             //console.log(toolShareService.UIitems);
             };

@@ -4,12 +4,11 @@ package controllers.network
 import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
 import play.api.Logger
 import play.api.libs.json
-import play.api.libs.json.{ JsObject, Json }
+import play.api.libs.json.{ JsObject, Json, Writes }
 import scalikejdbc._
 
 import scala.math.Ordering
 import scala.util.control._
-
 import util.TupleWriters._
 
 import scala.collection.mutable
@@ -34,14 +33,14 @@ class NSession {
   /**
    * Map cacht Knoten deren DoI-Wert schonmal berechnet wurden. Wird mit dem Beginn jedes Guidance-Schrittes zurückgesetzt.
    */
-  var uiMatrix = Array.ofDim[Double](4, 4)
+  var uiMatrix = Array.ofDim[Int](4, 4)
 
   /**
    *
    * @param focusId anfokussierter Knoten
    * @return sendet die Kanten+Knoten an den Benutzer
    */
-  def getGuidanceNodes(focusId: Long, edgeAmount: Int, uiMatrix: Array[Array[Double]], useOldEdges: Boolean): json.JsValue = {
+  def getGuidanceNodes(focusId: Long, edgeAmount: Int, uiMatrix: Array[Array[Int]], useOldEdges: Boolean): json.JsValue = {
     iter += 1
     //nodes.clear
     edges.clear
@@ -74,7 +73,7 @@ class NSession {
         //edgeArr.map ??
         object pqIter extends Iterator[Edge] { // ACHTUNG pq gibt mit .find() nicht nach DoI geordnet aus! Deswegen ist das hier notwendig
           def hasNext = pq.nonEmpty
-          def next = pq.dequeue()
+          def next = pq.dequeue
         }
         val edgeO = pqIter.find(e => !{
           Logger.info("" + e.toString(true) + "E1:" + e.getNodes._1.getConn + "E2:" + e.getNodes._2.getConn)
@@ -109,11 +108,23 @@ class NSession {
       }
     }
 
-    //bestimme Namen, Frequenz und Typ der Knoten
-    val result = new JsObject(Map(("nodes", Json.toJson(usedNodes.map(n => { (n.getId, n.getName, n.getDocOcc, n.getCategory) }))), ("links", Json.toJson(usedEdges.values.map(e => (0, e.getNodes._1.getId, e.getNodes._2.getId, e.getDocOcc))))))
+    val result = new JsObject(Map(("nodes", Json.toJson(usedNodes.map(n => { (n.getId, n.getName, n.getDocOcc, n.getCategory) }))), ("links", Json.toJson(usedEdges.values))))
+
+    // Json.toJson(usedEdges.values.map(e => Map(("id", 0), ("sourceNode", e.getNodes._1.getId), ("targetNode", e.getNodes._2.getId), ("docOcc", e.getDocOcc), ("specialWeight", e.hasSpecialWeight)))))))
+    // Json.toJson(usedEdges.values.map(e => (0, e.getNodes._1.getId, e.getNodes._2.getId, e.getDocOcc, e.hasSpecialWeight))))))
     Logger.info("" + usedEdges.size)
     oldEdges = usedEdges
     Json.toJson(result)
+  }
+
+  implicit val EdgeWrites = new Writes[Edge] {
+    def writes(e: Edge) = Json.obj(
+      "id" -> 0,
+      "sourceNode" -> e.getNodes._1.getId,
+      "targetNode" -> e.getNodes._2.getId,
+      "docOcc" -> e.getDocOcc,
+      "uiLevel" -> e.getUiLevel
+    )
   }
 
   /**

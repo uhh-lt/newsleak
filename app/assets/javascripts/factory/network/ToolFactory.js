@@ -28,6 +28,8 @@ define([
             {
                 var toolShareService =
                 {
+                    priorityToColor : ["white","white","#83a2d6","#2759ac"],
+
                     deleteListener: [],
                     //(node, newText)
                     annotateListener: [],

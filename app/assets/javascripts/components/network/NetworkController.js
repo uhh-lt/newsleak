@@ -86,7 +86,6 @@ define([
             ObserverService
             )
         {
-
             var sessionid = Math.random().toString(36).substr(2, 5);
 
             $scope.graphShared = graphPropertiesShareService;
@@ -162,7 +161,16 @@ define([
 
             var nodes      = [];
             var edges      = [];
-            var color      = d3.scale.category10().range($scope.graphShared.categoryColors);
+            //var color      = d3.scale.category10().range($scope.graphShared.categoryColors);
+            var color = d3.scale.ordinal()
+                .domain(["LOC", "ORG", "PER", "MISC"])
+                .range($scope.graphShared.categoryColors);
+            // Order: locations, orginaziations, persons, misc
+
+            var focusColor = "#FF0000";
+            var neutralNodeColor = "#000000";
+            var neutralEdgeColor = "#B0B0B0";
+
             //console.log([color("LOC"), color("ORG"), color("PER"), color("MISC")])
             /*var radius     = d3.scale.sqrt()
                                     .domain([1,$scope.maxNodeFreq])
@@ -238,11 +246,17 @@ define([
              * have to be updated as well
              */
             function unselectNodes(){
-                selectedNodes = new Array();
-                d3.selectAll('circle').each(function(d){
-                    d3.select(this).style('stroke-width', 1.5)
-                                   .style('stroke', '#000000');
-                });
+                // selectedNodes = new Array();
+                // d3.selectAll('circle').each(function(d){
+                //     d3.select(this).style('stroke-width', 1.5)
+                //                    .style('stroke',function (e) {if (this.isFocusNode) {return '#FF0000'} else  {return '#000000'}});
+                // });
+                // console.log(node.select('circle'))
+                // console.log(d3.selectAll('circle'))
+                 node.select('circle').style('stroke',function (d) {// .log(d.name + " " + d.isFocusNode);
+                     if (d.isFocusNode) {return focusColor} else  {return neutralNodeColor}})
+                     .style('stroke-width', 1.5);
+
                 enableOrDisableButtons();
                 // For the highlighting
                 for (var i = 0; i < highlightShareService.wordsToHighlight.length; i++) {
@@ -256,13 +270,15 @@ define([
              * This function unselects all edges.
              */
             function unselectEdges(){
+                link.style("stroke", function (d) {
+                    if (d.uiLevel > 1) {return toolShareService.priorityToColor[d.uiLevel]} else {return neutralEdgeColor}});
+
+
                 selectedEdges = new Array();
-                link.each(function(d){
-                    d3.select(this).style('stroke', '#b0b0b0')//.style('stroke', '#696969')
+                link.style("stroke", function (d) {
+                    if (d.uiLevel > 1) {return toolShareService.priorityToColor[d.uiLevel]} else {return neutralEdgeColor}})
                                    .style('opacity', .8);
-                    d3.select('#edgelabel_' + d.id).style('fill', '#000000')
-                                                   .attr('font-weight', 'normal');
-                });
+                edgelabels.style('fill', '#000000').attr('font-weight', 'normal');
                 enableOrDisableButtons();
             }
 
@@ -475,6 +491,26 @@ define([
                     .on('touchmove.zoom', null)
                     .on('touchend.zoom', null);
 
+                //Container for the gradients
+                var defs = svg.append("defs");
+
+                //Filter for the outside glow
+                var filter = defs.append("filter")
+                    .attr("id","glow");
+                //filter.append("feColorMatrix")
+                //    .attr("type", "matrix")
+                //    .attr("values", "0 0 0 0 0.51372549019, 0 0 0 0 0.63529411764, 0 0 0 0 0.83921568627, 0 0 0 1 0");
+
+                filter.append("feGaussianBlur")
+                    .attr("stdDeviation","3.5")
+                    .attr("result","coloredBlur");
+
+                var feMerge = filter.append("feMerge");
+                feMerge.append("feMergeNode")
+                    .attr("in","coloredBlur");
+                feMerge.append("feMergeNode")
+                    .attr("in","SourceGraphic");
+
                 var time;
                 // Add "background". Otherwise zooming would only be possible with the cursor above nodes/edges.
                 svg.append('rect')
@@ -623,6 +659,7 @@ define([
              * resets the graph and starts the force layout
              */
             function start(callback){//Graph zeichnen
+                    console.log("START")
                     var time;
 
                     // update links
@@ -657,6 +694,10 @@ define([
                         });
                     // remove old links
                     link.exit().remove();
+
+                    link.style("stroke", function (d) {
+                        if (d.uiLevel > 1) {return toolShareService.priorityToColor[d.uiLevel]} else {return neutralEdgeColor}})
+                        .classed("glow",function (d) {return d.uiLevel>1});
 
                     // add the new paths for the edge labels
                     edgepaths = edgepaths.data(force.links(), function(d) { return d.source.id + "-" + d.target.id; });
@@ -721,7 +762,7 @@ define([
                                 time = moment();
                             })
                             .on('mouseup', function (d) {
-                                d3.select(this).classed("fixed", d.fixed = true);  // Fix nodes that where moved.
+                                d3.seletct(this).classed("fixed", d.fixed = true);  // Fix nodes that where moved.
                                 // On mouseup check if it was a click or dragging a circle and in case of click invoke the callback
                                 var now = moment();
                                 if (time + 500 > now) {
@@ -790,7 +831,11 @@ define([
                                 return size+'px';
                             });
 
-                    // add buttons to the nodes
+                    node.select('circle').style('stroke',function (d) {//console.log(d.name + " " + d.isFocusNode);
+                        if (d.isFocusNode) {return focusColor} else {return neutralNodeColor}});
+
+
+                // add buttons to the nodes
                     var buttonlist = newNodes.append('foreignObject')
                         .attr('width', '16')
                         .attr('height', '16')
@@ -891,9 +936,9 @@ define([
                         .style("opacity", .9);
                     tooltip.html(
                         '<span class="tooltipImportantText">' + d.name +
-                             '</span>(id: '+d.id+') has the type <span class="tooltipImportantText">'
-                             + d.type + '</span> and has frequency <span class="tooltipImportantText">'
-                             + d.freq + "</span>"
+                             '</span> (id: '+d.id+') ' + (d.isFocusNode? 'is the focus node ':'') + 'has the type <span class="tooltipImportantText">'
+                             + d.type + '</span> and occurs in <span class="tooltipImportantText">'
+                             + d.freq + "</span>" + ' documents'
                         // '<span class="tooltipImportantText">' + d.name +
                         //     '</span> has the type <span class="tooltipImportantText">'
                         //     + d.type + '</span> and is <span class="tooltipImportantText">'
@@ -1778,7 +1823,7 @@ define([
                 )
             }
 
-            function getGuidanceNodes(node,useOldEdges){
+            function getGuidanceNodes(focusNodeId,useOldEdges){
                 var uiStr= "";
                 for (var i=0;i<toolShareService.UIitems.length;i++){
                     uiStr+=toolShareService.UIitems[i].toString()+';';
@@ -1786,7 +1831,7 @@ define([
                 useOldEdges = typeof useOldEdges !== 'undefined' ? useOldEdges : true;
 
 
-                playRoutes.controllers.NetworkController.getGuidanceNodes(node,toolShareService.sliderEdgeAmount(),uiStr,useOldEdges, sessionid ).get().then(function(response) {
+                playRoutes.controllers.NetworkController.getGuidanceNodes(focusNodeId,toolShareService.sliderEdgeAmount(),uiStr,useOldEdges, sessionid ).get().then(function(response) {
 
                     //to prevent invisible selections
                     unselectNodes();
@@ -1794,7 +1839,7 @@ define([
 
                     //delete all nodes and edges
                     nodes = [];
-                    edges=[];
+                    edges = [];
 
                     response.data.nodes.forEach(
                         function(v)
@@ -1809,11 +1854,12 @@ define([
 
                             nodes.push({
                                 id: v[0],
+                                isFocusNode: v[0]==focusNodeId,
                                 name: v[1],
                                 freq: v[2],
                                 type: v[3],
                                 docCount: -1,
-                                size: 2,
+                                size: 2
                             });
 
                             force.links(edges);
@@ -1824,13 +1870,13 @@ define([
                     response.data.links.forEach(
                         function(v)
                         {
-                            var sourceNode = nodes.find(function(node){return v[1] == node.id});
-                            var targetNode = nodes.find(function(node){return v[2] == node.id});
+                            var sourceNode = nodes.find(function(node){return v.sourceNode == node.id});
+                            var targetNode = nodes.find(function(node){return v.targetNode == node.id});
                             if(sourceNode == undefined || targetNode == undefined)
                             {
                                 return;
                             }
-                            edges.push({id: edges.length, source: sourceNode, target: targetNode, freq: v[3]});
+                            edges.push({id: edges.length, source: sourceNode, target: targetNode, freq: v.docOcc, uiLevel: v.uiLevel});
                         });
 
                     //reload();

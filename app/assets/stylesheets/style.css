@@ -149,6 +149,11 @@ div.tooltip {
                                   not supported by any browser */
 }
 
+.glow {
+    filter:url(#glow);
+
+}
+
 
 /*
     ======================================
