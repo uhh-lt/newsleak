@@ -59,7 +59,7 @@ define([
             return graphProperties;
         })
         // Network Controller
-        .controller('FancyNetworkController', ['$scope', '$timeout', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', function ($scope, $timeout, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties) {
+        .controller('FancyNetworkController', ['$scope', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', function ($scope, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties) {
 
             var self = this;
 
@@ -214,6 +214,12 @@ define([
                 $scope.reloadGraph();
             });
 
+            function addFullscreenButton() {
+                var panel = angular.element(document.getElementsByClassName('vis-navigation')[0]);
+                var buttonTemplate = '<div class="vis-button vis-fullscreen-button" ng-click="FancyNetworkController.toggleFullscreen()"></div>';
+                var button = $compile(buttonTemplate)($scope);
+                panel.append(button);
+            }
 
             function hideNode(nodeId) {
                 // Hide given node
@@ -309,6 +315,7 @@ define([
 
             function onNetworkLoad(network) {
                 self.network = network;
+                addFullscreenButton();
             }
 
             function stabilizationStart() {

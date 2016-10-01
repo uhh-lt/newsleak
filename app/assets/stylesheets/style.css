@@ -69,9 +69,15 @@ line {
     background-color: #d1d1d1;
 }
 
-div.vis-network div.vis-navigation div.vis-button {
+.vis-network .vis-navigation .vis-button {
     background-color: white;
     margin-bottom: 20px;
+}
+
+.vis-fullscreen-button {
+    right: 15px;
+    bottom: 90px;
+    background-image: url("assets/../../images/fullscreen_green.png");
 }
 
 .vis-navigation .vis-button:hover:before {
@@ -118,6 +124,10 @@ div.vis-network div.vis-navigation div.vis-button {
 
 .vis-navigation .vis-button:hover.vis-zoomExtends:before {
     content: "Reset focus";
+}
+
+.vis-navigation .vis-button:hover.vis-fullscreen-button:before {
+    content: "Fullscreen";
 }
 
 div.popupMenu {
