@@ -105,6 +105,7 @@ class Application @Inject extends Controller {
         // TODO: You need to add your routes here
         controllers.routes.javascript.Application.changeDataset,
         controllers.routes.javascript.DocumentController.getDocById,
+        controllers.routes.javascript.DocumentController.getKeywordsById,
         controllers.routes.javascript.DocumentController.getDocs,
         controllers.routes.javascript.NetworkController.getIdsByName,
         controllers.routes.javascript.NetworkController.deleteEntityById,

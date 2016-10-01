@@ -97,7 +97,6 @@ define([
             }];
 
             $scope.observerService = ObserverService;
-            // TOdo camelcase, only add if the event was add
 
             // TODO: would be cool to have the event type as argument i.e. remove or add
             $scope.observer_subscribe_fulltext = function(items) {
@@ -122,7 +121,6 @@ define([
                 //"stabilizationIterationsDone": stabilizationDone,
                 "onload": onNetworkLoad,
                 "dragEnd": dragNodeDone,
-                //"oncontext": showContextMenu,
                 "oncontext": onContext,
                 "click": clickEvent,
                 "dragging": dragEvent,
@@ -169,7 +167,7 @@ define([
 
                         var nodes = response.data.entities.map(function(n) {
                             // See css property div.network-tooltip for custom tooltip styling
-                            var title = 'Co-occurrence: ' + n.count + '<br>Typ: ' + n.type;
+                            var title = '#Doc: ' + n.count + '<br>Typ: ' + n.type;
                             // map counts to interval [1,2] for nodes mass
                             var mass = ((n.count - originalMin) / (originalMax - originalMin)) * (2 - 1) + 1;
                             // If all nodes have the same occurrence assign same mass. This also prevents errors
@@ -349,15 +347,19 @@ define([
                 if(_.has(edge, "title")) {
                     return;
                 }
-                // TODO REfactor same as load
+                // TODO Refactor same as load
                 var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.name; });
                 var entities = $scope.entityFilters.map(function(v) { return v.data.id; });
                 var facets = $scope.observerService.getFacets();
 
                 playRoutes.controllers.NetworkController.getEdgeKeywords(fulltext, facets, entities, $scope.observerService.getTimeRange(), edge.from, edge.to, 4).get().then(function(response) {
                     var formattedTerms = response.data.map(function(t) { return '' +  t.term + ': ' + t.score; });
-                    // TODO Add to background collection otherwise it will be re-fetched.
-                    self.edgesDataset.update({ id: event.edge, title: formattedTerms.join() });
+                    var keywords = '<p class="md-body-2">Keywords</p>' + formattedTerms.join('<br>');
+                    self.edgesDataset.update({ id: event.edge, title: keywords });
+                    // Only update background collection after stabilization.
+                    /* if(!$scope.loading) {
+                        self.edges.update({ id: event.edge, title: keywords });
+                    } */
                 });
             }
 
@@ -381,7 +383,6 @@ define([
 
             function handleEdgeSlider(newValue, oldValue) {
                 closeContextMenu();
-                console.log("Handle slider " + newValue + ", " + oldValue);
                 if(newValue > oldValue) {
                     var edgesToRemove = self.edgesDataset.get({
                         filter: function (item) {

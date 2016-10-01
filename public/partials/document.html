@@ -15,18 +15,31 @@
   ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<md-tab ng-repeat="tab in tabs">
+<md-tab ng-repeat="doc in tabs">
     <md-tab-label>
         <section layout="row">
-            {{ tab.title }}
-            <md-button class="md-icon-button" ng-click="removeTab(tab)" aria-label="close" style="padding-top: 0px;">
+            {{ doc.title }}
+            <md-button class="md-icon-button" ng-click="removeTab(doc)" aria-label="close" style="padding-top: 0px;">
                 <ng-md-icon size="20" icon="close"></ng-md-icon>
             </md-button>
         </section>
     </md-tab-label>
 
     <md-tab-body>
-        <md-content flex layout-padding ng-init="content = renderDoc(tab)">
+        <md-content flex layout-padding ng-init="content = renderDoc(doc); keywords = retrieveKeywords(doc)">
+            <md-card>
+                <md-card-title>
+                    <md-card-title-text>
+                        <span class="md-headline">{{ doc.meta.Subject }}</span>
+                        <span class="md-subhead">
+                            <b>Keywords: </b>
+                            <span>{{ keywords.join(', ') }}</span>
+                        </span>
+                    </md-card-title-text>
+                </md-card-title>
+                <md-card-content>
+                </md-card-content>
+            </md-card>
             <div ng-bind-html="content"></div>
         </md-content>
     </md-tab-body>

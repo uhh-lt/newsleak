@@ -19,8 +19,8 @@ package controllers
 
 import javax.inject.Inject
 
-import model.Document
-import model.faceted.search.{ FacetedSearch, Facets }
+import model.{ Document, KeyTerm }
+import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller }
 import util.SessionUtils.currentDataset
@@ -52,6 +52,15 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
   def getDocById(id: Int) = Action { implicit request =>
     val docSearch = Document.fromDBName(currentDataset)
     Ok(Json.toJson(docSearch.getById(id).map(doc => (doc.id, doc.created.toString(), doc.content)))).as("application/json")
+  }
+
+  // TODO: Extend ES API and remove KeyTerm API
+  def getKeywordsById(id: Int, size: Int) = Action { implicit request =>
+    val terms = KeyTerm.fromDBName(currentDataset).getDocumentKeyTerms(id, Some(size)).map {
+      case KeyTerm(term, score) =>
+        Json.obj("term" -> term, "score" -> score)
+    }
+    Ok(Json.toJson(terms)).as("application/json")
   }
 
   /**

@@ -179,26 +179,33 @@ define([
                     //subscribe to update document list on filter change
                     $scope.observer.registerObserverCallback($scope.updateDocumentList);
 
-                    $scope.loadFullDocument = function (docId) {
+                    $scope.loadFullDocument = function (doc) {
                         // Focus open tab if document is already opened
-                        if($scope.isDocumentOpen(docId)) {
-                            var index = _.findIndex($scope.sourceShared.tabs, function(t) { return t.id == docId; });
+                        if($scope.isDocumentOpen(doc.id)) {
+                            var index = _.findIndex($scope.sourceShared.tabs, function(t) { return t.id == doc.id; });
                             // Skip first network tab
                             $scope.selectedTab.index = index + 1;
                         } else {
                             var editItem = {
                                 type: 'openDoc',
                                 data: {
-                                    id: docId,
-                                    name: "#" + docId
+                                    id: doc.id,
+                                    name: "#" + doc.id
                                 }
                             };
                             $scope.observer.addItem(editItem);
 
-                            playRoutes.controllers.DocumentController.getDocById(docId).get().then(function (response) {
+                            playRoutes.controllers.DocumentController.getDocById(doc.id).get().then(function (response) {
                                 var content = response.data[2];
-                                playRoutes.controllers.EntityController.getEntitiesByDoc(docId).get().then(function (response) {
-                                    $scope.sourceShared.tabs.push({ id: docId, title: docId, content: content, entities: response.data });
+                                playRoutes.controllers.EntityController.getEntitiesByDoc(doc.id).get().then(function (response) {
+                                    // Provide document controller with document information
+                                    $scope.sourceShared.tabs.push({
+                                        id: doc.id,
+                                        title: doc.id,
+                                        content: content,
+                                        meta: doc.metadata,
+                                        entities: response.data
+                                    });
                                 });
                             });
                         }

@@ -55,12 +55,17 @@ define([
                           graphPropertiesShareService,
                           uiShareService,
                           ObserverService) {
+
+                    var self = this;
+
                     $scope.sourceShared = sourceShareService;
                     $scope.highlightShared = highlightShareService;
                     $scope.uiShareService = uiShareService;
                     $scope.graphPropertiesShared = graphPropertiesShareService;
 
                     $scope.tabs = $scope.sourceShared.tabs;
+
+                    self.numKeywords = 15;
 
                     $scope.removeTab = function (tab) {
                         var index = $scope.tabs.indexOf(tab);
@@ -103,36 +108,12 @@ define([
                         return $sce.trustAsHtml(getHighlightedText(doc.content, marker));
                     };
 
-
-                    /**
-                     * This function is used to format the source of a document
-                     * in a way to display it on the website. At the moment, this
-                     * means to insert line breaks.
-                     *
-                     * @param toFormat - The source to format.
-                     * @return string - Returns the formatted text.
-                     */
-                    var getFormattedSource = function (toFormat) {
-                        return toFormat.replace(/\n/g, '<br>');
-                    };
-
-
-                    /**
-                     * With this function the user can create annotations in the document.
-                     */
-                    $scope.annotateDocument = function () {
-                        console.log("annotateSelected TODO");
-                        var annotation = $('#annotateDocumentInput').val();
-                        alert("TODO: annotate selected --> " + annotation);
-                    };
-
-                    /**
-                     * With this function the user can create a new entity with the selected
-                     * text passage.
-                     */
-                    $scope.createEntity = function () {
-                        console.log("createEntity TODO");
-                        alert("TODO: create a entity");
+                    $scope.retrieveKeywords = function(doc) {
+                        var terms =  [];
+                        playRoutes.controllers.DocumentController.getKeywordsById(doc.id, numKeywords).get().then(function(response) {
+                            response.data.forEach(function(t) { return terms.push(t.term); });
+                        });
+                        return terms;
                     };
                 }
             ]);
