@@ -4,7 +4,7 @@ package controllers.network
 import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
 import play.api.Logger
 import play.api.libs.json
-import play.api.libs.json.{ JsObject, Json, Writes }
+import play.api.libs.json.{ JsObject, JsValue, Json, Writes }
 import scalikejdbc._
 
 import scala.math.Ordering
@@ -20,6 +20,7 @@ class NSession {
   implicit val session = AutoSession
   val typeIndex = collection.immutable.HashMap("PER" -> 0, "ORG" -> 1, "LOC" -> 2, "MISC" -> 3)
   //val EpN = 4 //Kanten pro Knoten
+  val newEdgesPerIter = 100
 
   /**
    * Gibt an wie viele Iterationen schon vollzogen wurdn
@@ -108,7 +109,7 @@ class NSession {
       }
     }
 
-    val result = new JsObject(Map(("nodes", Json.toJson(usedNodes.map(n => { (n.getId, n.getName, n.getDocOcc, n.getCategory) }))), ("links", Json.toJson(usedEdges.values))))
+    val result = new JsObject(Map(("nodes", Json.toJson(usedNodes)), ("links", Json.toJson(usedEdges.values))))
 
     // Json.toJson(usedEdges.values.map(e => Map(("id", 0), ("sourceNode", e.getNodes._1.getId), ("targetNode", e.getNodes._2.getId), ("docOcc", e.getDocOcc), ("specialWeight", e.hasSpecialWeight)))))))
     // Json.toJson(usedEdges.values.map(e => (0, e.getNodes._1.getId, e.getNodes._2.getId, e.getDocOcc, e.hasSpecialWeight))))))
@@ -117,7 +118,17 @@ class NSession {
     Json.toJson(result)
   }
 
-  implicit val EdgeWrites = new Writes[Edge] {
+  implicit val NodeWrite = new Writes[Node] {
+    override def writes(n: Node) = Json.obj(
+      "id" -> n.getId,
+      "name" -> n.getName,
+      "docOcc" -> n.getDocOcc,
+      "type" -> n.getCategory,
+      "edges" -> n.getRelevantEdges.map(_.getNodes._2.getName)
+    )
+  }
+
+  implicit val EdgeWrite = new Writes[Edge] {
     def writes(e: Edge) = Json.obj(
       "id" -> 0,
       "sourceNode" -> e.getNodes._1.getId,
@@ -136,7 +147,7 @@ class NSession {
 
     var distToFocus: Int = node.getDistance //Wenn der Knoten nicht in der Map liegt, muss es sich um dem Fokus handeln, also dist=0
     distToFocus += 1
-    val nodeBuckets = FacetedSearch.aggregateEntities(Facets(List(), Map(), List(node.getId), None, None), 100, List(), 1).buckets
+    val nodeBuckets = FacetedSearch.aggregateEntities(Facets(List(), Map(), List(node.getId), None, None), newEdgesPerIter, List(), 1).buckets
     val edgeFreqTuple = nodeBuckets.collect { case NodeBucket(id, docOccurrence) => (id, docOccurrence.toInt) }.filter(_._1 != node.getId)
     val nodeMap: mutable.HashMap[Long, Node] = new mutable.HashMap[Long, Node]()
     nodeMap ++= sql"""SELECT id, name, type, dococc FROM entity_ext WHERE id IN (${edgeFreqTuple.map(_._1)}) AND dococc IS NOT NULL"""

@@ -705,7 +705,7 @@ define([
                                             .attr('font-weight', 'normal');
                             }
                             enableOrDisableButtons();
-                            selectedNodes.push(d.source,d.target)
+                            selectedNodes.push(d.source,d.target);
                             fireEvent_updateDocs();
                         });
                     // remove old links
@@ -762,7 +762,7 @@ define([
                     newNodes
                         .append('path')
                         .attr('id', function(d){return 'nodeborder_' + d.id;})
-                        .attr('d', d3.svg.arc())
+                        .attr('d', d3.svg.arc());
 
 
                     newNodes.append('circle')
@@ -954,7 +954,8 @@ define([
                         '<span class="tooltipImportantText">' + d.name +
                              '</span> (id: '+d.id+') ' + (d.isFocusNode? 'is the focus node ':'') + 'has the type <span class="tooltipImportantText">'
                              + d.type + '</span> and occurs in <span class="tooltipImportantText">'
-                             + d.freq + "</span>" + ' documents'
+                             + d.freq + "</span>" + ' documents '
+                             + d.relEdges
                         // '<span class="tooltipImportantText">' + d.name +
                         //     '</span> has the type <span class="tooltipImportantText">'
                         //     + d.type + '</span> and is <span class="tooltipImportantText">'
@@ -1869,11 +1870,12 @@ define([
                              }*/
 
                             nodes.push({
-                                id: v[0],
+                                id: v.id,
                                 isFocusNode: v[0]==focusNodeId,
-                                name: v[1],
-                                freq: v[2],
-                                type: v[3],
+                                name: v.name,
+                                freq: v.docOcc,
+                                type: v.type,
+                                relEdges: v.edges,
                                 docCount: -1,
                                 size: 2
                             });
