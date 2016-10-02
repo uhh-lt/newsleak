@@ -110,7 +110,7 @@ define([
 
                     $scope.retrieveKeywords = function(doc) {
                         var terms =  [];
-                        playRoutes.controllers.DocumentController.getKeywordsById(doc.id, numKeywords).get().then(function(response) {
+                        playRoutes.controllers.DocumentController.getKeywordsById(doc.id, self.numKeywords).get().then(function(response) {
                             response.data.forEach(function(t) { return terms.push(t.term); });
                         });
                         return terms;
