@@ -13,9 +13,10 @@
 	<div id="autocomplete" class="list-group">
 		<button class="list-group-item" ng-repeat="data in searchTags" ng-click="startGuidance(data)">
 			<div class="search-item-container" title="{{data.type}}">
-				<svg width="32" height="32">
+				<svg width="32" height="32" class="mat-icons">
 					<g transform="translate(16,16)">
 						<circle r="15" id="" ng-style="{'fill': '{{data.color}}'};" style="opacity: 1; stroke-width: 1; stroke: #000;" class=""></circle>
+						<text dy="10" text-anchor="middle" font-family="Material Icons" font-size="20px" fill="#555" >{{data.img}}</text>
 					</g>
 				</svg>
 				<span>{{data.text}}</span></div>

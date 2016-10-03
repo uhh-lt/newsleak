@@ -50,6 +50,8 @@ define([
 
                     $scope.updateSearchHeight();
 
+                    var categories = {PER: '\uE7FD' /*'face'*/, ORG: '\uE84F',
+                        LOC: '\uE55F',MISC: '\uE8FE'};
                     /**
                      * This function is used for autocompleting the tags
                      */
@@ -72,6 +74,7 @@ define([
                                         $scope.searchTags.push(
                                             {
                                                 id: currentValue[0],
+                                                img: categories[currentValue[2]],
                                                 text: currentValue[1],
                                                 type: currentValue[2],
                                                 color: graphPropertiesShareService.categoryColors[
