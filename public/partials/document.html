@@ -31,6 +31,20 @@
                 <md-card-title>
                     <md-card-title-text>
                         <span class="md-headline">{{ doc.meta.Subject }}</span>
+                        <md-chips
+                                ng-init="initTags(doc)"
+                                ng-model="tags[doc.id]"
+                                md-transform-chip="transformTag($chip)"
+                                placeholder="Enter a tag"
+                                delete-button-label="Remove Tag"
+                                delete-hint="Press delete to remove tag"
+                                secondary-placeholder="+Tag"
+                                md-on-add="addTag($chip, doc)"
+                                md-on-remove="removeTag($chip)">
+                            <md-chip-template>
+                                {{ $chip.label }}
+                            </md-chip-template>
+                        </md-chips>
                         <span class="md-subhead">
                             <b>Keywords: </b>
                             <span>{{ keywords.join(', ') }}</span>

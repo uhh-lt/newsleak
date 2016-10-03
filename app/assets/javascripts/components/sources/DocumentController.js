@@ -65,6 +65,9 @@ define([
 
                     $scope.tabs = $scope.sourceShared.tabs;
 
+                    // Maps from doc id to list of tags
+                    $scope.tags = {};
+
                     self.numKeywords = 15;
 
                     $scope.removeTab = function (tab) {
@@ -114,6 +117,37 @@ define([
                             response.data.forEach(function(t) { return terms.push(t.term); });
                         });
                         return terms;
+                    };
+
+                    $scope.transformTag = function(tag) {
+                        // If it is an object, it's already a known tag
+                        if (angular.isObject(tag)) {
+                            return tag;
+                        }
+                        // Otherwise create new
+                        return {
+                            label: tag
+                        };
+                    };
+
+                    $scope.initTags = function(doc) {
+                        $scope.tags[doc.id] = [];
+                        playRoutes.controllers.DocumentController.getTagsByDocId(doc.id).get().then(function(response) {
+                            response.data.forEach(function(tag) {
+                                $scope.tags[doc.id].push({ label: tag.label, id: tag.id });
+                            });
+                        });
+                    };
+
+                    $scope.addTag = function(tag, doc) {
+                        playRoutes.controllers.DocumentController.addTag(doc.id, tag.label).get().then(function(response) {
+                            // Update the id for the tag
+                            _.extend(_.findWhere($scope.tags[doc.id], { label: tag.label }, { id: response.data.id } ));
+                        });
+                    };
+
+                    $scope.removeTag = function(tag) {
+                        playRoutes.controllers.DocumentController.removeTagById(tag.id).get().then(function(response) { });
                     };
                 }
             ]);

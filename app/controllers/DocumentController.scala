@@ -19,7 +19,7 @@ package controllers
 
 import javax.inject.Inject
 
-import model.{ Document, KeyTerm }
+import model.{ Document, KeyTerm, Tag }
 import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller }
@@ -61,6 +61,23 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
         Json.obj("term" -> term, "score" -> score)
     }
     Ok(Json.toJson(terms)).as("application/json")
+  }
+
+  def addTag(id: Int, label: String) = Action { implicit request =>
+    Ok(Json.obj("id" -> Tag.fromDBName(currentDataset).add(id, label).id)).as("application/json")
+  }
+
+  def removeTagById(tagId: Int) = Action { implicit request =>
+    Tag.fromDBName(currentDataset).delete(tagId)
+    Ok("success").as("Text")
+  }
+
+  def getTagsByDocId(id: Int) = Action { implicit request =>
+    val tags = Tag.fromDBName(currentDataset).getByDocumentId(id).map {
+      case Tag(id, _, label) =>
+        Json.obj("id" -> id, "label" -> label)
+    }
+    Ok(Json.toJson(tags)).as("application/json")
   }
 
   /**
