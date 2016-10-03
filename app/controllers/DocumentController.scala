@@ -63,6 +63,10 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
     Ok(Json.toJson(terms)).as("application/json")
   }
 
+  def getTagLabels() = Action { implicit request =>
+    Ok(Json.obj("labels" -> Json.toJson(Tag.fromDBName(currentDataset).getDistinctLabels()))).as("application/json")
+  }
+
   def addTag(id: Int, label: String) = Action { implicit request =>
     Ok(Json.obj("id" -> Tag.fromDBName(currentDataset).add(id, label).id)).as("application/json")
   }

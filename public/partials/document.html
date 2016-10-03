@@ -35,12 +35,20 @@
                                 ng-init="initTags(doc)"
                                 ng-model="tags[doc.id]"
                                 md-transform-chip="transformTag($chip)"
-                                placeholder="Enter a tag"
+                                md-autocomplete-snap
                                 delete-button-label="Remove Tag"
                                 delete-hint="Press delete to remove tag"
                                 secondary-placeholder="+Tag"
                                 md-on-add="addTag($chip, doc)"
                                 md-on-remove="removeTag($chip)">
+                            <md-autocomplete
+                                    placeholder="Enter a tag"
+                                    md-search-text="searchText"
+                                    md-items="label in querySearch(doc, searchText)"
+                                    md-item-text="label">
+                                <span md-highlight-text="searchText">{{label}}</span>
+                            </md-autocomplete>
+
                             <md-chip-template>
                                 {{ $chip.label }}
                             </md-chip-template>

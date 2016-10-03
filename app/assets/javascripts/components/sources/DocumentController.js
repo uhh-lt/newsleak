@@ -68,6 +68,8 @@ define([
                     // Maps from doc id to list of tags
                     $scope.tags = {};
 
+
+                    self.labels = [];
                     self.numKeywords = 15;
 
                     $scope.removeTab = function (tab) {
@@ -80,6 +82,13 @@ define([
                     // Remove all open documents when reset is issued, but keep
                     // old bindings to the array.
                     $scope.observer.subscribeReset(function() { $scope.tabs.length = 0; });
+
+
+                    init();
+
+                    function init() {
+                        updateTagLabels();
+                    }
 
 
                     /**
@@ -130,6 +139,14 @@ define([
                         };
                     };
 
+                    function updateTagLabels() {
+                        self.labels = [];
+                        // Fetch all available document labels for auto-complete
+                        playRoutes.controllers.DocumentController.getTagLabels().get().then(function(response) {
+                            response.data.labels.forEach(function(l) { self.labels.push(l); });
+                        });
+                    }
+
                     $scope.initTags = function(doc) {
                         $scope.tags[doc.id] = [];
                         playRoutes.controllers.DocumentController.getTagsByDocId(doc.id).get().then(function(response) {
@@ -142,13 +159,32 @@ define([
                     $scope.addTag = function(tag, doc) {
                         playRoutes.controllers.DocumentController.addTag(doc.id, tag.label).get().then(function(response) {
                             // Update the id for the tag
-                            _.extend(_.findWhere($scope.tags[doc.id], { label: tag.label }, { id: response.data.id } ));
+                            _.extend(_.findWhere($scope.tags[doc.id], { label: tag.label }), { id: response.data.id } );
+                            // Update labels
+                            updateTagLabels();
                         });
                     };
 
                     $scope.removeTag = function(tag) {
-                        playRoutes.controllers.DocumentController.removeTagById(tag.id).get().then(function(response) { });
+                        playRoutes.controllers.DocumentController.removeTagById(tag.id).get().then(function(response) {
+                            // Update labels
+                            updateTagLabels();
+                        });
                     };
+
+
+                    $scope.querySearch = function(doc, query) {
+                        var results = query ? self.labels.filter(createFilterFor(query)) : [];
+                        return results;
+                    };
+
+
+                    function createFilterFor(query) {
+                        var lowercaseQuery = angular.lowercase(query);
+                        return function filterFn(label) {
+                            return (label.toLowerCase().indexOf(lowercaseQuery) === 0);
+                        };
+                    }
                 }
             ]);
 });
