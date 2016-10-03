@@ -34,7 +34,7 @@
                         <md-chips
                                 ng-init="initTags(doc)"
                                 ng-model="tags[doc.id]"
-                                md-transform-chip="transformTag($chip)"
+                                md-transform-chip="transformTag($chip, doc)"
                                 md-autocomplete-snap
                                 delete-button-label="Remove Tag"
                                 delete-hint="Press delete to remove tag"

@@ -128,15 +128,16 @@ define([
                         return terms;
                     };
 
-                    $scope.transformTag = function(tag) {
+                    $scope.transformTag = function(tag, doc) {
                         // If it is an object, it's already a known tag
                         if (angular.isObject(tag)) {
                             return tag;
                         }
-                        // Otherwise create new
-                        return {
-                            label: tag
-                        };
+                        // Otherwise try to create new tag
+                        $scope.addTag({ label: tag }, doc);
+                        // Prevent the chip from being added. We add it with an id in
+                        // the addTag method above.
+                        return null;
                     };
 
                     function updateTagLabels() {
@@ -157,9 +158,14 @@ define([
                     };
 
                     $scope.addTag = function(tag, doc) {
+                        // Do not add tag if already present
+                        var match = _.findWhere($scope.tags[doc.id], { label: tag.label });
+                        if(match) {
+                            return;
+                        }
+
                         playRoutes.controllers.DocumentController.addTag(doc.id, tag.label).get().then(function(response) {
-                            // Update the id for the tag
-                            _.extend(_.findWhere($scope.tags[doc.id], { label: tag.label }), { id: response.data.id } );
+                            $scope.tags[doc.id].push({ id: response.data.id , label: tag.label });
                             // Update labels
                             updateTagLabels();
                         });
