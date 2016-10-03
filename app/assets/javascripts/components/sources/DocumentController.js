@@ -178,13 +178,11 @@ define([
                         });
                     };
 
-
                     $scope.querySearch = function(doc, query) {
                         var results = query ? self.labels.filter(createFilterFor(query)) : [];
                         return results;
                     };
-
-
+                    
                     function createFilterFor(query) {
                         var lowercaseQuery = angular.lowercase(query);
                         return function filterFn(label) {
