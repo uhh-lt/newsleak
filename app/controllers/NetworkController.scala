@@ -18,7 +18,11 @@ package controllers
 
 import javax.inject.Inject
 
-import controllers.network.NSession
+import controllers.network._
+import play.api.Logger
+import play.api.libs.json.Writes
+
+import scala.collection.mutable
 // to read files
 
 // scalastyle:off
@@ -45,7 +49,7 @@ class NetworkController @Inject extends Controller {
 
   // TODO: fetch entity types from backend API
 
-  var NSessionMap: mutable.HashMap[String, NSession] = new mutable.HashMap[String, NSession]()
+  var NSessionMap: mutable.HashMap[String, GraphGuidance] = new mutable.HashMap[String, GraphGuidance]()
 
   /**
    * the strings for different types
@@ -357,15 +361,41 @@ class NetworkController @Inject extends Controller {
    * @param edgeAmount Gesamtanzahl der Kanten im Subgraph
    * @param epn maximale Anzahl der Kanten pro Knoten
    * @param uiString User Interesse an verschiedenen Kantentypen (als String gespeicherte Matrix die mit , und ; getrennt ist=
-   * @param useOldEdges true: alte DoI fliessen in Berechnung der neuen DoI-Werte ein
+   * @param useOldEdges true: alte DoI-Werte fliessen in Berechnung der neuen DoI-Werte ein
    * @param sessionId SessionId
    * @return sendet den gebildeten Supgraph in Form von Kanten+Knoten an den Benutzer
    */
-  def getGuidanceNodes(focusId: Long, edgeAmount: Int, epn: Int, uiString: String, useOldEdges: Boolean, sessionId: String) = Action {
+  def getGuidanceNodes(focusId: Long, edgeAmount: Int, epn: Int, uiString: String, useOldEdges: Boolean, prefferedNodes: List[Long], sessionId: String) = Action {
 
     val uiMatrix: Array[Array[Int]] = uiString.split(";").map(_.split(",").map(_.toInt))
-    val ns = NSessionMap.getOrElseUpdate(sessionId, new NSession)
-    Ok(Json.toJson(ns.getGuidanceNodes(focusId, edgeAmount, epn, uiMatrix, useOldEdges))).as("application/json")
+    implicit val gg = NSessionMap.getOrElseUpdate(sessionId, new GraphGuidance)
+    val (e, n) = gg.getGuidance(focusId, edgeAmount, epn, uiMatrix, useOldEdges, prefferedNodes).take(edgeAmount).toList.unzip
+    val result = new JsObject(Map(("nodes", Json.toJson(n.flatten /*entfernt die leeren Options*/ ++ NodeFactory.createNodes(List(focusId), 0, 0))), ("links", Json.toJson(e))))
+    Logger.info(result.toString())
+    Ok(result).as("application/json")
+  }
+
+  implicit val NodeWrite = new Writes[Node] {
+    override def writes(n: Node) = Json.obj(
+      "id" -> n.getId,
+      "name" -> n.getName,
+      "docOcc" -> n.getDocOcc,
+      "type" -> n.getCategory,
+      "edges" -> n.getRelevantNodes.map(rn => Json.obj(
+        "id" -> rn.getId,
+        "name" -> rn.getName
+      )).toList
+    )
+  }
+
+  implicit val EdgeWrite = new Writes[Edge] {
+    def writes(e: Edge) = Json.obj(
+      "id" -> 0,
+      "sourceNode" -> e.getNodes._1.getId,
+      "targetNode" -> e.getNodes._2.getId,
+      "docOcc" -> e.getDocOcc,
+      "uiLevel" -> e.getUiLevel
+    )
   }
 
 }

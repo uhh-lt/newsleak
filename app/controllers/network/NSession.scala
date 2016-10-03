@@ -1,4 +1,5 @@
 // scalastyle:off
+/*
 package controllers.network
 
 import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
@@ -176,3 +177,4 @@ class NSession {
 
 }
 
+*/ 

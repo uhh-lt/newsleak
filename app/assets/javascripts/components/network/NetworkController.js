@@ -115,7 +115,6 @@ define([
             $scope.maxEdgeWidth  = 10;
 
             function fireEvent_updateDocs() {
-                console.log(selectedNodes);
                 $scope.$emit('updateDocs-up', selectedNodes.map(function(n){
                     return n.id
                 }));
@@ -128,7 +127,7 @@ define([
             $scope.$on('startGuidance-down', function(event, arg) {
                 console.log("received event startGuidance");
                 console.log(arg);
-                getGuidanceNodes(arg,false)});
+                getGuidanceNodes(arg,false,false)});
 
             var selectedNodes = new Array();
             $scope.selectedNodes = selectedNodes;
@@ -847,7 +846,7 @@ define([
                                 return size+'px';
                             });
 
-                    node.select('circle').style('stroke',function (d) {//console.log(d.name + " " + d.isFocusNode);
+                    node.select('circle').style('stroke',function (d) { console.log(d.name + " " + d.isFocusNode);
                         if (d.isFocusNode) {return focusColor} else {return neutralNodeColor}});
 
 
@@ -874,7 +873,7 @@ define([
                         .on('click', function(d)//Wenn der Plus-Button gedrückt wird
                                                 {
                                                     console.log("button clicked");
-                                                    getGuidanceNodes(d.id)
+                                                    getGuidanceNodes(d.id,true,true)
                                                     //$scope.observer.addItem({type: 'entity', data: {id: d.id, name: d.name, type: d.type}});
                                                 })
                         .append('span')
@@ -955,7 +954,8 @@ define([
                              '</span> (id: '+d.id+') ' + (d.isFocusNode? 'is the focus node ':'') + 'has the type <span class="tooltipImportantText">'
                              + d.type + '</span> and occurs in <span class="tooltipImportantText">'
                              + d.freq + "</span>" + ' documents '
-                             + d.relEdges
+                             + d.relEdges.map(function (e) {return e.name})
+
                         // '<span class="tooltipImportantText">' + d.name +
                         //     '</span> has the type <span class="tooltipImportantText">'
                         //     + d.type + '</span> and is <span class="tooltipImportantText">'
@@ -1703,7 +1703,7 @@ define([
 
             function getEntities() {
                 console.log("reload entities");
-                getGuidanceNodes(135603)//Darmstadt!
+                getGuidanceNodes(135603,false,false)//Darmstadt!
                 // var entities = [];
                 // angular.forEach($scope.entityFilters, function(item) {
                 //     entities.push(item.data.id);
@@ -1840,15 +1840,18 @@ define([
                 )
             }
 
-            function getGuidanceNodes(focusNodeId,useOldEdges){
+            function getGuidanceNodes(focusNodeId,usePrefferedNodes,useOldEdges){
                 var uiStr= "";
                 for (var i=0;i<toolShareService.UIitems.length;i++){
                     uiStr+=toolShareService.UIitems[i].toString()+';';
                 }
-                useOldEdges = typeof useOldEdges !== 'undefined' ? useOldEdges : true;
-
-
-                playRoutes.controllers.NetworkController.getGuidanceNodes(focusNodeId, toolShareService.sliderEdgeAmount(), toolShareService.sliderEdgesPerNode(), uiStr,useOldEdges, sessionid).get().then(function(response) {
+                console.log(prefferedNodes);
+                var prefferedNodes = [];
+                if (usePrefferedNodes){
+                    prefferedNodes = nodes.filter(function(element, index, array){return element.id === focusNodeId;})[0]
+                        .relEdges.map(function (e) {return e.id});
+                }
+                playRoutes.controllers.NetworkController.getGuidanceNodes(focusNodeId, toolShareService.sliderEdgeAmount(), toolShareService.sliderEdgesPerNode(), uiStr, useOldEdges, prefferedNodes, sessionid).get().then(function(response) {
 
                     //to prevent invisible selections
                     unselectNodes();
@@ -1871,7 +1874,7 @@ define([
 
                             nodes.push({
                                 id: v.id,
-                                isFocusNode: v[0]==focusNodeId,
+                                isFocusNode: v.id==focusNodeId,
                                 name: v.name,
                                 freq: v.docOcc,
                                 type: v.type,

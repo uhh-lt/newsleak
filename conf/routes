@@ -21,7 +21,7 @@ GET    /docsByDate           	controllers.DocumentController.getDocsByDate(date:
 GET    /getDocsForMonth         controllers.DocumentController.getDocsForMonth(year: Int, month: Int, startIndex: Int, offset: Int ?= 0)
 GET    /getDocsForYearRange     controllers.DocumentController.getDocsForYearRange(fromYear: Int, toYear: Int, startIndex: Int, offset: Int ?= 0)
 
-GET    /getGuidanceNodes        controllers.NetworkController.getGuidanceNodes(focusId: Long, edgeAmount: Int, epn:Int, uiString: String, useOldEdges: Boolean, sessionId: String)
+GET    /getGuidanceNodes        controllers.NetworkController.getGuidanceNodes(focusId: Long, edgeAmount: Int, epn:Int, uiString: String, useOldEdges: Boolean, prefferedNodes: List[Long], sessionId: String)
 
 GET    /getGraphData         	controllers.NetworkController.getGraphData(leastOrMostFrequent: Int, amount: List[Int], minEdgeFreq: Int, maxEdgeFreq: Int)
 GET    /getRelations           controllers.NetworkController.getRelations(entities: List[Long], minEdgeFreq: Int, maxEdgeFreq: Int)

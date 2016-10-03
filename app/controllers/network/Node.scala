@@ -13,12 +13,39 @@ import scala.math.Ordering
 /**
  * Created by martin on 17.09.16.
  */
-class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: String, var iter: Int) {
+
+object NodeFactory {
   implicit val session = AutoSession
 
-  var connectedEdges = 0
+  /**
+   * @param nodeIds Liste von Entitaeten-Ids
+   * @param distToFocus Distanz zum Fokus-Knoten
+   * @param iter gibt an wie viele Guidance Schritte schon absolviert wurden
+   * @return Liste von Nodes
+   */
+  def createNodes(nodeIds: List[Long], distToFocus: Int, iter: Int)(implicit context: GraphGuidance): List[Node] = {
+    sql"""SELECT id, name, type, dococc FROM entity_ext WHERE id IN (${nodeIds}) AND dococc IS NOT NULL"""
+      .map(rs => (new Node(rs.long(1), rs.string(2), rs.int(4), distToFocus, rs.string(3), iter))).list.apply
+  }
+}
+
+class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: String, var iter: Int)(implicit context: GraphGuidance) {
+  implicit val session = AutoSession
+
+  val numberOfRelEdges = 4
   val newEdgesPerIter = 100
-  lazy val relevantEdges = {
+
+  var connectedEdges = 0
+
+  lazy val relevantNodes = {
+    val ggIter = context.getCopyGuidance(id, true)
+    // val ggIter = gg.getGuidance(id, context.edgeAmount, context.epn, context.uiMatrix, false, List())
+    ggIter.take(context.edgeAmount).filter(t =>
+      !(t._2.isEmpty || context.usedNodes.contains(t._2.get.getId))
+    // !(context.edges.contains(t._1.getNodes) || context.edges.contains(t._1.getNodes.swap))
+    ).take(numberOfRelEdges).map(_._2.get)
+
+    /*
     var pq = mutable.PriorityQueue[Edge]()(Ordering.by[Edge, Double](_.getDoi))
     val nodeBuckets = FacetedSearch.aggregateEntities(Facets(List(), Map(), List(id), None, None), newEdgesPerIter, List(), 1).buckets
     val edgeFreqTuple: Map[Long, Int] = nodeBuckets.collect { case NodeBucket(nid, docOccurrence) => (nid.toLong, docOccurrence.toInt) }.filter(_._1 != id)
@@ -43,7 +70,8 @@ class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: Str
       }
     }
 
-    pqIter.take(3).toList
+    pqIter.take(numberOfRelEdges).toList
+    */
   }
 
   def getId: Long = {
@@ -91,7 +119,22 @@ class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: Str
     "(Name: " + name + ")"
   }
 
-  def getRelevantEdges: List[Edge] = {
-    relevantEdges
+  def getRelevantNodes: Iterator[Node] = {
+    relevantNodes
   }
+
+  /*
+  // scalastyle:off
+  def ==(that: Node): Boolean = {
+    id == that.getId
+  }
+
+  def !=(that: Node): Boolean = {
+    id != that.getId
+  }
+  */
+  def copy: Node = {
+    new Node(id, name, docOcc, distance, category, iter)
+  }
+
 }

@@ -57,10 +57,27 @@ class Edge(n1: Node, n2: Node, docOcc: Int, uiLevel: Int, oldDoi: Double) {
     uiLevel
   }
 
+  def getDist: Int = {
+    dist
+  }
+  /*
+  def getPref: Int = {
+    if (prefferedNodes.exists(l => this.getNodes._1.getId == l || this.getNodes._2.getId == l)) {
+      -this.getDist
+    } else {
+      -10000
+    }
+  }
+*/
   def toString(showNodes: Boolean = false): String = {
-    (if (showNodes) { n1.toString + n2.toString } else { "" }) + "doi: " + doi + doiDebugString
+    (if (showNodes) { n1.toString + n2.toString } else { "" }) + "doi: " + doi + doiDebugString + " pref:" // + getPref +
+    // "list:" + prefferedNodes + "n1:" + n1.getId + "n2:" + n2.getId
   }
 
   override def toString: String = toString(false)
+
+  def copy: Edge = {
+    new Edge(n1.copy, n2.copy, docOcc, uiLevel, oldDoi)
+  }
 
 }
