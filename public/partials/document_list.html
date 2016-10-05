@@ -17,6 +17,24 @@
 
 <div style="padding: 15px;" id="documents-view">
 <p style="font-size:16px">Document Overview</p>
+    <md-autocomplete
+            md-no-cache
+            md-selected-item="selectedItem"
+            md-search-text="searchText"
+            md-items="label in querySearch(searchText)"
+            md-item-text="label"
+            md-min-length="0"
+            placeholder="Search for documents by tag">
+        <md-item-template>
+            <span md-highlight-text="searchText" md-highlight-flags="^i">{{ label }}</span>
+        </md-item-template>
+        <md-not-found>
+            No tags matching "{{ searchText }}" were found.
+            <a>Create a new one!</a>
+        </md-not-found>
+    </md-autocomplete>
+
+
     <p ng-show="hits > 0">Hits: {{hits}} out of {{sourceShared.documentsInDB}}</p>
     <div class="btn btn-default load-more-button" ng-show="false" ng-click="loadMore()">
         Load more documents

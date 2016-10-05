@@ -67,9 +67,9 @@ define([
 
                     // Maps from doc id to list of tags
                     $scope.tags = {};
+                    $scope.labels = $scope.sourceShared.labels;
 
 
-                    self.labels = [];
                     self.numKeywords = 15;
 
                     $scope.removeTab = function (tab) {
@@ -141,10 +141,10 @@ define([
                     };
 
                     function updateTagLabels() {
-                        self.labels = [];
+                        $scope.labels.length = 0;
                         // Fetch all available document labels for auto-complete
                         playRoutes.controllers.DocumentController.getTagLabels().get().then(function(response) {
-                            response.data.labels.forEach(function(l) { self.labels.push(l); });
+                            response.data.labels.forEach(function(l) { $scope.labels.push(l); });
                         });
                     }
 
@@ -179,10 +179,10 @@ define([
                     };
 
                     $scope.querySearch = function(doc, query) {
-                        var results = query ? self.labels.filter(createFilterFor(query)) : [];
+                        var results = query ? $scope.labels.filter(createFilterFor(query)) : [];
                         return results;
                     };
-                    
+
                     function createFilterFor(query) {
                         var lowercaseQuery = angular.lowercase(query);
                         return function filterFn(label) {

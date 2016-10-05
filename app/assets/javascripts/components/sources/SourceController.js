@@ -32,9 +32,6 @@ define([
             [
                 '$scope',
                 '$http',
-                '$compile',
-                '$templateRequest',
-                '$sce',
                 '$timeout',
                 'playRoutes',
                 '_',
@@ -45,9 +42,6 @@ define([
                 'ObserverService',
                 function ($scope,
                           $http,
-                          $compile,
-                          $templateRequest,
-                          $sce,
                           $timeout,
                           playRoutes,
                           _,
@@ -56,6 +50,7 @@ define([
                           graphPropertiesShareService,
                           uiShareService,
                           ObserverService) {
+
                     $scope.sourceShared = sourceShareService;
                     $scope.highlightShared = highlightShareService;
                     $scope.uiShareService = uiShareService;
@@ -72,6 +67,8 @@ define([
                         isOpen: [],
                         promises: []
                     };
+
+                    $scope.labels = $scope.sourceShared.labels;
 
                     $scope.observer = ObserverService;
 
@@ -217,10 +214,23 @@ define([
                         return index != -1;
                     };
 
+
+                    $scope.querySearch = function(query) {
+                        var result = query ? $scope.labels.filter(createFilterFor(query)) : $scope.labels;
+                        return result;
+                    };
+
+                    function createFilterFor(query) {
+                        var lowercaseQuery = angular.lowercase(query);
+                        return function filterFn(label) {
+                            return (label.toLowerCase().indexOf(lowercaseQuery) === 0);
+                        };
+                    }
+
                     /**
                      * This function provides autocomplete behaviour for the tags
                      */
-                    $scope.autocomplete = function (query) {
+                    /*$scope.autocomplete = function (query) {
                         // filter tags, only show those that contain query
                         $scope.searchTags = [];
                         $("#autocomplete").css('z-index', '1000');
@@ -256,9 +266,9 @@ define([
 
                     $scope.resetAutoComplete = function () {
                         $scope.searchQuery = "";
-                    };
+                    };*/
 
-                    $scope.addFilter = function (item) {
+                    /*$scope.addFilter = function (item) {
                         $scope.observer.addItem({
                             type: 'entity',
                             data: {
@@ -271,7 +281,7 @@ define([
                         console.log("Added filter");
                         $("#autocomplete").css('z-index', '-1');
                         $scope.searchTags = [];
-                    };
+                    };*/
 
                     $(".docs-ul").on('scroll', function () {
                         if (!$scope.docsLoading) {

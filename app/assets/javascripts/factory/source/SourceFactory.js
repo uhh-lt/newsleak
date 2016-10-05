@@ -25,6 +25,8 @@ define([
             var sourceShareService = {
                 documentList: [],
                 documentsInDB: -1,
+                // Distinct document labels
+                labels: [],
                 tabs: [],
                 reset: function () {
                     this.documentList = [];
