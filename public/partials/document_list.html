@@ -16,12 +16,13 @@
   -->
 
 <div style="padding: 15px;" id="documents-view">
-<p style="font-size:16px">Document Overview</p>
+<p style="font-size:16px">Document Overview: <span ng-show="hits > 0"> <b>{{hits}}</b> hits out of <b>{{sourceShared.documentsInDB}}</b> docs</span> </p>
     <md-autocomplete
             md-no-cache
             md-selected-item="selectedItem"
             md-search-text="searchText"
             md-items="label in querySearch(searchText)"
+            md-selected-item-change="selectedTagChange(label)"
             md-item-text="label"
             md-min-length="0"
             placeholder="Search for documents by tag">
@@ -34,8 +35,8 @@
         </md-not-found>
     </md-autocomplete>
 
-
-    <p ng-show="hits > 0">Hits: {{hits}} out of {{sourceShared.documentsInDB}}</p>
+    <p></p>
+    <!--<p ng-show="hits > 0">Hits: {{hits}} out of {{sourceShared.documentsInDB}}</p>-->
     <div class="btn btn-default load-more-button" ng-show="false" ng-click="loadMore()">
         Load more documents
         <i class="glyphicon glyphicon-repeat"></i>
@@ -69,9 +70,8 @@
                 </a>
             </li>
         </ul>
-        <div class="alert alert-info" ng-show="iteratorEmpty">
-            <p>All matching Documents loaded!</p>
-        </div>
+        <!-- Show toast when no documents in the iterator and the doc list is not empty -->
+        <span ng-init="showAllLoaded()" ng-if="iteratorEmpty && hits > 0"></span>
     </div>
 
     <div class="docs-loading" ng-show="showLoading"><span>Loading ...</span></div>

@@ -54,6 +54,25 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
     Ok(Json.toJson(docSearch.getById(id).map(doc => (doc.id, doc.created.toString(), doc.content)))).as("application/json")
   }
 
+  def getDocsByLabel(label: String) = Action { implicit request =>
+    val docIds = Tag.fromDBName(currentDataset).getByLabel(label).map { case Tag(_, docId, _) => docId }
+
+    if (docIds.nonEmpty) {
+      // TODO: Duplicate in getDocs ...
+      val docSearch = Document.fromDBName(currentDataset)
+
+      val metadataTriple = docSearch.getMetadataForDocuments(docIds, metadataKeys)
+      val response = metadataTriple
+        .groupBy(_._1)
+        .map { case (id, inner) => id -> inner.map(doc => Json.obj("key" -> doc._2, "val" -> doc._3)) }
+        .map(x => Json.obj("id" -> x._1, "metadata" -> Json.toJson(x._2)))
+
+      Ok(Json.toJson(Json.obj("hits" -> docIds.length, "docs" -> Json.toJson(response)))).as("application/json")
+    } else {
+      Ok(Json.toJson(Json.obj("hits" -> 0, "docs" -> List[JsObject]()))).as("application/json")
+    }
+  }
+
   // TODO: Extend ES API and remove KeyTerm API
   def getKeywordsById(id: Int, size: Int) = Action { implicit request =>
     val terms = KeyTerm.fromDBName(currentDataset).getDocumentKeyTerms(id, Some(size)).map {

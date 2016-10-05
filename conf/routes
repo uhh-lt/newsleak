@@ -16,6 +16,7 @@ GET         /                                                controllers.Applica
 
 GET    /changeDataset           controllers.Application.changeDataset(name: String)
 GET    /docById           		controllers.DocumentController.getDocById(id: Int)
+GET    /getDocsByLabel          controllers.DocumentController.getDocsByLabel(label: String)
 GET    /getLabels           	controllers.DocumentController.getTagLabels()
 GET    /addTag           		controllers.DocumentController.addTag(id: Int, label: String)
 GET    /removeTag           	controllers.DocumentController.removeTagById(tagId: Int)
