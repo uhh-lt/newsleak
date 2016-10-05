@@ -369,8 +369,8 @@ class NetworkController @Inject extends Controller {
 
     val uiMatrix: Array[Array[Int]] = uiString.split(";").map(_.split(",").map(_.toInt))
     implicit val gg = NSessionMap.getOrElseUpdate(sessionId, new GraphGuidance)
-    val (e, n) = gg.getGuidance(focusId, edgeAmount, epn, uiMatrix, useOldEdges, prefferedNodes).take(edgeAmount).toList.unzip
-    val result = new JsObject(Map(("nodes", Json.toJson(n.flatten /*entfernt die leeren Options*/ ++ NodeFactory.createNodes(List(focusId), 0, 0))), ("links", Json.toJson(e))))
+    val (edges, nodes) = gg.getGuidance(focusId, edgeAmount, epn, uiMatrix, useOldEdges, prefferedNodes).take(edgeAmount).toList.unzip
+    val result = new JsObject(Map(("nodes", Json.toJson(nodes.flatten /*entfernt die leeren Options*/ ++ NodeFactory.createNodes(List(focusId), 0, 0))), ("links", Json.toJson(edges))))
     Logger.info(result.toString())
     Ok(result).as("application/json")
   }

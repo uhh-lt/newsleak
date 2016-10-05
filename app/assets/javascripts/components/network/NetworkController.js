@@ -1857,6 +1857,13 @@ define([
                     unselectNodes();
                     unselectEdges();
 
+                    //Object, welches alle alten KnotenId als Schlüssel enthält mit xy-Koordinaten als Wert (=HashMap)
+                    var oldNodes = nodes.reduce(function(o, node, index) {
+                        o[node.id] = {x: node.x, y: node.y};
+                        return o;
+                    }, {});
+                    console.log(oldNodes);
+
                     //delete all nodes and edges
                     nodes = [];
                     edges = [];
@@ -1872,6 +1879,7 @@ define([
                              return;
                              }*/
 
+                            var fixedPos = oldNodes.hasOwnProperty(v.id);//Soll der Knoten die Position halten?
                             nodes.push({
                                 id: v.id,
                                 isFocusNode: v.id==focusNodeId,
@@ -1880,14 +1888,17 @@ define([
                                 type: v.type,
                                 relEdges: v.edges,
                                 docCount: -1,
-                                size: 2
+                                size: 2,
+                                fixed: fixedPos,
+                                x: fixedPos ? oldNodes[v.id].x : undefined,
+                                y: fixedPos ? oldNodes[v.id].y : undefined
                             });
 
-                            force.links(edges);
-                            //calculateNewForceSize();
-                            start();
+                            // force.links(edges);
+                            // calculateNewForceSize();
+                            // start();
                         });
-
+                    console.log(nodes);
                     response.data.links.forEach(
                         function(v)
                         {
@@ -1897,11 +1908,18 @@ define([
                             {
                                 return;
                             }
-                            edges.push({id: edges.length, source: sourceNode, target: targetNode, freq: v.docOcc, uiLevel: v.uiLevel});
+                            if(sourceNode.id > targetNode.id){//sourceNodes haben immer die kleinere Id. Das ist notwendig, damit Kanten korrekt neugezeichnet werden
+                                var tempNode = sourceNode;
+                                sourceNode = targetNode;
+                                targetNode = tempNode
+                            }
+                            edges.push({id: sourceNode.id+"-"+targetNode.id, source: sourceNode, target: targetNode, freq: v.docOcc, uiLevel: v.uiLevel});
                         });
 
                     //reload();
+
                     force.nodes(nodes);
+                    force.links(edges);
                     //calculateNewForceSize();
 
                     start();
