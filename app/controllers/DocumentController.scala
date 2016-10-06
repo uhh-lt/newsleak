@@ -19,10 +19,10 @@ package controllers
 
 import javax.inject.Inject
 
+import model.faceted.search.{ FacetedSearch, Facets }
 import model.{ Document, KeyTerm, Tag }
-import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket }
-import play.api.libs.json.{ JsObject, Json }
-import play.api.mvc.{ Action, Controller }
+import play.api.libs.json.{ JsObject, JsValue, Json }
+import play.api.mvc.{ Action, AnyContent, Controller, Request }
 import util.SessionUtils.currentDataset
 import util.TimeRangeParser
 
@@ -40,6 +40,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
 
   private val defaultPageSize = 50
   private val defaultFacets = Facets.emptyFacets
+  // TODO: request is not available here
   private val (numberOfDocuments, documentIterator) = FacetedSearch.fromIndexName("cable").searchDocuments(defaultFacets, defaultPageSize)
   private val defaultSession = IteratorSession(numberOfDocuments, documentIterator, defaultFacets.hashCode())
   private val metadataKeys = List("Subject", "Origin", "SignedBy", "Classification")
@@ -56,21 +57,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
 
   def getDocsByLabel(label: String) = Action { implicit request =>
     val docIds = Tag.fromDBName(currentDataset).getByLabel(label).map { case Tag(_, docId, _) => docId }
-
-    if (docIds.nonEmpty) {
-      // TODO: Duplicate in getDocs ...
-      val docSearch = Document.fromDBName(currentDataset)
-
-      val metadataTriple = docSearch.getMetadataForDocuments(docIds, metadataKeys)
-      val response = metadataTriple
-        .groupBy(_._1)
-        .map { case (id, inner) => id -> inner.map(doc => Json.obj("key" -> doc._2, "val" -> doc._3)) }
-        .map(x => Json.obj("id" -> x._1, "metadata" -> Json.toJson(x._2)))
-
-      Ok(Json.toJson(Json.obj("hits" -> docIds.length, "docs" -> Json.toJson(response)))).as("application/json")
-    } else {
-      Ok(Json.toJson(Json.obj("hits" -> 0, "docs" -> List[JsObject]()))).as("application/json")
-    }
+    Ok(createJsonReponse(docIds, docIds.length))
   }
 
   // TODO: Extend ES API and remove KeyTerm API
@@ -97,8 +84,8 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
 
   def getTagsByDocId(id: Int) = Action { implicit request =>
     val tags = Tag.fromDBName(currentDataset).getByDocumentId(id).map {
-      case Tag(id, _, label) =>
-        Json.obj("id" -> id, "label" -> label)
+      case Tag(tagId, _, label) =>
+        Json.obj("id" -> tagId, "label" -> label)
     }
     Ok(Json.toJson(tags)).as("application/json")
   }
@@ -136,10 +123,16 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
       docIds ::= iteratorSession.hitIterator.next()
       pageCounter += 1
     }
-    if (docIds.size < 50) {
+
+    if (docIds.size < defaultPageSize) {
       val newIteratorSession = IteratorSession(iteratorSession.hits, iteratorSession.hitIterator, -1)
       cache.set(uid, newIteratorSession)
     }
+
+    Ok(createJsonReponse(docIds, iteratorSession.hits))
+  }
+
+  def createJsonReponse(docIds: List[Long], hits: Long)(implicit request: Request[AnyContent]): JsValue = {
     if (docIds.nonEmpty) {
       val docSearch = Document.fromDBName(currentDataset)
 
@@ -149,10 +142,9 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
         .map { case (id, inner) => id -> inner.map(doc => Json.obj("key" -> doc._2, "val" -> doc._3)) }
         .map(x => Json.obj("id" -> x._1, "metadata" -> Json.toJson(x._2)))
 
-      Ok(Json.toJson(Json.obj("hits" -> iteratorSession.hits, "docs" -> Json.toJson(response)))).as("application/json")
+      Json.toJson(Json.obj("hits" -> hits, "docs" -> Json.toJson(response)))
     } else {
-      // No documents found for given facets
-      Ok(Json.toJson(Json.obj("hits" -> 0, "docs" -> List[JsObject]()))).as("application/json")
+      Json.toJson(Json.obj("hits" -> 0, "docs" -> List[JsObject]()))
     }
   }
 }

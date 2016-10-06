@@ -70,7 +70,9 @@
 				deps: ['angular', 'screenfull']
 			},
 			'angular': {
-				exports: 'angular'
+				exports: 'angular',
+				// Force angular to use jquery instead of jqLite library, which provides only a small subset of features
+				deps: ['jquery']
 			},
 			'awesome-slider': {
 				exports: 'angular',
