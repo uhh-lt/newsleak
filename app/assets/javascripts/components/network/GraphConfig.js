@@ -39,12 +39,13 @@ define([
             },
             maxVelocity: 146,
             solver: 'forceAtlas2Based',
+            //solver: 'barnesHut',
             stabilization: {
-                enabled: true,
+                //enabled: true,
                 fit: false,
-                iterations: 2000
-            },
-            adaptiveTimestep: true
+                iterations: 1000//20
+            }//,
+           // adaptiveTimestep: true
         })
         .constant('generalOptions', {
                 nodes : {
@@ -75,7 +76,7 @@ define([
                 },
                 interaction: {
                     tooltipDelay: 200,
-                    hover: true,
+                    //hover: true,
                     hideEdgesOnDrag: true,
                     navigationButtons: true,
                     keyboard: false

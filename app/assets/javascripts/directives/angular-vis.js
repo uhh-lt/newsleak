@@ -123,7 +123,6 @@ define([
                         'beforeDrawing',
                         'afterDrawing',
                         'animationFinished'
-
                     ];
 
                     var network = null;

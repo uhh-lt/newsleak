@@ -109,16 +109,17 @@ define([
             $scope.observerService.subscribeItems($scope.observer_subscribe_metadata, "metadata");
             $scope.observerService.subscribeItems($scope.observer_subscribe_entity, "entity");
 
-            $scope.graphData = {
+            /*$scope.graphData = {
                 nodes: self.nodesDataset,
                 edges: self.edgesDataset
-            };
+            };*/
 
             $scope.graphOptions = graphProperties.options;
             $scope.graphEvents = {
                 "startStabilizing": stabilizationStart,
-                "stabilized": stabilizationDone,
-                //"stabilizationIterationsDone": stabilizationDone,
+                //"stabilized": stabilizationDone,
+                "stabilized": stabilized,
+                "stabilizationIterationsDone": stabilizationDone,
                 "onload": onNetworkLoad,
                 "dragEnd": dragNodeDone,
                 "oncontext": onContext,
@@ -140,9 +141,12 @@ define([
             /* Indicates whether the network is initialized or new data is being loaded */
             $scope.loading = true;
 
+            //$scope.ready = false;
+
             $scope.$watch('edgeImportance', handleEdgeSlider);
 
             $scope.reloadGraph = function() {
+                //$scope.ready = false;
                 var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.name; });
                 var entities = $scope.entityFilters.map(function(v) { return v.data.id; });
                 var facets = $scope.observerService.getFacets();
@@ -156,7 +160,10 @@ define([
 
                 playRoutes.controllers.NetworkController.induceSubgraph(fulltext, facets, entities, $scope.observerService.getTimeRange(), fraction, []).get().then(function(response) {
                         // Enable physics for new graph data
-                        applyPhysicsOptions(self.physicOptions);
+                        console.log($scope.graphOptions['physics']);
+                        if(!_.isUndefined(self.network)) {
+                            applyPhysicsOptions(self.physicOptions);
+                        }
                         $scope.loading = true;
 
                         // Assignment from entity types to their id for coloring
@@ -180,7 +187,7 @@ define([
                                 value: n.count,
                                 group: n.group,
                                 title: title,
-                                mass: mass
+                                //mass: mass
                             };
                         });
                         self.nodes.clear();
@@ -198,9 +205,14 @@ define([
                         // Update the maximum edge importance slider value
                         $scope.maxEdgeImportance = (self.edgesDataset.length > 0) ? self.edgesDataset.max("value").value : 0;
                         console.log("" + self.nodesDataset.length + " nodes loaded");
+                        //$scope.ready = true;
+                      $scope.graphData = {
+                         nodes: self.nodesDataset,
+                         edges: self.edgesDataset
+                     };
                     });
                 // Bring graph before stabilization in current viewport
-                $timeout(function() { self.network.fit(); }, 0, false);
+               // $timeout(function() { self.network.fit(); }, 0, false);
             };
 
 
@@ -320,8 +332,13 @@ define([
                 console.log("Stabilization start with " + self.nodesDataset.length + " nodes");
             }
 
+            function stabilized(params) {
+                console.log("Stabilization done after " + JSON.stringify(params, null, 4));
+            }
+
+            //function stabilizationDone(params) {
             function stabilizationDone() {
-                console.log("Stabilization done");
+                console.log("Stabilization iteration done");
                 if(self.nodes.length == 0 && self.edges.length == 0) {
                     self.network.storePositions();
                     self.nodes = new VisDataSet(self.nodesDataset.get());
@@ -404,9 +421,9 @@ define([
                     self.nodesDataset.remove(nodesToRemove);
 
                 } else if(newValue < oldValue) {
-                    var option = self.physicOptions;
-                    option['stabilization'] = { onlyDynamicEdges: true };
-                    applyPhysicsOptions(option);
+                    //var option = self.physicOptions;
+                    //option['stabilization'] = { onlyDynamicEdges: true };
+                    //applyPhysicsOptions(option);
 
                     var edgesToAdd = self.edges.get({
                         filter: function (item) {
@@ -425,7 +442,7 @@ define([
 
                     self.edgesDataset.update(edgesToAdd);
                     self.nodesDataset.update(nodesToAdd);
-                    self.network.stabilize();
+                   // self.network.stabilize();
                 }
             }
 
