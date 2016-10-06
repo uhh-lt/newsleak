@@ -109,15 +109,9 @@ define([
             $scope.observerService.subscribeItems($scope.observer_subscribe_metadata, "metadata");
             $scope.observerService.subscribeItems($scope.observer_subscribe_entity, "entity");
 
-            /*$scope.graphData = {
-                nodes: self.nodesDataset,
-                edges: self.edgesDataset
-            };*/
-
             $scope.graphOptions = graphProperties.options;
             $scope.graphEvents = {
                 "startStabilizing": stabilizationStart,
-                //"stabilized": stabilizationDone,
                 "stabilized": stabilized,
                 "stabilizationIterationsDone": stabilizationDone,
                 "onload": onNetworkLoad,
@@ -141,8 +135,6 @@ define([
             /* Indicates whether the network is initialized or new data is being loaded */
             $scope.loading = true;
 
-            //$scope.ready = false;
-
             $scope.$watch('edgeImportance', handleEdgeSlider);
 
             $scope.reloadGraph = function() {
@@ -159,8 +151,7 @@ define([
                 ];
 
                 playRoutes.controllers.NetworkController.induceSubgraph(fulltext, facets, entities, $scope.observerService.getTimeRange(), fraction, []).get().then(function(response) {
-                        // Enable physics for new graph data
-                        console.log($scope.graphOptions['physics']);
+                        // Enable physics for new graph data when network is initialized
                         if(!_.isUndefined(self.network)) {
                             applyPhysicsOptions(self.physicOptions);
                         }
@@ -169,24 +160,24 @@ define([
                         // Assignment from entity types to their id for coloring
                         self.types = response.data.types;
 
-                        var originalMax = _.max(response.data.entities, function(n) { return n.count; }).count;
-                        var originalMin = _.min(response.data.entities, function(n) { return n.count; }).count;
+                        //var originalMax = _.max(response.data.entities, function(n) { return n.count; }).count;
+                        //var originalMin = _.min(response.data.entities, function(n) { return n.count; }).count;
 
                         var nodes = response.data.entities.map(function(n) {
                             // See css property div.network-tooltip for custom tooltip styling
                             var title = '#Doc: ' + n.count + '<br>Typ: ' + n.type;
                             // map counts to interval [1,2] for nodes mass
-                            var mass = ((n.count - originalMin) / (originalMax - originalMin)) * (2 - 1) + 1;
+                            /*var mass = ((n.count - originalMin) / (originalMax - originalMin)) * (2 - 1) + 1;
                             // If all nodes have the same occurrence assign same mass. This also prevents errors
                             // for wrong interval mappings e.g. [1,1] to [1,2] yields NaN for the mass.
-                            if(originalMin == originalMax) mass = 1;
+                            if(originalMin == originalMax) mass = 1;*/
                             return {
                                 id: n.id,
                                 label: n.label,
                                 type: n.type,
                                 value: n.count,
                                 group: n.group,
-                                title: title,
+                                title: title//,
                                 //mass: mass
                             };
                         });
@@ -205,14 +196,13 @@ define([
                         // Update the maximum edge importance slider value
                         $scope.maxEdgeImportance = (self.edgesDataset.length > 0) ? self.edgesDataset.max("value").value : 0;
                         console.log("" + self.nodesDataset.length + " nodes loaded");
-                        //$scope.ready = true;
-                      $scope.graphData = {
-                         nodes: self.nodesDataset,
-                         edges: self.edgesDataset
-                     };
+
+                        // Initialize the graph
+                        $scope.graphData = {
+                            nodes: self.nodesDataset,
+                            edges: self.edgesDataset
+                        };
                     });
-                // Bring graph before stabilization in current viewport
-               // $timeout(function() { self.network.fit(); }, 0, false);
             };
 
 
@@ -421,10 +411,6 @@ define([
                     self.nodesDataset.remove(nodesToRemove);
 
                 } else if(newValue < oldValue) {
-                    //var option = self.physicOptions;
-                    //option['stabilization'] = { onlyDynamicEdges: true };
-                    //applyPhysicsOptions(option);
-
                     var edgesToAdd = self.edges.get({
                         filter: function (item) {
                             return (item.value >= newValue && !item.hidden)
@@ -442,7 +428,6 @@ define([
 
                     self.edgesDataset.update(edgesToAdd);
                     self.nodesDataset.update(nodesToAdd);
-                   // self.network.stabilize();
                 }
             }
 

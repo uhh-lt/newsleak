@@ -39,9 +39,7 @@ define([
             },
             maxVelocity: 146,
             solver: 'forceAtlas2Based',
-            //solver: 'barnesHut',
             stabilization: {
-                //enabled: true,
                 fit: false,
                 iterations: 1000//20
             }//,
@@ -76,7 +74,7 @@ define([
                 },
                 interaction: {
                     tooltipDelay: 200,
-                    //hover: true,
+                    hover: true,
                     hideEdgesOnDrag: true,
                     navigationButtons: true,
                     keyboard: false
