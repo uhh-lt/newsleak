@@ -1,9 +1,24 @@
+<!--
+  ~ Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
 <div style="padding-left: 10px;">
 	<div style="float: left; padding-top: 10px">
 	<p style="font-size:16px; ">History Tracker</p>
-	<div class="checkbox">
-		<label><input type="checkbox" checked id="show-history" ng-model="showHistory" >Show full history</label>
-	</div>
+
 	</div>
 	<script type="text/ng-template" id="tooltip_tmpl">
 		<div ng-mouseleave="hidePopover(obj.id)" ng-mouseenter="showPopover(obj.id)">
@@ -11,12 +26,16 @@
 			<li class="list-group-item"><span>Content:</span> {{obj.data.name}}</li>
 			<li class="list-group-item" ng-if="obj.data.id && obj.data.id > -1"><span>ID#:</span> {{obj.data.id}}</li>
 			<li class="list-group-item" ng-if="obj.data.type"><span>Typ:</span> {{obj.data.type}}</li>
+			<li class="list-group-item"><span>Tracker-Type:</span> {{obj.type}}</li>
 			<li class="list-group-item"><span>Active:</span> {{obj.active}}</li>
 		</ul>
-			<button ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" type="button" class="btn btn-primary" ng-click="removeItem(obj)">Remove</button>
+
+			<button ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" type="button" class="btn btn-primary" ng-click="removeItem(obj)">
+				<i class="glyphicon type-icon glyphicon-trash" ng-class=""></i> Remove
+			</button>
 		</div>
 	</script>
-	<div class="alert alert-info" ng-show="history.length == 0" style="display: inline-block">
+	<div class="alert alert-info" ng-show="history.length == 0" style="display: inline-block; margin-bottom: 0">
 		<p>No elements in history.</p>
 	</div>
 	<ul id="historyList" class="list-group">
@@ -37,5 +56,10 @@
 			<span>{{obj.data.name}}</span>
 		</li>
 	</ul>
-
+	<div class="checkbox">
+		<button class="btn btn-small btn-primary" type="button" checked id="reset-history" ng-click="observer.reset()">Reset filters</button>
+		<button class="btn btn-small btn-primary" type="button" checked id="save-history" ng-click="saveHistory()"><i class="glyphicon glyphicon-save"></i> Save State</button>
+		<file-field class="btn btn-small btn-primary" ng-model="uploadFile" ng-click="loadHistory()"><i class="glyphicon glyphicon-open"></i> Load State</file-field>
+		<label><input type="checkbox" checked id="show-history" ng-model="showHistory" >Show full history</label>
+	</div>
 </div>

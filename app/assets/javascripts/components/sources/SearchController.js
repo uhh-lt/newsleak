@@ -1,17 +1,18 @@
 /*
- * Copyright 2016 Technische Universitaet Darmstadt
+ * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 define([
@@ -19,24 +20,15 @@ define([
 ], function (angular) {
     'use strict';
 
-    angular.module('myApp.search', ['play.routing']);
-    angular.module('myApp.search')
+    angular.module('myApp.search', [])
         .controller('SearchController',
             [
                 '$scope',
                 '$window',
-                'playRoutes',
-                'sourceShareService',
-                'graphPropertiesShareService',
                 'ObserverService',
                 function ($scope,
                           $window,
-                          playRoutes,
-                          sourceShareService,
-                          graphPropertiesShareService,
                           ObserverService) {
-
-                    $scope.sourceShared = sourceShareService;
 
                     $scope.observer = ObserverService;
 
@@ -132,27 +124,6 @@ define([
                             $scope.fulltextInput = "";
                         }
                     };
-
-
-                    /**
-                     * This function is called whenever a tag is added
-                     */
-                    $scope.addedTag = function (tagName) {
-                        console.log("added " + tagName.text);
-
-                        var idx = tagSelectShareService.tagsToUnselect.indexOf(tagName.text);
-                        if (idx > -1) {
-                            tagSelectShareService.tagsToUnselect.splice(idx, 1);
-                        }
-
-                        tagSelectShareService.tagsToSelect.push(tagName.text);
-                        tagSelectShareService.wasChanged = true;
-
-
-                    };
-
-
-
                 }
             ]);
 

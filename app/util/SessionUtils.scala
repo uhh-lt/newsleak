@@ -15,37 +15,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-define([
-    'angular',
-    'angularMoment'
-], function(angular)
-{
-	angular.module('myApp.editmodal', ['play.routing', 'angularMoment']);
-	angular.module('myApp.editmodal')
-		.controller('EditModalController',
-		[
-			'$scope',
-			'$uibModalInstance',
-			'text',
-			'type',
-			'node',
-			'graphPropertiesShareService',
-			function($scope, $uibModalInstance, text, type, node, graphPropertiesShareService)
-			{
-				var usednode = node;
-				$scope.text = text;
-				$scope.type = type;
-				$scope.types = graphPropertiesShareService.categories;
+package util
 
-				$scope.ok = function()
-				{
-					$uibModalInstance.close({text: $scope.text, type: $scope.type, node: usednode});
-				}
+import play.api.mvc.{ AnyContent, Request }
 
-				$scope.cancel = function()
-				{
-					$uibModalInstance.dismiss('cancel');
-				}
-			}
-		]);
-});
+object SessionUtils {
+
+  val datasetSessionKey = "dataset"
+  def currentDataset(implicit request: Request[AnyContent]): String = request.session.get(datasetSessionKey).get
+}

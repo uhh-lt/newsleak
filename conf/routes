@@ -6,6 +6,7 @@
 # PAGES                                                                                         #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 GET         /                                                controllers.Application.index
+GET     /changeDataset                                      controllers.Application.changeDataset(name: String)
 
 #comment for alternate index page
 #GET         /alt                                                controllers.Application.index_alt
@@ -26,7 +27,6 @@ GET    /getGuidanceNodes        controllers.NetworkController.getGuidanceNodes(f
 GET    /getGraphData         	controllers.NetworkController.getGraphData(leastOrMostFrequent: Int, amount: List[Int], minEdgeFreq: Int, maxEdgeFreq: Int)
 GET    /getRelations           controllers.NetworkController.getRelations(entities: List[Long], minEdgeFreq: Int, maxEdgeFreq: Int)
 GET     /induceSubgraph         controllers.NetworkController.induceSubgraph(fullText: List[String],generic: Map[String, List[String]],entities: List[Long],timeRange: String,size: Int,filter: List[Long])
-GET    /docsByCountry         	controllers.MapController.getDocsForCountry(countryCode: String)
 GET    /getEgoNetworkData       controllers.NetworkController.getEgoNetworkData(leastOrMostFrequent: Int, id: Long, amountOfType: List[Int], existingNodes: List[Long])
 GET    /getIdsByName            controllers.NetworkController.getIdsByName(name: String)
 GET    /deleteEntityById		controllers.NetworkController.deleteEntityById(id: Long)
@@ -37,10 +37,6 @@ GET    /getAutocomplete		controllers.SearchController.getAutocomplete(query: Str
 GET    /getEntities		controllers.EntityController.getEntities(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, size: Int, entityType: String, filter: List[Long])
 GET     /getEntityTypes controllers.EntityController.getEntityTypes
 GET    /getEntitiesByType		controllers.EntityController.getEntitiesByType(entityType: String)
-GET    /getEntitiesWithOffset		controllers.EntityController.getEntitiesWithOffset(entityType: String, offset: Int ?= 0)
-GET    /getEntitiesDocCount		controllers.EntityController.getEntitiesDocCount(entityType: String)
-GET    /getEntitiesDocCountWithOffset		controllers.EntityController.getEntitiesDocCountWithOffset(entityType: String, offset: Int ?= 0)
-GET    /getEntitiesDocCountWithFilter		controllers.EntityController.getEntitiesDocCountWithFilter(filter: List[Long])
 GET   /getMetadata     controllers.MetadataController.getMetadata(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
 GET   /getKeywords     controllers.MetadataController.getKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
 GET   /getMetadataTypes       controllers.MetadataController.getMetadataTypes

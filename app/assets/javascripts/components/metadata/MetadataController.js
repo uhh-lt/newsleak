@@ -1,63 +1,85 @@
 /*
- * Copyright 2016 Technische Universitaet Darmstadt
+ * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 define([
     'angular',
     'angularMoment',
     'jquery-json',
-    '../../factory/appData',
     'ngFileSaver'
 ], function (angular) {
     'use strict';
 
-    angular.module("myApp.metadata", ['play.routing', 'angularMoment', 'ngFileSaver', 'highcharts-ng']);
+    angular.module("myApp.metadata", ['play.routing', 'angularMoment']);
     angular.module("myApp.metadata")
         .controller('MetadataController',
             [
                 '$scope',
                 '$timeout',
                 'playRoutes',
-                'appData',
                 'metaShareService',
                 'sourceShareService',
                 'ObserverService',
-                function ($scope, $timeout, playRoutes, appData, metaShareService, sourceShareService, ObserverService) {
+                function ($scope, $timeout, playRoutes, metaShareService, sourceShareService, ObserverService) {
 
-                    $scope.frequencies = [];
-                    $scope.labels = [];
-                    $scope.ids = [];
-                    $scope.chartConfigs = [];
-                    $scope.metaCharts = [];
+
                     $scope.chartConfig = metaShareService.chartConfig;
                     $scope.observer = ObserverService;
 
-                    $scope.observer.getEntityTypes().then(function(types) {$scope.entityTypes  = types});
-                    $scope.observer.getMetadataTypes().then(function(types) {$scope.metadataTypes  = types});
 
                     /**
                      * subscribe entity and metadata filters
                      */
-                    $scope.observer_subscribe_entity = function(items) { $scope.entityFilters = items};
-                    $scope.observer_subscribe_metadata = function(items) { $scope.metadataFilters = items};
-                    $scope.observer_subscribe_fulltext = function(items) { $scope.fulltextFilters = items};
-                    $scope.observer.subscribeItems($scope.observer_subscribe_entity,"entity");
-                    $scope.observer.subscribeItems($scope.observer_subscribe_metadata,"metadata");
-                    $scope.observer.subscribeItems($scope.observer_subscribe_fulltext,"fulltext");
+                    $scope.observer_subscribe_entity = function (items) {
+                        $scope.entityFilters = items
+                    };
+                    $scope.observer_subscribe_metadata = function (items) {
+                        $scope.metadataFilters = items
+                    };
+                    $scope.observer_subscribe_fulltext = function (items) {
+                        $scope.fulltextFilters = items
+                    };
+                    $scope.observer.subscribeItems($scope.observer_subscribe_entity, "entity");
+                    $scope.observer.subscribeItems($scope.observer_subscribe_metadata, "metadata");
+                    $scope.observer.subscribeItems($scope.observer_subscribe_fulltext, "fulltext");
 
-                    $scope.clickedItem = function(category, type, key) {
+
+                    $scope.initMetadataView = function () {
+                        $scope.initialized = false;
+
+                        $scope.frequencies = [];
+                        $scope.labels = [];
+                        $scope.ids = [];
+                        $scope.chartConfigs = [];
+                        $scope.metaCharts = [];
+
+                        $scope.observer.getEntityTypes().then(function (types) {
+                            $scope.entityTypes = types
+                        });
+                        $scope.observer.getMetadataTypes().then(function (types) {
+                            $scope.metadataTypes = types
+                        });
+
+                        $scope.initEntityCharts();
+                        $scope.initMetadataCharts();
+                    };
+
+                    $scope.observer.subscribeReset($scope.initMetadataView);
+
+                    $scope.clickedItem = function (category, type, key) {
                         /*
                          $scope.filters = [];
                          $scope.filterItems.forEach(function(x) {
@@ -66,7 +88,7 @@ define([
                          $scope.filters.push($scope.ids[x][$scope.labels[x].indexOf(this.category)]);
                          */
                         var id = -1;
-                        if(type == 'entity')
+                        if (type == 'entity')
                             id = $scope.ids[key][$scope.labels[key].indexOf(category.category)];
                         $scope.observer.addItem({
                             type: type,
@@ -79,180 +101,155 @@ define([
                     };
 
                     $scope.updateEntityCharts = function () {
-                        var entities = [];
-                        angular.forEach($scope.entityFilters, function(item) {
-                            entities.push(item.data.id);
-                        });
-                        var facets = [];
-                        if($scope.metadataFilters.length > 0) {
-                            angular.forEach($scope.metadataFilters, function(metaType) {
-                                if($scope.metadataFilters[metaType].length > 0) {
-                                    var keys = [];
-                                    angular.forEach($scope.metadataFilters[metaType], function(x) {
-                                        keys.push(x.data.name);
-                                    });
-                                    facets.push({key: metaType, data: keys});
-                                }
+                        if ($scope.initialized) {
+                            var entities = [];
+                            angular.forEach($scope.entityFilters, function (item) {
+                                entities.push(item.data.id);
                             });
-                            if(facets == 0) facets = [{'key':'dummy','data': []}];
-
-                        } else {
-                            facets = [{'key':'dummy','data': []}];
-                        }
-                        var fulltext = [];
-                        angular.forEach($scope.fulltextFilters, function(item) {
-                            fulltext.push(item.data.name);
-                        });
-                        var entityType = "";
-                        angular.forEach($scope.entityTypes, function(type) {
-                            $scope.metaCharts[type].showLoading('Loading ...');
-                            var instances = $scope.ids[type];
-                            playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),50,entityType,instances).get().then(
-                                function(result) {
-                                    //result.data[type].forEach(function(x) {
-                                    //    console.log(x.key + ": " + x.count);
-                                    //});
-                                    var data = [];
-                                    angular.forEach(result.data, function(x) {
-                                        if(x.docCount <= 0)
-                                            data.push(null);
-                                        else
-                                            data.push(x.docCount);
-                                    });
-                                    var newBase = [];
-                                    $.each($scope.chartConfigs[type].series[0].data, function(index, value) {
-                                        if(data[index] == undefined)
-                                            newBase.push($scope.chartConfigs[type].series[0].data[index]);
-                                        else
-                                            newBase.push($scope.chartConfigs[type].series[0].data[index] - data[index]);
-                                    });
-                                    //$scope.metaCharts[type].series[0].setData(newBase);
-                                    if($scope.metaCharts[type].series[1] == undefined) {
-                                        $scope.metaCharts[type].addSeries({
-                                            name: 'Filter',
-                                            data: data,
-                                            color: 'black',
-                                            cursor: 'pointer',
-                                            point: {
-                                                events: {
-                                                    click: function () {
-                                                        $scope.clickedItem(this, 'entity', type);
+                            var facets = $scope.observer.getFacets();
+                            var fulltext = [];
+                            angular.forEach($scope.fulltextFilters, function (item) {
+                                fulltext.push(item.data.name);
+                            });
+                            var entityType = "";
+                            angular.forEach($scope.entityTypes, function (type) {
+                                $scope.metaCharts[type].showLoading('Loading ...');
+                                var instances = $scope.ids[type];
+                                playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, $scope.observer.getTimeRange(), 50, entityType, instances).get().then(
+                                    function (result) {
+                                        //result.data[type].forEach(function(x) {
+                                        //    console.log(x.key + ": " + x.count);
+                                        //});
+                                        var data = [];
+                                        angular.forEach(result.data, function (x) {
+                                            if (x.docCount <= 0)
+                                                data.push(null);
+                                            else
+                                                data.push(x.docCount);
+                                        });
+                                        var newBase = [];
+                                        $.each($scope.chartConfigs[type].series[0].data, function (index, value) {
+                                            if (data[index] == undefined)
+                                                newBase.push($scope.chartConfigs[type].series[0].data[index]);
+                                            else
+                                                newBase.push($scope.chartConfigs[type].series[0].data[index] - data[index]);
+                                        });
+                                        //$scope.metaCharts[type].series[0].setData(newBase);
+                                        if ($scope.metaCharts[type].series[1] == undefined) {
+                                            $scope.metaCharts[type].addSeries({
+                                                name: 'Filter',
+                                                data: data,
+                                                color: 'black',
+                                                cursor: 'pointer',
+                                                point: {
+                                                    events: {
+                                                        click: function () {
+                                                            $scope.clickedItem(this, 'entity', type);
+                                                        }
+                                                    }
+                                                },
+                                                dataLabels: {
+                                                    inside: true,
+                                                    align: 'left',
+                                                    useHTML: true,
+                                                    formatter: function () {
+                                                        return $('<div/>').css({
+                                                            'color': 'white'
+                                                        }).text(this.y)[0].outerHTML;
                                                     }
                                                 }
-                                            },
-                                            dataLabels: {
-                                                inside: true,
-                                                align: 'left',
-                                                useHTML: true,
-                                                formatter : function() {
-                                                    return $('<div/>').css({
-                                                        'color' : 'white'
-                                                    }).text(this.y)[0].outerHTML;
-                                                }
-                                            }
-                                        });
-                                    } else {
-                                        $scope.metaCharts[type].series[1].setData(data);
+                                            });
+                                        } else {
+                                            $scope.metaCharts[type].series[1].setData(data);
+                                        }
+                                        $scope.metaCharts[type].hideLoading();
                                     }
-                                    $scope.metaCharts[type].hideLoading();
-                                }
-                            );
-                        });
-                        //TODO: on adding fulltext filter doc count grows
-
+                                );
+                            });
+                            //TODO: on adding fulltext filter doc count grows
+                        }
                     };
 
-                    $scope.updateMetadataCharts = function() {
-                        var entities = [];
-                        angular.forEach($scope.entityFilters, function(item) {
-                            entities.push(item.data.id);
-                        });
-                        var facets = [];
-                        if($scope.metadataFilters.length > 0) {
-                            angular.forEach($scope.metadataFilters, function(metaType) {
-                                if($scope.metadataFilters[metaType].length > 0) {
-                                    var keys = [];
-                                    angular.forEach($scope.metadataFilters[metaType], function(x) {
-                                        keys.push(x.data.name);
-                                    });
-                                    facets.push({key: metaType, data: keys});
-                                }
-                            });
-                            if(facets == 0) facets = [{'key':'dummy','data': []}];
+                    $scope.updateMetadataCharts = function () {
+                        if ($scope.initialized) {
 
-                        } else {
-                            facets = [{'key':'dummy','data': []}];
-                        }
-                        var fulltext = [];
-                        angular.forEach($scope.fulltextFilters, function(item) {
-                            fulltext.push(item.data.name);
-                        });
-                        angular.forEach($scope.metadataTypes, function(type) {
-                            $scope.metaCharts[type].showLoading('Loading ...');
-                            var instances = $scope.chartConfigs[type].xAxis["categories"];
-                            playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext,type,facets,entities,instances,$scope.observer.getTimeRange()).get().then(
-                                function(result) {
-                                    //result.data[type].forEach(function(x) {
-                                    //    console.log(x.key + ": " + x.count);
-                                    //});
-                                    var data = [];
-                                    angular.forEach(result.data[type], function(x) {
-                                        if(x.count <= 0)
-                                            data.push(null);
-                                        else
-                                            data.push(x.count);
-                                    });
-                                    var newBase = [];
-                                    $.each($scope.chartConfigs[type].series[0].data, function(index, value) {
-                                        if(data[index] == undefined)
-                                            newBase.push($scope.chartConfigs[type].series[0].data[index]);
-                                        else
-                                            newBase.push($scope.chartConfigs[type].series[0].data[index] - data[index]);
-                                    });
-                                    //$scope.metaCharts[type].series[0].setData(newBase);
-                                    if($scope.metaCharts[type].series[1] == undefined) {
-                                        $scope.metaCharts[type].addSeries({
-                                            name: 'Filter',
-                                            data: data,
-                                            color: 'black',
-                                            cursor: 'pointer',
-                                            point: {
-                                                events: {
-                                                    click: function () {
-                                                        $scope.clickedItem(this, 'metadata', type);
+                            var entities = [];
+                            angular.forEach($scope.entityFilters, function (item) {
+                                entities.push(item.data.id);
+                            });
+                            var facets = $scope.observer.getFacets();
+                            var fulltext = [];
+                            angular.forEach($scope.fulltextFilters, function (item) {
+                                fulltext.push(item.data.name);
+                            });
+                            angular.forEach($scope.metadataTypes, function (type) {
+                                $scope.metaCharts[type].showLoading('Loading ...');
+                                var instances = $scope.chartConfigs[type].xAxis["categories"];
+                                playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext, type, facets, entities, instances, $scope.observer.getTimeRange()).get().then(
+                                    function (result) {
+                                        //result.data[type].forEach(function(x) {
+                                        //    console.log(x.key + ": " + x.count);
+                                        //});
+                                        var data = [];
+                                        angular.forEach(result.data[type], function (x) {
+                                            if (x.count <= 0)
+                                                data.push(null);
+                                            else
+                                                data.push(x.count);
+                                        });
+                                        var newBase = [];
+                                        $.each($scope.chartConfigs[type].series[0].data, function (index, value) {
+                                            if (data[index] == undefined)
+                                                newBase.push($scope.chartConfigs[type].series[0].data[index]);
+                                            else
+                                                newBase.push($scope.chartConfigs[type].series[0].data[index] - data[index]);
+                                        });
+                                        //$scope.metaCharts[type].series[0].setData(newBase);
+                                        if ($scope.metaCharts[type].series[1] == undefined) {
+                                            $scope.metaCharts[type].addSeries({
+                                                name: 'Filter',
+                                                data: data,
+                                                color: 'black',
+                                                cursor: 'pointer',
+                                                point: {
+                                                    events: {
+                                                        click: function () {
+                                                            $scope.clickedItem(this, 'metadata', type);
+                                                        }
+                                                    }
+                                                },
+                                                dataLabels: {
+                                                    inside: true,
+                                                    align: 'left',
+                                                    useHTML: true,
+                                                    formatter: function () {
+                                                        return $('<div/>').css({
+                                                            'color': 'white'
+                                                        }).text(this.y)[0].outerHTML;
                                                     }
                                                 }
-                                            },
-                                            dataLabels: {
-                                                inside: true,
-                                                align: 'left',
-                                                useHTML: true,
-                                                formatter : function() {
-                                                    return $('<div/>').css({
-                                                        'color' : 'white'
-                                                    }).text(this.y)[0].outerHTML;
-                                                }
-                                            }
-                                        });
-                                    } else {
-                                        $scope.metaCharts[type].series[1].setData(data);
+                                            });
+                                        } else {
+                                            $scope.metaCharts[type].series[1].setData(data);
+                                        }
+                                        $scope.metaCharts[type].hideLoading();
                                     }
-                                    $scope.metaCharts[type].hideLoading();
-                                }
-                            );
-                        });
+                                );
+                            });
+                        }
+
                     };
 
                     $scope.initEntityCharts = function () {
-                        var facets = [{'key':'dummy','data': []}];
+                        var facets = [{'key': 'dummy', 'data': []}];
                         var entities = [];
                         var fulltext = [];
                         var timeRange = "";
 
-                        $scope.observer.getEntityTypes().then(function(types) {
+                        $scope.observer.getEntityTypes().then(function (types) {
                             types.forEach(function (x) {
                                 $scope.chartConfigs[x] = angular.copy($scope.chartConfig);
-                                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities, timeRange,50,x).get().then(function(result) {
+                                playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, timeRange, 50, x).get().then(function (result) {
 
                                     $scope.frequencies[x] = [];
                                     $scope.labels[x] = [];
@@ -274,7 +271,7 @@ define([
                                                 }
                                             }
                                         }
-                                    },{
+                                    }, {
                                         name: 'Filter',
                                         data: $scope.frequencies[x],
                                         color: 'black',
@@ -290,15 +287,15 @@ define([
                                             inside: true,
                                             align: 'left',
                                             useHTML: true,
-                                            formatter : function() {
+                                            formatter: function () {
                                                 return $('<div/>').css({
-                                                    'color' : 'white'
+                                                    'color': 'white'
                                                 }).text(this.y)[0].outerHTML;
                                             }
                                         }
                                     }];
                                     $scope.chartConfigs[x].chart.renderTo = "chart_" + x.toLowerCase();
-                                    $("#chart_" + x.toLowerCase()).css("height",$scope.frequencies[x].length * 35);
+                                    $("#chart_" + x.toLowerCase()).css("height", $scope.frequencies[x].length * 35);
                                     $scope.metaCharts[x] = new Highcharts.Chart($scope.chartConfigs[x]);
                                 });
                             });
@@ -306,84 +303,88 @@ define([
                     };
 
                     $scope.initMetadataCharts = function () {
-                        $scope.observer.getMetadataTypes().then(function() {
-                                playRoutes.controllers.MetadataController.getMetadata(undefined,[{'key':'dummy','data': []}]).get().then(
-                                    function (result) {
+                        $scope.observer.getMetadataTypes().then(function () {
+                            playRoutes.controllers.MetadataController.getMetadata(undefined, [{
+                                'key': 'dummy',
+                                'data': []
+                            }]).get().then(
+                                function (result) {
 
-                                        $.each(result.data,function() {
-                                            $.each(this, function(key, value) {
+                                    $.each(result.data, function () {
+                                            $.each(this, function (key, value) {
                                                 //console.log(value);
+                                                if ($scope.metadataTypes.indexOf(key) != -1) {
 
-                                            $scope.chartConfigs[key] = angular.copy($scope.chartConfig);
-
-
-                                        $scope.frequencies[key] = [];
-                                        $scope.labels[key] = [];
-                                        $scope.ids[key] = [];
-                                                value.forEach(function (metadata) {
-                                            $scope.frequencies[key].push(metadata.count);
-                                            $scope.labels[key].push(metadata.key);
-                                            //$scope.ids[key].push(entity.id);
-                                        });
+                                                    $scope.chartConfigs[key] = angular.copy($scope.chartConfig);
 
 
-                                        $scope.chartConfigs[key].xAxis["categories"] = $scope.labels[key];
+                                                    $scope.frequencies[key] = [];
+                                                    $scope.labels[key] = [];
+                                                    $scope.ids[key] = [];
+                                                    value.forEach(function (metadata) {
+                                                        $scope.frequencies[key].push(metadata.count);
+                                                        $scope.labels[key].push(metadata.key);
+                                                        //$scope.ids[key].push(entity.id);
+                                                    });
 
-                                        $scope.chartConfigs[key]["series"] = [{
-                                            name: 'Total',
-                                            data: $scope.frequencies[key],
-                                            cursor: 'pointer',
-                                            point: {
-                                                events: {
-                                                    click: function () {
-                                                        $scope.clickedItem(this, 'metadata', key);
-                                                    }
+
+                                                    $scope.chartConfigs[key].xAxis["categories"] = $scope.labels[key];
+
+                                                    $scope.chartConfigs[key]["series"] = [{
+                                                        name: 'Total',
+                                                        data: $scope.frequencies[key],
+                                                        cursor: 'pointer',
+                                                        point: {
+                                                            events: {
+                                                                click: function () {
+                                                                    $scope.clickedItem(this, 'metadata', key);
+                                                                }
+                                                            }
+                                                        }
+
+                                                    }, {
+                                                        name: 'Filter',
+                                                        data: $scope.frequencies[key],
+                                                        color: 'black',
+                                                        cursor: 'pointer',
+                                                        point: {
+                                                            events: {
+                                                                click: function () {
+                                                                    $scope.clickedItem(this, 'metadata', key);
+                                                                }
+                                                            }
+                                                        },
+                                                        dataLabels: {
+                                                            inside: true,
+                                                            align: 'left',
+                                                            useHTML: true,
+                                                            formatter: function () {
+                                                                return $('<div/>').css({
+                                                                    'color': 'white'
+                                                                }).text(this.y)[0].outerHTML;
+                                                            }
+                                                        }
+                                                    }];
+                                                    $scope.chartConfigs[key].chart.renderTo = "chart_" + key.toLowerCase();
+                                                    $("#chart_" + key.toLowerCase()).css("height", $scope.frequencies[key].length * 35);
+                                                    $scope.metaCharts[key] = new Highcharts.Chart($scope.chartConfigs[key]);
                                                 }
-                                            }
 
-                                        },{
-                                            name: 'Filter',
-                                            data: $scope.frequencies[key],
-                                            color: 'black',
-                                            cursor: 'pointer',
-                                            point: {
-                                                events: {
-                                                    click: function () {
-                                                        $scope.clickedItem(this, 'metadata', key);
-                                                    }
-                                                }
-                                            },
-                                            dataLabels: {
-                                                inside: true,
-                                                align: 'left',
-                                                useHTML: true,
-                                                formatter : function() {
-                                                    return $('<div/>').css({
-                                                        'color' : 'white'
-                                                    }).text(this.y)[0].outerHTML;
-                                                }
-                                            }
-                                        }];
-                                        $scope.chartConfigs[key].chart.renderTo = "chart_" + key.toLowerCase();
-                                        $("#chart_" + key.toLowerCase()).css("height",$scope.frequencies[key].length * 35);
-                                        $scope.metaCharts[key] = new Highcharts.Chart($scope.chartConfigs[key]);
                                             });
 
                                         }
-                                );
-                            });
+                                    );
+
+                                });
+                            $scope.initialized = true;
                         })
                     };
 
-                    $scope.updateMetadataView = function() {
+                    $scope.updateMetadataView = function () {
                         $scope.updateEntityCharts();
                         $scope.updateMetadataCharts();
                     };
 
-                    $scope.initMetadataView = function() {
-                        $scope.initEntityCharts();
-                        $scope.initMetadataCharts();
-                    };
 
                     $scope.observer.registerObserverCallback($scope.updateMetadataView);
                     //load another 50 entities for specific metadata
@@ -397,22 +398,23 @@ define([
 
                     $scope.initMetadataView();
 
-                    $scope.reflow = function(type) {
-                        $timeout(function() {
-                            $("#chart_" + type.toLowerCase()).highcharts().reflow();
+                    $scope.reflow = function (type) {
+                        $timeout(function () {
+                            if ($("#chart_" + type.toLowerCase()).highcharts())
+                                $("#chart_" + type.toLowerCase()).highcharts().reflow();
                         }, 100);
                     };
-                    $scope.reflow = function() {
-                        $timeout(function() {
+                    $scope.reflow = function () {
+                        $timeout(function () {
+                            if ($("#metadata-view .active .active .meta-chart").highcharts())
+                                $("#metadata-view .active .active .meta-chart").highcharts().reflow();
+                        }, 100);
+                    };
+
+                    $('#metadata-view .nav-tabs a').on('shown.bs.tab', function (event) {
+                        if ($("#metadata-view .active .active .meta-chart").highcharts())
                             $("#metadata-view .active .active .meta-chart").highcharts().reflow();
-                        }, 100);
-                    };
-
-                    $('#metadata-view .nav-tabs a').on('shown.bs.tab', function(event){
-                        $("#metadata-view .active .active .meta-chart").highcharts().reflow();
                     });
-
-
 
 
                     /** entry point here **/

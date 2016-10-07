@@ -1,17 +1,18 @@
 /*
- * Copyright 2015 Technische Universitaet Darmstadt
+ * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package controllers
@@ -22,18 +23,13 @@ import model.faceted.search.{ Facets, FacetedSearch, MetaDataBucket, LoD }
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller, Results }
 import util.TimeRangeParser
+import util.SessionUtils.currentDataset
 
 // scalastyle:off
 import scalikejdbc._
 // scalastyle:on
 
-/**
- * Created by flo on 6/20/2016.
- */
 class HistogramController @Inject extends Controller {
-  implicit val session = AutoSession
-
-  private val defaultFetchSize = 50
 
   /**
    * Gets document counts for entities corresponding to their id's matching the query
@@ -50,10 +46,10 @@ class HistogramController @Inject extends Controller {
     entities: List[Long],
     timeRange: String,
     lod: String
-  ) = Action {
+  ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    val res = FacetedSearch.histogram(facets, LoD.withName(lod)).buckets.map {
+    val res = FacetedSearch.fromIndexName(currentDataset).histogram(facets, LoD.withName(lod)).buckets.map {
       case MetaDataBucket(key, count) => Json.obj("range" -> key, "count" -> count)
       case _ => Json.obj("" -> 0)
     }
@@ -67,5 +63,4 @@ class HistogramController @Inject extends Controller {
   def getHistogramLod = Action {
     Results.Ok(Json.toJson(LoD.values.toList.map(_.toString))).as("application/json")
   }
-
 }

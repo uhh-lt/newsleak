@@ -1,17 +1,18 @@
 /*
- * Copyright 2016 Technische Universitaet Darmstadt
+ * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 // `main.js` is the file that sbt-web will use as an entry point
@@ -34,7 +35,6 @@
 			'bootstrap': 'libs/bootstrap/dist/js/bootstrap.min',
 			'ui-bootstrap': 'libs/angular-bootstrap/ui-bootstrap-tpls.min',
 			'toggle-switch': 'libs/angular-toggle-switch/angular-toggle-switch.min',
-			'ng-tags-input': 'libs/ng-tags-input/ng-tags-input.min',
 			'ngSanitize': 'libs/angular-sanitize/angular-sanitize.min',
 			'scDateTime': 'libs/sc-date-time/dist/sc-date-time',
 			'moment': 'libs/moment/min/moment.min',
@@ -44,14 +44,12 @@
 			'screenfull': 'libs/screenfull/dist/screenfull',
 			'angularScreenfull': 'libs/angular-screenfull/dist/angular-screenfull.min',
 			'highcharts': 'libs/highcharts-release/highcharts',
-			'ngHighcharts': 'libs/highcharts-ng/dist/highcharts-ng.min',
 			'ngFileSaver': 'libs/angular-file-saver/dist/angular-file-saver.bundle.min',
 			'drilldown' : 'libs/highcharts-release/modules/drilldown',
-			'datamaps' : 'libs/datamaps/dist/datamaps.world',
-			'topojson' : 'libs/topojson/topojson',
 			'underscore': 'libs/underscore/underscore-min',
 			'd3': 'libs/d3/d3.min',
-			'angularResizable': 'libs/angular-resizable/angular-resizable.min'
+			'angularResizable': 'libs/angular-resizable/angular-resizable.min',
+			'bootstrapFileField': 'libs/angular-bootstrap-file-field/dist/angular-bootstrap-file-field.min'
 		},
 		shim: {
 			'jsRoutes': {
@@ -95,9 +93,6 @@
 				exports: 'angular',
 				deps: ['angular']
 			},
-			'ng-tags-input': {
-				deps: ['angular']
-			},
 			'ngSanitize': {
 				exports: 'angular',
 				deps: ['angular']
@@ -113,23 +108,12 @@
 				exports: 'Highcharts',
 				deps: ['jquery']
 			},
-			'ngHighcharts': {
-				deps: ['highcharts', 'angular']
-			},
 			'ngMaterial': {
 				deps: ['angular','ngAria','ngMessages','ngAnimate']
 			},
 			'drilldown': {
 				exports: 'drilldown',
 				deps: ['highcharts']
-			},
-			'datamaps': {
-				exports: 'datamaps',
-				deps: ['topojson', 'd3']
-			},
-			'topojson': {
-				exports: 'topojson',
-				deps: ['d3']
 			},
 			'underscore': {
 				exports: '_'
@@ -144,6 +128,9 @@
 			'angularResizable' : {
 				exports: 'angularResizable',
 				deps: ['angular']
+			},
+			'bootstrapFileField' : {
+				deps: ['angular', 'bootstrap']
 			}
 		},
 		priority: [
@@ -161,7 +148,7 @@
 
 	require([
 			'angular',
-			'app',
+			'app'
 		], function(angular, app) {
 			angular.bootstrap(document, ['myApp']);
 		}

@@ -1,17 +1,18 @@
 /*
- * Copyright 2016 Technische Universitaet Darmstadt
+ * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 define([
@@ -25,38 +26,7 @@ define([
 
     angular.module('myApp.network', ['play.routing', 'angularMoment', 'angularAwesomeSlider', 'toggle-switch']);
     angular.module('myApp.network')
-        // This factory is used to share graph properties between this module and the app.js
-        .factory('graphPropertiesShareService', function () {
-            var graphProperties = {
-                // Order: locations, orginaziations, persons, misc
-                categoryColors: ["#8dd3c7", "#fb8072","#bebada", "#ffffb3"],
-                categories:
-                [
-                	{id: 'LOC', full: 'Location'},
-                	{id: 'ORG', full: 'Organization'},
-                	{id: 'PER', full: 'Person'},
-                	{id: 'MISC', full: 'Miscellaneous'}
-                ],
-                CATEGORY_COLOR_INDEX_LOC: 0,
-                CATEGORY_COLOR_INDEX_ORG: 1,
-                CATEGORY_COLOR_INDEX_PER: 2,
-                CATEGORY_COLOR_INDEX_MISC: 3,
-                // Delivers the index of a given category name
-                getIndexOfCategory: function (category) {
-                    switch (category) {
-                        case 'LOC':
-                            return this.CATEGORY_COLOR_INDEX_LOC;
-                        case 'ORG':
-                            return this.CATEGORY_COLOR_INDEX_ORG;
-                        case 'PER':
-                            return this.CATEGORY_COLOR_INDEX_PER;
-                        default:
-                            return this.CATEGORY_COLOR_INDEX_MISC;
-                    }
-                }
-            };
-            return graphProperties;
-        })
+
         .controller('NetworkController',
         [
             '$scope',
@@ -147,7 +117,7 @@ define([
             toolShareService.annotateListener.push(addAnnotation);
 
             toolShareService.mergeListener.push(merge);
-            toolShareService.mergeListener.push(sendMerged);
+            //toolShareService.mergeListener.push(sendMerged);
 
             toolShareService.deleteListener.push(remove);
 
@@ -193,26 +163,40 @@ define([
             $scope.zm      = d3.behavior.zoom()
                                     .scaleExtent([0.5, 3])
                                     .on('zoom', function(){
-                                        force.start();
+                                        force.alpha(0.01)
                                         currentScale = d3.event.scale;
                                         svg.selectAll('g').attr('transform', 'translate('
-                                            + (-viewBoxX) + ',' + (-viewBoxY) + ')scale('
+                                            + (-viewBoxX) + ',' + (-viewBoxY) + ')' + 'scale('
                                             + d3.event.scale + ')');
+                                        //force.alpha(0.0);
                                     });
             // For dragging
             var viewBoxX   = 0;
             var viewBoxY   = 0;
             var drag       = d3.behavior.drag()
                                     .on('drag', function(){
-                                        force.start();
+                                        force.alpha(0.01);
                                         viewBoxX -= d3.event.dx;
                                         viewBoxY -= d3.event.dy;
                                         svg.selectAll('g').attr('transform', 'translate('
-                                            + (-viewBoxX) + ',' + (-viewBoxY) + ')scale('
+                                            + (-viewBoxX) + ',' + (-viewBoxY) + ')' + 'scale('
                                             + currentScale + ')');
                                     });
 
             var svg;
+
+            /*ObserverService.getEntityTypes().then(function(types)
+            {
+                console.log(types);
+                types.forEach(function(e)
+                {
+                    $scope.graphShared.categories.push({id: e, full: e, color: '#ffffb3'});
+                })
+                initNetwork();
+            });*/
+            initNetwork();
+
+
 
 
             /**
@@ -401,6 +385,66 @@ define([
                     .endAngle(value*2*Math.PI));
             }
 
+            function updateNode(node)
+            {
+                d3
+                    .select('#nodecircle_' + node.id)
+                    .transition()
+                    .duration(3000)
+                    .attr('r', function (d) { return radius(d.docCount) })
+
+                d3
+                    .select('#nodebuttons_' + node.id)
+                    .attr('y', function(d){return radius(d.docCount) - 4;})
+
+                d3
+                    .select('#nodebuttonannotate_' + node.id)
+                    .attr('x', function(d){return radius(d.docCount)-2;});
+
+                d3
+                    .select('#nodetext_' + node.id)
+                    .text(function (d){
+                        var r = radius(d.docCount);
+
+                        if(!(r/3 >= d.name.length - 1))
+                        {
+                            //console.log(d3.select(this).style('font-size').split("px")[0])
+                            d3.select(this).attr('y', (-r-d3.select(this).style('font-size').split("px")[0]/2) + 'px')
+                        }
+
+                        /*if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
+                        {
+                        }
+                        else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
+                        {
+                            d3.select(this).attr('dy', r)
+                        }*/
+                            //return d.name.substring(0, r/3 - 3) + "...";
+
+                        return d.name;
+                    })
+                    .style('font-size', function(d){
+                        var r = radius(d.docCount);
+                        var textLength;
+                        var size;
+                        if(r/3 >= d.name.length - 1){  // If the text fits inside the node.
+                            textLength = d.name.length;
+                            // If the text contains less than 3 characters: act as if
+                            // there where 3 characters so that the font doesn't become to big.
+                            if(textLength < 3)
+                                textLength = 3;
+                            size = r/3;
+                        }
+                        else{  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
+                            textLength = d.name.substring(0, r/3 - 3).length;
+                            size = r/3 - 3;
+                        }
+                        size *= 7 / textLength;  // This seems to work to get a good text size.
+                        size = Math.max(10, Math.round(size));  // Min. text size = 10px
+                        return size+'px';
+                    });
+            }
+
 
 			/**
 			 *	add an annotation to the specified Node
@@ -414,13 +458,18 @@ define([
             {
             	d3.select("#node_" + node.id)
             		.append('foreignObject')
+            		.attr('id', function(d){return 'nodebuttonannotate_' + d.id})
             		.attr('width', '24')
             		.attr('height', '24')
             		.attr('x', function(d){return radius(d.docCount)-2;})
             		.attr('y', /*function(d){return (radius(d.freq));}*/-12)
             		.append('xhtml:body')
-            		.html('<button type="button" class="btn btn-xs btn-default neighbor-button" ng-show="!isViewLoading"><i class="glyphicon glyphicon-comment"></i></button>')
-            		.on('mouseup', function(){alert(text);});
+            		.append('button')
+            		.attr('class', 'btn btn-xs btn-default neighbor-button')
+            		//.html('<button type="button" id="nodebuttonannotate_" class="btn btn-xs btn-default neighbor-button"><i class="glyphicon glyphicon-comment"></i></button>')
+            		.on('mouseup', function(){alert(text);})
+            		.append('i')
+            		.attr('class', 'glyphicon glyphicon-comment')
 
                 //track annotating nodes within observer
                 $scope.observer.addItem({
@@ -454,11 +503,6 @@ define([
                     ]);
                     force.start();
                 }
-            }
-
-            function setEdgeDisabled(edge)
-            {
-
             }
 
 
@@ -557,7 +601,6 @@ define([
              * and renders the graph
              */
             function getGraph(){
-                console.log("nc.js getGraph");
                 $scope.isViewLoading    = true;
                 var sliderValue         = [];
                 sliderValue.push(parseInt(toolShareService.sliderLocationsValue()));
@@ -569,17 +612,13 @@ define([
                 var leastOrMostFrequent = Number(toolShareService.freqSortingLeast);
 
                 loadingNodes = true;
-                //902475 = USA
-                //playRoutes.controllers.NetworkController.getGuidanceNodes(902475).get().then(function(response) {
-                //    console.log(response.data);
-                //});
                 playRoutes.controllers.NetworkController.getGraphData(leastOrMostFrequent, sliderValue, sliderEdgeMinFreq, sliderEdgeMaxFreq).get().then(function(response) {
                 //playRoutes.controllers.EntityController.getEntities(nodes., sliderEdgeMinFreq, sliderEdgeMaxFreq).get().then(function(response) {
                     var data = response.data;
 
                     prepareData(data);
 
-                    calculateNewForceSize();
+                    //calculateNewForceSize();
 
                     svg.selectAll("*").remove();
                     createSVG();  // Reset svg.
@@ -608,7 +647,7 @@ define([
             		d3.select('#nodebuttonicon_' + node.id).attr('class', 'glyphicon glyphicon-minus');
 
             		node.expanded = true;
-            		console.log(nodes);
+            		//console.log(nodes);
             	});
             }
 
@@ -631,7 +670,7 @@ define([
             		}
             	);
 
-				console.log(nodes);
+				//console.log(nodes);
 				var deletenodes = [];
             	nodes.forEach(
             		function(v,i,a)
@@ -641,7 +680,7 @@ define([
             				return;
             			}
 
-            			console.log(v);
+            			//console.log(v);
             			if(v.collapseParent.length > 1 && v.collapseParent.indexOf(node.id) != -1)
             			{
             				v.collapseParent.splice(v.collapseParent.indexOf(node.id), 1)
@@ -820,8 +859,15 @@ define([
                             })
                             .text(function (d){
                                 var r = radius(d.docCount);
+
+                                if(!(r/3 >= d.name.length - 1))
+                                {
+                                    //console.log(d3.select(this).style('font-size').split("px")[0])
+                                    d3.select(this).attr('y', (-r-d3.select(this).style('font-size').split("px")[0]/2) + 'px')
+                                }
+
                                 //if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
-                                    return d.name;
+                                return d.name;
                                 //else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
                                 //    return d.name.substring(0, r/3 - 3) + "...";
                             })
@@ -852,6 +898,7 @@ define([
 
                 // add buttons to the nodes
                     var buttonlist = newNodes.append('foreignObject')
+                        .attr('id', function(d){return 'nodebuttons_' + d.id})
                         .attr('width', '16')
                         .attr('height', '16')
                         .attr('x', -8)
@@ -903,7 +950,7 @@ define([
 
                     node.exit().remove();
 
-                    addTooltip(node, link);  // add the tooltips to the nodes and links
+                    //addTooltip(node, link);  // add the tooltips to the nodes and links
                     enableOrDisableButtons();
 
                     $scope.isViewLoading = false;
@@ -1103,7 +1150,7 @@ define([
 
             $scope.loaded = reload;
 
-            /** 
+            /**
              * Create an example graph; we use a trick (namely the $timeout even with 0ms)
              * to render it only after the DOM is fully loaded.
              * Also, initialize the legend popover
@@ -1115,20 +1162,22 @@ define([
                     .force()
                     .nodes(nodes)
                     .links(edges)
-                    .size([300, 300])
-                    .charge(-400)
-                    .linkStrength(0.4)
+                    .size([400, 400])
+                    .charge(-500)
+                    .chargeDistance(400)
+                    .linkStrength(0.0)
                     .linkDistance(function(d) {
                         return radius(d.source.docCount)
                             + radius(d.target.docCount)
-                            + 100;
+                            + 300;
                     })
                     .on("tick", function() {
                         link.attr('x1', function (d) {return d.source.x;})
                             .attr('y1', function (d) {return d.source.y;})
                             .attr('x2', function (d) {return d.target.x;})
                             .attr('y2', function (d) {return d.target.y;});
-                        node.attr('transform', function (d) {
+                        node.attr('transform', function (d)
+                        {
                             return 'translate(' + d.x + ',' + d.y + ')';
                         });
 
@@ -1157,7 +1206,15 @@ define([
                             else
                                 return 'rotate(0)';
                         });
-                    });
+                    })
+                    /*.on("start", function()
+                    {
+                        node.attr('transform')
+                    })*/
+
+                    force.start();
+
+                    console.log("reload force layout");
                 //getGraph();
                 // Extend the popover to a callback when loading is done
                 var tmp = $.fn.popover.Constructor.prototype.show;
@@ -1391,6 +1448,14 @@ define([
             function hideSelected(){
                 // Remove selected nodes.
                 selectedNodes.forEach(function(d){
+                    var editItem = {
+                        type: 'hide',
+                        data: {
+                            id: d.id,
+                            name: d.name + ': ' + d.type
+                        }
+                    };
+                    $scope.observer.addItem(editItem);
                     // Remove the selected node name from the words that get highlighted
                     var categoryIndex = $scope.graphShared.getIndexOfCategory(d.type);
                     var index = highlightShareService.wordsToHighlight[categoryIndex].indexOf(d.name);
@@ -1440,7 +1505,14 @@ define([
 
 				nodes.forEach(
 					function(n,i,a){
-
+                        var editItem = {
+                            type: 'delete',
+                            data: {
+                                id: n.id,
+                                name: n.name + ': ' + n.type
+                            }
+                        };
+                        $scope.observer.addItem(editItem);
 						d3.select("#node_" + n.id).remove();
 						edges.forEach(
 							function(v,i,a)
@@ -1489,14 +1561,24 @@ define([
 				focalNode.freq = focalNode.freq + freqsum;
 				d3.select("#nodecircle_" + focalNode.id).attr('r', function(d){return radius(d.docCount);});
 
+                var edgesToDelete = [];
+
 				edges.forEach(
 					function(v,i,a)
 					{
+					    /*if(entityids.indexOf(v.source.id) != -1 || entityids.indexOf(v.target.id) != -1)
+					    {
+					        console.log(v)
+					    }*/
+					    /*if((v.source.name == "USG" || v.target.name == "USG") && (v.source.name == "Commission" || v.target.name == "Commission"))
+					    {
+					        console.log(v)
+					    }*/
 
 						//if we have on both sides a node we want to delete or the focal node
 						if(
 							(entityids.indexOf(v.source.id) != -1 && entityids.indexOf(v.target.id) != -1) ||
-							(v.source.id == focalNode.id && entityids.indexOf(v.target.id) != -1) ||
+							(entityids.indexOf(v.target.id) != -1 && v.source.id == focalNode.id) ||
 							(entityids.indexOf(v.source.id) != -1 && v.target.id == focalNode.id)
 						)
 						{
@@ -1505,29 +1587,38 @@ define([
                            	d3.select("#edgeline_" + v.id).remove();
                             d3.select("#edgelabel_" + v.id).remove();
                             //console.log("both sides")
-                            //console.log(v)
+                            /*if(v.source.name == "Sipdis" || v.target.name == "Sipdis")
+                            {
+                                console.log(v)
+                            }*/
 
-                            edges.splice(i, 1)
+                            edgesToDelete.push(v);
+                            //edges.splice(i, 1)
 						}
 						else if(entityids.indexOf(v.source.id) != -1 || entityids.indexOf(v.target.id) != -1)
 						{
-							console.log(v)
+							//console.log(v)
 							//get an existing edge between the focalNode and the node not to delete
 							var existingEdge = edges.filter(
 								function(e,i,a)
 								{
-									if(entityids.indexOf(v.source.id) != -1)
+									if(entityids.indexOf(v.source.id) != -1 || entityids.indexOf(v.target.id) != -1)
 									{
 										return (e.source.id == v.target.id && e.target.id == focalNode.id) ||
-												(e.source.id == focalNode.id && e.target.id == v.target.id)
+										        (e.source.id == v.source.id && e.target.id == focalNode.id) ||
+												(e.source.id == focalNode.id && e.target.id == v.target.id) ||
+                                                (e.source.id == focalNode.id && e.target.id == v.source.id)
 									}
 									else
 									{
-										return (e.source.id == v.source.id && e.target.id == focalNode.id) ||
-                                        		(e.source.id == focalNode.id && e.target.id == v.source.id)
+										/*return (e.source.id == v.source.id && e.target.id == focalNode.id) ||
+                                        		(e.source.id == focalNode.id && e.target.id == v.source.id);*/
+                                        return false;
 									}
 								}
 							);
+							//console.log(v)
+							//console.log(existingEdge);
 
 							//if we havent found a node
 							if(existingEdge.length == 0)
@@ -1541,20 +1632,23 @@ define([
 								var edge = existingEdge[0];
 								edge.freq = edge.freq + v.freq;
 
-								d3.select("#edgeline_" + edge.id).style('stroke-width', function (d) {return edgeScale(d.freq)+'px';});
-								d3.select("#edgelabel_" + edge.id).select("textPath").text(function(d,i){return d.freq;});
+								//d3.select("#edgeline_" + edge.id).style('stroke-width', function (d) {return edgeScale(d.freq)+'px';});
+								//d3.select("#edgelabel_" + edge.id).select("textPath").text(function(d,i){return d.freq;});
 
 								//we remove the edge
                                 d3.select("#edgepath_" + v.id).remove();
                                 d3.select("#edgeline_" + v.id).remove();
                                 d3.select("#edgelabel_" + v.id).remove();
 
-                                edges.splice(i, 1)
+                                edgesToDelete.push(v);
+                                //edges.splice(i, 1)
 							}
 
 						}
 					}
 				);
+
+				edgesToDelete.forEach(function(e){edges.splice(edges.indexOf(e), 1)});
 
 				unselectNodes()
 				selectNode(focalNode);
@@ -1616,12 +1710,27 @@ define([
             	{
             		return;
             	}
+                var editItem = {
+                    type: 'edit',
+                    data: {
+                        id: node.id,
+                        name: '<'+node.name+' -> '+ text+'>'
+                    }
+                };
+                $scope.observer.addItem(editItem);
 
                 var edit = text;
                 node.name = edit;
                 d3.select("#nodetext_" + node.id).text(function (d){
                 	var r = radius(d.docCount);
-                	if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
+
+                	if(!(r/3 >= d.name.length - 1))
+                    {
+                        console.log(d3.select(this).style('font-size').split("px")[0])
+                        d3.select(this).attr('y', (-r-d3.select(this).style('font-size').split("px")[0]/2) + 'px')
+                    }
+
+                	//if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
                 		return d.name;
                 	/*else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
                 		return d.name.substring(0, r/3 - 3) + "...";*/
@@ -1656,10 +1765,19 @@ define([
              */
             function editType(node, type)
             {
+
             	if(node.type == type)
             	{
             		return;
             	}
+                var editItem = {
+                    type: 'edit',
+                    data: {
+                        id: node.id,
+                        name: '<'+node.type+' -> '+type+'>'
+                    }
+                };
+                $scope.observer.addItem(editItem);
 
             	node.type = type;
             	d3.select("#nodecircle_" + node.id)
@@ -1704,122 +1822,137 @@ define([
             function getEntities() {
                 console.log("reload entities");
                 getGuidanceNodes(135603,false,false)//Darmstadt!
-                // var entities = [];
-                // angular.forEach($scope.entityFilters, function(item) {
-                //     entities.push(item.data.id);
-                // });
-                // var facets = [];
-                // if($scope.metadataFilters.length > 0) {
-                //     angular.forEach($scope.metadataFilters, function(metaType) {
-                //         if($scope.metadataFilters[metaType].length > 0) {
-                //             var keys = [];
-                //             angular.forEach($scope.metadataFilters[metaType], function(x) {
-                //                 keys.push(x.data.name);
-                //             });
-                //             facets.push({key: metaType, data: keys});
-                //         }
-                //     });
-                //     if(facets == 0) facets = [{'key':'dummy','data': []}];
-                //
-                // } else {
-                //     facets = [{'key':'dummy','data': []}];
-                // }
-                //
-                // while(loadingNodes)
-                // {
-                // }
-                //
-                // var filters = [];
-                // angular.forEach(nodes, function(node) {
-                //     filters.push(node.id);
-                // });
-                //
-                // var size = 20;
-                // var fulltext = [];
-                // angular.forEach($scope.fulltextFilters, function(item) {
-                //     fulltext.push(item.data.name);
-                // });
-                // var entityType = "";
-                //
-                // playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,entityType).get().then(function(response) {
-                //
-                //     //to prevent invisible selections
-                //     unselectNodes();
-                //     unselectEdges();
-                //
-                //     var tmpnodes = nodes;
-                //
-                //     //delete all nodes and edges
-                //     nodes = [];
-                //
-                //     response.data.forEach(
-                //         function(v)
-                //         {
-                //             /*var enode = tmpnodes.find(function(node){return node.id === v.id;});
-                //             if(enode != undefined)
-                //             {
-                //                 enode.docCount = v.docCount;
-                //                 nodes.push(enode);
-                //                 return;
-                //             }*/
-                //
-                //             nodes.push({
-                //             	id: v.id,
-                //             	name: v.name,
-                //             	freq: v.freq,
-                //             	type: v.type,
-                //             	docCount: v.docCount,
-                //                 size: 2,
-                //             });
-                //         }
-                //     );
-                //
-                //
-                //
-                //
-                //     //reload();
-                //     force.nodes(nodes);
-                //     //calculateNewForceSize();
-                //
-                //     start();
-                //
-                //     $scope.entityFilters.forEach(
-                //                             function(v)
-                //                             {
-                //                                 console.log(v)
-                //                                 selectNode(v.data)
-                //                             }
-                //     )
-                //     console.log($scope.entityFilters)
-                //
-                //     playRoutes.controllers.NetworkController.getRelations(response.data.map(function(v){return v.id}), toolShareService.sliderEdgeMinFreq(), toolShareService.sliderEdgeMaxFreq()).get().then(
-                //         function(response)
-                //         {
-                //             edges=[];
-                //             response.data.forEach(
-                //                 function(v)
-                //                 {
-                //                     var sourceNode = nodes.find(function(node){return v[1] == node.id});
-                //                     var targetNode = nodes.find(function(node){return v[2] == node.id});
-                //                     if(sourceNode == undefined || targetNode == undefined)
-                //                     {
-                //                         return;
-                //                     }
-                //                     edges.push({id: v[0], source: sourceNode, target: targetNode, freq: v[3]});
-                //                 }
-                //             )
-                //             force.links(edges);
-                //             //calculateNewForceSize();
-                //             start();
-                //         }
-                //     );
-                //
-                //
-                // });
+                /*
+                var entities = [];
+                angular.forEach($scope.entityFilters, function(item) {
+                    entities.push(item.data.id);
+                });
+                var facets = $scope.observer.getFacets();
+
+                while(loadingNodes)
+                {
+                }
+                var filters = [];
+                angular.forEach(nodes, function(node) {
+                    filters.push(node.id);
+                });
+
+                var size = 20;
+                var fulltext = [];
+                angular.forEach($scope.fulltextFilters, function(item) {
+                    fulltext.push(item.data.name);
+                });
+                var entityType = "";
+
+                if(force != undefined)
+                {
+                    force.nodes().forEach(function(d){d.fixed = true;});
+                }
+
+                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,entityType).get().then(function(response) {
+
+                    //to prevent invisible selections
+                    unselectNodes();
+                    unselectEdges();
+
+                    var tmpnodes = nodes;
+
+                    //delete all nodes and edges
+                    //nodes.length = 0;
+
+                    response.data.forEach(
+                        function(v, index)
+                        {
+                            var enode = tmpnodes.find(function(node){return node.id === v.id;});
+                            if(enode != undefined)
+                            {
+                                enode.docCount = v.docCount;
+                                updateNode(enode);
+                            }
+                            else
+                            {
+                                nodes.push({
+                                    id: v.id,
+                                    name: v.name,
+                                    freq: v.freq,
+                                    type: v.type,
+                                    docCount: v.docCount,
+                                    size: 2,
+                                });
+                            }
+                        }
+                    );
+
+                    var nodesToDelete = []
+                    nodes.forEach(
+                        function(node, index)
+                        {
+                            if(response.data.find(function(v){return v.id === node.id}) == undefined)
+                            {
+                                nodesToDelete.push(node.id);
+                            }
+                        }
+                    )
+
+                    for(var i=0; i<nodesToDelete.length; i++)
+                    {
+                        nodes.splice(nodes.findIndex(function(v){return nodesToDelete[i] === v.id}), 1);
+                    }
+
+                    //delete all nodes not used
+                    //nodes.filter(function(v){return response.data.find(function(node){return node.id === v.id}) != undefined;})
+
+                    start();
+
+                    $scope.entityFilters.forEach(
+                                            function(v)
+                                            {
+                                                selectNode(v.data)
+                                            }
+                    )
+
+                    playRoutes.controllers.NetworkController.getRelations(response.data.map(function(v){return v.id}), toolShareService.sliderEdgeMinFreq(), toolShareService.sliderEdgeMaxFreq()).get().then(
+                        function(response)
+                        {
+                            edges.length = 0;
+                            response.data.forEach(
+                                function(v)
+                                {
+                                    var sourceNode = nodes.find(function(node){return v[1] == node.id});
+                                    var targetNode = nodes.find(function(node){return v[2] == node.id});
+                                    if(sourceNode == undefined || targetNode == undefined)
+                                    {
+                                        return;
+                                    }
+                                    edges.push({id: v[0], source: sourceNode, target: targetNode, freq: v[3]});
+                                }
+                            )
+
+                            //force.links(edges);
+                            //calculateNewForceSize();
+                            start();
+                            //force.stop();
+                            $timeout
+                            (
+                                function(){force.nodes().forEach(function(d){d.fixed = false;})},
+                                5000
+                            )
+                        }
+                    );
+
+
+                });
+                */
             };
 
-            $scope.getEntities();
-            $scope.observer.registerObserverCallback($scope.getEntities);
+            function initNetwork()
+            {
+                getEntities();
+                $scope.observer.registerObserverCallback($scope.getEntities);
+            }
+            //$scope.getEntities();
+            //$scope.observer.registerObserverCallback($scope.getEntities);
+
             /**
              *  send a message to the server that the name of the entity
              *  was edited

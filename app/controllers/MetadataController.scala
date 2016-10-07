@@ -1,17 +1,18 @@
 /*
- * Copyright 2015 Technische Universitaet Darmstadt
+ * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package controllers
@@ -22,22 +23,22 @@ import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket }
 import model.Document
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller, Results }
+import util.SessionUtils.currentDataset
 import util.TimeRangeParser
 
-/**
- * Created by f. zouhar on 26.05.16.
- */
 class MetadataController @Inject extends Controller {
 
   private val defaultExcludeTypes = List("Subject", "Header", "ReferenceId", "References", "Keywords", "Entities", "Created", "EventTimes")
+  // exclusion for enron
+  // private val defaultExcludeTypes = List("Subject", "Timezone", "sender.id", "Recipients.id", "Recipients.order")
   private val defaultFetchSize = 50
 
   /**
    * Get all metadata types
    * @return list of metadata types
    */
-  def getMetadataTypes = Action {
-    Results.Ok(Json.toJson(Document.getMetadataKeysAndTypes().map(x => x._1).filter(!defaultExcludeTypes.contains(_)))).as("application/json")
+  def getMetadataTypes = Action { implicit request =>
+    Results.Ok(Json.toJson(Document.fromDBName(currentDataset).getMetadataKeysAndTypes().map(x => x._1).filter(!defaultExcludeTypes.contains(_)))).as("application/json")
   }
 
   /**
@@ -48,10 +49,10 @@ class MetadataController @Inject extends Controller {
    * @param timeRange string of a time range readable for [[TimeRangeParser]]
    * @return list of matching metadata keys and document count
    */
-  def getMetadata(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
+  def getMetadata(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    val res = FacetedSearch.aggregateAll(facets, defaultFetchSize, defaultExcludeTypes)
+    val res = FacetedSearch.fromIndexName(currentDataset).aggregateAll(facets, defaultFetchSize, defaultExcludeTypes)
       .map(agg => Json.obj(agg.key -> agg.buckets.map {
         case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
         case _ => Json.obj()
@@ -76,10 +77,10 @@ class MetadataController @Inject extends Controller {
     entities: List[Long],
     instances: List[String],
     timeRange: String
-  ) = Action {
+  ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    val agg = FacetedSearch.aggregate(facets, key, defaultFetchSize, instances)
+    val agg = FacetedSearch.fromIndexName(currentDataset).aggregate(facets, key, defaultFetchSize, instances)
     if (instances.isEmpty) {
       val res = Json.obj(key -> agg.buckets.map {
         case MetaDataBucket(metaKey, count) => Json.obj("key" -> metaKey, "count" -> count)
@@ -101,10 +102,10 @@ class MetadataController @Inject extends Controller {
    * @param generic mapping of metadata key and a list of corresponding tags
    * @return list of matching keywords and document count
    */
-  def getKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
+  def getKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    val res = FacetedSearch.aggregateKeywords(facets, defaultFetchSize, List()).buckets.map {
+    val res = FacetedSearch.fromIndexName(currentDataset).aggregateKeywords(facets, defaultFetchSize, List()).buckets.map {
       case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
       case _ => Json.obj()
     }

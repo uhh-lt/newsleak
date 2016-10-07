@@ -1,17 +1,18 @@
 /*
- * Copyright 2015 Technische Universitaet Darmstadt
+ * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package controllers
@@ -21,6 +22,10 @@ import javax.inject.Inject
 import org.apache.commons.codec.binary.{ Base64, StringUtils }
 import play.api.Logger
 import play.api.mvc.{ Action, Controller }
+
+import util.SessionUtils.{ datasetSessionKey, currentDataset }
+import play.api.libs.json.Json
+import utils.NewsleakConfigReader
 
 import scala.util.Random
 
@@ -48,10 +53,12 @@ class Application @Inject extends Controller {
    * Serves the Networks of Names frontend to the client.
    */
   def index = Action { implicit request =>
+    val uid = request.session.get("uid").getOrElse { (Random.alphanumeric take 8).mkString }
+    Logger.debug("Session UID: " + uid)
 
     var authorized = false
     // TODO: commented out for disable auth
-    // authorized = true
+    authorized = true
 
     // if we have an authorization code, we check it
     if (request.headers.toMap.contains("Authorization")) {
@@ -76,25 +83,31 @@ class Application @Inject extends Controller {
       Unauthorized(views.html.defaultpages.unauthorized())
         .withHeaders("WWW-Authenticate" -> "Basic realm=\"new/s/leak\"")
     } else {
-      Ok(views.html.index())
+      Ok(views.html.index()).withNewSession.withSession(
+        "uid" -> uid,
+        datasetSessionKey -> NewsleakConfigReader.config.getString("es.index.default")
+      )
     }
   }
 
+  def changeDataset(name: String) = Action { implicit request =>
+    Ok(Json.obj("newDataset" -> name, "oldDataset" -> currentDataset))
+      .withSession(request.session + (datasetSessionKey, name))
+  }
+
+  // scalastyle:off
   def jsRoutes(varName: String = "jsRoutes") = Action { implicit request =>
     // Note: feature warning is produced by play itself
     import play.api.routing._
+    // scalastyle:on
 
     Ok(
       JavaScriptReverseRouter(varName)(
         // TODO: You need to add your routes here
+        controllers.routes.javascript.Application.changeDataset,
         controllers.routes.javascript.DocumentController.getDocById,
         controllers.routes.javascript.DocumentController.getDocs,
-        controllers.routes.javascript.DocumentController.getFrequencySeries,
-        controllers.routes.javascript.DocumentController.getDocsByDate,
-        controllers.routes.javascript.DocumentController.getDocsForMonth,
-        controllers.routes.javascript.DocumentController.getDocsForYearRange,
         controllers.routes.javascript.NetworkController.getGraphData,
-        controllers.routes.javascript.MapController.getDocsForCountry,
         controllers.routes.javascript.NetworkController.getEgoNetworkData,
         controllers.routes.javascript.NetworkController.getIdsByName,
         controllers.routes.javascript.NetworkController.deleteEntityById,
@@ -106,10 +119,6 @@ class Application @Inject extends Controller {
         controllers.routes.javascript.EntityController.getEntities,
         controllers.routes.javascript.EntityController.getEntityTypes,
         controllers.routes.javascript.EntityController.getEntitiesByType,
-        controllers.routes.javascript.EntityController.getEntitiesWithOffset,
-        controllers.routes.javascript.EntityController.getEntitiesDocCount,
-        controllers.routes.javascript.EntityController.getEntitiesDocCountWithOffset,
-        controllers.routes.javascript.EntityController.getEntitiesDocCountWithFilter,
         controllers.routes.javascript.NetworkController.changeEntityTypeById,
         controllers.routes.javascript.MetadataController.getMetadata,
         controllers.routes.javascript.MetadataController.getSpecificMetadata,
