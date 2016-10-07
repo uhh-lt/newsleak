@@ -88,6 +88,7 @@ define([
                 $scope.$emit('updateDocs-up', selectedNodes.map(function(n){
                     return n.id
                 }));
+                console.log(selectedNodes);
             }
 
             // determines the display of most or least frequency entities/edges
@@ -194,7 +195,8 @@ define([
                 })
                 initNetwork();
             });*/
-            initNetwork();
+            //initNetwork();
+            getGuidanceNodes(904275,false,false);
 
 
 
@@ -253,7 +255,7 @@ define([
                     highlightShareService.wordsToHighlight[i] = [];
                 }
                 highlightShareService.wasChanged = true;
-                selectedNodes = []
+                selectedNodes = [];
                 fireEvent_updateDocs();
             }
 
@@ -296,8 +298,8 @@ define([
                 }
 
                 fireEvent_updateDocs();
-                console.log("doc update up");
-                console.log(selectedNodes)
+                // console.log("doc update up");
+                // console.log(selectedNodes)
             }
 
             /**
@@ -309,7 +311,8 @@ define([
              */
             function unselectNode(node)
             {
-            	selectedNodes.splice(selectedNodes.indexOf(node));
+            	console.log("unselect "+node.name+node);
+                selectedNodes.splice(selectedNodes.indexOf(node),1);
             	d3.select("#nodecircle_" + node.id)
             		.style('stroke-width', 1.5)
                     .style('stroke', '#000000');
@@ -590,7 +593,7 @@ define([
 
                 link = svg.append('g').selectAll('.link');
                 edgepaths = svg.append('g').selectAll(".edgepath");
-                edgelabels = svg.append('g').selectAll(".edgelabel")
+                edgelabels = svg.append('g').selectAll(".edgelabel");
                 node = svg.append('g').selectAll('.node');
 
             }
@@ -711,7 +714,7 @@ define([
              * resets the graph and starts the force layout
              */
             function start(callback){//Graph zeichnen
-                    console.log("START")
+                    console.log("START");
                     var time;
 
                     // update links
@@ -733,6 +736,7 @@ define([
                                 d3.select('#edgelabel_' + d.id)
                                             .style('fill', selectionColor)
                                             .attr('font-weight', 'bold');
+                                selectedNodes.push(d.source,d.target);
                             }
                             else{  // The edge is already selected, so unselect it.
                                 selectedEdges.splice(index, 1);  // Remove the edge from the list.
@@ -741,9 +745,10 @@ define([
                                 d3.select('#edgelabel_' + d.id)
                                             .style('fill', '#000000')
                                             .attr('font-weight', 'normal');
+                                selectedNodes.splice(selectedNodes.indexOf(d.source),1);
+                                selectedNodes.splice(selectedNodes.indexOf(d.target),1);
                             }
                             enableOrDisableButtons();
-                            selectedNodes.push(d.source,d.target);
                             fireEvent_updateDocs();
                         });
                     // remove old links
@@ -950,7 +955,7 @@ define([
 
                     node.exit().remove();
 
-                    //addTooltip(node, link);  // add the tooltips to the nodes and links
+                    addTooltip(node, link);  // add the tooltips to the nodes and links
                     enableOrDisableButtons();
 
                     $scope.isViewLoading = false;
@@ -1163,13 +1168,13 @@ define([
                     .nodes(nodes)
                     .links(edges)
                     .size([400, 400])
-                    .charge(-500)
+                    .charge(-400)
                     .chargeDistance(400)
-                    .linkStrength(0.0)
+                    .linkStrength(0.4)
                     .linkDistance(function(d) {
                         return radius(d.source.docCount)
                             + radius(d.target.docCount)
-                            + 300;
+                            + 100;
                     })
                     .on("tick", function() {
                         link.attr('x1', function (d) {return d.source.x;})
@@ -1491,7 +1496,7 @@ define([
              */
             $scope.toggleFreqSorting = function () {
                 getGraph();
-            }
+            };
 
 
             /**
@@ -1943,7 +1948,7 @@ define([
 
                 });
                 */
-            };
+            }
 
             function initNetwork()
             {

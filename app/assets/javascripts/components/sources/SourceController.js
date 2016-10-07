@@ -129,7 +129,7 @@ define([
                         angular.forEach($scope.fulltextFilters, function(item) {
                            fulltext.push(item.data.name);
                         });
-                        playRoutes.controllers.DocumentController.getDocs(fulltext,facets,entities,$scope.observer.getTimeRange()).get().then(function(x) {
+                        playRoutes.controllers.DocumentController.getDocs(fulltext,facets,markedEntities,$scope.observer.getTimeRange()).get().then(function(x) {
                             // console.log(x.data);
                             $scope.sourceShared.reset();
                             $scope.sourceShared.addDocs(x.data.docs);

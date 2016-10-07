@@ -24,7 +24,7 @@
 		baseUrl: './assets/javascripts',
 		paths: {
 			'jsRoutes': ['jsroutes'],
-			'angular': 'libs/angular/angular.min',
+			'angular': 'libs/angular/angular',
 			'jquery': 'libs/jquery/dist/jquery.min',
 			'jquery-json': 'libs/jquery-json/dist/jquery.json.min',
 			'awesome-slider': 'libs/angular-awesome-slider/dist/angular-awesome-slider.min',
@@ -49,7 +49,7 @@
 			'underscore': 'libs/underscore/underscore-min',
 			'd3': 'libs/d3/d3.min',
 			'angularResizable': 'libs/angular-resizable/angular-resizable.min',
-			'bootstrapFileField': 'libs/angular-bootstrap-file-field/dist/angular-bootstrap-file-field.min'
+			'bootstrapFileField': 'libs/angular-bootstrap-file-field/angular-bootstrap-file-field.min'
 		},
 		shim: {
 			'jsRoutes': {

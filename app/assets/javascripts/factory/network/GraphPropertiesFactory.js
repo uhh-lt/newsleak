@@ -20,6 +20,7 @@ define([
             var graphProperties = {
                 // Order: locations, orginaziations, persons, misc
                 //categoryColors: ["#8dd3c7", "#fb8072","#bebada", "#ffffb3"],
+                categoryColors: ["#8dd3c7", "#fb8072","#bebada", "#ffffb3"],
                 categories:
                 [
                     {id: 'LOC', full: 'Location', color: '#8dd3c7'},

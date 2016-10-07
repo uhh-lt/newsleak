@@ -80,9 +80,9 @@ class EntityController @Inject extends Controller {
     var newSize = size
     if (filter.nonEmpty) newSize = filter.length
     val entitiesRes: List[(Long, Long)] = if (entityType.isEmpty) {
-      FacetedSearch.fromIndexName(currentDataset).aggregateEntities(facets, newSize, filter).buckets.collect { case NodeBucket(id, count) => (id, count) }
+      FacetedSearch.fromIndexName(currentDataset).aggregateEntities(facets, newSize, filter, Nil).buckets.collect { case NodeBucket(id, count) => (id, count) }
     } else {
-      FacetedSearch.fromIndexName(currentDataset).aggregateEntitiesByType(facets, EntityType.withName(entityType), newSize, filter).buckets.collect { case NodeBucket(id, count) => (id, count) }
+      FacetedSearch.fromIndexName(currentDataset).aggregateEntitiesByType(facets, EntityType.withName(entityType), newSize, filter, Nil).buckets.collect { case NodeBucket(id, count) => (id, count) }
     }
     if (entitiesRes.nonEmpty) {
       val ids = entitiesRes.map(_._1).take(defaultFetchSize)

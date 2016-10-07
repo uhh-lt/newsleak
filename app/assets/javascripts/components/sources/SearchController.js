@@ -20,14 +20,18 @@ define([
 ], function (angular) {
     'use strict';
 
-    angular.module('myApp.search', [])
+    angular.module('myApp.search',  ['play.routing'])
         .controller('SearchController',
             [
                 '$scope',
                 '$window',
+                'playRoutes',
+                'graphPropertiesShareService',
                 'ObserverService',
                 function ($scope,
                           $window,
+                          playRoutes,
+                          graphPropertiesShareService,
                           ObserverService) {
 
                     $scope.observer = ObserverService;

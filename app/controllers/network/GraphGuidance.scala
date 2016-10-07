@@ -7,10 +7,18 @@ import java.util.NoSuchElementException
 
 import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
 import play.api.Logger
+import util.SessionUtils.currentDataset
 
 import scala.collection.immutable.HashMap
 import scala.collection.mutable
 import scala.math.Ordering
+
+import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
+import model.{ Entity, EntityType }
+import play.api.libs.json.{ JsObject, Json }
+import play.api.mvc.{ Action, Controller, Results }
+import util.TimeRangeParser
+import util.SessionUtils.currentDataset
 
 /**
  * Created by martin on 02.10.16.
@@ -116,7 +124,7 @@ class GraphGuidance() {
 
         var distToFocus: Int = node.getDistance //Wenn der Knoten nicht in der Map liegt, muss es sich um dem Fokus handeln, also dist=0
         distToFocus += 1
-        val nodeBuckets = FacetedSearch.aggregateEntities(Facets(List(), Map(), List(node.getId), None, None), newEdgesPerIter, List(), 1).buckets
+        val nodeBuckets = FacetedSearch.fromIndexName("cable").aggregateEntities(Facets(List(), Map(), List(node.getId), None, None), newEdgesPerIter, List(), Nil, 1).buckets
         val edgeFreqTuple = nodeBuckets.collect { case NodeBucket(id, docOccurrence) => (id, docOccurrence.toInt) }.filter(_._1 != node.getId)
         val nodeMap = NodeFactory.createNodes(edgeFreqTuple.map(_._1), distToFocus, iter).map(n => n.getId -> n).toMap
 

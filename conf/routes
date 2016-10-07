@@ -17,10 +17,6 @@ GET     /changeDataset                                      controllers.Applicat
 
 GET    /docById           		controllers.DocumentController.getDocById(id: Int)
 GET    /getDocs           		controllers.DocumentController.getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
-GET    /frequencySeries			controllers.DocumentController.getFrequencySeries
-GET    /docsByDate           	controllers.DocumentController.getDocsByDate(date: Long)
-GET    /getDocsForMonth         controllers.DocumentController.getDocsForMonth(year: Int, month: Int, startIndex: Int, offset: Int ?= 0)
-GET    /getDocsForYearRange     controllers.DocumentController.getDocsForYearRange(fromYear: Int, toYear: Int, startIndex: Int, offset: Int ?= 0)
 
 GET    /getGuidanceNodes        controllers.NetworkController.getGuidanceNodes(focusId: Long, edgeAmount: Int, epn:Int, uiString: String, useOldEdges: Boolean, prefferedNodes: List[Long], sessionId: String)
 
