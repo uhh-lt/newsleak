@@ -210,7 +210,7 @@ define([
             $scope.reloadGraph();
 
             $scope.observerService.registerObserverCallback(function() {
-                console.log("update network");
+                console.log("Update network");
                 $scope.reloadGraph();
             });
 
@@ -231,9 +231,11 @@ define([
                         return (edge.to == nodeId || edge.from == nodeId)
                     }
                 }).map(function(edge) { return _.extend(edge, { hidden: true }); });
+
                 // Hide adjacent edges
                 self.edges.update(adjacentEdges);
                 self.edgesDataset.remove(adjacentEdges);
+
                 // Update new edge max value from non hidden edges
                 var max = new VisDataSet(self.edges.get({ filter: function(edge) { return !edge.hidden; }})).max("value").value;
                 $scope.maxEdgeImportance = max;
@@ -288,19 +290,13 @@ define([
             }
 
             function applyPhysicsOptions(options) {
-                console.log('Physics simulation on');
+                console.log('Physics simulation turned on');
                 $scope.graphOptions['physics'] = options;
-                self.network.setOptions($scope.graphOptions);
             }
 
             function disablePhysics() {
-                console.log('Physics simulation off');
+                console.log('Physics simulation turned off');
                 $scope.graphOptions['physics'] = false;
-                // Need to explicitly apply the new options since the automatic
-                // watchCollection from angular-visjs seems to be outside of the
-                // regular angular update event cycle. It also requires to remove
-                // the watchCollection from the options entirely!
-                self.network.setOptions($scope.graphOptions);
                 // Bring graph in current viewport
                 $timeout(function() { self.network.fit(); }, 0, false);
             }
@@ -309,8 +305,6 @@ define([
             // ----------------------------------------------------------------------------------
             // Event Callbacks
             //
-            // These callbacks seem to be outside of the angular $digest
-            // cycles. To force new $digest use $scope.$apply(function() { /* scope action */ })
             // ---------------------------------------------------------------------------------
 
             function onNetworkLoad(network) {
@@ -326,25 +320,21 @@ define([
                 console.log("Stabilization done after " + JSON.stringify(params, null, 4));
             }
 
-            //function stabilizationDone(params) {
+            /**
+             * Called when the internal iteration threshold is reached. See graphConfig.
+             */
             function stabilizationDone() {
-                console.log("Stabilization iteration done");
-                if(self.nodes.length == 0 && self.edges.length == 0) {
-                    self.network.storePositions();
-                    self.nodes = new VisDataSet(self.nodesDataset.get());
-                    self.edges = new VisDataSet(self.edgesDataset.get());
+                console.log("Stabilization Iteration Done");
+                // Once the network is stabilized the node positions are stored and the
+                // physics simulation is disabled.
+                self.network.storePositions();
+                self.nodes = new VisDataSet(self.nodesDataset.get());
+                self.edges = new VisDataSet(self.edgesDataset.get());
 
-                    // Once the stabilized event is called the first time
-                    // the network is initialized. Other stabilizing events
-                    // are triggered by the handleEdgeSlider method and only
-                    // simulate dynamic edges.
-                    $scope.$apply(function() {
-                        $scope.loading = false;
-                        // reset the current edge slider position, because the new
-                        // maximum value could be smaller than the current value.
-                        $scope.edgeImportance = 1;
-                    });
-                }
+                $scope.loading = false;
+                // Reset the current edge slider position, because the new
+                // maximum value could be smaller than the current value.
+                $scope.edgeImportance = 1;
                 disablePhysics();
             }
 
