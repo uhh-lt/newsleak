@@ -180,6 +180,7 @@ define([
                                 //mass: mass
                             };
                         });
+
                         self.nodesDataset.clear();
                         self.nodesDataset.add(nodes);
                         // Highlight new nodes after each filtering step
@@ -219,10 +220,21 @@ define([
                 // Don't highlight all nodes for the initial graph
                 if(self.nodes.length > 0) {
                     var currentNodeIds = self.nodes.getIds();
+                    var sec = _.intersection(nextNodeIds, currentNodeIds);
+                    // Remove old marking from the nodes in order to show only the new nodes for one single step
+                    var cleanNodes = self.nodes.get(sec).map(function(n) { return _.extend(n, { 'shapeProperties': { borderDashes: false }, color: undefined, borderWidth: 1 })});
+                    self.nodes.update(cleanNodes);
+                    self.nodesDataset.update(cleanNodes);
+
                     var diff = _.difference(nextNodeIds, currentNodeIds);
                     // Give new nodes a white and dashed border
-                    var modifiedNodes = diff.map(function(id) { return { id: id, shapeProperties:{ borderDashes: [5,5] }, color: { border: 'white' }, borderWidth: 2 }});
+                    var modifiedNodes = diff.map(function(id) { return { id: id, shapeProperties: { borderDashes: [5, 5] }, color: { border: 'white' }, borderWidth: 2 }});
                     self.nodesDataset.update(modifiedNodes);
+
+                    // TODO Move
+                    // Fix nodes from the previous filtering step. This ensures that the node will always preserve its position.
+                    var fixedNodes = self.nodes.get(sec).map(function(n) { return _.extend(n, { fixed: { x: true, y: true } })});
+                    self.nodesDataset.update(fixedNodes);
                 }
             }
 
@@ -335,6 +347,10 @@ define([
              */
             function stabilizationDone() {
                 console.log("Stabilization Iteration Done");
+                // Release fixed nodes from the previous filter step
+                var releasedNodes = self.nodesDataset.getIds().map(function(id) { return { id: id,  fixed: false }});
+                self.nodesDataset.update(releasedNodes);
+
                 // Once the network is stabilized the node positions are stored and the
                 // physics simulation is disabled.
                 self.network.storePositions();

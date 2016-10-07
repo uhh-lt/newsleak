@@ -51,10 +51,6 @@ define([
                     size: 10,
                     shadow: true,
                     //mass: 1.7,
-                    font: {
-                        /*strokeWidth: 3,
-                         strokeColor: 'white'*/
-                    },
                     scaling: {
                         label: {
                             min: 30,
