@@ -138,7 +138,6 @@ define([
             $scope.$watch('edgeImportance', handleEdgeSlider);
 
             $scope.reloadGraph = function() {
-                //$scope.ready = false;
                 var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.name; });
                 var entities = $scope.entityFilters.map(function(v) { return v.data.id; });
                 var facets = $scope.observerService.getFacets();
@@ -181,9 +180,11 @@ define([
                                 //mass: mass
                             };
                         });
-                        self.nodes.clear();
                         self.nodesDataset.clear();
                         self.nodesDataset.add(nodes);
+                        // Highlight new nodes after each filtering step
+                        markNewNodes(nodes.map(function(n) { return n.id; }));
+                        self.nodes.clear();
 
                         var edges = response.data.relations.map(function(n) {
                             return {from: n[0], to: n[1], value: n[2] };
@@ -213,6 +214,17 @@ define([
                 console.log("Update network");
                 $scope.reloadGraph();
             });
+
+            function markNewNodes(nextNodeIds) {
+                // Don't highlight all nodes for the initial graph
+                if(self.nodes.length > 0) {
+                    var currentNodeIds = self.nodes.getIds();
+                    var diff = _.difference(nextNodeIds, currentNodeIds);
+                    // Give new nodes a white and dashed border
+                    var modifiedNodes = diff.map(function(id) { return { id: id, shapeProperties:{ borderDashes: [5,5] }, color: { border: 'white' }, borderWidth: 2 }});
+                    self.nodesDataset.update(modifiedNodes);
+                }
+            }
 
             function addFullscreenButton() {
                 var panel = angular.element(document.getElementsByClassName('vis-navigation')[0]);
@@ -297,8 +309,6 @@ define([
             function disablePhysics() {
                 console.log('Physics simulation turned off');
                 $scope.graphOptions['physics'] = false;
-                // Bring graph in current viewport
-                $timeout(function() { self.network.fit(); }, 0, false);
             }
 
 

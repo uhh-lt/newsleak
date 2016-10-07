@@ -40,7 +40,7 @@ define([
             maxVelocity: 146,
             solver: 'forceAtlas2Based',
             stabilization: {
-                fit: false,
+                fit: true,
                 iterations: 1000//20
             }//,
            // adaptiveTimestep: true
