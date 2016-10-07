@@ -103,7 +103,7 @@ define([
             var selectedNodes = new Array();
             $scope.selectedNodes = selectedNodes;
             var selectedEdges = new Array();
-            var selectionColor = '#2A2AFF';
+            var selectionColor = '#FF2A2A';
 
             var loadingNodes = false;
 
@@ -740,8 +740,9 @@ define([
                             }
                             else{  // The edge is already selected, so unselect it.
                                 selectedEdges.splice(index, 1);  // Remove the edge from the list.
-                                d3.select(this).style('stroke', '#b0b0b0'/*'#696969'*/)
-                                               .style('obacity', .8);
+                                d3.select(this).style("stroke", function (d) {
+                                    if (d.uiLevel > 1) {return toolShareService.priorityToColor[d.uiLevel]} else {return neutralEdgeColor}})
+                                    .style('opacity', .8);
                                 d3.select('#edgelabel_' + d.id)
                                             .style('fill', '#000000')
                                             .attr('font-weight', 'normal');
