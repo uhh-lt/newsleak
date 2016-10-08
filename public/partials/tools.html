@@ -46,17 +46,17 @@
         </div>
       </div>
       <div class="col-md-3">
-      <table style="float: right" class="noselect">
+      <table style="float: right; border-collapse: separate;" class="noselect">
         <tr ng-repeat-start="(xIndex, x) in categories" ng-if="$first">
-          <td ng-repeat="c in categories" id="{{xIndex}}.{{$index}}" ng-click="setUI(xIndex,$index)">
+          <td ng-repeat="c in categories" id="{{xIndex}}.{{$index}}" ng-click="setUI(xIndex,$index)" class="uiTableIcon" style="background-color: {{c.color}}" title="Set weight for all edges connecting a {{c.singular}}-Entity">
             <i class="material-icons">{{c.img}}</i>
           </td>
         </tr>
         <tr ng-repeat-end="(xIndex, x) in categories" ng-if="!$first">
-          <td ng-repeat-start="y in categories" ng-if="$first" id="{{xIndex}}.{{$index}}" ng-click="setUI(xIndex,$index)">
+          <td ng-repeat-start="y in categories" ng-if="$first" id="{{xIndex}}.{{$index}}" ng-click="setUI(xIndex,$index)" class="uiTableIcon" style="background-color: {{x.color}}" title="Set weight for all edges connecting a {{x.singular}}-Entity">
             <i class="material-icons">{{x.img}}</i>
           </td>
-          <td ng-repeat-end="y in categories" ng-if="!$first" id="{{xIndex}}.{{$index}}" ng-click="setUI(xIndex,$index)">
+          <td ng-repeat-end="y in categories" ng-if="!$first" id="{{xIndex}}.{{$index}}" ng-click="setUI(xIndex,$index)" class="uiTable" title="Set weight for all edges connecting a {{x.singular}}-Entity with a {{y.singular}}-Entity">
             <i class="material-icons red" id="{{xIndex}}.{{$index}}.icon" style="visibility:hidden;">block</i>
           </td>
         </tr>

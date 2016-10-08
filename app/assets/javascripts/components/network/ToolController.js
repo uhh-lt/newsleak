@@ -31,10 +31,12 @@ define([
         '$scope',
         '$uibModal',
         'toolShareService',
+        'graphPropertiesShareService',
         function(
             $scope,
             $uibModal,
-            toolShareService
+            toolShareService,
+            graphPropertiesShareService
         )
         {
             toolShareService.enableOrDisableButtons();
@@ -67,33 +69,38 @@ define([
             $scope.sliderCountriesCitiesAmount = createSliderOptions("3", " countries/cities");
             $scope.sliderOrganizationsAmount = createSliderOptions("3", " organizations");
             $scope.sliderPersonsAmount = createSliderOptions("3", " persons");
-            $scope.sliderMiscellaneousAmount = createSliderOptions("3", " miscellaneous")
+            $scope.sliderMiscellaneousAmount = createSliderOptions("3", " miscellaneous");
 
-            toolShareService.sliderLocationsValue = function(){return $scope.sliderCountriesCitiesAmount.value;}
-            toolShareService.sliderOrganizationsValue = function(){return $scope.sliderOrganizationsAmount.value;}
-            toolShareService.sliderPersonsValue = function(){return $scope.sliderPersonsAmount.value;}
-            toolShareService.sliderMiscellaneousValue = function(){return $scope.sliderMiscellaneousAmount.value;}
+            toolShareService.sliderLocationsValue = function(){return $scope.sliderCountriesCitiesAmount.value;};
+            toolShareService.sliderOrganizationsValue = function(){return $scope.sliderOrganizationsAmount.value;};
+            toolShareService.sliderPersonsValue = function(){return $scope.sliderPersonsAmount.value;};
+            toolShareService.sliderMiscellaneousValue = function(){return $scope.sliderMiscellaneousAmount.value;};
 
             toolShareService.sliderEdgeMinFreq = function(){return $scope.sliderEdgeFrequency.value.split(";")[0]};
-            toolShareService.sliderEdgeMaxFreq = function(){return $scope.sliderEdgeFrequency.value.split(";")[1]}
+            toolShareService.sliderEdgeMaxFreq = function(){return $scope.sliderEdgeFrequency.value.split(";")[1]};
 
             toolShareService.sliderEdgeAmount = function () {return $scope.sliderEdgeAmount.value};
             toolShareService.sliderEdgesPerNode = function () {return $scope.sliderEdgesPerNode.value};
 
             $scope.toolShareService = toolShareService;
 
-            $scope.categories = [{name:'-', img: '-'},{name:'PER', img: 'person'/*'face'*/, val: 1},{name:'ORG', img: 'account_balance', val: 1},
-                {name:'LOC', img: 'place', val: 1},{name:'MISC', img: 'reorder', val: 1}];
+            $scope.categories = [{name:'', img: '', color: ''},{name:'PER', img: 'person'/*'face'*/, val: 1, color: '#bebada', singular: 'Person'}
+                ,{name:'ORG', img: 'account_balance', val: 1, color:'#fb8072', singular: 'Organisation'},
+                {name:'LOC', img: 'place', val: 1, color: '#8dd3c7', singular: 'Location'},
+                {name:'MISC', img: 'reorder', val: 1, color: '#ffffb3', singular: 'Miscellaneous'}];
+
 
             var UIgeneralItems = [1,1,1,1];
             // var priorityToColor = ["white","white","#83a2d6","#2759ac"];
 
             $scope.setUI = function (x,y) {
-                if ((x==0 || y==0) && !(x==0 && y==0)){
+                if ((x==0 || y==0) && !(x==0 && y==0)){ //Wenn ein Icon angeklickt wurde
                     var prio = (UIgeneralItems[x + y -1] + 1) % 4;
                     UIgeneralItems[x + y -1] = prio;
                     x = x+y;
-                    for (var i = 0; i<UIgeneralItems.length+1; i++){
+                    document.getElementById(x+'.0').style.borderColor = toolShareService.priorityToColorBorder[prio];
+                    document.getElementById('0.'+x).style.borderColor = toolShareService.priorityToColorBorder[prio];
+                    for (var i = 1; i<UIgeneralItems.length+1; i++){
                         if (i != UIgeneralItems.length) {
                             toolShareService.UIitems[i][x - 1] = prio;
                             toolShareService.UIitems[x - 1][i] = prio;

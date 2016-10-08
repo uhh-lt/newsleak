@@ -152,15 +152,27 @@ div.tooltip {
 
 .glow {
     filter:url(#glow);
+}
 
+.uiTable {
+    border: 1px solid black;
+    text-align: center;
+    vertical-align: bottom;
+}
+
+.uiTableIcon {
+    border: 3px solid black;
+    margin: 1px;
+    text-align: center;
+    vertical-align: bottom;
 }
 
 
-/*
-    ======================================
-    Network Legend
-    ======================================
-*/
+    /*
+        ======================================
+        Network Legend
+        ======================================
+    */
 
 /* Hide the legend initially */
 #legend-content {
