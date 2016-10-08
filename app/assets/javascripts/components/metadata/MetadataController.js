@@ -19,11 +19,12 @@ define([
     'angular',
     'angularMoment',
     'jquery-json',
-    'ngFileSaver'
+    'ngFileSaver',
+    'ngMaterial'
 ], function (angular) {
     'use strict';
 
-    angular.module("myApp.metadata", ['play.routing', 'angularMoment']);
+    angular.module("myApp.metadata", ['play.routing', 'angularMoment', 'ngMaterial']);
     angular.module("myApp.metadata")
         .controller('MetadataController',
             [

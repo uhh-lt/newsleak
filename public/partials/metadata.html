@@ -17,45 +17,33 @@
 
 <div id="metadata" style="padding: 10px 0 0 10px;">
     <p style="font-size:16px; display: inline-block">Frequency Overview</p>
-    <ul class="nav nav-tabs" style="display: inline-block">
-        <li><a data-toggle="tab" href="#entities_tab">entities</a></li>
-        <li class="active"><a data-toggle="tab" href="#metadata_tab">metadata</a></li>
-    </ul>
-
-    <div id="metadata_tabs" class="tab-content">
+    <md-tabs>
         <div id="entities_tab" class="tab-pane fade in">
-    <uib-tabset id="metadata-overview" >
-        <uib-tab ng-repeat="entityType in entityTypes"
-                heading="{{entityType}}"
-                 classes="fade in meta-chart-container"
-                 select="reflow(entityType)"
-                >
+            <md-tab label="Entities">
+                <md-tabs>
+                    <md-tab
+                            ng-repeat="entityType in entityTypes"
+                            label="{{entityType}}">
+                        <div class="scroll-chart">
+                            <div id="chart_{{entityType| lowercase}}" class="meta-chart"></div>
+                        </div>
+                    </md-tab>
+                </md-tabs>
 
-                <div class="scroll-chart">
-                    <div id="chart_{{entityType| lowercase}}" class="meta-chart" ></div>
-                </div>
-
-
-        </uib-tab>
-    </uib-tabset>
+            </md-tab>
         </div>
-        <div id="metadata_tab" class="tab-pane fade in active">
-            <uib-tabset id="metadata-overview2" >
-                <uib-tab ng-repeat="metaType in metadataTypes"
-                         heading="{{metaType}}"
-                         classes="fade in meta-chart-container"
-                         select="reflow(metaType)"
-                >
-
-                    <div class="scroll-chart">
-                        <div id="chart_{{metaType| lowercase}}" class="meta-chart" ></div>
-                    </div>
-
-
-                </uib-tab>
-            </uib-tabset>
-        </div>
+        <md-tab label="Metadata">
+            <div id="metadata_tab" class="tab-pane fade in active">
+                <md-tabs>
+                    <md-tab
+                            ng-repeat="metaType in metadataTypes"
+                            label="{{metaType}}">
+                        <div class="scroll-chart">
+                            <div id="chart_{{metaType | lowercase}}" class="meta-chart"></div>
+                        </div>
+                    </md-tab>
+                </md-tabs>
+            </div>
+        </md-tab>
+    </md-tabs>
 </div>
-
-    </uib-tabset>
-  </div>
