@@ -35,6 +35,7 @@ class GraphGuidance() {
 
   // cacht schon besuchte Knoten
   var nodes = new mutable.HashMap[Long, Node]()
+  var nodeList = new mutable.HashMap[Long, mutable.PriorityQueue[Edge]]()
   var usedNodes = new mutable.HashMap[Long, Node]()
   var oldEdges = new mutable.HashMap[(Long, Long), Edge]()
 
@@ -44,16 +45,19 @@ class GraphGuidance() {
 
   var prefferedNodes: List[Long] = List()
 
+  implicit val order = Ordering.by[Edge, (Double, Long, Long)](e => (
+    e.getDoi, e.getNodes._1.getId, e.getNodes._2.getId
+  ))
+
   // var uiMatrix = Array.ofDim[Int](4, 4)
 
   // scalastyle:off
-  def getGuidance(focusId: Long, edgeAmount: Int, epn: Int, uiMatrix: Array[Array[Int]], useOldEdges: Boolean, prefferedNodes: List[Long]): Iterator[(Edge, Option[Node])] = {
+  def getGuidance(focusId: Long, edgeAmount: Int, epn: Int, uiMatrix: Array[Array[Int]], useOldEdges: Boolean): GuidanceIterator = {
     this.epn = epn
     this.uiMatrix = uiMatrix
     this.edgeAmount = edgeAmount
-    this.prefferedNodes = prefferedNodes
 
-    new Iterator[(Edge, Option[Node])] {
+    new GuidanceIterator {
       iter += 1
 
       if (!useOldEdges) {
@@ -69,11 +73,7 @@ class GraphGuidance() {
       usedNodes.clear()
       usedNodes += (startNode.getId -> startNode)
 
-      var pq = mutable.PriorityQueue[Edge]()(Ordering.by[Edge, (Double, Int)](e => (
-        e.getDoi,
-        if (prefferedNodes.exists(l => e.getNodes._1.getId == l || e.getNodes._2.getId == l)) -e.getDist else Int.MinValue
-      ))) ++= getEdges(startNode)
-
+      var pq = mutable.PriorityQueue[Edge]() ++= getEdges(startNode)
       override def hasNext: Boolean = {
         pq.exists(e => !(usedEdges.contains(e.getNodes) || usedEdges.contains(e.getNodes.swap) || e.getNodes._1.getConn == epn || e.getNodes._2.getConn == epn))
       }
@@ -120,6 +120,34 @@ class GraphGuidance() {
         (edge, newNode)
       }
 
+      override def getMoreEdges(nodeId: Long, amount: Int): (List[Edge], List[Node]) = {
+        var pq = nodeList(nodeId)
+        object pqIter extends Iterator[(Edge, Option[Node])] {
+          // ACHTUNG pq gibt mit .find() nicht nach DoI geordnet aus! Deswegen ist das hier notwendig
+          def hasNext = pq.nonEmpty
+          def next = {
+            val edge = pq.dequeue
+            var node: Option[Node] = None
+            if (nodes.contains(edge.getNodes._2.getId)) {
+              node = Some(edge.getNodes._2)
+            }
+            (edge, node)
+          }
+        }
+        Logger.debug(usedEdges.keySet.toString())
+        val (eList, nList) = pqIter.filterNot(tpl => usedEdges.contains(tpl._1.getNodes) || usedEdges.contains(tpl._1.getNodes.swap)).take(amount).map(tpl => {
+          usedEdges += tpl._1.getNodes -> tpl._1
+          if (tpl._2.nonEmpty) {
+            usedNodes += tpl._2.get.getId -> tpl._2.get
+            if (!nodeList.contains(tpl._2.get.getId)) {
+              getEdges(tpl._2.get)
+            }
+          }
+          tpl
+        }).toList.unzip
+        (eList, nList.flatten)
+      }
+
       private def getEdges(node: Node): mutable.MutableList[Edge] = {
 
         var distToFocus: Int = node.getDistance //Wenn der Knoten nicht in der Map liegt, muss es sich um dem Fokus handeln, also dist=0
@@ -143,7 +171,7 @@ class GraphGuidance() {
             newEdges += new Edge(node, n, et._2, uiMatrix(typeIndex(node.getCategory))(typeIndex(n.getCategory)), oldDoi)
           }
         })
-
+        nodeList += (node.getId -> (new mutable.PriorityQueue[Edge]() ++= newEdges))
         //TODO Distanzen müssen rekursiv geupdatet werden
         newEdges
       }
@@ -155,6 +183,6 @@ class GraphGuidance() {
     newGG.oldEdges = oldEdges.map(p => p._1 -> p._2.copy)
     newGG.nodes = nodes.map(p => p._1 -> p._2.copy)
     newGG.iter = iter
-    newGG.getGuidance(focusId, edgeAmount, epn, uiMatrix, useOldEdges, List())
+    newGG.getGuidance(focusId, edgeAmount, epn, uiMatrix, useOldEdges)
   }
 }

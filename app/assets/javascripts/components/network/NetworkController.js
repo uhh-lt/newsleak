@@ -98,12 +98,12 @@ define([
             $scope.$on('startGuidance-down', function(event, arg) {
                 console.log("received event startGuidance");
                 console.log(arg);
-                getGuidanceNodes(arg,false,false)});
+                getGuidanceNodes(arg,false)});
 
             var selectedNodes = new Array();
             $scope.selectedNodes = selectedNodes;
             var selectedEdges = new Array();
-            var selectionColor = '#FF2A2A';
+            var selectionColor = '#FFB500';
 
             var loadingNodes = false;
 
@@ -196,7 +196,7 @@ define([
                 initNetwork();
             });*/
             //initNetwork();
-            getGuidanceNodes(904275,false,false);
+            getGuidanceNodes(904275,false);
 
 
 
@@ -817,6 +817,11 @@ define([
                             {
                             	return 'nodecircle_' + d.id;
                             })
+                            .on('contextmenu', function (d) {
+                                console.log("get add. edges");
+                                d3.event.preventDefault();
+                                getAdditionalEdges(d.id)
+                            })
                             .on('mousedown', function () {  // make nodes clickable
                                 // On mousedown store the current time in milliseconds
                                 time = moment();
@@ -954,6 +959,8 @@ define([
                             }
                         });*/
 
+                console.log("removing nodes:")
+                console.log(node.exit().data())
                     node.exit().remove();
 
                     addTooltip(node, link);  // add the tooltips to the nodes and links
@@ -1827,7 +1834,7 @@ define([
 
             function getEntities() {
                 console.log("reload entities");
-                getGuidanceNodes(135603,false,false)//Darmstadt!
+                getGuidanceNodes(135603,false)//Darmstadt!
                 /*
                 var entities = [];
                 angular.forEach($scope.entityFilters, function(item) {
@@ -1979,18 +1986,13 @@ define([
                 )
             }
 
-            function getGuidanceNodes(focusNodeId,usePrefferedNodes,useOldEdges){
+            function getGuidanceNodes(focusNodeId,useOldEdges){
                 var uiStr= "";
                 for (var i=0;i<toolShareService.UIitems.length;i++){
                     uiStr+=toolShareService.UIitems[i].toString()+';';
                 }
-                console.log(prefferedNodes);
-                var prefferedNodes = [];
-                if (usePrefferedNodes){
-                    prefferedNodes = nodes.filter(function(element, index, array){return element.id === focusNodeId;})[0]
-                        .relEdges.map(function (e) {return e.id});
-                }
-                playRoutes.controllers.NetworkController.getGuidanceNodes(focusNodeId, toolShareService.sliderEdgeAmount(), toolShareService.sliderEdgesPerNode(), uiStr, useOldEdges, prefferedNodes, sessionid).get().then(function(response) {
+
+                playRoutes.controllers.NetworkController.getGuidanceNodes(focusNodeId, toolShareService.sliderEdgeAmount(), toolShareService.sliderEdgesPerNode(), uiStr, useOldEdges, sessionid).get().then(function(response) {
 
                     //to prevent invisible selections
                     unselectNodes();
@@ -2063,6 +2065,57 @@ define([
 
                     start();
                 });
+            }
+
+            function getAdditionalEdges(nodeId) {
+                playRoutes.controllers.NetworkController.getAdditionalEdges(nodeId,toolShareService.sliderEdgesPerNode(),sessionid).get().then(function(response) {
+                    response.data.nodes.forEach(
+                        function (v) {
+                            nodes.push({
+                                id: v.id,
+                                isFocusNode: false,
+                                name: v.name,
+                                freq: v.docOcc,
+                                type: v.type,
+                                relEdges: v.edges,
+                                docCount: -1,
+                                size: 2,
+                            });
+                        });
+                    console.log(nodes);
+                    response.data.links.forEach(
+                        function (v) {
+                            var sourceNode = nodes.find(function (node) {
+                                return v.sourceNode == node.id
+                            });
+                            var targetNode = nodes.find(function (node) {
+                                return v.targetNode == node.id
+                            });
+                            if (sourceNode == undefined || targetNode == undefined) {
+                                return;
+                            }
+                            if (sourceNode.id > targetNode.id) {//sourceNodes haben immer die kleinere Id. Das ist notwendig, damit Kanten korrekt neugezeichnet werden
+                                var tempNode = sourceNode;
+                                sourceNode = targetNode;
+                                targetNode = tempNode
+                            }
+                            console.log(sourceNode.name+"-"+targetNode.name);
+                            edges.push({
+                                id: sourceNode.id + "-" + targetNode.id,
+                                source: sourceNode,
+                                target: targetNode,
+                                freq: v.docOcc,
+                                uiLevel: v.uiLevel
+                            });
+                        });
+                    console.log(edges);
+
+                    force.nodes(nodes);
+                    force.links(edges);
+
+                    start();
+                })
+
             }
 
         }

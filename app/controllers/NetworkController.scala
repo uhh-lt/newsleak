@@ -50,7 +50,8 @@ class NetworkController @Inject extends Controller {
 
   // TODO: fetch entity types from backend API
 
-  var NSessionMap: mutable.HashMap[String, GraphGuidance] = new mutable.HashMap[String, GraphGuidance]()
+  var GuindanceMap: mutable.HashMap[String, GraphGuidance] = new mutable.HashMap[String, GraphGuidance]()
+  var IterMap: mutable.HashMap[String, GuidanceIterator] = new mutable.HashMap[String, GuidanceIterator]()
 
   /**
    * the strings for different types
@@ -371,13 +372,21 @@ class NetworkController @Inject extends Controller {
    * @param sessionId SessionId
    * @return sendet den gebildeten Supgraph in Form von Kanten+Knoten an den Benutzer
    */
-  def getGuidanceNodes(focusId: Long, edgeAmount: Int, epn: Int, uiString: String, useOldEdges: Boolean, prefferedNodes: List[Long], sessionId: String) = Action {
+  def getGuidanceNodes(focusId: Long, edgeAmount: Int, epn: Int, uiString: String, useOldEdges: Boolean, sessionId: String) = Action {
 
     val uiMatrix: Array[Array[Int]] = uiString.split(";").map(_.split(",").map(_.toInt))
-    implicit val gg = NSessionMap.getOrElseUpdate(sessionId, new GraphGuidance)
-    val (edges, nodes) = gg.getGuidance(focusId, edgeAmount, epn, uiMatrix, useOldEdges, prefferedNodes).take(edgeAmount).toList.unzip
+    implicit val gg = GuindanceMap.getOrElseUpdate(sessionId, new GraphGuidance)
+    val ggIter = gg.getGuidance(focusId, edgeAmount, epn, uiMatrix, useOldEdges)
+    val (edges, nodes) = ggIter.take(edgeAmount).toList.unzip
     val result = new JsObject(Map(("nodes", Json.toJson(nodes.flatten /*entfernt die leeren Options*/ ++ NodeFactory.createNodes(List(focusId), 0, 0))), ("links", Json.toJson(edges))))
-    Logger.info(result.toString())
+    IterMap += (sessionId -> ggIter)
+    Logger.debug(result.toString())
+    Ok(result).as("application/json")
+  }
+
+  def getAdditionalEdges(nodeId: Long, amount: Int, sessionId: String) = Action {
+    val (eList, nList) = IterMap(sessionId).getMoreEdges(nodeId, amount)
+    val result = new JsObject(Map(("nodes", Json.toJson(nList)), ("links", Json.toJson(eList))))
     Ok(result).as("application/json")
   }
 
