@@ -177,7 +177,6 @@ define([
                                 value: n.count,
                                 group: n.group,
                                 title: title//,
-                                //mass: mass
                             };
                         });
 
@@ -204,7 +203,9 @@ define([
                             nodes: self.nodesDataset,
                             edges: self.edgesDataset
                         };
-                    });
+                        console.log(self.nodesDataset.get(902475));
+
+                });
             };
 
 
