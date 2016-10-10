@@ -203,8 +203,6 @@ define([
                             nodes: self.nodesDataset,
                             edges: self.edgesDataset
                         };
-                        console.log(self.nodesDataset.get(902475));
-
                 });
             };
 
@@ -223,7 +221,7 @@ define([
                     var currentNodeIds = self.nodes.getIds();
                     var sec = _.intersection(nextNodeIds, currentNodeIds);
                     // Remove old marking from the nodes in order to show only the new nodes for one single step
-                    var cleanNodes = self.nodes.get(sec).map(function(n) { return _.extend(n, { 'shapeProperties': { borderDashes: false }, color: undefined, borderWidth: 1 })});
+                    var cleanNodes = self.nodes.get(sec).map(function(n) { return _.extend(n, { 'shapeProperties': { borderDashes: false }, color: undefined, borderWidth: 1})});
                     self.nodes.update(cleanNodes);
                     self.nodesDataset.update(cleanNodes);
 
@@ -234,7 +232,8 @@ define([
 
                     // TODO Move
                     // Fix nodes from the previous filtering step. This ensures that the node will always preserve its position.
-                    var fixedNodes = self.nodes.get(sec).map(function(n) { return _.extend(n, { fixed: { x: true, y: true } })});
+                    // Also remove hidden state between filtering steps.
+                    var fixedNodes = self.nodes.get(sec).map(function(n) { return _.extend(n, { fixed: { x: true, y: true }, hidden: false })});
                     self.nodesDataset.update(fixedNodes);
                 }
             }
