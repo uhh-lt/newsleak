@@ -131,6 +131,9 @@
 			'bootstrapFileField' : {
 				deps: ['angular', 'bootstrap']
 			},
+			'ngFileSaver': {
+				deps: ['angular']
+			},
 			'ngVis': {
 				deps: ['angular', 'vis']
 			}
