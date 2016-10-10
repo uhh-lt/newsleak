@@ -30,7 +30,6 @@
 			'awesome-slider': 'libs/angular-awesome-slider/dist/angular-awesome-slider.min',
 			'ngAnimate': 'libs/angular-animate/angular-animate',
 			'ngAria': 'libs/angular-aria/angular-aria',
-			'ngMessages': 'libs/angular-messages/angular-messages.min',
 			'ngMaterial': 'libs/angular-material/angular-material.min',
 			'ngMdIcons': 'libs/angular-material-icons/angular-material-icons.min',
 			'bootstrap': 'libs/bootstrap/dist/js/bootstrap.min',
@@ -105,7 +104,7 @@
 				deps: ['jquery']
 			},
 			'ngMaterial': {
-				deps: ['angular', 'ngAria', 'ngMessages', 'ngAnimate']
+				deps: ['angular', 'ngAria', 'ngAnimate']
 			},
 			'ngMdIcons': {
 				deps: ['angular']
