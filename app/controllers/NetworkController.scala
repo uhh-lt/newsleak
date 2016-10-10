@@ -121,6 +121,10 @@ class NetworkController @Inject extends Controller {
     }
   }
 
+  def getNeighbors(id: Long) = Action { implicit request =>
+    Ok("")
+  }
+
   /**
    * deletes an entity from the graph by its id
    *

@@ -77,19 +77,25 @@ define([
             self.physicOptions = physicOptions;
 
 
-            self.nodeMenu = [{
+            self.nodeMenu = [
+                {
                     title: 'Add as filter',
                     action: function(value, nodeId) { addNodeFilter(nodeId); }
                 }, {
                     title: 'Edit node',
                     action: function(value, nodeId) { editNode(nodeId); }
                 }, {
+                    title: 'Expand',
+                    action: function(value, nodeId) { expandNode(nodeId); }
+                },
+                {
                     title: 'Hide',
                     action: function(value, nodeId) { hideNode(nodeId); }
                 }, {
                     title: 'Blacklist',
                     action: function(value, nodeId) { blacklistNode(nodeId); }
-            }];
+                }
+            ];
 
             self.edgeMenu = [{
                 title: 'Add as filter',
@@ -215,6 +221,16 @@ define([
                 $scope.reloadGraph();
             });
 
+            function applyPhysicsOptions(options) {
+                console.log('Physics simulation turned on');
+                $scope.graphOptions['physics'] = options;
+            }
+
+            function disablePhysics() {
+                console.log('Physics simulation turned off');
+                $scope.graphOptions['physics'] = false;
+            }
+
             function markNewNodes(nextNodeIds) {
                 // Don't highlight all nodes for the initial graph
                 if(self.nodes.length > 0) {
@@ -244,6 +260,11 @@ define([
                 var button = $compile(buttonTemplate)($scope);
                 panel.append(button);
             }
+
+            // ----------------------------------------------------------------------------------
+            // Node and edge manipulation
+            //
+            // ----------------------------------------------------------------------------------
 
             function hideNode(nodeId) {
                 // Hide given node
@@ -294,7 +315,7 @@ define([
                         function($scope, $mdDialog, playRoutes, e) {
                             $scope.title = e.label;
                             $scope.entity = e;
-                            
+
                             $scope.apply = function () { $mdDialog.hide($scope.entity); };
                             $scope.closeClick = function() { $mdDialog.cancel(); };
                         }],
@@ -313,21 +334,37 @@ define([
                 }, function() { /* cancel click */ });
             }
 
-            function applyPhysicsOptions(options) {
-                console.log('Physics simulation turned on');
-                $scope.graphOptions['physics'] = options;
-            }
 
-            function disablePhysics() {
-                console.log('Physics simulation turned off');
-                $scope.graphOptions['physics'] = false;
+            function expandNode(nodeId) {
+                var entity = self.nodes.get(nodeId);
+                var neighbors = [
+                    {id: 1, label: "Titan", type: "God", freq: 10 },
+                    {id: 2, label: "Dr. Who", type: "Timelord", freq: 7 },
+                    {id: 3, label: "Cinderella", type: "Girl", freq: 3 }
+                ];
+                $mdDialog.show({
+                    templateUrl: 'assets/partials/expandNode.html',
+                    controller: ['$scope', '$mdDialog', 'playRoutes', 'e', 'n',
+                        function($scope, $mdDialog, playRoutes, e, n) {
+
+                            $scope.columns = ['Name', 'Type'];
+
+                            $scope.title = e.label;
+                            $scope.entity = e;
+                            $scope.neighbors = n;
+
+                            $scope.apply = function () { $mdDialog.hide(); };
+                            $scope.closeClick = function() { $mdDialog.cancel(); };
+                        }],
+                    locals: { e: entity, n: neighbors }
+                }).then(function(response) { /* apply click */ }, function() { /* cancel click */ });
             }
 
 
             // ----------------------------------------------------------------------------------
-            // Event Callbacks
+            // Network Event Callbacks
             //
-            // ---------------------------------------------------------------------------------
+            // ----------------------------------------------------------------------------------
 
             function onNetworkLoad(network) {
                 self.network = network;

@@ -15,46 +15,43 @@
   ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<md-dialog aria-label="Settings" flex="40" ng-cloak>
+<md-dialog aria-label="expand" flex="25" ng-cloak>
+    <form>
         <md-toolbar>
             <div class="md-toolbar-tools">
-                <h2>Settings</h2>
+                <h2>Expand node {{ title }}</h2>
                 <span flex></span>
                 <md-button class="md-icon-button" ng-click="closeClick()">
                     <md-icon md-font-icon="fa fa-times" aria-label="Close dialog"></md-icon>
                 </md-button>
             </div>
         </md-toolbar>
-
         <md-dialog-content>
-            <md-tabs md-dynamic-height md-border-bottom>
-                <md-tab label="blacklist">
-                    <md-content class="md-padding">
-                        <md-list>
-                            <md-list-item layout="row">
-                                <p class="md-body-2"> Id</p>
-                                <p class="md-body-2"> Name </p>
-                                <p class="md-body-2"> Type </p>
-                            </md-list-item>
-
-                            <md-list-item ng-repeat="e in blacklisted | orderBy: 'name'" ng-click="toggle(e)">
-                                <p> {{ e.id }} </p>
-                                <p> {{ e.name }} </p>
-                                <p> {{ e.type }} </p>
-                                <md-checkbox class="md-secondary" ng-click="toggle(e)" ng-checked="exists(e, selected)" aria-label="remove-item"></md-checkbox>
-                            </md-list-item>
-                        </md-list>
-                        <md-divider></md-divider>
-                        <p>
-                            <md-button class="md-primary md-raised" ng-click="removeItems()">Remove</md-button>
-                        </p>
-                    </md-content>
-                </md-tab>
-            </md-tabs>
+                <md-content layout-padding layout="column">
+                    <h3 class="md-title">Neighbors</h3>
+                    <md-input-container class="md-block" flex-gt-sm>
+                        <label>Filter</label>
+                        <input ng-model="filter">
+                    </md-input-container>
+                    <md-list ng-cloak>
+                        <md-list-item class="list-header" layout="row">
+                                <span ng-repeat="c in columns"
+                                      ng-style="{width: 100/columns.length + '%'}">{{c}}</span>
+                        </md-list-item>
+                        <divider></divider>
+                        <md-list-item ng-repeat="n in neighbors">
+                            <p> {{ n.label }} </p>
+                            <p> {{ n.type }} </p>
+                            <md-checkbox class="md-secondary" aria-label="add-node"></md-checkbox>
+                        </md-list-item>
+                    </md-list>
+                </md-content>
         </md-dialog-content>
 
         <md-dialog-actions layout="row">
+            <md-button class="md-primary md-raised" ng-click="apply()">Add to Network</md-button>
             <span flex></span>
             <md-button class="md-primary md-raised" ng-click="closeClick()">Close</md-button>
         </md-dialog-actions>
+    </form>
 </md-dialog>

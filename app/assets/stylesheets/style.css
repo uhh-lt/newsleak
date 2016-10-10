@@ -593,3 +593,9 @@ ul#historyList {
 .btn-small {
     padding: 4px 6px;
 }
+
+.list-header {
+    height: auto;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.54);
+}
