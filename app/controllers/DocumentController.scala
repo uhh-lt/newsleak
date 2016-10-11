@@ -19,10 +19,11 @@ package controllers
 
 import javax.inject.Inject
 
-import model.Document
 import model.faceted.search.{ FacetedSearch, Facets }
-import play.api.libs.json.{ JsObject, Json }
-import play.api.mvc.{ Action, Controller }
+import model.{ Document, KeyTerm, Tag }
+import play.api.libs.json.{ JsObject, JsValue, Json }
+import play.api.mvc.{ Action, AnyContent, Controller, Request }
+import util.SessionUtils.currentDataset
 import util.TimeRangeParser
 
 // scalastyle:off
@@ -39,7 +40,8 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
 
   private val defaultPageSize = 50
   private val defaultFacets = Facets.emptyFacets
-  private val (numberOfDocuments, documentIterator) = FacetedSearch.searchDocuments(defaultFacets, defaultPageSize)
+  // TODO: request is not available here
+  private val (numberOfDocuments, documentIterator) = FacetedSearch.fromIndexName("cable").searchDocuments(defaultFacets, defaultPageSize)
   private val defaultSession = IteratorSession(numberOfDocuments, documentIterator, defaultFacets.hashCode())
   private val metadataKeys = List("Subject", "Origin", "SignedBy", "Classification")
   // metdatakeys for enron
@@ -48,8 +50,44 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
   /**
    * returns the document with the id "id", if there is any
    */
-  def getDocById(id: Int) = Action {
-    Ok(Json.toJson(Document.getById(id).map(doc => (doc.id, doc.created.toString(), doc.content)))).as("application/json")
+  def getDocById(id: Int) = Action { implicit request =>
+    val docSearch = Document.fromDBName(currentDataset)
+    Ok(Json.toJson(docSearch.getById(id).map(doc => (doc.id, doc.created.toString(), doc.content)))).as("application/json")
+  }
+
+  def getDocsByLabel(label: String) = Action { implicit request =>
+    val docIds = Tag.fromDBName(currentDataset).getByLabel(label).map { case Tag(_, docId, _) => docId }
+    Ok(createJsonReponse(docIds, docIds.length))
+  }
+
+  // TODO: Extend ES API and remove KeyTerm API
+  def getKeywordsById(id: Int, size: Int) = Action { implicit request =>
+    val terms = KeyTerm.fromDBName(currentDataset).getDocumentKeyTerms(id, Some(size)).map {
+      case KeyTerm(term, score) =>
+        Json.obj("term" -> term, "score" -> score)
+    }
+    Ok(Json.toJson(terms)).as("application/json")
+  }
+
+  def getTagLabels() = Action { implicit request =>
+    Ok(Json.obj("labels" -> Json.toJson(Tag.fromDBName(currentDataset).getDistinctLabels()))).as("application/json")
+  }
+
+  def addTag(id: Int, label: String) = Action { implicit request =>
+    Ok(Json.obj("id" -> Tag.fromDBName(currentDataset).add(id, label).id)).as("application/json")
+  }
+
+  def removeTagById(tagId: Int) = Action { implicit request =>
+    Tag.fromDBName(currentDataset).delete(tagId)
+    Ok("success").as("Text")
+  }
+
+  def getTagsByDocId(id: Int) = Action { implicit request =>
+    val tags = Tag.fromDBName(currentDataset).getByDocumentId(id).map {
+      case Tag(tagId, _, label) =>
+        Json.obj("id" -> tagId, "label" -> label)
+    }
+    Ok(Json.toJson(tags)).as("application/json")
   }
 
   /**
@@ -72,9 +110,10 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var pageCounter = 0
 
+    val facetSearch = FacetedSearch.fromIndexName(currentDataset)
     var iteratorSession: IteratorSession = cache.get[IteratorSession](uid)
     if (iteratorSession == null || iteratorSession.hash == defaultSession.hash || iteratorSession.hash != facets.hashCode()) {
-      val res = FacetedSearch.searchDocuments(facets, defaultPageSize)
+      val res = facetSearch.searchDocuments(facets, defaultPageSize)
       iteratorSession = IteratorSession(res._1, res._2, facets.hashCode())
       cache.set(uid, iteratorSession)
     }
@@ -85,17 +124,27 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
       pageCounter += 1
     }
 
+    if (docIds.size < defaultPageSize) {
+      val newIteratorSession = IteratorSession(iteratorSession.hits, iteratorSession.hitIterator, -1)
+      cache.set(uid, newIteratorSession)
+    }
+
+    Ok(createJsonReponse(docIds, iteratorSession.hits))
+  }
+
+  def createJsonReponse(docIds: List[Long], hits: Long)(implicit request: Request[AnyContent]): JsValue = {
     if (docIds.nonEmpty) {
-      val metadataTriple = Document.getMetadataForDocuments(docIds, metadataKeys)
+      val docSearch = Document.fromDBName(currentDataset)
+
+      val metadataTriple = docSearch.getMetadataForDocuments(docIds, metadataKeys)
       val response = metadataTriple
         .groupBy(_._1)
         .map { case (id, inner) => id -> inner.map(doc => Json.obj("key" -> doc._2, "val" -> doc._3)) }
         .map(x => Json.obj("id" -> x._1, "metadata" -> Json.toJson(x._2)))
 
-      Ok(Json.toJson(Json.obj("hits" -> iteratorSession.hits, "docs" -> Json.toJson(response)))).as("application/json")
+      Json.toJson(Json.obj("hits" -> hits, "docs" -> Json.toJson(response)))
     } else {
-      // No documents found for given facets
-      Ok(Json.toJson(Json.obj("hits" -> 0, "docs" -> List[JsObject]()))).as("application/json")
+      Json.toJson(Json.obj("hits" -> 0, "docs" -> List[JsObject]()))
     }
   }
 }

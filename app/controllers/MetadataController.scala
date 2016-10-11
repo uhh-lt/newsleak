@@ -23,21 +23,27 @@ import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket }
 import model.Document
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller, Results }
+import util.SessionUtils.currentDataset
 import util.TimeRangeParser
 
 class MetadataController @Inject extends Controller {
 
-  private val defaultExcludeTypes = List("Subject", "Header", "ReferenceId", "References", "Keywords", "Entities", "Created", "EventTimes")
-  // exclusion for enron
-  // private val defaultExcludeTypes = List("Subject", "Timezone", "sender.id", "Recipients.id", "Recipients.order")
+  private val defaultExcludeTypes = Map(
+    "cable" -> List("Subject", "Header", "ReferenceId", "References", "Keywords", "Entities", "Created", "EventTimes"),
+    "enron" -> List("Subject", "Timezone", "sender.id", "Recipients.id", "Recipients.order")
+  )
   private val defaultFetchSize = 50
 
   /**
    * Get all metadata types
    * @return list of metadata types
    */
-  def getMetadataTypes = Action {
-    Results.Ok(Json.toJson(Document.getMetadataKeysAndTypes().map(x => x._1).filter(!defaultExcludeTypes.contains(_)))).as("application/json")
+  def getMetadataTypes = Action { implicit request =>
+    Results.Ok(Json.toJson(Document
+      .fromDBName(currentDataset)
+      .getMetadataKeysAndTypes()
+      .map(x => x._1)
+      .filter(!defaultExcludeTypes(currentDataset).contains(_)))).as("application/json")
   }
 
   /**
@@ -48,10 +54,10 @@ class MetadataController @Inject extends Controller {
    * @param timeRange string of a time range readable for [[TimeRangeParser]]
    * @return list of matching metadata keys and document count
    */
-  def getMetadata(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
+  def getMetadata(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    val res = FacetedSearch.aggregateAll(facets, defaultFetchSize, defaultExcludeTypes)
+    val res = FacetedSearch.fromIndexName(currentDataset).aggregateAll(facets, defaultFetchSize, defaultExcludeTypes(currentDataset))
       .map(agg => Json.obj(agg.key -> agg.buckets.map {
         case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
         case _ => Json.obj()
@@ -76,10 +82,10 @@ class MetadataController @Inject extends Controller {
     entities: List[Long],
     instances: List[String],
     timeRange: String
-  ) = Action {
+  ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    val agg = FacetedSearch.aggregate(facets, key, defaultFetchSize, instances)
+    val agg = FacetedSearch.fromIndexName(currentDataset).aggregate(facets, key, defaultFetchSize, instances, Nil)
     if (instances.isEmpty) {
       val res = Json.obj(key -> agg.buckets.map {
         case MetaDataBucket(metaKey, count) => Json.obj("key" -> metaKey, "count" -> count)
@@ -101,10 +107,10 @@ class MetadataController @Inject extends Controller {
    * @param generic mapping of metadata key and a list of corresponding tags
    * @return list of matching keywords and document count
    */
-  def getKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action {
+  def getKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    val res = FacetedSearch.aggregateKeywords(facets, defaultFetchSize, List()).buckets.map {
+    val res = FacetedSearch.fromIndexName(currentDataset).aggregateKeywords(facets, defaultFetchSize, List()).buckets.map {
       case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
       case _ => Json.obj()
     }

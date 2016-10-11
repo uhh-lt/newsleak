@@ -17,12 +17,10 @@
 
 package util
 
-import java.util.Locale
+import play.api.mvc.{ AnyContent, Request }
 
-object LocaleUtils {
+object SessionUtils {
 
-  def setDefaultLocale(): Unit = {
-    val locale = new Locale.Builder().setLanguage("en").setRegion("US").build()
-    Locale.setDefault(locale)
-  }
+  val datasetSessionKey = "dataset"
+  def currentDataset(implicit request: Request[AnyContent]): String = request.session.get(datasetSessionKey).get
 }

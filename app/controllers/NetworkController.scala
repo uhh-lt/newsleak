@@ -19,10 +19,12 @@ package controllers
 
 import javax.inject.Inject
 
-import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
-import model.{ Entity, EntityType }
+import model.Entity
+import model.EntityType._
+import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket, NodeBucket }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller }
+import util.SessionUtils.currentDataset
 import util.TimeRangeParser
 
 // scalastyle:off
@@ -41,8 +43,34 @@ class NetworkController @Inject extends Controller {
    * @param name
    * @return
    */
-  def getIdsByName(name: String) = Action {
-    Ok(Json.obj("ids" -> model.Entity.getByName(name).map(_.id))).as("application/json")
+
+  // TODO: These methods should actually part of the entity controller
+  def getIdsByName(name: String) = Action { implicit request =>
+    Ok(Json.obj("ids" -> Entity.fromDBName(currentDataset).getByName(name).map(_.id))).as("application/json")
+  }
+
+  def getEdgeKeywords(
+    fullText: List[String],
+    generic: Map[String, List[String]],
+    entities: List[Long],
+    timeRange: String,
+    first: Long,
+    second: Long,
+    numberOfTerms: Int
+  ) = Action { implicit request =>
+
+    val times = TimeRangeParser.parseTimeRange(timeRange)
+    val facets = Facets(fullText, generic, entities, times.from, times.to)
+    val agg = FacetedSearch
+      .fromIndexName(currentDataset)
+      // Only consider documents where the two entities occur
+      .aggregateKeywords(facets.withEntities(List(first, second)), numberOfTerms, Nil)
+
+    val terms = agg.buckets.collect {
+      case a @ MetaDataBucket(term, score) =>
+        Json.obj("term" -> term, "score" -> score)
+    }
+    Ok(Json.toJson(terms)).as("application/json")
   }
 
   def induceSubgraph(
@@ -50,35 +78,51 @@ class NetworkController @Inject extends Controller {
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
-    size: Int,
+    nodeFraction: Map[String, String],
     filter: List[Long]
-  ) = Action {
+  ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
-    var newSize = size
-    if (filter.nonEmpty) newSize = filter.length
-    val (buckets, relations) = FacetedSearch.induceSubgraph(facets, newSize)
+    val sizes = nodeFraction.map { case (t, s) => withName(t) -> s.toInt }
+
+    val blacklistedIds = Entity.fromDBName(currentDataset).getBlacklisted().map(_.id)
+    val (buckets, relations) = FacetedSearch
+      .fromIndexName(currentDataset)
+      .induceSubgraph(facets, sizes, blacklistedIds)
     val nodes = buckets.collect { case a @ NodeBucket(_, _) => a }
 
     if (nodes.isEmpty) {
       Ok(Json.toJson(Json.obj("entities" -> List[JsObject](), "relations" -> List[JsObject]()))).as("application/json")
     } else {
       val ids = nodes.map(_.id)
-      val nodeIdToEntity = Entity.getByIds(ids).map(e => e.id -> e).toMap
+      val nodeIdToEntity = Entity.fromDBName(currentDataset).getByIds(ids).map(e => e.id -> e).toMap
 
-      val subgraphEntities = nodes.map {
+      val graphEntities = nodes.collect {
         case NodeBucket(id, count) =>
+          val node = nodeIdToEntity(id)
           Json.obj(
             "id" -> id,
-            "label" -> nodeIdToEntity(id).name,
+            "label" -> node.name,
             "count" -> count,
-            "type" -> nodeIdToEntity(id).entityType.toString,
-            "group" -> nodeIdToEntity(id).entityType.id
+            "type" -> node.entityType.toString,
+            "group" -> node.entityType.id
           )
       }
+      // Ignore relations that connect blacklisted nodes
+      val graphRelations = relations.filterNot { case (from, to, _) => blacklistedIds.contains(from) && blacklistedIds.contains(to) }
 
-      Ok(Json.toJson(Json.obj("entities" -> subgraphEntities, "relations" -> relations))).as("application/json")
+      val types = Json.obj(
+        Person.toString -> Person.id,
+        Organization.toString -> Organization.id,
+        Location.toString -> Location.id,
+        Misc.toString -> Misc.id
+      )
+      Ok(Json.toJson(Json.obj("entities" -> graphEntities, "relations" -> graphRelations, "types" -> types))).as("application/json")
     }
+  }
+
+  def getNeighbors(id: Long) = Action { implicit request =>
+    Ok("")
   }
 
   /**
@@ -87,8 +131,8 @@ class NetworkController @Inject extends Controller {
    * @param id the id of the entity to delete
    * @return if the deletion succeeded
    */
-  def deleteEntityById(id: Long) = Action {
-    Ok(Json.obj("result" -> model.Entity.delete(id))).as("application/json")
+  def deleteEntityById(id: Long) = Action { implicit request =>
+    Ok(Json.obj("result" -> Entity.fromDBName(currentDataset).delete(id))).as("application/json")
   }
 
   /**
@@ -99,8 +143,8 @@ class NetworkController @Inject extends Controller {
    *                the focal entity
    * @return if the merging succeeded
    */
-  def mergeEntitiesById(focalid: Int, ids: List[Long]) = Action {
-    Ok(Json.obj("result" -> model.Entity.merge(focalid, ids))).as("application/json")
+  def mergeEntitiesById(focalid: Int, ids: List[Long]) = Action { implicit request =>
+    Ok(Json.obj("result" -> Entity.fromDBName(currentDataset).merge(focalid, ids))).as("application/json")
   }
 
   /**
@@ -110,8 +154,8 @@ class NetworkController @Inject extends Controller {
    * @param newName the new name of the entity
    * @return if the change succeeded
    */
-  def changeEntityNameById(id: Long, newName: String) = Action {
-    Ok(Json.obj("result" -> model.Entity.changeName(id, newName))).as("application/json")
+  def changeEntityNameById(id: Long, newName: String) = Action { implicit request =>
+    Ok(Json.obj("result" -> Entity.fromDBName(currentDataset).changeName(id, newName))).as("application/json")
   }
 
   /**
@@ -121,7 +165,7 @@ class NetworkController @Inject extends Controller {
    * @param newType the new type of the entity
    * @return if the change succeeded
    */
-  def changeEntityTypeById(id: Long, newType: String) = Action {
-    Ok(Json.obj("result" -> model.Entity.changeType(id, EntityType.withName(newType)))).as("application/json")
+  def changeEntityTypeById(id: Long, newType: String) = Action { implicit request =>
+    Ok(Json.obj("result" -> Entity.fromDBName(currentDataset).changeType(id, withName(newType)))).as("application/json")
   }
 }

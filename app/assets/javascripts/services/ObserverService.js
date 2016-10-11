@@ -17,8 +17,7 @@
 
 define([
     'angular',
-    'jquery-json',
-    '../factory/appData'
+    'jquery-json'
 ], function (angular) {
     'use strict';
 
@@ -34,6 +33,7 @@ define([
             var items = {};
             //types of tracked items
             var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset", "delete", "openDoc"];
+            var notfiyTypes = ["entity", "metadata", "time", "fulltext", "reset"];
             var metadataTypes = [];
             var entityTypes = [];
             var histogramLoD = [];
@@ -111,7 +111,7 @@ define([
                     });
                 },
                 
-                addItem: function (item) {
+                addItem: function (item, notify = true) {
 
 
                     //looking for already existing items
@@ -184,13 +184,13 @@ define([
                             break;
                     }
 
-
-                    this.notifyObservers();
+                    if(notfiyTypes.indexOf(item.type) >= 0 && notify)
+                        this.notifyObservers();
                     console.log("added to history: " + item.data.name);
                     return (lastAdded);
                 },
 
-                removeItem: function (id, type) {
+                removeItem: function (id, type, notify = true) {
                     var toBeRemoved = history[history.findIndex(function (item) {
                         return id == item.id;
                     })];
@@ -216,7 +216,8 @@ define([
                             }), 1);
                     }
                     lastRemoved = id;
-                    this.notifyObservers();
+                    if(notify)
+                        this.notifyObservers();
                     console.log("removed from history: " + lastRemoved);
                 },
 
@@ -319,7 +320,7 @@ define([
                 drillUpTimeFilter: function() {
                     this.removeItem(items["time"][items["time"].length-1].id,'time');
                     while(items["time"][items["time"].length-1] && items["time"][items["time"].length-1].data.lod == "month")
-                        this.removeItem(items["time"][items["time"].length-1].id,'time');
+                        this.removeItem(items["time"][items["time"].length-1].id,'time',false);
                 },
                 /**
                  * after async type load, you get the types (promise.then(function(lod) [}))
@@ -375,7 +376,7 @@ define([
                         else
                             items[type] = {};
                     });
-                    this.initTypes();
+                    //this.initTypes();
 
                     $q.all([
                         promiseEntities, promiseLoD, promiseMetadata

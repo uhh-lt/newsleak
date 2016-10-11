@@ -108,7 +108,9 @@ define([
                         'dragging',
                         'dragEnd',
                         'hoverNode',
+                        'hoverEdge',
                         'blurNode',
+                        'blurEdge',
                         'zoom',
                         'showPopup',
                         'hidePopup',
@@ -121,7 +123,6 @@ define([
                         'beforeDrawing',
                         'afterDrawing',
                         'animationFinished'
-
                     ];
 
                     var network = null;
@@ -162,7 +163,7 @@ define([
                         // This watch is not fired immediately! Do not rely on it and
                         // change options manually with the network that is provided
                         // in the onload callback.
-                        // network.setOptions(options);
+                        network.setOptions(options);
                     });
                 }
             };

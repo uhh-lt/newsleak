@@ -17,10 +17,12 @@
 
 package controllers
 
-import play.api.mvc.{ Action, Results, Controller }
+import play.api.mvc.{ Action, Controller, Results }
 import model.Entity
 import play.api.libs.json.Json
 import javax.inject.Inject
+
+import util.SessionUtils.currentDataset
 
 // scalastyle:off
 import util.TupleWriters._
@@ -37,8 +39,8 @@ class SearchController @Inject extends Controller {
    *         an array of entity names and entity types
    *         combined
    */
-  def getAutocomplete(query: String) = Action {
-    Results.Ok(Json.obj("entities" -> Entity.getByNamePattern(query)
+  def getAutocomplete(query: String) = Action { implicit request =>
+    Results.Ok(Json.obj("entities" -> Entity.fromDBName(currentDataset).getByNamePattern(query)
       .map(entity => (entity.id, entity.name, entity.entityType.toString)))).as("application/json")
   }
 }

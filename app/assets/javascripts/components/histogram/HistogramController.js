@@ -119,25 +119,31 @@ define([
                 $scope.initialized = false;
                 $scope.drilldown = false;
                 $scope.drillup = false;
-                $scope.factory = HistogramFactory;
-                $scope.chartConfig = angular.copy(HistogramFactory.chartConfig.options);
-                $scope.observer = ObserverService;
-
-                $scope.data = [];
-                $scope.dataFilter = [];
-                //current Level of Detail in Histogram
-                $scope.currentLoD = "";
-                $scope.currentRange = "";
 
                 $scope.emptyFacets = [{'key':'dummy','data': []}];
+                $scope.factory = HistogramFactory;
 
+                $scope.observer = ObserverService;
+
+                $scope.initController = function() {
+                    $scope.initialized = false;
+                    $scope.chartConfig = angular.copy(HistogramFactory.chartConfig.options);
+
+                    $scope.data = [];
+                    $scope.dataFilter = [];
+                    //current Level of Detail in Histogram
+                    $scope.currentLoD = "";
+                    $scope.currentRange = "";
+
+                    $scope.observer.getHistogramLod().then(function(lod) {
+                        $scope.lod  = angular.copy(lod);
+                        $scope.currentLoD = $scope.lod[0];
+                        $scope.updateHistogram();
+                    });
+                };
                 // fetch levels of detail from the backend
-                $scope.observer.getHistogramLod().then(function(lod) {
-                    $scope.lod  = angular.copy(lod);
-                    $scope.currentLoD = $scope.lod[0];
-                    $scope.updateHistogram();
-                });
 
+                $scope.initController();
 
                 /**
                  * subscribe entity and metadata filters
@@ -169,21 +175,19 @@ define([
                 Highcharts.setOptions($scope.factory.highchartsOptions);
 
                 $scope.clickedItem = function (category) {
-                    $scope.addTimeFilter(category.name);
+                    $scope.addTimeFilter(category);
                 };
 
-
                 $scope.initHistogram = function() {
+                    if($scope.histogram)
+                        $scope.histogram.destroy();
+
                     $scope.chartConfig["series"] = [{
                         name: 'Overview',
                         data: $scope.data,
                         cursor: 'pointer',
                         point: {
-                            events: {
-                                click: function(e) {
-                                    $scope.clickedItem(this);
-                                }
-                            }
+
                         }
                     },{
                         name:  'Overview',
@@ -191,11 +195,7 @@ define([
                         color: 'black',
                         cursor: 'pointer',
                         point: {
-                            events: {
-                                click: function(e) {
-                                    $scope.clickedItem(this);
-                                }
-                            }
+
                         },
                         dataLabels: {
                             inside: true,
@@ -240,8 +240,6 @@ define([
                     angular.forEach($scope.fulltextFilters, function(item) {
                         fulltext.push(item.data.name);
                     });
-                    //TODO: figure out: time filter vs. time range for histogram
-                    //playRoutes.controllers.HistogramController.getHistogram(fulltext,facets,entities,$scope.observer.getTimeRange(),$scope.currentLoD).get().then(function(respone) {
                     playRoutes.controllers.HistogramController.getHistogram(fulltext,facets,entities,$scope.currentRange,$scope.currentLoD).get().then(function(respone) {
                         var overallPromise = $q.defer();
                         if($scope.drilldown ||  $scope.drillup) {
@@ -306,7 +304,8 @@ define([
                                     point: {
                                         events: {
                                             click: function () {
-                                                $scope.clickedItem(this);
+                                                if($scope.lod.indexOF$scope.currentLoD == $scope.lod[$scope.lod.length -1])
+                                                    $scope.clickedItem(this.name);
                                             }
                                         }
                                     }
@@ -334,21 +333,30 @@ define([
 
 
                 $scope.observer.registerObserverCallback(function() {
-                    if(!$scope.drilldown && !$scope.drillup)
-                        $scope.updateHistogram()
+                    if(!$scope.drilldown && !$scope.drillup) {
+                        $scope.updateHistogram();
+                    }
+                });
+
+                $scope.observer.subscribeReset(function() {
+                    $scope.initController();
                 });
 
                 $scope.drillDown = function(e, chart) {
-                    console.log("histogram drilldown");
-
-                    if (!e.seriesOptions) {
+                    if (!e.seriesOptions && !$scope.drilldown) {
+                        console.log("histogram drilldown");
                         $scope.drilldown = true;
-                        $scope.currentLoD = $scope.lod[$scope.lod.indexOf($scope.currentLoD) + 1];
+                        if($scope.lod[$scope.lod.length -1] != $scope.currentLoD) {
+                            $scope.currentLoD = $scope.lod[$scope.lod.indexOf($scope.currentLoD) + 1];
+                        }
+                        if($scope.lod[$scope.lod.length -1] != $scope.currentLoD)
+                            $scope.clickedItem(e.point.name);
                         if($scope.lod.indexOf($scope.currentLoD) == 0)
                             $scope.currentRange = "";
                         else
                             $scope.currentRange = e.point.name;
                         //$scope.addTimeFilter(e.point.name);
+
                         $scope.updateHistogram().then(function (res) {
 
                             $scope.drilldown = false;
@@ -360,7 +368,8 @@ define([
                                 point: {
                                     events: {
                                         click: function(e) {
-                                            $scope.clickedItem(this);
+                                            if($scope.lod[$scope.lod.length -1] == $scope.currentLoD)
+                                                $scope.clickedItem(this.name);
                                         }
                                     }
                                 }
@@ -373,7 +382,8 @@ define([
                                 point: {
                                     events: {
                                         click: function(e) {
-                                            $scope.clickedItem(this);
+                                            if($scope.lod[$scope.lod.length -1] == $scope.currentLoD)
+                                                $scope.clickedItem(this.name);
                                         }
                                     }
                                 },
@@ -393,6 +403,8 @@ define([
                             chart.addSingleSeriesAsDrilldown(e.point, series[1]);
                             chart.applyDrilldown();
                         });
+                    } else {
+                        console.log('canceled dup drilldown');
                     }
                 };
 
@@ -414,9 +426,7 @@ define([
                                 cursor: 'pointer',
                                 point: {
                                     events: {
-                                        click: function () {
-                                            $scope.clickedItem(this);
-                                        }
+
                                     }
                                 }
                             };

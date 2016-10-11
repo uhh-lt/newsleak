@@ -21,9 +21,10 @@ import javax.inject.Inject
 
 import org.apache.commons.codec.binary.{ Base64, StringUtils }
 import play.api.Logger
+import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller }
-import model.faceted.search.FacetedSearch
-import utils.DBService
+import util.SessionUtils.{ datasetSessionKey, currentDataset }
+import utils.NewsleakConfigReader
 
 import scala.util.Random
 
@@ -75,42 +76,54 @@ class Application @Inject extends Controller {
       }
     }
 
-    // now e check if authorization was successful
+    // now check if authorization was successful
     if (!authorized) {
       // send a login request
       Unauthorized(views.html.defaultpages.unauthorized())
         .withHeaders("WWW-Authenticate" -> "Basic realm=\"new/s/leak\"")
     } else {
-      Ok(views.html.index()).withSession(
-        "uid" -> uid
+      Ok(views.html.index()).withNewSession.withSession(
+        "uid" -> uid,
+        datasetSessionKey -> NewsleakConfigReader.config.getString("es.index.default")
       )
     }
   }
 
-  def changeDataset(name: String) = Action {
-    DBService.changeDB(name)
-    FacetedSearch.changeIndex(if (name == "default") "cable" else name)
-    Ok("success").as("Text")
+  def changeDataset(name: String) = Action { implicit request =>
+    Ok(Json.obj("newDataset" -> name, "oldDataset" -> currentDataset))
+      .withSession(request.session + (datasetSessionKey, name))
   }
 
+  // scalastyle:off
   def jsRoutes(varName: String = "jsRoutes") = Action { implicit request =>
     // Note: feature warning is produced by play itself
     import play.api.routing._
+    // scalastyle:on
 
     Ok(
       JavaScriptReverseRouter(varName)(
         // TODO: You need to add your routes here
         controllers.routes.javascript.Application.changeDataset,
         controllers.routes.javascript.DocumentController.getDocById,
+        controllers.routes.javascript.DocumentController.getKeywordsById,
         controllers.routes.javascript.DocumentController.getDocs,
+        controllers.routes.javascript.DocumentController.addTag,
+        controllers.routes.javascript.DocumentController.removeTagById,
+        controllers.routes.javascript.DocumentController.getTagsByDocId,
+        controllers.routes.javascript.DocumentController.getTagLabels,
+        controllers.routes.javascript.DocumentController.getDocsByLabel,
         controllers.routes.javascript.NetworkController.getIdsByName,
         controllers.routes.javascript.NetworkController.deleteEntityById,
         controllers.routes.javascript.NetworkController.mergeEntitiesById,
         controllers.routes.javascript.NetworkController.changeEntityNameById,
         controllers.routes.javascript.NetworkController.induceSubgraph,
+        controllers.routes.javascript.NetworkController.getEdgeKeywords,
         controllers.routes.javascript.EntityController.getEntities,
         controllers.routes.javascript.EntityController.getEntityTypes,
         controllers.routes.javascript.EntityController.getEntitiesByType,
+        controllers.routes.javascript.EntityController.getBlacklistedEntities,
+        controllers.routes.javascript.EntityController.undoBlacklistingByIds,
+        controllers.routes.javascript.EntityController.getEntitiesByDoc,
         controllers.routes.javascript.NetworkController.changeEntityTypeById,
         controllers.routes.javascript.MetadataController.getMetadata,
         controllers.routes.javascript.MetadataController.getSpecificMetadata,

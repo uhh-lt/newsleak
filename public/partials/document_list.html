@@ -16,8 +16,27 @@
   -->
 
 <div style="padding: 15px;" id="documents-view">
-<p style="font-size:16px">Document Overview</p>
-    <p ng-show="hits > 0">Hits: {{hits}} out of {{sourceShared.documentsInDB}}</p>
+<p style="font-size:16px">Document Overview: <span ng-show="hits > 0"> <b>{{hits}}</b> hits out of <b>{{sourceShared.documentsInDB}}</b> docs</span> </p>
+    <md-autocomplete
+            md-no-cache
+            md-selected-item="selectedItem"
+            md-search-text="searchText"
+            md-items="label in querySearch(searchText)"
+            md-selected-item-change="selectedTagChange(label)"
+            md-item-text="label"
+            md-min-length="0"
+            placeholder="Search for documents by tag">
+        <md-item-template>
+            <span md-highlight-text="searchText" md-highlight-flags="^i">{{ label }}</span>
+        </md-item-template>
+        <md-not-found>
+            No tags matching "{{ searchText }}" were found.
+            <a>Create a new one!</a>
+        </md-not-found>
+    </md-autocomplete>
+
+    <p></p>
+    <!--<p ng-show="hits > 0">Hits: {{hits}} out of {{sourceShared.documentsInDB}}</p>-->
     <div class="btn btn-default load-more-button" ng-show="false" ng-click="loadMore()">
         Load more documents
         <i class="glyphicon glyphicon-repeat"></i>
@@ -32,27 +51,27 @@
             </ul>
         </div>
     </script>
+
     <div ng-show="sourceShared.documentList.length > 0" class="docs-ul">
         <b style="text-decoration: underline;">{{ sourceShared.documentListInfo }}</b>
         <ul id="document-list">
             <li ng-repeat="item in sourceShared.documentList"
-                ng-class="{true: 'doc-list-highlight', false: 'doc-list-no-highlight'}[sourceShared.openDocuments.IDs.indexOf(item.id) > -1]"
+                ng-class="{true: 'doc-list-highlight', false: 'doc-list-no-highlight'}[isDocumentOpen(item.id)]"
                 ng-mouseleave="hidePopover(item.id)"
                 ng-mouseenter="showPopover(item.id)"
                 uib-popover-template="'doc_tooltip_tmpl'"
                 popover-trigger="none"
                 popover-title="Metadata for #{{item.id}}"
                 popover-placement="right"
-                popover-is-open="popover.isOpen[{{item.id}}]"
-                >
-                <a href="#" ng-click="loadFullDocument(item.id)">
+                popover-is-open="popover.isOpen[{{item.id}}]">
+
+                <a href="#" ng-click="loadFullDocument(item)">
                     {{ item.metadata.Subject }} #{{item.id}}
                 </a>
             </li>
         </ul>
-        <div class="alert alert-info" ng-show="iteratorEmpty">
-            <p>All matching Documents loaded!</p>
-        </div>
+        <!-- Show toast when no documents in the iterator and the doc list is not empty -->
+        <span ng-init="showAllLoaded()" ng-if="iteratorEmpty && hits > 0"></span>
     </div>
 
     <div class="docs-loading" ng-show="showLoading"><span>Loading ...</span></div>

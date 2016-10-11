@@ -25,7 +25,9 @@ define([
             var sourceShareService = {
                 documentList: [],
                 documentsInDB: -1,
-                openDocuments: {IDs: [], contents: [], nonHighlightedContents: [], displayHighlightedText: []},
+                // Distinct document labels
+                labels: [],
+                tabs: [],
                 reset: function () {
                     this.documentList = [];
                 },

@@ -26,13 +26,9 @@
         <title>new/s/leak</title>
 
         <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/bootstrap/dist/css/bootstrap.min.css")">
-        <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/sc-date-time/dist/sc-date-time.css")">
         <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/font-awesome/css/font-awesome.min.css")">
         <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/angular-ui-layout/src/ui-layout.css")" />
         <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/angular-awesome-slider/dist/css/angular-awesome-slider.min.css")">
-        <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/angular-toggle-switch/angular-toggle-switch.css")">
-        <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/ng-tags-input/ng-tags-input.css")">
-        <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/ng-tags-input/ng-tags-input.bootstrap.min.css")">
         <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/angular-resizable/angular-resizable.min.css")">
         <link type="text/css" rel="stylesheet" href="@routes.Assets.at("javascripts/libs/vis/dist/vis.css")">
         <link type="text/css" rel="stylesheet" href="@routes.Assets.at("stylesheets/style.css")">
@@ -62,28 +58,15 @@
                 </nav>
 
                 <main id="center-box" resizable r-directions="['right']" r-flex="true" flex="none">
-                    <!-- div id="network"  ng-include=" 'assets/partials/network.html' " onload="loaded()" ng-controller="FancyNetworkController"></div>-->
-                    <div id="network" ui-view="network" onload="loaded()"></div>
+                    <!-- selectedTab is defined in AppController -->
+                    <md-tabs md-selected="selectedTab.index" md-border-bottom md-autoselect layout-fill ngsf-fullscreen="FancyNetworkController">
 
-                    <!--<div ng-controller="ToolController" ng-include=" 'assets/partials/tools.html' "></div>-->
-                    <!--<div id="network-maps-container">-->
-                            <!-- Nav tabs -->
-                        <!--<ul class="nav nav-tabs" role="tablist">
-                            <li role="presentation" class="active"><a href="#network" aria-controls="network" role="tab" data-toggle="tab">Network</a></li>-->
-                            <!--<li role="presentation"><a href="#map" aria-controls="map" role="tab" data-toggle="tab">Map</a></li>-->
-                        <!--</ul>-->
-                            <!-- Tab panes -->
-                        <!--<div class="tab-content">-->
-                            <!--<div role="tabpanel" class="tab-pane active" id="network" ng-controller="NetworkController">-->
-                            <!--<div role="tabpanel" class="tab-pane active" id="network" ng-controller="FancyNetworkController">-->
-                                <!--<div ng-include=" 'assets/partials/network.html' " onload="loaded()"></div>-->
-                            <!--</div>-->
-                            <!--<div role="tabpanel" class="tab-pane" id="map" ng-controller="MapController">
-                                <div ng-include=" 'assets/partials/map.html' " onload="loaded()"></div>
-                            </div>-->
-                        <!--</div>-->
-                    <!--</div>-->
+                        <md-tab flex label="Network">
+                            <div id="network" ui-view="network" ></div>
+                        </md-tab>
 
+                        <div id="docii" ui-view="document"></div>
+                   </md-tabs>
                 </main>
 
                 <aside id="right-side" flex="" layout="column">

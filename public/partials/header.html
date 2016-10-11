@@ -15,10 +15,12 @@
   ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<div class="navbar navbar-inverse titlebar">
-
-  <div class="container-fluid">
-    <a class="navbar-brand title" href="#">new/s/leak</a>
+<md-toolbar class="md-small-toolbar" show-if-fullscreen=false>
+  <div class="md-toolbar-tools">
+    <h1>
+      <span class="md-display-1">New/s/leak</span>
+    </h1>
+    <span flex="5"></span>
 
     <md-input-container>
       <md-select ng-model="selectedDataset" ng-change="changeDataset()" aria-label="dataset">
@@ -28,38 +30,43 @@
       </md-select>
     </md-input-container>
 
-    <div class="navbar-right links">
+    <md-button class="md-raised md-small" ng-click="showSettings()" aria-label="Settings">
+      <md-icon md-font-icon="fa fa-cog fa-2x"></md-icon>
+    </md-button>
 
-      <a href="https://en.wikipedia.org/wiki/Volkswagen_Foundation" target="_blank" data-toggle="tooltip" title="Volkswagen Foundation">
-        <img style="height: 43px; object-fit:contain" src="./assets/images/logo_vw_stiftung.png">
-      </a>
+    <md-button class="md-raised md-small" aria-label="Fullscreen" ngsf-toggle-fullscreen>
+      <md-tooltip show-if-fullscreen=false> Enter Fullscreen </md-tooltip>
+      <md-tooltip show-if-fullscreen=true> Exit Fullscreen </md-tooltip>
+      <md-icon md-font-icon="fa fa-desktop fa-2x" show-if-fullscreen=false></md-icon>
+      <md-icon md-font-icon="fa fa-times fa-2x" show-if-fullscreen=true></md-icon>
+    </md-button>
 
-      <a href="https://www.lt.tu-darmstadt.de/de/lt-home/" target="_blank" data-toggle="tooltip" title="Language Technology Group">
-        <img style="height: 43px; object-fit:contain" src="./assets/images/logo_language_technology_group.png">
-      </a>
+    <md-button class="md-raised md-small" ng-href="http://newsleak.io/projekt/" target="_blank" aria-label="Blog">
+      <md-tooltip> More informations about new/s/leak </md-tooltip>
+      <md-icon md-font-icon="fa fa-info fa-2x"></md-icon>
+    </md-button>
 
-      <a href="http://www.gris.tu-darmstadt.de" target="_blank" data-toggle="tooltip" title="Interactive Graphics Systems Group">
-        <img style="height: 43px; object-fit:contain" src="./assets/images/logo_graphisch-interaktive_systeme.png">
-      </a>
+    <md-button class="md-raised md-small" ng-href="./assets/VIPvideo.mp4" target="_blank" aria-label="Video">
+      <md-tooltip> Help </md-tooltip>
+      <md-icon md-font-icon="fa fa-question fa-2x"></md-icon>
+    </md-button>
 
-      <a href="https://www.tu-darmstadt.de" data-toggle="tooltip" target="_blank" title="TU Darmstadt">
-        <img style="height: 43px; object-fit:contain" src="./assets/images/logo_tu_darmstadt.png">
-      </a>
+    <span flex></span>
 
-      <a href="http://www.spiegel.de/" target="_blank" data-toggle="tooltip" title="Der Spiegel">
-        <img style="height: 43px; object-fit:contain" src="./assets/images/logo_der_spiegel.png">
-      </a>
+    <md-button class="md-raised" ng-href="https://www.volkswagenstiftung.de/" target="_blank" aria-label="VW">
+      <img class="institute-logo" src="./assets/images/Logo_Volkswagenstiftung.svg.png">
+    </md-button>
 
-      <a class="btn btn-default navbar-btn" href="http://newsleak.io/projekt/" target="_blank"
-          type="button" data-toggle="tooltip" title="More informations about new/s/leak">
-        <i class="fa fa-info fa-2x"></i>
-      </a>
+    <md-button class="md-raised" ng-href="http://www.spiegel.de/" target="_blank" aria-label="Spiegel">
+      <img class="institute-logo" src="./assets/images/logo_der_spiegel.jpg">
+    </md-button>
 
-      <a class="btn btn-default navbar-btn" href="./assets/VIPvideo.mp4" target="_blank"
-          type="button" data-toggle="tooltip" title="Help">
-        <i class="fa fa-question fa-2x"></i>
-      </a>
-    </div>
+    <md-button class="md-raised" ng-href="https://www.lt.tu-darmstadt.de/de/lt-home/" target="_blank" aria-label="LT">
+      <img class="institute-logo" src="./assets/images/logo_language_technology_group.png">
+    </md-button>
 
+    <md-button class="md-raised" ng-href="http://www.gris.tu-darmstadt.de" target="_blank" aria-label="GRIS">
+      <img class="institute-logo" src="./assets/images/logo_graphisch-interaktive_systeme.png">
+    </md-button>
   </div>
-</div>
+</md-toolbar>
