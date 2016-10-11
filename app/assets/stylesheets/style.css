@@ -45,7 +45,8 @@ html, body {
 
 .institute-logo {
     height: 36px;
-    object-fit:contain;
+    object-fit: contain;
+}
 .titlebar #select_value_label_0 .md-text, .titlebar #select_value_label_0 .md-select-icon {
     color: white;
 }
