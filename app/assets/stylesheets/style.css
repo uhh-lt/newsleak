@@ -169,6 +169,7 @@ div.popupMenu ul {
 
 div.popupMenu ul li {
     padding: 4px 16px;
+    cursor: pointer;
 }
 
 div.popupMenu ul li:hover {

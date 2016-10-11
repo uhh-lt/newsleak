@@ -37,6 +37,140 @@ define([
                 'ObserverService',
                 function ($scope, $timeout, $q, playRoutes, metaShareService, sourceShareService, ObserverService) {
 
+                    (function (H, $) {
+                        var fireEvent = H.fireEvent;
+
+                        H.wrap(H.Pointer.prototype, 'init', function (proceed) {
+                            proceed.apply(this, Array.prototype.slice.call(arguments, 1));
+
+                            var pointer = this,
+                                container = pointer.chart.container,
+                                DELAY = 500, clicks = 0, timer = null;
+
+                            container.oncontextmenu = function (e) {
+                                pointer.onContainerContextMenu(e);
+                                e.stopPropagation();
+                                e.preventDefault();
+                                return false;
+                            };
+
+                            container.onwheel = function (e) {
+                                pointer.onWheel(e);
+                                e.stopPropagation();
+                                e.preventDefault();
+                            };
+
+                            // Override default click event handler by adding delay to handle double-click event
+                            container.onclick = function (e) {
+                                clicks++;
+                                if(clicks === 1) {
+                                    timer = setTimeout(function() {
+                                        pointer.onContainerClick(e);
+                                        clicks = 0;
+                                    }, DELAY);
+                                } else {
+                                    clearTimeout(timer);
+                                    clicks = 0;
+                                }
+                            };
+
+                            container.ondblclick = function (e) {
+                                pointer.onDblClick(e);
+                                clicks = 0;
+                            };
+                        });
+
+                        if(!H.Pointer.prototype.hasOwnProperty('onContainerContextMenu')) {
+                            H.Pointer.prototype.onContainerContextMenu = function (e) {
+                                var pointer = this,
+                                    chart = pointer.chart,
+                                    hoverPoint = chart.hoverPoint,
+                                    plotLeft = chart.plotLeft,
+                                    plotTop = chart.plotTop;
+
+                                e = this.normalize(e);
+
+                                if (!chart.cancelClick) {
+                                    // On tracker click, fire the series and point events. #783, #1583
+                                    if (hoverPoint && this.inClass(e.target, 'tracker')) {
+
+                                        // the series click event
+                                        fireEvent(hoverPoint.series, 'contextmenu', $.extend(e, {
+                                            point: hoverPoint
+                                        }));
+
+                                        // the point click event
+                                        if (chart.hoverPoint) {
+                                            hoverPoint.firePointEvent('contextmenu', e);
+                                        }
+                                    } else {
+                                        $.extend(e, this.getCoordinates(e));
+                                        if (chart.isInsidePlot(e.chartX - plotLeft, e.chartY - plotTop)) {
+                                            fireEvent(chart, 'contextmenu', e);
+                                        }
+                                    }
+                                }
+                            };
+                        }
+
+                        if(!H.Pointer.prototype.hasOwnProperty('onWheel')) {
+                            H.Pointer.prototype.onWheel = function (e) {
+                                var pointer = this,
+                                    chart = pointer.chart,
+                                    plotLeft = chart.plotLeft,
+                                    plotTop = chart.plotTop;
+
+                                e = this.normalize(e);
+
+                                $.extend(e, this.getCoordinates(e));
+                                if (chart.isInsidePlot(e.chartX - plotLeft, e.chartY - plotTop)) {
+                                    fireEvent(chart, 'wheel', e);
+                                }
+                            };
+                        }
+
+                        var applyClickEventHandler = function( eventtype, propertyName ) {
+                            if(!H.Pointer.prototype.hasOwnProperty(propertyName)) {
+                                H.Pointer.prototype[propertyName] = function (e) {
+                                    var pointer = this,
+                                        chart = pointer.chart,
+                                        hoverPoint = chart.hoverPoint,
+                                        plotLeft = chart.plotLeft,
+                                        plotTop = chart.plotTop;
+
+                                    e = this.normalize(e);
+
+                                    if (!chart.cancelClick) {
+                                        // On tracker click, fire the series and point events. #783, #1583
+                                        if (hoverPoint && this.inClass(e.target, 'tracker')) {
+
+                                            // the series click event
+                                            fireEvent(hoverPoint.series, eventtype, $.extend(e, {
+                                                point: hoverPoint
+                                            }));
+
+                                            // the point click event
+                                            if (chart.hoverPoint) {
+                                                hoverPoint.firePointEvent(eventtype, e);
+                                            }
+                                        } else {
+                                            $.extend(e, this.getCoordinates(e));
+                                            if (chart.isInsidePlot(e.chartX - plotLeft, e.chartY - plotTop)) {
+                                                fireEvent(chart, eventtype, e);
+                                            }
+                                        }
+                                    }
+                                };
+                            }
+                        };
+
+                        applyClickEventHandler('contextmenu', 'onContainerContextMenu');
+
+                        applyClickEventHandler('dblclick', 'onDblClick');
+
+
+                    }(Highcharts, jQuery));
+
 
                     $scope.chartConfig = metaShareService.chartConfig;
                     $scope.observer = ObserverService;
@@ -116,6 +250,15 @@ define([
                         });
                     };
 
+                    $scope.contextMenu = function (category, e) {
+                        var posx = e.clientX + window.pageXOffset + 'px'; //Left Position of Mouse Pointer
+                        var posy = e.clientY + window.pageYOffset + 'px'; //Top Position of Mouse Pointer
+                        $('#constext-menu-div').css({top: posy , left: posx });
+                        $('#constext-menu-div').show();
+                        console.log(e);
+                        console.log(category);
+                    };
+
                     $scope.updateEntityCharts = function () {
                         if ($scope.initializedEntity) {
                             $scope.promiseEntityCharts =  $q.defer();
@@ -168,6 +311,9 @@ define([
                                                     events: {
                                                         click: function () {
                                                             $scope.clickedItem(this, 'entity', type);
+                                                        },
+                                                        contextmenu: function (e) {
+                                                            $scope.contextMenu(this, e);
                                                         }
                                                     }
                                                 },
@@ -303,6 +449,9 @@ define([
                                             events: {
                                                 click: function () {
                                                     $scope.clickedItem(this, 'entity', x);
+                                                },
+                                                contextmenu: function (e) {
+                                                    $scope.contextMenu(this, e);
                                                 }
                                             }
                                         }
@@ -315,6 +464,9 @@ define([
                                             events: {
                                                 click: function () {
                                                     $scope.clickedItem(this, 'entity', x);
+                                                },
+                                                contextmenu: function (e) {
+                                                    $scope.contextMenu(this, e);
                                                 }
                                             }
                                         },
@@ -470,6 +622,54 @@ define([
                     //console.log($scope.tabHeight);
                     //console.log(sourceShareService);
                     //console.log(filterShareService);
+
+                    $scope.onContext = function(params) {
+                        params.event.preventDefault();
+                        closeContextMenu();
+
+                        var position = { x: params.pointer.DOM.x, y: params.pointer.DOM.y };
+                        var nodeIdOpt = self.network.getNodeAt(position);
+                        var edgeIdOpt = self.network.getEdgeAt(position);
+
+                        // Node selected
+                        if(!_.isUndefined(nodeIdOpt)) {
+                            self.network.selectNodes([nodeIdOpt]);
+                            showContextMenu(_.extend(position, { id: nodeIdOpt }), self.nodeMenu);
+                        } else if(!_.isUndefined(edgeIdOpt)) {
+                            self.network.selectEdges([edgeIdOpt]);
+                            showContextMenu(_.extend(position, { id: edgeIdOpt }), self.edgeMenu);
+                        }
+                        else {
+                            // Nop
+                        }
+                    };
+
+                    $scope.showContextMenu = function(params, menu) {
+                        var container = document.getElementById('mynetwork');
+
+                        var offsetLeft = container.offsetLeft;
+                        var offsetTop = container.offsetTop;
+
+                        self.popupMenu = document.createElement("div");
+                        self.popupMenu.className = 'popupMenu';
+                        self.popupMenu.style.left = params.x - offsetLeft + 'px';
+                        self.popupMenu.style.top =  params.y - offsetTop +'px';
+
+                        var ul = document.createElement('ul');
+                        self.popupMenu.appendChild(ul);
+
+                        for (var i = 0; i < menu.length; i++) {
+                            var li = document.createElement('li');
+                            ul.appendChild(li);
+                            li.innerHTML = li.innerHTML + menu[i].title;
+                            (function(value, id, action){
+                                li.addEventListener("click", function() {
+                                    closeContextMenu();
+                                    action(value, id);
+                                }, false);})(menu[i].title, params.id, menu[i].action);
+                        }
+                        container.appendChild(self.popupMenu);
+                    };
 
                 }
             ]

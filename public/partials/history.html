@@ -59,7 +59,7 @@
 	<div class="checkbox">
 		<md-button class="md-primary md-raised" type="button" id="reset-history" ng-click="observer.reset()">Reset filters</md-button>
 		<md-button class="md-primary md-raised" type="button" id="save-history" ng-click="saveHistory()"><md-icon class="material-icons md-light">archive</md-icon> Save State</md-button>
-		<file-field class="btn btn-small btn-primary" ng-model="uploadFile" ng-click="loadHistory()"><md-icon class="material-icons md-light">unarchive</md-icon> Load State</file-field>
+		<file-field class="md-button md-primary md-raised" ng-model="uploadFile" ng-click="loadHistory()"><md-icon class="material-icons md-light">unarchive</md-icon> Load State</file-field>
 		<md-checkbox id="show-history" ng-model="showHistory" aria-label="">
 			Show full history
 		</md-checkbox>
