@@ -34,21 +34,18 @@ html, body {
     ======================================
 */
 
-/* For the links to facebook and NLP group */
-.links {
-    margin-right: 3px;
+.md-button.md-small {
+    min-width: 3%;
 }
 
-/* The whole header itself */
-.titlebar {
-    margin-bottom: 0;
-    border-radius: 0;
-    padding-left: 10px;
-    padding-right: 10px;
-    background-color: #2759AC;
-    border-color: #2759AC;
+.md-small-toolbar {
+    min-height: 50px;
+    height: 50px;
 }
 
+.institute-logo {
+    height: 36px;
+    object-fit:contain;
 .titlebar #select_value_label_0 .md-text, .titlebar #select_value_label_0 .md-select-icon {
     color: white;
 }
@@ -68,80 +65,114 @@ html, body {
 
 /*
     ======================================
-    Network Graph
+    Network
     ======================================
 */
+
 
 line {
     /* Should be the same as edgeLegend#fill */
     stroke: #b0b0b0;
 }
 
-.dropdown-button-menu
-{
-	padding: 0px 0px 0px 0px;
-}
-
-.node circle {
-    stroke: #000;
-    stroke-width: 1.5px;
-}
-
-.node text {
-    pointer-events: none;
-}
-
-#network-graph {
+#mynetwork {
+    position: absolute;
+    overflow-y: hidden;
     width: 100%;
-    height: calc(100% - 96px);
-    position: absolute;
+    top: 60px;
+    height: calc(100% - 60px);
+    background-color: #d1d1d1;
 }
 
-#merge-node
-{
-	width: 200px;
-	height: 200px;
+.vis-network .vis-navigation .vis-button {
+    background-color: white;
+    margin-bottom: 20px;
 }
 
-div.tooltip {
-    position: absolute;
+.vis-fullscreen-button {
+    right: 15px;
+    bottom: 90px;
+    background-image: url("assets/../../images/fullscreen_green.png");
+}
+
+.vis-navigation .vis-button:hover:before {
+    background: beige;
+    display: block;
+    color: black;
+    padding: 3px;
+    position: relative;
+    border: 1px solid lightgray;
+    width: 80px;
+    left: -70px;
+    top: -30px;
+    z-index: 1000;
     text-align: center;
-    width: 150px;
-    padding: 2px;
-    font: 12px sans-serif;
-    color: white;
-    background: black;
-    border: 1px;
-    border-radius: 8px;
-    pointer-events: none;
 }
 
-#network-graph .glyphicon {
-    position: static;
-}
-#network-graph body {
-    position: static;
+.vis-navigation .vis-button:hover.vis-up:before {
+    left: 30px;
+    content: "Scroll up";
 }
 
-.tooltipImportantText {
-    color: #FFA836;
+.vis-navigation .vis-button:hover.vis-down:before {
+    left: 30px;
+    content: "Scroll down";
 }
 
-/* The containers that hold the slider elements */
-.slider-container {
-    margin-bottom: 10px;
-    margin-left: 20px;
-    margin-top: 10px;
-    margin-right: 10px;
+.vis-navigation .vis-button:hover.vis-right:before {
+    left: 30px;
+    content: "Scroll right";
 }
 
-.collapse {
-    margin: 20px;
+.vis-navigation .vis-button:hover.vis-left:before {
+    left: 30px;
+    content: "Scroll left";
 }
 
-.loading-network-image {
-    margin: auto;
-    width: 300px;
+.vis-navigation .vis-button:hover.vis-zoomOut:before {
+    content: "Zoom out";
+}
+
+.vis-navigation .vis-button:hover.vis-zoomIn:before {
+    content: "Zoom in";
+}
+
+.vis-navigation .vis-button:hover.vis-zoomExtends:before {
+    content: "Reset focus";
+}
+
+.vis-navigation .vis-button:hover.vis-fullscreen-button:before {
+    content: "Fullscreen";
+}
+
+div.popupMenu {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    display: block;
+    background-color: #f2f2f2;
+    border-radius: 4px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    min-width: 150px;
+    border: 1px solid #d4d4d4;
+    z-index: 1200;
+}
+
+div.popupMenu ul {
+    list-style-type: none;
+    margin: 4px 0px;
+    padding: 0px;
+    cursor: default;
+}
+
+div.popupMenu ul li {
+    padding: 4px 16px;
+}
+
+div.popupMenu ul li:hover {
+    background-color: #4677f8;
+    color: #fefefe;
 }
 
 /*
@@ -206,15 +237,6 @@ div.tooltip {
     margin: auto;
 }
 
-/*
-    ======================================
-    Map
-    ======================================
-*/
-
-#map-container {
-    margin: 0 10px;
-}
 
 /*
     ======================================
@@ -245,30 +267,37 @@ div.tooltip {
     Angular Material UI Layout
     ======================================
 */
-#wrapper {
 
+#wrapper {
     height: 100%;
     width: 100%;
 }
+
 #flex-body {
     height: calc(100% - 350px);
 }
+
 main {
     width: 50%;
     margin-top: 10px;
 }
+
 #document {
     width: 250px;
 }
+
 #document, #right-side {
     width: 25%;
 }
+
 #metadata-view {
     height: 100%;
 }
+
 footer {
     height: 200px;
 }
+
 footer > div, footer > div #histogram {
     height: 100%;
     margin-top: 10px;
@@ -296,7 +325,7 @@ footer > div, footer > div #histogram {
 .rg-left span, .rg-right span {
     border-width: 0 1px;
     top: 50%;
-    margin:  -10px 0 0  2.5px;
+    margin:  -10px 0 0 2.5px;
     height: 20px;
     width: 3px;
 }
@@ -317,35 +346,6 @@ footer > div, footer > div #histogram {
     margin-right: -10px;
 }
 
-/*
-    ======================================
-    The tabs as well as the tab containers
-    ======================================
-*/
-.nav-tabs .closeTab {
-    margin-left: 5px;
-    margin-top: -3px;
-}
-
-.document-source-content {
-    height: calc(100% - 71px);
-    padding-left: 15px;
-    padding-top: 10px;
-}
-
-#network-maps-container {
-    height: 100%;
-}
-
-/* Give us more space between the tabs and the tab content */
-#network-maps-container .tab-content {
-    height: calc(100% - 78px);
-    padding-top: 20px;
-}
-
-#network-maps-container .tab-content .tab-pane {
-    height: 100%;
-}
 
 /*
     ======================================
@@ -355,19 +355,6 @@ footer > div, footer > div #histogram {
 
 .highlight-general {
     font-weight: bold;
-}
-
-.toggle-switch .switch-left {
-    background: #337ab7;
-}
-
-.source-buttons-area {
-    padding: 15px;
-}
-
-.toggle-switch {
-    top: 11px;
-    position: relative;
 }
 
 /*
@@ -386,7 +373,6 @@ footer > div, footer > div #histogram {
 
 #document-list {
     padding-left: 30px;
-
 }
 
 #document-list li.doc-list-highlight {
@@ -410,8 +396,8 @@ footer > div, footer > div #histogram {
 
 .load-more-button {
     width: 100%;
-
 }
+
 .docs-loading {
     position: absolute;
     height: 100%;
@@ -422,6 +408,7 @@ footer > div, footer > div #histogram {
     opacity: 0.5;
     text-align: center;
 }
+
 .docs-loading span {
     font-weight: bold;
     position: relative;
@@ -449,18 +436,17 @@ footer > div, footer > div #histogram {
     ======================================
 */
 
-#filter-view > div:first-child{
+#filter-view > div:first-child {
     height: 100%;
 }
-#filterList
-{
+
+#filterList {
 	padding: 5px 5px;
 	list-style-type: none;
     height: 80%;
 }
 
-.filterListItem
-{
+.filterListItem {
 	margin: 0 2px 2px 0;
 	font-weight: normal;
 }
@@ -473,22 +459,28 @@ footer > div, footer > div #histogram {
 #metadata {
     height: 100%;
 }
+
 #metadata-overview, #metadata_tabs, #metadata-overview2 {
     height: calc(100% - 74px);
 }
+
 #metadata_tabs .meta-chart-container {
     height: 100%;
     overflow: hidden;
 }
+
 #metadata_tabs .tab-content, #metadata-overview .tab-pane {
     height: 100%;
 }
+
 #metadata_tabs {
     height: calc(100% - 50px);
 }
+
 #metadata_tabs .tab-pane {
     height: 100%;
 }
+
 #metadata_tabs .scroll-chart {
     height: 100%;
     overflow-y: auto;
@@ -514,12 +506,15 @@ footer > div, footer > div #histogram {
     Search
     ======================================
 */
+
 #search-bar .suggestion-item {
     border-bottom: 1px solid #d7d7d7;
 }
+
 #search-bar #search-scroll {
 
 }
+
 #search-bar #search-group {
 
 }
@@ -537,22 +532,27 @@ footer > div, footer > div #histogram {
 #search-bar #autocomplete .list-group-item {
     padding: 5px 10px;
 }
+
 #search-bar .search-item-container{
     height: 32px;
 }
+
 #search-bar .search-item-container > span {
     position: relative;
     top: -8px;
     left: 5px;
 }
+
 .autocomplete-left {
     float: left;
 }
+
 /*
     ======================================
     History
     ======================================
 */
+
 #history {
     margin-left: 10px;
 }
@@ -563,6 +563,7 @@ ul#historyList {
     padding: 3px 10px;
     margin: 0 0 0 10px;
 }
+
 /* TODO: calculate remaining space for items */
 #historyList > li {
     background-color: #2759AC;
@@ -581,19 +582,23 @@ ul#historyList {
     width: 150px;
     width: auto;
 }
+
 #historyList li span {
     margin-left: 5px;
 }
+
 #historyList li i {
     color: white;
 }
+
 #historyList li i.type-icon {
     font-size: 16px;
-
 }
+
 #historyList li i.action-icon {
     font-size: 8px;
 }
+
 #historyList .popover-title {
     color: white;
     background-color: #2759AC;
@@ -607,4 +612,10 @@ ul#historyList {
 
 .btn-small {
     padding: 4px 6px;
+}
+
+.list-header {
+    height: auto;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.54);
 }

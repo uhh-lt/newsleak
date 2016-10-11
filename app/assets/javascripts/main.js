@@ -30,13 +30,11 @@
 			'awesome-slider': 'libs/angular-awesome-slider/dist/angular-awesome-slider.min',
 			'ngAnimate': 'libs/angular-animate/angular-animate',
 			'ngAria': 'libs/angular-aria/angular-aria',
-			'ngMessages': 'libs/angular-messages/angular-messages.min',
 			'ngMaterial': 'libs/angular-material/angular-material.min',
+			'ngMdIcons': 'libs/angular-material-icons/angular-material-icons.min',
 			'bootstrap': 'libs/bootstrap/dist/js/bootstrap.min',
 			'ui-bootstrap': 'libs/angular-bootstrap/ui-bootstrap-tpls.min',
-			'toggle-switch': 'libs/angular-toggle-switch/angular-toggle-switch.min',
 			'ngSanitize': 'libs/angular-sanitize/angular-sanitize.min',
-			'scDateTime': 'libs/sc-date-time/dist/sc-date-time',
 			'moment': 'libs/moment/min/moment.min',
 			'ui-layout': 'libs/angular-ui-layout/src/ui-layout',
 			'ui-router': 'libs/angular-ui-router/release/angular-ui-router.min',
@@ -49,7 +47,9 @@
 			'underscore': 'libs/underscore/underscore-min',
 			'd3': 'libs/d3/d3.min',
 			'angularResizable': 'libs/angular-resizable/angular-resizable.min',
-			'bootstrapFileField': 'libs/angular-bootstrap-file-field/dist/angular-bootstrap-file-field.min'
+			'bootstrapFileField': 'libs/angular-bootstrap-file-field/dist/angular-bootstrap-file-field.min',
+			'vis': 'libs/vis/dist/vis.min',
+			'ngVis': 'directives/angular-vis'
 		},
 		shim: {
 			'jsRoutes': {
@@ -69,7 +69,9 @@
 				deps: ['angular', 'screenfull']
 			},
 			'angular': {
-				exports: 'angular'
+				exports: 'angular',
+				// Force angular to use jquery instead of jqLite library, which provides only a small subset of features
+				deps: ['jquery']
 			},
 			'awesome-slider': {
 				exports: 'angular',
@@ -89,10 +91,6 @@
 			'ui-bootstrap': {
 				deps: ['angular', 'bootstrap', 'ngAnimate']
 			},
-			'toggle-switch': {
-				exports: 'angular',
-				deps: ['angular']
-			},
 			'ngSanitize': {
 				exports: 'angular',
 				deps: ['angular']
@@ -101,15 +99,15 @@
 				exports: 'angular',
 				deps: ['angular']
 			},
-			'scDateTime': {
-				deps: ['angular']
-			},
 			'highcharts': {
 				exports: 'Highcharts',
 				deps: ['jquery']
 			},
 			'ngMaterial': {
-				deps: ['angular','ngAria','ngMessages','ngAnimate']
+				deps: ['angular', 'ngAria', 'ngAnimate']
+			},
+			'ngMdIcons': {
+				deps: ['angular']
 			},
 			'drilldown': {
 				exports: 'drilldown',
@@ -131,6 +129,12 @@
 			},
 			'bootstrapFileField' : {
 				deps: ['angular', 'bootstrap']
+			},
+			'ngFileSaver': {
+				deps: ['angular']
+			},
+			'ngVis': {
+				deps: ['angular', 'vis']
 			}
 		},
 		priority: [
@@ -139,7 +143,6 @@
 		],
 		deps: ['angular','jquery'],
 		waitSeconds: 5
-
 	});
 
 	requirejs.onError = function (err) {
@@ -153,6 +156,4 @@
 			angular.bootstrap(document, ['myApp']);
 		}
 	);
-	
-	
 })(requirejs);

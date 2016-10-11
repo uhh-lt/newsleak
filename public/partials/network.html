@@ -15,10 +15,37 @@
   ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<!-- Loading Image -->
-<div class="alert alert-info loading-network-image" ng-show="isViewLoading">
-    <img src="./assets/images/loading2.gif"/>
-</div>
+<md-toolbar>
+    <div class="md-toolbar-tools" md-theme="control-theme" style="margin-top: 10px;">
+        <!-- TODO Generate in for loop -->
+        <md-input-container layout flex="10">
+            <label>#Per</label>
+            <input ng-model="numPer" ng-change="reloadGraph()" type="number" step="1" min="0" ng-model-options="{updateOn: 'default blur', debounce: {default: 300, blur: 0} }">
+        </md-input-container>
 
-<!-- Show Graph if available -->
-<div id="network-graph" ng-show="!isViewLoading"></div>
+        <md-input-container layout flex="10">
+            <label>#Org</label>
+            <input ng-model="numOrg" ng-change="reloadGraph()" type="number" step="1" min="0" ng-model-options="{updateOn: 'default blur', debounce: {default: 300, blur: 0} }">
+        </md-input-container>
+
+        <md-input-container layout flex="10">
+            <label>#Loc</label>
+            <input ng-model="numLoc" ng-change="reloadGraph()" type="number" step="1" min="0" ng-model-options="{updateOn: 'default blur', debounce: {default: 300, blur: 0} }">
+        </md-input-container>
+
+        <md-input-container layout flex="10">
+            <label>#Misc</label>
+            <input ng-model="numMisc" ng-change="reloadGraph()" type="number" step="1" min="0" ng-model-options="{updateOn: 'default blur', debounce: {default: 300, blur: 0} }">
+        </md-input-container>
+
+        <!--<h3><span>Network View</span></h3>-->
+        <div flex="20" layout layout-align="center center">
+            <span class="md-body-1">Edge Importance</span>
+        </div>
+        <md-slider ng-disabled="loading" flex min="1" max="{{ maxEdgeImportance }}" step ="1" md-discrete ng-model="edgeImportance" aria-label="blue"></md-slider>
+    </div>
+</md-toolbar>
+
+<div id="mynetwork">
+    <vis-network data="graphData" options="graphOptions" layout-fill events="graphEvents"></vis-network>
+</div>

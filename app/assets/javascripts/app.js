@@ -23,7 +23,9 @@ define([
     './factory/source/SourceFactory',
     './factory/source/HighlightFactory',
     './components/sources/SourceController',
-    './components/network/NetworkController',
+    './components/sources/DocumentController',
+    './components/network/FancyNetworkController',
+    './components/network/GraphConfig',
     './components/network/ToolController',
     './components/network/TextModalController',
     './components/network/MergeModalController',
@@ -35,36 +37,42 @@ define([
     './components/histogram/HistogramController',
     './services/playRoutes',
     './services/ObserverService',
-    './factory/appData',
     './factory/util',
     './services/underscore-module',
     'ui-layout',
     'ui-router',
     'ui-bootstrap',
     'angularResizable',
-    'ngMaterial'
+    'ngSanitize',
+    'ngMaterial',
+    'ngMdIcons',
+    'angularScreenfull',
+    'ngVis',
+    'vis'
 ], function (angular) {
     'use strict';
 
     var app = angular.module('myApp',
         [
-            'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable','ngMaterial',
-            'angularMoment', 'underscore', 'myApp.data', 'myApp.observer', 'myApp.util', 'myApp.history',
-            'myApp.tools',
+            'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial', 'ngMdIcons',
+            'angularMoment', 'underscore', 'myApp.observer', 'myApp.util', 'myApp.history', 'myApp.graphConfig',
+            'myApp.tools', 'angularScreenfull',
             'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
             'myApp.network', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
-            'myApp.metafactory', 'myApp.toolfactory',
-            'myApp.histogram', 'myApp.search'
+            'myApp.metafactory', 'myApp.toolfactory', 'myApp.document',
+            'myApp.histogram', 'myApp.search',
+            'ngVis'
         ]
     );
 
     app.config(['$stateProvider', '$urlRouterProvider', '$mdThemingProvider', function($stateProvider, $urlRouterProvider, $mdThemingProvider) {
 
-        //$mdThemingProvider.theme('control-theme')
-            //.primaryPalette('light-blue')
-            //.backgroundPalette('blue', {
-             //   'default': '200'
-           // });
+        $mdThemingProvider.theme('control-theme')
+            .primaryPalette('yellow')
+            .dark()
+            .backgroundPalette('blue-grey', {
+                'default': '200'
+            });
 
         $stateProvider
         .state('layout', {
@@ -77,17 +85,17 @@ define([
                     templateUrl: 'assets/partials/document_list.html',
                     controller: 'SourceController'
                 },
+                'document': {
+                    templateUrl: 'assets/partials/document.html',
+                    controller: 'DocumentController'
+                },
                 'network': {
                     templateUrl: 'assets/partials/network.html',
-                    controller: 'NetworkController'
+                    controller: 'FancyNetworkController'
                 },
                 'tools': {
                     templateUrl: 'assets/partials/tools.html',
                     controller: 'ToolController'
-                },
-                'source': {
-                    templateUrl: 'assets/partials/source.html',
-                    controller: 'SourceController'
                 },
                 'histogram': {
                     templateUrl: 'assets/partials/histogram.html',
@@ -120,8 +128,12 @@ define([
         return uiProperties;
     });
 
-    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', 'moment', 'appData', 'uiShareService', 'ObserverService', 'playRoutes',
-        function ($scope, $state, $timeout, $window, moment, appData, uiShareService, ObserverService, playRoutes) {
+    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', '$mdDialog', 'moment', 'uiShareService', 'ObserverService', 'playRoutes', '_',
+        function ($scope, $state, $timeout, $window, $mdDialog, moment, uiShareService, ObserverService, playRoutes, _) {
+
+            /* Select graph tab on startup. In order to update the value from the child scope we need
+             * an object here. */
+            $scope.selectedTab = { index: 0 };
             $scope.selectedDataset = '';
             $scope.datasets = ['cable', 'enron'];
 
@@ -129,31 +141,23 @@ define([
 
             function init() {
                 $state.go('layout');
+                // TODO Don't know what the resizing is about
                 // $timeout in order to have the right values right from the beginning on
-                $timeout(function() {
+                /*$timeout(function() {
                     setUILayoutProperties(parseInt($('#network-maps-container').css('width')), parseInt($('#network-maps-container').css('height'))-96);
-                }, 100);
-            };
-
-            //TODO: WHEN USING THIS FOR WATCH NO DEEP COPY IS NEEDED!!!!
-            $scope.$watch(function () {
-                return appData.getDate();
-            }, function (newVal, oldVal) {
-                if (!angular.equals(newVal, oldVal)) {
-                    $scope.date = newVal;
-                }
-            });
+                }, 100); */
+            }
 
             $scope.$on("angular-resizable.resizeEnd", function (event, args) {
                 if(args.id == 'center-box') setUILayoutProperties(args.width, false);
-                if(args.id == 'footer') setUILayoutProperties(false, parseInt($('#network-maps-container').css('height'))-96);
+                //if(args.id == 'footer') setUILayoutProperties(false, parseInt($('#network-maps-container').css('height'))-96);
                 $("#histogram").highcharts().reflow();
                 $("#metadata-view .active .active .meta-chart").highcharts().reflow();
             });
 
-            angular.element($window).bind('resize', function () {
+            /*angular.element($window).bind('resize', function () {
                 setUILayoutProperties(parseInt($('#network-maps-container').css('width')), parseInt($('#network-maps-container').css('height'))-96);
-            });
+            });*/
 
             /**
              * This function sets properties that describe the dimensions of the UI layout.
@@ -170,6 +174,44 @@ define([
                 //setUILayoutProperties();
             });
 
+
+            // TODO: Refactor move to own file
+            $scope.showSettings = function() {
+                var blacklisted = playRoutes.controllers.EntityController.getBlacklistedEntities().get().then(function(response) {
+                    return response.data;
+                });
+
+                $mdDialog.show({
+                templateUrl: 'assets/partials/settings.html',
+                controller: ['$scope', '$mdDialog', 'playRoutes', 'b',
+                    function($scope, $mdDialog, playRoutes, b) {
+                        $scope.blacklisted = b;
+                        $scope.selected = [];
+
+                        $scope.toggle = function (item) {
+                            if($scope.exists(item, $scope.selected)) { $scope.selected = _.without($scope.selected, item); }
+                            else { $scope.selected.push(item); }
+                        };
+
+                        $scope.exists = function (item, list) {
+                            var idx = _.findIndex(list, function(el) { return el.id == item.id; });
+                            return idx > -1;
+                        };
+
+                        $scope.removeItems = function() {
+                            var ids = $scope.selected.map(function(e) { return e.id });
+                            playRoutes.controllers.EntityController.undoBlacklistingByIds(ids).get().then(function(response) { });
+                            $scope.blacklisted = _.reject($scope.blacklisted, function(e) { return $scope.exists(e, $scope.selected); });
+                            $scope.selected.length = 0;
+                        };
+
+                        $scope.closeClick = function() { $mdDialog.cancel(); };
+                    }],
+                    locals: { b: blacklisted }
+                }).then(function(response) {
+                }, function() { /* cancel click */ });
+            };
+
             $scope.changeDataset = function() {
                 console.log('Changed ' + $scope.selectedDataset);
                 playRoutes.controllers.Application.changeDataset($scope.selectedDataset).get().then(function(response) {
@@ -179,7 +221,6 @@ define([
                     }
                 });
             };
-
         }]);
 
     return app;

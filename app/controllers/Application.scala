@@ -17,13 +17,13 @@
 
 package controllers
 
-import play.api.Logger
-import play.api.mvc.{ Action, Controller }
-import org.apache.commons.codec.binary.{ Base64, Hex, StringUtils }
 import javax.inject.Inject
 
-import util.SessionUtils.{ datasetSessionKey, currentDataset }
+import org.apache.commons.codec.binary.{ Base64, StringUtils }
+import play.api.Logger
 import play.api.libs.json.Json
+import play.api.mvc.{ Action, Controller }
+import util.SessionUtils.{ datasetSessionKey, currentDataset }
 import utils.NewsleakConfigReader
 
 import scala.util.Random
@@ -76,7 +76,7 @@ class Application @Inject extends Controller {
       }
     }
 
-    // now e check if authorization was successfull
+    // now check if authorization was successful
     if (!authorized) {
       // send a login request
       Unauthorized(views.html.defaultpages.unauthorized())
@@ -105,18 +105,25 @@ class Application @Inject extends Controller {
         // TODO: You need to add your routes here
         controllers.routes.javascript.Application.changeDataset,
         controllers.routes.javascript.DocumentController.getDocById,
+        controllers.routes.javascript.DocumentController.getKeywordsById,
         controllers.routes.javascript.DocumentController.getDocs,
-        controllers.routes.javascript.NetworkController.getGraphData,
-        controllers.routes.javascript.NetworkController.getEgoNetworkData,
+        controllers.routes.javascript.DocumentController.addTag,
+        controllers.routes.javascript.DocumentController.removeTagById,
+        controllers.routes.javascript.DocumentController.getTagsByDocId,
+        controllers.routes.javascript.DocumentController.getTagLabels,
+        controllers.routes.javascript.DocumentController.getDocsByLabel,
         controllers.routes.javascript.NetworkController.getIdsByName,
         controllers.routes.javascript.NetworkController.deleteEntityById,
         controllers.routes.javascript.NetworkController.mergeEntitiesById,
         controllers.routes.javascript.NetworkController.changeEntityNameById,
-        controllers.routes.javascript.NetworkController.getRelations,
         controllers.routes.javascript.NetworkController.induceSubgraph,
+        controllers.routes.javascript.NetworkController.getEdgeKeywords,
         controllers.routes.javascript.EntityController.getEntities,
         controllers.routes.javascript.EntityController.getEntityTypes,
         controllers.routes.javascript.EntityController.getEntitiesByType,
+        controllers.routes.javascript.EntityController.getBlacklistedEntities,
+        controllers.routes.javascript.EntityController.undoBlacklistingByIds,
+        controllers.routes.javascript.EntityController.getEntitiesByDoc,
         controllers.routes.javascript.NetworkController.changeEntityTypeById,
         controllers.routes.javascript.MetadataController.getMetadata,
         controllers.routes.javascript.MetadataController.getSpecificMetadata,
@@ -125,7 +132,6 @@ class Application @Inject extends Controller {
         controllers.routes.javascript.SearchController.getAutocomplete,
         controllers.routes.javascript.HistogramController.getHistogram,
         controllers.routes.javascript.HistogramController.getHistogramLod
-
       )
     ).as(JAVASCRIPT)
   }

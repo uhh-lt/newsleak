@@ -17,8 +17,7 @@
 
 define([
     'angular',
-    'jquery-json',
-    '../factory/appData'
+    'jquery-json'
 ], function (angular) {
     'use strict';
 

@@ -19,12 +19,11 @@ define([
     'angular',
     'angularMoment',
     'd3',
-    'awesome-slider',
-    'toggle-switch'
+    'awesome-slider'
 ], function (angular) {
     'use strict';
 
-    angular.module('myApp.tools', ['play.routing', 'angularMoment', 'angularAwesomeSlider', 'toggle-switch']);
+    angular.module('myApp.tools', ['play.routing', 'angularMoment', 'angularAwesomeSlider']);
     angular.module('myApp.tools')
     .controller('ToolController',
     [

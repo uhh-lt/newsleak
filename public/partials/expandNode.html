@@ -1,0 +1,57 @@
+<!--
+  ~ Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<md-dialog aria-label="expand" flex="25" ng-cloak>
+    <form>
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Expand node {{ title }}</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="closeClick()">
+                    <md-icon md-font-icon="fa fa-times" aria-label="Close dialog"></md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content>
+                <md-content layout-padding layout="column">
+                    <h3 class="md-title">Neighbors</h3>
+                    <md-input-container class="md-block" flex-gt-sm>
+                        <label>Filter</label>
+                        <input ng-model="filter">
+                    </md-input-container>
+                    <md-list ng-cloak>
+                        <md-list-item class="list-header" layout="row">
+                                <span ng-repeat="c in columns"
+                                      ng-style="{width: 100/columns.length + '%'}">{{c}}</span>
+                        </md-list-item>
+                        <divider></divider>
+                        <md-list-item ng-repeat="n in neighbors">
+                            <p> {{ n.label }} </p>
+                            <p> {{ n.type }} </p>
+                            <md-checkbox class="md-secondary" aria-label="add-node"></md-checkbox>
+                        </md-list-item>
+                    </md-list>
+                </md-content>
+        </md-dialog-content>
+
+        <md-dialog-actions layout="row">
+            <md-button class="md-primary md-raised" ng-click="apply()">Add to Network</md-button>
+            <span flex></span>
+            <md-button class="md-primary md-raised" ng-click="closeClick()">Close</md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>
