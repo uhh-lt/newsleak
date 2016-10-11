@@ -74,7 +74,6 @@ define([
                         $scope.chartConfigs = [];
                         $scope.metaCharts = [];
 
-                        $timeout($scope.updateHeight(), 1000) ;
                         var defer1 = $q.defer();
                         var defer2 = $q.defer();
                         var prom = $q.all([defer1.promise, defer2.promise]);
@@ -90,6 +89,7 @@ define([
                                 defer2.resolve("initMeta");
                             });
                         });
+                        prom.then($scope.updateHeight);
                         return prom;
                     };
 
