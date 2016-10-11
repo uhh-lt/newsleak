@@ -375,6 +375,12 @@ footer > div, footer > div #histogram {
 #document-list {
     padding-left: 30px;
 }
+#documents-view .repeated-item .meta-tooltip {
+    display: none;
+}
+#documents-view .repeated-item:hover .meta-tooltip {
+    display: block;
+}
 
 #document-list li.doc-list-highlight {
     font-weight: bold;

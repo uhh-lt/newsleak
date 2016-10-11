@@ -58,43 +58,23 @@
         <b style="text-decoration: underline;">{{ sourceShared.documentListInfo }}</b>
 
         <md-content>
-            <md-list>
+            <md-list class="md-dense">
             <md-virtual-repeat-container id="vertical-container" style="height: 500px;">
                 <md-list-item
                         md-virtual-repeat="item in virtualScroll"
                         md-on-demand="true"
                         md-item-size="50"
-                        class="repeated-item" flex="" ng-click="loadFullDocument(item)">
-                    {{ item.metadata.Subject }} #{{item.id}}
+                        class="repeated-item md-3-line md-long-text"
+                        ng-click="loadFullDocument(item)">
+                    <div class="md-body-2">{{ item.metadata.Subject }} #{{item.id}}</div>
+                    <md-button class="md-primary md-raised" ng-click="showMetaDialog($event, item.metadata)">Metadata</md-button>
+
                     <md-divider ng-if="!$last"></md-divider>
 
-
                 </md-list-item>
-
-
             </md-virtual-repeat-container>
             </md-list>
         </md-content>
-<!--
-            <md-list flex>
-                <md-list-item class="" ng-repeat="item in sourceShared.documentList" ng-click="loadFullDocument(item)">
-                        {{ item.metadata.Subject }} #{{item.id}}
-                    <md-divider ng-if="!$last"></md-divider>
-                    <md-tooltip md-direction="right">
-                        <md-content>
-                        <md-list flex>
-                            <md-subheader>Metadata for #{{item.id}}</md-subheader>
-                            <md-list-item class="" ng-repeat="(key, value) in item.metadata">
-                                <span style="font-weight: 700">{{key}}:</span> {{value}}
-                            </md-list-item>
-                        </md-list>
-                        </md-content>
-                    </md-tooltip>
-
-                </md-list-item>
-            </md-list>
-
-        -->
         <!-- Show toast when no documents in the iterator and the doc list is not empty -->
         <span ng-init="showAllLoaded()" ng-if="iteratorEmpty && hits > 0"></span>
     </div>

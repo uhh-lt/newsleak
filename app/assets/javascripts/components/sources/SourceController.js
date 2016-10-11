@@ -34,6 +34,7 @@ define([
                 '$http',
                 '$timeout',
                 '$mdToast',
+                '$mdDialog',
                 '$q',
                 'playRoutes',
                 '_',
@@ -46,6 +47,7 @@ define([
                           $http,
                           $timeout,
                           $mdToast,
+                          $mdDialog,
                           $q,
                           playRoutes,
                           _,
@@ -278,6 +280,40 @@ define([
                                 .parent(angular.element('#document'))
                                 .hideDelay(3000)
                         );
+                    };
+
+                    $scope.showMetaDialog = function($event, metadata) {
+                        var parentEl = angular.element(document.body);
+                        $mdDialog.show({
+                            parent: parentEl,
+                            targetEvent: $event,
+                            template:
+                            '<md-dialog aria-label="Metadata">' +
+                            '  <md-dialog-content>'+
+                                '<md-subheader class="md-no-sticky">Metadata</md-subheader>'+
+                            '    <md-list class="md-dense">'+
+                            '      <md-list-item ng-repeat="(key, value) in items">'+
+                            '       <p class="md-body-2">{{key}}: {{value}}</p>' +
+                            '      '+
+                            '    </md-list-item></md-list>'+
+                            '  </md-dialog-content>' +
+                            '  <md-dialog-actions>' +
+                            '    <md-button ng-click="closeDialog()" class="md-primary">' +
+                            '      Close' +
+                            '    </md-button>' +
+                            '  </md-dialog-actions>' +
+                            '</md-dialog>',
+                            locals: {
+                                items: metadata
+                            },
+                            controller: DialogController
+                        });
+                        function DialogController($scope, $mdDialog, items) {
+                            $scope.items = items;
+                            $scope.closeDialog = function() {
+                                $mdDialog.hide();
+                            }
+                        }
                     };
 
                     $scope.hidePopover = function (id) {
