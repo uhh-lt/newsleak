@@ -427,6 +427,11 @@ footer > div, footer > div #histogram {
     position: relative;
     top: 45%;
 }
+
+.md-content.md-show{
+    height: auto !important;
+}
+
 /*
     ======================================
     Bar Chart

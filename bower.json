@@ -22,7 +22,7 @@
     "angular-sanitize": "~1.4.3",
     "angular-screenfull": "~0.1.0",
     "angular-moment": "~0.10.2",
-    "angular-material": "1.0.9",
+    "angular-material": "1.1.1",
     "highcharts-release": "~4.1.7",
     "requirejs": "~2.1.20",
     "moment": "~2.10.6",

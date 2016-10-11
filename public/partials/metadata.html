@@ -17,9 +17,9 @@
 
 <div id="metadata" style="padding: 10px 0 0 10px;">
     <p style="font-size:16px; display: inline-block">Frequency Overview</p>
-    <md-tabs>
-        <div id="entities_tab" class="tab-pane fade in">
-            <md-tab label="Entities">
+    <md-tabs md-stretch-tabs="always" md-dynamic-height="true">
+            <md-tab label="Entities" md-on-select="updateHeight()">
+                <div id="entities_tab" class="tab-pane fade in">
                 <md-tabs>
                     <md-tab
                             ng-repeat="entityType in entityTypes"
@@ -29,10 +29,10 @@
                         </div>
                     </md-tab>
                 </md-tabs>
+                </div>
 
             </md-tab>
-        </div>
-        <md-tab label="Metadata">
+        <md-tab label="Metadata" md-on-select="updateHeight()">
             <div id="metadata_tab" class="tab-pane fade in active">
                 <md-tabs>
                     <md-tab

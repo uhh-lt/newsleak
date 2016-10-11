@@ -26,6 +26,8 @@
         <p>No document for current set filters available. Filter less to get document list.</p>
     </div>
     <script type="text/ng-template" id="doc_tooltip_tmpl">
+
+
         <div>
             <ul class="list-group-item">
                 <li class="list-group-item" ng-repeat="(key, value) in item.metadata"><span style="font-weight: 700">{{key}}:</span> {{value}}</li>
@@ -34,22 +36,26 @@
     </script>
     <div ng-show="sourceShared.documentList.length > 0" class="docs-ul">
         <b style="text-decoration: underline;">{{ sourceShared.documentListInfo }}</b>
-        <ul id="document-list">
-            <li ng-repeat="item in sourceShared.documentList"
-                ng-class="{true: 'doc-list-highlight', false: 'doc-list-no-highlight'}[sourceShared.openDocuments.IDs.indexOf(item.id) > -1]"
-                ng-mouseleave="hidePopover(item.id)"
-                ng-mouseenter="showPopover(item.id)"
-                uib-popover-template="'doc_tooltip_tmpl'"
-                popover-trigger="none"
-                popover-title="Metadata for #{{item.id}}"
-                popover-placement="right"
-                popover-is-open="popover.isOpen[{{item.id}}]"
-                >
-                <a href="#" ng-click="loadFullDocument(item.id)">
-                    {{ item.metadata.Subject }} #{{item.id}}
-                </a>
-            </li>
-        </ul>
+
+        <md-content>
+            <md-list flex>
+                <md-list-item class="" ng-repeat="item in sourceShared.documentList" ng-click="loadFullDocument(item.id)">
+                        {{ item.metadata.Subject }} #{{item.id}}
+                    <md-divider ng-if="!$last"></md-divider>
+                    <md-tooltip md-direction="right">
+                        <md-content>
+                        <md-list flex>
+                            <md-subheader>Metadata for #{{item.id}}</md-subheader>
+                            <md-list-item class="" ng-repeat="(key, value) in item.metadata">
+                                <span style="font-weight: 700">{{key}}:</span> {{value}}
+                            </md-list-item>
+                        </md-list>
+                        </md-content>
+                    </md-tooltip>
+
+                </md-list-item>
+            </md-list>
+        </md-content>
         <div class="alert alert-info" ng-show="iteratorEmpty">
             <p>All matching Documents loaded!</p>
         </div>

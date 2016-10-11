@@ -58,6 +58,9 @@ define([
                     $scope.observer.subscribeItems($scope.observer_subscribe_metadata, "metadata");
                     $scope.observer.subscribeItems($scope.observer_subscribe_fulltext, "fulltext");
 
+                    $scope.updateHeight = function() {
+                        $(".scroll-chart").css("height",$("#metadata").height()-150);
+                    };
 
                     $scope.initMetadataView = function () {
                         $scope.initializedMeta = false;
@@ -71,6 +74,7 @@ define([
                         $scope.chartConfigs = [];
                         $scope.metaCharts = [];
 
+                        $timeout($scope.updateHeight(), 1000) ;
                         var defer1 = $q.defer();
                         var defer2 = $q.defer();
                         var prom = $q.all([defer1.promise, defer2.promise]);
