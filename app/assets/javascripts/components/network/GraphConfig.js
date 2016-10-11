@@ -84,5 +84,10 @@ define([
             }
         )
         // Constants can't have dependencies. Inject 'graphProperties' and use options to obtain complete graph config
-        .service('graphProperties', function(generalOptions, physicOptions, _) { this.options = _.extend(generalOptions, { physics: physicOptions }); })
+        .service('graphProperties', function(generalOptions, physicOptions, _) {
+            // General options with additional physic configuration
+            this.options = _.extend(generalOptions, { physics: physicOptions });
+
+            this.legendOptions = _.extend({}, generalOptions, { interaction: { dragNodes: false, dragView: false, selectable: false, zoomView: false, hover: false, navigationButtons: false } });
+        })
 });

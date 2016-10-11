@@ -64,8 +64,9 @@ line {
     position: absolute;
     overflow-y: hidden;
     width: 100%;
-    top: 60px;
-    height: calc(100% - 60px);
+    top: 74px;
+    /*bottom: 40px;*/
+    height: calc(100% - 74px);
     background-color: #d1d1d1;
 }
 
@@ -158,6 +159,24 @@ div.popupMenu ul li {
 div.popupMenu ul li:hover {
     background-color: #4677f8;
     color: #fefefe;
+}
+
+#network-legend {
+    position: fixed;
+    overflow-y: hidden;
+    width: 100%;
+    bottom: 0;
+    height: 40px;
+    /*background-color: #d1d1d1;*/
+    background-color: yellow;
+}
+
+#network-legend-button {
+    /*width: 60px;
+    height: 250px;*/
+    width: 250px;
+    height: 60px;
+    background-color: #d1d1d1;
 }
 
 /*
