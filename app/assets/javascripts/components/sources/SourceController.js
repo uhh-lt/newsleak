@@ -132,6 +132,8 @@ define([
                             $scope.showLoading = false;
                             $scope.defered.resolve("suc: docs");
                             $scope.iteratorEmpty = x.data.hits <= 50;
+                            $("#vertical-container").css("height", $("#documents-view").height() - 110);
+
                         });
                         return $scope.defered.promise;
                     };
@@ -175,6 +177,19 @@ define([
                                 $scope.docsLoading = false;
 
                             });
+                        }
+                    };
+
+                    $scope.virtualScroll = {
+                        getItemAtIndex: function(index) {
+                            if (!$scope.docsLoading && !$scope.iteratorEmpty && $scope.sourceShared.documentList.length >= 50 && index >  $scope.sourceShared.documentList.length) {
+                                $scope.loadMore();
+                                return null;
+                            }
+                            return  $scope.sourceShared.documentList[index];
+                        },
+                        getLength: function() {
+                            return  $scope.sourceShared.documentList.length+3;
                         }
                     };
 
