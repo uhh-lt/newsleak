@@ -97,16 +97,48 @@ line {
 }
 
 div.tooltip {
-    position: absolute;
-    text-align: center;
-    width: 150px;
-    padding: 2px;
+    position: fixed;
+    /*text-align: center;*/
+    width: 200px;
+    padding: 2px 5px;
     font: 12px sans-serif;
     color: white;
     background: black;
     border: 1px;
     border-radius: 8px;
-    pointer-events: none;
+    /*pointer-events: none;*/
+}
+
+.tooltip p {
+    margin-bottom: 2px;
+    text-align: left;
+    text-indent: 4px;
+}
+
+.tooltip h1{
+    margin: 2px;
+    font-size: 20px !important;
+    font-family: Roboto;
+    font-weight: normal;
+    text-align: center;
+}
+
+.tooltip h1 .material-icons{
+    font-size: 20px !important;
+}
+
+.tooltip .material-icons{
+    vertical-align: bottom;
+    font-size: 18px;
+}
+
+.tooltip .small-text{
+    font-size: 12px;
+}
+
+.tooltip button{
+    width: 100%;
+    text-align: left;
 }
 
 #network-graph .glyphicon {

@@ -37,43 +37,6 @@ class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: Str
 
   var connectedEdges = 0
 
-  lazy val relevantNodes = {
-    val ggIter = context.getCopyGuidance(id, true)
-    // val ggIter = gg.getGuidance(id, context.edgeAmount, context.epn, context.uiMatrix, false, List())
-    ggIter.take(context.edgeAmount).filter(t =>
-      !(t._2.isEmpty || context.usedNodes.contains(t._2.get.getId))
-    // !(context.edges.contains(t._1.getNodes) || context.edges.contains(t._1.getNodes.swap))
-    ).take(numberOfRelEdges).map(_._2.get)
-
-    /*
-    var pq = mutable.PriorityQueue[Edge]()(Ordering.by[Edge, Double](_.getDoi))
-    val nodeBuckets = FacetedSearch.aggregateEntities(Facets(List(), Map(), List(id), None, None), newEdgesPerIter, List(), 1).buckets
-    val edgeFreqTuple: Map[Long, Int] = nodeBuckets.collect { case NodeBucket(nid, docOccurrence) => (nid.toLong, docOccurrence.toInt) }.filter(_._1 != id)
-      .map(et => et._1 -> et._2)(collection.breakOut)
-    val nodeMap: mutable.HashMap[Long, Node] = new mutable.HashMap[Long, Node]()
-    nodeMap ++=
-      sql"""SELECT id, name, type, dococc FROM entity_ext WHERE id IN (${edgeFreqTuple.map(_._1)}) AND dococc IS NOT NULL"""
-      // TODO in eigene Funktion verschieben
-      .map(rs => (rs.long(1), rs.string(2), rs.string(3), rs.int(4))).list.apply.map(x => (x._1, new Node(x._1, x._2, x._4, 1, x._3, iter)))
-
-    pq ++= nodeMap.values.map(n => {
-      new Edge(this, n, edgeFreqTuple(n.getId), /* uiMatrix(typeIndex(node.getCategory))(typeIndex(n.getCategory)) */ 1, 0)
-    })
-
-    object pqIter extends Iterator[Edge] {
-      // ACHTUNG pq gibt mit .find() nicht nach DoI geordnet aus! Deswegen ist das hier notwendig
-      def hasNext = pq.nonEmpty
-      def next = {
-        val x = pq.dequeue
-        Logger.info("" + x)
-        x
-      }
-    }
-
-    pqIter.take(numberOfRelEdges).toList
-    */
-  }
-
   def getId: Long = {
     id
   }
@@ -120,7 +83,40 @@ class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: Str
   }
 
   def getRelevantNodes: Iterator[Node] = {
-    relevantNodes
+    val ggIter = context.getCopyGuidance(id, true)
+    // val ggIter = gg.getGuidance(id, context.edgeAmount, context.epn, context.uiMatrix, false, List())
+    ggIter.take(context.edgeAmount).filter(t =>
+      !(t._2.isEmpty || context.usedNodes.contains(t._2.get.getId))
+    // !(context.edges.contains(t._1.getNodes) || context.edges.contains(t._1.getNodes.swap))
+    ).take(numberOfRelEdges).map(_._2.get)
+
+    /*
+    var pq = mutable.PriorityQueue[Edge]()(Ordering.by[Edge, Double](_.getDoi))
+    val nodeBuckets = FacetedSearch.aggregateEntities(Facets(List(), Map(), List(id), None, None), newEdgesPerIter, List(), 1).buckets
+    val edgeFreqTuple: Map[Long, Int] = nodeBuckets.collect { case NodeBucket(nid, docOccurrence) => (nid.toLong, docOccurrence.toInt) }.filter(_._1 != id)
+      .map(et => et._1 -> et._2)(collection.breakOut)
+    val nodeMap: mutable.HashMap[Long, Node] = new mutable.HashMap[Long, Node]()
+    nodeMap ++=
+      sql"""SELECT id, name, type, dococc FROM entity_ext WHERE id IN (${edgeFreqTuple.map(_._1)}) AND dococc IS NOT NULL"""
+      // TODO in eigene Funktion verschieben
+      .map(rs => (rs.long(1), rs.string(2), rs.string(3), rs.int(4))).list.apply.map(x => (x._1, new Node(x._1, x._2, x._4, 1, x._3, iter)))
+
+    pq ++= nodeMap.values.map(n => {
+      new Edge(this, n, edgeFreqTuple(n.getId), /* uiMatrix(typeIndex(node.getCategory))(typeIndex(n.getCategory)) */ 1, 0)
+    })
+
+    object pqIter extends Iterator[Edge] {
+      // ACHTUNG pq gibt mit .find() nicht nach DoI geordnet aus! Deswegen ist das hier notwendig
+      def hasNext = pq.nonEmpty
+      def next = {
+        val x = pq.dequeue
+        Logger.info("" + x)
+        x
+      }
+    }
+
+    pqIter.take(numberOfRelEdges).toList
+    */
   }
 
   /*

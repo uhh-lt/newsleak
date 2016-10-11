@@ -22,3 +22,32 @@
 
 <!-- Show Graph if available -->
 <div id="network-graph" ng-show="!isViewLoading"></div>
+
+<div id="node-tooltip" class="tooltip" style="opacity: 0.75">
+    <h1 style="color:{{categories[sNode.type].color}}">
+        <span ng-if="sNode.isFocusNode">
+            <i class="material-icons">adjust</i>
+        </span>
+        {{sNode.name}} <i class="material-icons" style="color:{{categories[sNode.type].color}}">{{categories[sNode.type].img}}</i>
+    </h1>
+    id: {{sNode.id}}<br>
+    occurs in <span class="tooltipImportantText"> {{sNode.freq}} </span> documents
+    <div ng-if="!sNode.isFocusNode">
+        <button type="button" class="btn btn-primary btn-small" ng-click="setFocusNode(sNode.id)">
+            <i class="material-icons">adjust</i> Set to focus
+        </button>
+        <span ng-if="sNode.relEdges.length !== 0">
+            <br> to see these Nodes:
+            <p ng-repeat="edge in sNode.relEdges">
+                <i class="material-icons"> {{categories[edge.type].img}}</i>{{edge.name}}
+            </p>
+        </span>
+    </div>
+    <button type="button" class="btn btn-primary btn-small" ng-click="expandNode(sNode.id)">
+        <i class="material-icons">add</i> Expand Node
+    </button><br>
+    to see additionally the n most important connections to {{sNode.name}}:
+    <p ng-if="addEdgesCache[sNode.id] !== undefined" ng-repeat="node in addEdgesCache[sNode.id].tooltipInfo">
+        <i class="material-icons"> {{categories[node.type].img}}</i>{{node.name}}
+    </p>
+</div>

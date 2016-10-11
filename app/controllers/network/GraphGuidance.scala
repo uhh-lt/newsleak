@@ -131,6 +131,7 @@ class GraphGuidance() {
             if (nodes.contains(edge.getNodes._2.getId)) {
               node = Some(edge.getNodes._2)
             }
+            oldEdges += (edge.getNodes._1.getId, edge.getNodes._2.getId) -> edge
             (edge, node)
           }
         }

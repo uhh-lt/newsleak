@@ -84,6 +84,13 @@ define([
             $scope.minEdgeWidth  = 3;
             $scope.maxEdgeWidth  = 10;
 
+            $scope.categories = {
+                'LOC': {full: 'Location', color: '#8dd3c7', img: 'place', singular: 'Location'},
+                'ORG': {full: 'Organization', color: '#fb8072', img: 'account_balance', singular: 'Organisation'},
+                'PER': {full: 'Person', color: '#bebada', img: 'person', singular: 'Person'},
+                'MISC': {full: 'Miscellaneous', color: '#ffffb3', img: 'reorder', singular: 'Miscellaneous'}
+            };
+
             function fireEvent_updateDocs() {
                 $scope.$emit('updateDocs-up', selectedNodes.map(function(n){
                     return n.id
@@ -106,6 +113,8 @@ define([
             var selectionColor = '#FFB500';
 
             var loadingNodes = false;
+
+            var computeAdditionalEdges = false;
 
             toolShareService.getSelectedNodes = function(){return selectedNodes;};
             toolShareService.getSelectedElementsText = selectedElementsText;
@@ -135,9 +144,10 @@ define([
             // but the visualization gets updated
             // http://bl.ocks.org/mbostock/1095795
 
-
-            var nodes      = [];
-            var edges      = [];
+            var nodes = [];
+            var edges = [];
+            $scope.addEdgesCache = {};
+            var guidanceStepCounter= 0;
             //var color      = d3.scale.category10().range($scope.graphShared.categoryColors);
             var color = d3.scale.ordinal()
                 .domain(["LOC", "ORG", "PER", "MISC"])
@@ -196,7 +206,7 @@ define([
                 initNetwork();
             });*/
             //initNetwork();
-            getGuidanceNodes(904275,false);
+            getGuidanceNodes(1232028,false);
 
 
 
@@ -959,8 +969,14 @@ define([
                             }
                         });*/
 
-                console.log("removing nodes:")
-                console.log(node.exit().data())
+                    console.log("removing nodes:");
+                    console.log(node.exit().data());
+                    /*node.exit().data().map(function (n) {return n.id}).forEach(function (id) {
+                        var element = document.getElementById("tt-"+id);
+                        if (element !== null){
+                            element.parentNode.removeChild(element);
+                        }
+                    });*/
                     node.exit().remove();
 
                     addTooltip(node, link);  // add the tooltips to the nodes and links
@@ -994,41 +1010,38 @@ define([
             }
 
 
+            var tooltip = d3.select("body").append("div").attr("class", "tooltip")//.attr("id", function(d, i){ return 'tt-'+ d.id; })
+                .style("opacity", 0);
             /**
              * This function adds tooltips to the nodes and links.
              * @param node The nodes
              * @param link The links
              */
             function addTooltip(node, link){
-                var tooltip = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
 
                 node.on("mouseover", function(d){
-                    tooltip.transition()
+                    $scope.sNode = d;
+                    console.log($scope.addEdgesCache[d.id] === undefined);
+                    if (($scope.addEdgesCache[d.id] === undefined && !computeAdditionalEdges) || guidanceStepCounter>$scope.addEdgesCache[d.id].counter) {
+                        computeAdditionalEdges = true;
+                        getAdditionalEdges(d.id);
+                    }
+                    $scope.$apply();
+                    var tooltip = d3.select("#node-tooltip").style("left", (d3.event.pageX - 75) + "px").style("top", (d3.event.pageY + 25) + "px");
+                    /*tooltip.transition()
                         .duration(500)
-                        .style("opacity", 0);
+                        .style("opacity", 0);*/
                     tooltip.transition()
                         .duration(200)
                         .style("opacity", .9);
-                    tooltip.html(
-                        '<span class="tooltipImportantText">' + d.name +
-                             '</span> (id: '+d.id+') ' + (d.isFocusNode? 'is the focus node ':'') + 'has the type <span class="tooltipImportantText">'
-                             + d.type + '</span> and occurs in <span class="tooltipImportantText">'
-                             + d.freq + "</span>" + ' documents '
-                             + d.relEdges.map(function (e) {return e.name})
 
-                        // '<span class="tooltipImportantText">' + d.name +
-                        //     '</span> has the type <span class="tooltipImportantText">'
-                        //     + d.type + '</span> and is <span class="tooltipImportantText">'
-                        //     + d.docCount + "</span> times mentioned."
-                    )
-                        .style("left", (d3.event.pageX - 75) + "px")
-                        .style("top", (d3.event.pageY + 25) + "px");
                 });
-                node.on("mouseout", function(d){
+                /*node.on("mouseout", function(d){
+                    var tooltip = d3.select("#node-tooltip").style("left", (d3.event.pageX - 75) + "px").style("top", (d3.event.pageY + 25) + "px");
                     tooltip.transition()
                         .duration(500)
                         .style("opacity", 0);
-                });
+                });*/
 
                 link.on("mouseover", function(d){
                     tooltip.transition()
@@ -2062,16 +2075,36 @@ define([
                     force.nodes(nodes);
                     force.links(edges);
                     //calculateNewForceSize();
-
+                    guidanceStepCounter++;
                     start();
                 });
             }
 
+            $scope.setFocusNode = function(nodeId) {
+                getGuidanceNodes(nodeId, true);
+                d3.select("#node-tooltip").transition()
+                    .duration(200)
+                    .style("opacity",0);
+            };
+
+            $scope.expandNode = function(nodeId) {
+                nodes = nodes.concat($scope.addEdgesCache[nodeId].nodes);
+                edges = edges.concat($scope.addEdgesCache[nodeId].edges);
+                delete $scope.addEdgesCache[nodeId];
+                force.nodes(nodes);
+                force.links(edges);
+                start();
+                d3.select("#node-tooltip").transition()
+                    .duration(200)
+                    .style("opacity",0);
+            };
+
             function getAdditionalEdges(nodeId) {
                 playRoutes.controllers.NetworkController.getAdditionalEdges(nodeId,toolShareService.sliderEdgesPerNode(),sessionid).get().then(function(response) {
+                    var nNodes = [];
                     response.data.nodes.forEach(
                         function (v) {
-                            nodes.push({
+                            nNodes.push({
                                 id: v.id,
                                 isFocusNode: false,
                                 name: v.name,
@@ -2082,15 +2115,19 @@ define([
                                 size: 2,
                             });
                         });
-                    console.log(nodes);
+                    console.log(nNodes);
+                    var allNodes = nodes.concat(nNodes);
+                    var nEdges = [];
+                    var addedCon = [];
                     response.data.links.forEach(
                         function (v) {
-                            var sourceNode = nodes.find(function (node) {
+                            var sourceNode = allNodes.find(function (node) {
                                 return v.sourceNode == node.id
                             });
-                            var targetNode = nodes.find(function (node) {
+                            var targetNode = allNodes.find(function (node) {
                                 return v.targetNode == node.id
                             });
+                            addedCon.push(targetNode);
                             if (sourceNode == undefined || targetNode == undefined) {
                                 return;
                             }
@@ -2100,7 +2137,7 @@ define([
                                 targetNode = tempNode
                             }
                             console.log(sourceNode.name+"-"+targetNode.name);
-                            edges.push({
+                            nEdges.push({
                                 id: sourceNode.id + "-" + targetNode.id,
                                 source: sourceNode,
                                 target: targetNode,
@@ -2108,12 +2145,9 @@ define([
                                 uiLevel: v.uiLevel
                             });
                         });
-                    console.log(edges);
-
-                    force.nodes(nodes);
-                    force.links(edges);
-
-                    start();
+                    $scope.addEdgesCache[nodeId] = {nodes: nNodes, edges: nEdges, tooltipInfo: addedCon, counter: guidanceStepCounter};
+                    computeAdditionalEdges = false;
+                    //console.log(edges);
                 })
 
             }

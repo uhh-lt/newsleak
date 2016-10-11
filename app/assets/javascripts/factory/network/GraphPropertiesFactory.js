@@ -23,14 +23,19 @@ define([
                 categoryColors: ["#8dd3c7", "#fb8072","#bebada", "#ffffb3"],
                 categories:
                 [
-                    {id: 'LOC', full: 'Location', color: '#8dd3c7'},
-                    {id: 'ORG', full: 'Organization', color: '#fb8072'},
-                    {id: 'PER', full: 'Person', color: '#bebada'},
-                    {id: 'MISC', full: 'Miscellaneous', color: '#ffffb3'}
+                    {id: 'LOC', full: 'Location', color: '#8dd3c7',img: 'place', singular: 'Location'},
+                    {id: 'ORG', full: 'Organization', color: '#fb8072', img: 'account_balance', singular: 'Organisation'},
+                    {id: 'PER', full: 'Person', color: '#bebada', img: 'person', singular: 'Person'},
+                    {id: 'MISC', full: 'Miscellaneous', color: '#ffffb3', img: 'reorder', singular: 'Miscellaneous'}
                 ],
                 // Delivers the index of a given category name
+
                 getIndexOfCategory: function (category) {
-                    return this.categories.findIndex(function(e){return e.id == category});
+                    return graphProperties.categories.findIndex(function(e){return e.id == category});
+                },
+                getCategoryObj: function (category) {
+                    console.log(graphProperties.categories);
+                    return graphProperties.categories.find(function(e){return e.id == category});
                 }
             };
 

@@ -387,6 +387,8 @@ class NetworkController @Inject extends Controller {
   def getAdditionalEdges(nodeId: Long, amount: Int, sessionId: String) = Action {
     val (eList, nList) = IterMap(sessionId).getMoreEdges(nodeId, amount)
     val result = new JsObject(Map(("nodes", Json.toJson(nList)), ("links", Json.toJson(eList))))
+    Logger.debug("add Eddges for" + nodeId)
+    Logger.debug(result.toString())
     Ok(result).as("application/json")
   }
 
@@ -398,7 +400,8 @@ class NetworkController @Inject extends Controller {
       "type" -> n.getCategory,
       "edges" -> n.getRelevantNodes.map(rn => Json.obj(
         "id" -> rn.getId,
-        "name" -> rn.getName
+        "name" -> rn.getName,
+        "type" -> rn.getCategory
       )).toList
     )
   }
