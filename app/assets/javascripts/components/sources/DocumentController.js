@@ -19,12 +19,11 @@ define([
     'angular',
     'ngSanitize',
     '../../factory/util',
-    'ngMaterial',
-    'ngMdIcons'
+    'ngMaterial'
 ], function (angular) {
     'use strict';
 
-    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ngMdIcons'])
+    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial'])
         .controller('DocumentController',
             [
                 '$scope',

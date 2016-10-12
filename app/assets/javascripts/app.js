@@ -45,7 +45,6 @@ define([
     'angularResizable',
     'ngSanitize',
     'ngMaterial',
-    'ngMdIcons',
     'angularScreenfull',
     'ngVis',
     'vis'
@@ -54,7 +53,7 @@ define([
 
     var app = angular.module('myApp',
         [
-            'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial', 'ngMdIcons',
+            'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial',
             'angularMoment', 'underscore', 'myApp.observer', 'myApp.util', 'myApp.history', 'myApp.graphConfig',
             'myApp.tools', 'angularScreenfull',
             'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',

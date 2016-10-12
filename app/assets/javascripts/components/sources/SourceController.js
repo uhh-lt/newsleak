@@ -18,12 +18,11 @@
 define([
     'angular',
     'ngSanitize',
-    'ngMaterial',
-    'ngMdIcons'
+    'ngMaterial'
 ], function (angular) {
     'use strict';
 
-    angular.module('myApp.source', ['play.routing', 'ngSanitize', 'ngMaterial', 'ngMdIcons'])
+    angular.module('myApp.source', ['play.routing', 'ngSanitize', 'ngMaterial'])
         .config(['$uibTooltipProvider', function($uibTooltipProvider) {
             //$uibTooltipProvider.setTriggers({'mouseenter': 'mouseleave'});
             console.log("config");

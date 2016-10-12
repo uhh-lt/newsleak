@@ -31,7 +31,6 @@
 			'ngAnimate': 'libs/angular-animate/angular-animate',
 			'ngAria': 'libs/angular-aria/angular-aria',
 			'ngMaterial': 'libs/angular-material/angular-material.min',
-			'ngMdIcons': 'libs/angular-material-icons/angular-material-icons.min',
 			'bootstrap': 'libs/bootstrap/dist/js/bootstrap.min',
 			'ui-bootstrap': 'libs/angular-bootstrap/ui-bootstrap-tpls.min',
 			'ngSanitize': 'libs/angular-sanitize/angular-sanitize.min',
@@ -105,9 +104,6 @@
 			},
 			'ngMaterial': {
 				deps: ['angular', 'ngAria', 'ngAnimate']
-			},
-			'ngMdIcons': {
-				deps: ['angular']
 			},
 			'drilldown': {
 				exports: 'drilldown',
