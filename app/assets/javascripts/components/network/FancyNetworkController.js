@@ -68,6 +68,10 @@ define([
 
             $scope.addLegend = function() {
                 var x = -70; var y = 0; var distance = 100;
+                /*var mynetwork = document.getElementById('mynetwork');
+                var x = - mynetwork.clientWidth;
+                var y = - mynetwork.clientHeight;
+                var distance = 100;*/
                 $scope.legendNodes.add([
                     { id: -1, x: x, y: y, label: 'Per', group: 0, value: 1, fixed: true, physics: false },
                     { id: -2, x: x + distance, y: y, label: 'Org', group: 1, value: 1, fixed: true, physics: false },
@@ -296,11 +300,11 @@ define([
                 // Align legend in the upper left corner of the canvas
                 var position = $mdPanel.newPanelPosition()
                         .relativeTo(angular.element(document.getElementById('mynetwork')))
-                        .addPanelPosition($mdPanel.xPosition.ALIGN_START, $mdPanel.yPosition.ALIGN_TOPS)
-                        .withOffsetX('15px');
+                        .top('80px')
+                        .left('20px');
 
                 var config = {
-                    attachTo: angular.element(document.body),
+                    attachTo: angular.element(document.getElementById('mynetwork')),
                     controller: 'LegendController',
                     controllerAs: 'ctrl',
                     template: '<div id="network-legend"> <vis-network data="ctrl.legendData" options="ctrl.legendOptions" events="ctrl.legendEvents" layout-fill></vis-network> </div>',
@@ -372,7 +376,9 @@ define([
                             $scope.apply = function () { $mdDialog.hide($scope.entity); };
                             $scope.closeClick = function() { $mdDialog.cancel(); };
                         }],
-                    locals: { e: entity }
+                    locals: { e: entity },
+                    autoWrap: false,
+                    parent: angular.element(document.getElementById('network'))
                 }).then(function(response) {
                     // Adapt tooltip and node color
                     var modified = _.extend(response, {
@@ -409,7 +415,9 @@ define([
                             $scope.apply = function () { $mdDialog.hide(); };
                             $scope.closeClick = function() { $mdDialog.cancel(); };
                         }],
-                    locals: { e: entity, n: neighbors }
+                    locals: { e: entity, n: neighbors },
+                    autoWrap: false,
+                    parent: angular.element(document.getElementById('network'))
                 }).then(function(response) { /* apply click */ }, function() { /* cancel click */ });
             }
 

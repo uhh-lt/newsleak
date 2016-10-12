@@ -65,7 +65,6 @@ line {
     overflow-y: hidden;
     width: 100%;
     top: 74px;
-    /*bottom: 40px;*/
     height: calc(100% - 74px);
     background-color: #d1d1d1;
 }
