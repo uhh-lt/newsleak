@@ -250,14 +250,40 @@ define([
                         });
                     };
 
-                    $scope.contextMenu = function (category, e) {
+                    $scope.contextMenu = function (category, e, type) {
                         var posx = e.clientX + window.pageXOffset + 'px'; //Left Position of Mouse Pointer
                         var posy = e.clientY + window.pageYOffset + 'px'; //Top Position of Mouse Pointer
                         $('#constext-menu-div').css({top: posy , left: posx });
                         $('#constext-menu-div').show();
-                        console.log(e);
-                        console.log(category);
+                        $scope.contextItem = {
+                            name: category.category,
+                            type: type
+                        };
                     };
+
+                    $scope.closeContextMenu = function() {
+                        $('#constext-menu-div').hide();
+                    };
+
+                    $('#constext-menu-div ul li').click(function() {
+                        $scope.closeContextMenu();
+                        console.log($(this).attr("action"));
+                        $scope.contextItem.id = $scope.ids[$scope.contextItem.type][$scope.labels[$scope.contextItem.type].indexOf($scope.contextItem.name)];
+                        console.log( $scope.contextItem);
+                        switch($(this).attr("action")) {
+                            case 'filter':
+                                $scope.observer.addItem({
+                                    type: 'entity',
+                                    data: {
+                                        id: $scope.contextItem.id,
+                                        name: $scope.contextItem.name,
+                                        type: $scope.contextItem.type
+                                    }
+                                });
+                                break;
+                        }
+
+                    });
 
                     $scope.updateEntityCharts = function () {
                         if ($scope.initializedEntity) {
@@ -313,7 +339,7 @@ define([
                                                             $scope.clickedItem(this, 'entity', type);
                                                         },
                                                         contextmenu: function (e) {
-                                                            $scope.contextMenu(this, e);
+                                                            $scope.contextMenu(this, e, type);
                                                         }
                                                     }
                                                 },
@@ -451,7 +477,7 @@ define([
                                                     $scope.clickedItem(this, 'entity', x);
                                                 },
                                                 contextmenu: function (e) {
-                                                    $scope.contextMenu(this, e);
+                                                    $scope.contextMenu(this, e, x);
                                                 }
                                             }
                                         }
@@ -466,7 +492,7 @@ define([
                                                     $scope.clickedItem(this, 'entity', x);
                                                 },
                                                 contextmenu: function (e) {
-                                                    $scope.contextMenu(this, e);
+                                                    $scope.contextMenu(this, e, x);
                                                 }
                                             }
                                         },
