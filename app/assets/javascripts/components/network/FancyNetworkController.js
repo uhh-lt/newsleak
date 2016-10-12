@@ -58,6 +58,30 @@ define([
             };
             return graphProperties;
         })
+        // Network Legend Controller
+        .controller('LegendController', ['$scope', '$timeout', 'mdPanelRef', 'VisDataSet', 'graphProperties', function ($scope, $timeout, mdPanelRef, VisDataSet, graphProperties) {
+            $scope.legendNodes = new VisDataSet([]);
+
+            this.legendOptions = graphProperties.legendOptions;
+            this.legendData = { nodes: $scope.legendNodes, edges: [] };
+            this.legendEvents = { "onload": function(network) { $scope.legendNetwork = network; } };
+
+            $scope.addLegend = function() {
+                var x = -70; var y = 0; var distance = 100;
+                $scope.legendNodes.add([
+                    { id: -1, x: x, y: y, label: 'Per', group: 0, value: 1, fixed: true, physics: false },
+                    { id: -2, x: x + distance, y: y, label: 'Org', group: 1, value: 1, fixed: true, physics: false },
+                    { id: -3, x: x + 2*distance, y: y, label: 'Loc', group: 2, value: 1, fixed: true, physics: false },
+                    { id: -4, x: x + 3*distance, y: y, label: 'Misc', group: 3, value: 1, fixed: true, physics: false }
+                ]);
+                $scope.legendNetwork.moveTo({scale: 0.5});
+            };
+
+            // Add nodes after the legend div is added to the dom
+            $timeout(function(){
+                $scope.addLegend();
+            });
+        }])
         // Network Controller
         .controller('FancyNetworkController', ['$scope', '$timeout', '$compile', '$mdDialog', '$mdPanel', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', function ($scope, $timeout, $compile, $mdDialog, $mdPanel, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties) {
 
@@ -128,16 +152,6 @@ define([
                 "hoverEdge": hoverEdge
             };
 
-            /*$scope.legendOptions = graphProperties.legendOptions;
-            $scope.legendData = {
-                nodes: legendNodes(),
-                edges: []
-            };
-            $scope.legendEvents = {
-                "onload": function(network) { self.legendNetwork = network; },
-                "resize": function(params) { self.legendNetwork.fit(); }
-            };*/
-
             /* Current value of the edge significance slider */
             $scope.edgeImportance = 1;
             /* Maximum edge value of the current underlying graph collection. Updated in reload method */
@@ -152,21 +166,6 @@ define([
             $scope.loading = true;
 
             $scope.$watch('edgeImportance', handleEdgeSlider);
-
-            /*function legendNodes() {
-                var container = document.getElementById('network-legend');
-                var x = container.offsetWidth;
-                var y = container.clientHeight;
-
-                var distance = 100;
-                var nodes = new VisDataSet([
-                    { id: -1, x: x, y: y, label: 'Org', group: 0, value: 1, fixed: true, physics: false },
-                    { id: -2, x: x + distance, y: y, label: 'Per', group: 1, value: 1, fixed: true, physics: false },
-                    { id: -3, x: x + 2*distance, y: y, label: 'Loc', group: 2, value: 1, fixed: true, physics: false },
-                    { id: -4, x: x + 3*distance, y: y, label: 'Misc', group: 3, value: 1, fixed: true, physics: false }
-                ]);
-                return nodes;
-            }*/
 
             $scope.reloadGraph = function() {
                 var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.name; });
@@ -216,18 +215,6 @@ define([
                         // Highlight new nodes after each filtering step
                         markNewNodes(nodes.map(function(n) { return n.id; }));
                         self.nodes.clear();
-
-                        /*var container = document.getElementById('mynetwork');
-                        var x = container.offsetWidth / 2;
-                        var y = container.clientHeight;
-
-                        var distance = 100;
-                        self.nodesDataset.add([
-                            { id: -1, x: x, y: y, label: 'Org', group: 0, value: 1, fixed: true, physics: false },
-                            { id: -2, x: x + distance, y: y, label: 'Per', group: 1, value: 1, fixed: true, physics: false },
-                            { id: -3, x: x + 2*distance, y: y, label: 'Loc', group: 2, value: 1, fixed: true, physics: false },
-                            { id: -4, x: x + 3*distance, y: y, label: 'Misc', group: 3, value: 1, fixed: true, physics: false }
-                        ]);*/
 
                         var edges = response.data.relations.map(function(n) {
                             return {from: n[0], to: n[1], value: n[2] };
@@ -293,106 +280,39 @@ define([
 
             function addFullscreenButton() {
                 var panel = angular.element(document.getElementsByClassName('vis-navigation')[0]);
-                /*var buttonTemplate = '<div class="vis-button vis-fullscreen-button" ng-click="FancyNetworkController.toggleFullscreen()"></div>';*/
-                var buttonTemplate = '<div class="vis-button vis-fullscreen-button" ng-click="openPanel($event)"></div>';
+                var buttonTemplate = '<div class="vis-button vis-fullscreen-button" ng-click="FancyNetworkController.toggleFullscreen()"></div>';
                 var button = $compile(buttonTemplate)($scope);
                 panel.append(button);
             }
 
-            $scope.openPanel = function(ev) {
+            function addLegendButton() {
+                var panel = angular.element(document.getElementsByClassName('vis-navigation')[0]);
+                var buttonTemplate = '<div class="vis-button vis-legend-button" ng-click="showLegend($event)"></div>';
+                var button = $compile(buttonTemplate)($scope);
+                panel.append(button);
+            }
+
+            $scope.showLegend = function(ev) {
                 // Align legend in the upper left corner of the canvas
                 var position = $mdPanel.newPanelPosition()
                         .relativeTo(angular.element(document.getElementById('mynetwork')))
-                        .addPanelPosition($mdPanel.xPosition.ALIGN_START, $mdPanel.yPosition.ALIGN_TOPS);
-
+                        .addPanelPosition($mdPanel.xPosition.ALIGN_START, $mdPanel.yPosition.ALIGN_TOPS)
+                        .withOffsetX('15px');
 
                 var config = {
                     attachTo: angular.element(document.body),
-                    //attachTo: angular.element(document.getElementById('mynetwork')),
-                    controller: LegendController,
+                    controller: 'LegendController',
                     controllerAs: 'ctrl',
-                    template: '<div id="network-legend-button" ng-click="ctrl.addNodes()"> <vis-network data="ctrl.legendData" options="ctrl.legendOptions" events="ctrl.legendEvents" layout-fill></vis-network> </div>',
+                    template: '<div id="network-legend"> <vis-network data="ctrl.legendData" options="ctrl.legendOptions" events="ctrl.legendEvents" layout-fill></vis-network> </div>',
                     position: position,
                     openFrom: ev,
                     clickOutsideToClose: true,
                     escapeToClose: true,
-                    focusOnOpen: false//,
-                    //zIndex: 100
+                    focusOnOpen: false
                 };
-
 
                 $mdPanel.open(config);
             };
-
-            function LegendController($scope, mdPanelRef, VisDataSet, graphProperties) {
-
-                this.legendNodes = new VisDataSet([]);
-
-                this.legendOptions = graphProperties.legendOptions;
-                this.legendData = {
-                    nodes: this.legendNodes,//this.addNodes(),//this.legendNodes,
-                    edges: []
-                };
-                this.legendEvents = {
-                    "onload": function(network) { $scope.legendNetwork = network;}
-                };
-
-                this.addNodes = function() {
-
-                    var legendContainer = document.getElementById('network-legend-button');
-                    /*var x = container.offsetWidth;
-                    var y = container.clientHeight;*/
-                    console.log(legendContainer.clientWidth);
-                    console.log(legendContainer.clientHeight);
-                    console.log(legendContainer.offsetWidth);
-                    console.log(legendContainer.offsetHeight);
-
-                    /*var x = 0;
-                    var y = -200;
-
-                    console.log(legendContainer);
-                    console.log($scope.legendNetwork);
-                    var distance = 100;
-                    this.legendNodes.add([
-                        { id: -1, x: x, y: y, label: 'Org', group: 0, value: 1, fixed: true, physics: false },
-                        { id: -2, x: x, y: y + distance, label: 'Per', group: 1, value: 1, fixed: true, physics: false },
-                        { id: -3, x: x, y: y + 2*distance, label: 'Loc', group: 2, value: 1, fixed: true, physics: false },
-                        { id: -4, x: x, y: y + 3*distance, label: 'Misc', group: 3, value: 1, fixed: true, physics: false }
-                    ]);*/
-
-                     var x = -160;
-                     var y = 0;
-
-                     console.log(legendContainer);
-                     console.log($scope.legendNetwork);
-                     var distance = 100;
-                     this.legendNodes.add([
-                     { id: -1, x: x, y: y, label: 'Org', group: 0, value: 1, fixed: true, physics: false },
-                     { id: -2, x: x + distance, y: y, label: 'Per', group: 1, value: 1, fixed: true, physics: false },
-                     { id: -3, x: x + 2*distance, y: y, label: 'Loc', group: 2, value: 1, fixed: true, physics: false },
-                     { id: -4, x: x + 3*distance, y: y, label: 'Misc', group: 3, value: 1, fixed: true, physics: false }
-                     ]);
-
-                    $scope.legendNetwork.moveTo({scale: 0.5});
-                }
-            }
-
-           /*LegendController.prototype.addNodes = function() {
-               var container = document.getElementById('network-legend-button');
-               var x = container.offsetWidth;
-               var y = container.clientHeight;
-
-               console.log(container);
-               console.log(this.legendNetwork);
-               var distance = 100;
-               var nodes = new VisDataSet([
-                   { id: -1, x: x, y: y, label: 'Org', group: 0, value: 1, fixed: true, physics: false },
-                   { id: -2, x: x + distance, y: y, label: 'Per', group: 1, value: 1, fixed: true, physics: false },
-                   { id: -3, x: x + 2*distance, y: y, label: 'Loc', group: 2, value: 1, fixed: true, physics: false },
-                   { id: -4, x: x + 3*distance, y: y, label: 'Misc', group: 3, value: 1, fixed: true, physics: false }
-               ]);
-               return nodes;
-            };*/
 
             // ----------------------------------------------------------------------------------
             // Node and edge manipulation
@@ -502,6 +422,7 @@ define([
             function onNetworkLoad(network) {
                 self.network = network;
                 addFullscreenButton();
+                addLegendButton();
             }
 
             function stabilizationStart() {
@@ -520,8 +441,6 @@ define([
                 // Release fixed nodes from the previous filter step
                 var releasedNodes = self.nodesDataset.getIds().map(function(id) { return { id: id,  fixed: false }});
                 self.nodesDataset.update(releasedNodes);
-
-                //self.legendNetwork.fit();
 
                 // Once the network is stabilized the node positions are stored and the
                 // physics simulation is disabled.

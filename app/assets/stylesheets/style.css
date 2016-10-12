@@ -81,6 +81,12 @@ line {
     background-image: url("assets/../../images/fullscreen_green.png");
 }
 
+.vis-legend-button {
+    right: 15px;
+    bottom: 130px;
+    /*background-image: url("assets/../../images/fullscreen_green.png");*/
+}
+
 .vis-navigation .vis-button:hover:before {
     background: beige;
     display: block;
@@ -131,6 +137,10 @@ line {
     content: "Fullscreen";
 }
 
+.vis-navigation .vis-button:hover.vis-legend-button:before {
+    content: "Show Legend";
+}
+
 div.popupMenu {
     position: absolute;
     top: 0px;
@@ -162,83 +172,8 @@ div.popupMenu ul li:hover {
 }
 
 #network-legend {
-    position: fixed;
-    overflow-y: hidden;
-    width: 100%;
-    bottom: 0;
-    height: 40px;
-    /*background-color: #d1d1d1;*/
-    background-color: yellow;
-}
-
-#network-legend-button {
-    /*width: 60px;
-    height: 250px;*/
-    width: 250px;
+    width: 200px;
     height: 60px;
-    background-color: #d1d1d1;
-}
-
-/*
-    ======================================
-    Network Legend
-    ======================================
-*/
-
-/* Hide the legend initially */
-#legend-content {
-    display: none;
-}
-
-.edgeLegend {
-    /* should be the same as line.stroke */
-    fill: #696969;
-}
-
-.popover {
-    z-index: 1000;
-}
-
-.btn-block-dropdown {
-    display: block;
-}
-
-.legend-heading {
-    font-weight: bold;
-    text-decoration: underline;
-}
-
-.legend-color-box {
-    float: left;
-    width: 13px;
-    height: 13px;
-    margin-top: 4px;
-    margin-right: 5px;
-}
-
-.legend-color-box-person {
-    background-color: #bebada;
-}
-
-.legend-color-box-location {
-    background-color: #8dd3c7;
-}
-
-.legend-color-box-organization {
-    background-color: #fb8072;
-}
-
-.legend-color-box-misc {
-    background-color: #ffffb3;
-}
-
-.popover-content > .legend-actual-content {
-    overflow-y: auto;
-}
-
-#legend-content svg {
-    display: block;
-    margin: auto;
 }
 
 
