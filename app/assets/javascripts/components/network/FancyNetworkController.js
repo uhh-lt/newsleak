@@ -476,8 +476,12 @@ define([
 
                 playRoutes.controllers.NetworkController.getEdgeKeywords(fulltext, facets, entities, $scope.observerService.getTimeRange(), edge.from, edge.to, 4).get().then(function(response) {
                     var formattedTerms = response.data.map(function(t) { return '' +  t.term + ': ' + t.score; });
-                    var keywords = '<p class="md-body-2">Keywords</p>' + formattedTerms.join('<br>');
-                    self.edgesDataset.update({ id: event.edge, title: keywords });
+
+                    var docTip = '<p>Occurs in <b>' + edge.value + '</b> documents</p>';
+                    var keywordTip = '<p><b>Keywords</b></p><ul><li>' + formattedTerms.join('</li><li>') + '</li></ul>';
+                    var tooltip = docTip + keywordTip;
+
+                    self.edgesDataset.update({ id: event.edge, title: tooltip });
                     // Only update background collection after stabilization.
                     /* if(!$scope.loading) {
                         self.edges.update({ id: event.edge, title: keywords });
