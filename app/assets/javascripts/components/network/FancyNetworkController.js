@@ -139,6 +139,15 @@ define([
             $scope.observerService.subscribeItems($scope.observer_subscribe_metadata, "metadata");
             $scope.observerService.subscribeItems($scope.observer_subscribe_entity, "entity");
 
+            function currentFilter() {
+                var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.name; });
+                var entities = $scope.entityFilters.map(function(v) { return v.data.id; });
+                var timeRange = $scope.observerService.getTimeRange();
+                var facets = $scope.observerService.getFacets();
+
+                return { fulltext: fulltext, entities: entities, timeRange: timeRange, facets: facets };
+            }
+
             $scope.graphOptions = graphProperties.options;
             $scope.graphEvents = {
                 "startStabilizing": stabilizationStart,
@@ -149,7 +158,8 @@ define([
                 "oncontext": onContext,
                 "click": clickEvent,
                 "dragging": dragEvent,
-                "hoverEdge": hoverEdge
+                "hoverEdge": hoverEdge,
+                "hoverNode": hoverNode
             };
 
             /* Current value of the edge significance slider */
@@ -168,9 +178,7 @@ define([
             $scope.$watch('edgeImportance', handleEdgeSlider);
 
             $scope.reloadGraph = function() {
-                var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.name; });
-                var entities = $scope.entityFilters.map(function(v) { return v.data.id; });
-                var facets = $scope.observerService.getFacets();
+                var filters = currentFilter();
 
                  var fraction = [
                     {"key": "PER", "data": $scope.numPer },
@@ -179,7 +187,7 @@ define([
                     {"key": "MISC", "data": $scope.numMisc }
                 ];
 
-                playRoutes.controllers.NetworkController.induceSubgraph(fulltext, facets, entities, $scope.observerService.getTimeRange(), fraction, []).get().then(function(response) {
+                playRoutes.controllers.NetworkController.induceSubgraph(filters.fulltext, filters.facets, filters.entities, filters.timeRange, fraction, []).get().then(function(response) {
                         // Enable physics for new graph data when network is initialized
                         if(!_.isUndefined(self.network)) {
                             applyPhysicsOptions(self.physicOptions);
@@ -194,20 +202,12 @@ define([
 
                         var nodes = response.data.entities.map(function(n) {
                             // See css property div.network-tooltip for custom tooltip styling
-                            var title = '#Doc: ' + n.count + '<br>Typ: ' + n.type;
                             // map counts to interval [1,2] for nodes mass
                             /*var mass = ((n.count - originalMin) / (originalMax - originalMin)) * (2 - 1) + 1;
                             // If all nodes have the same occurrence assign same mass. This also prevents errors
                             // for wrong interval mappings e.g. [1,1] to [1,2] yields NaN for the mass.
                             if(originalMin == originalMax) mass = 1;*/
-                            return {
-                                id: n.id,
-                                label: n.label,
-                                type: n.type,
-                                value: n.count,
-                                group: n.group,
-                                title: title//,
-                            };
+                            return { id: n.id, label: n.label, type: n.type,  value: n.count, group: n.group };
                         });
 
                         self.nodesDataset.clear();
@@ -358,6 +358,7 @@ define([
                     // Adapt tooltip and node color
                     var modified = _.extend(response, {
                         group: self.types[response.type],
+                        // TODO Adapt to new tooltip
                         title: 'Co-occurrence: ' + response.value + '<br>Typ: ' + response.type
                     });
                     self.nodesDataset.update(modified);
@@ -438,29 +439,46 @@ define([
                 disablePhysics();
             }
 
+            // TODO: Remove code duplication
             function hoverEdge(event) {
                 var edge = self.edgesDataset.get(event.edge);
                 // Only fetch keywords if not already fetched
                 if(_.has(edge, "title")) {
                     return;
                 }
-                // TODO Refactor same as load
-                var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.name; });
-                var entities = $scope.entityFilters.map(function(v) { return v.data.id; });
-                var facets = $scope.observerService.getFacets();
 
-                playRoutes.controllers.NetworkController.getEdgeKeywords(fulltext, facets, entities, $scope.observerService.getTimeRange(), edge.from, edge.to, 4).get().then(function(response) {
+                var filters = currentFilter();
+                playRoutes.controllers.NetworkController.getEdgeKeywords(filters.fulltext, filters.facets, filters.entities, filters.timeRange, edge.from, edge.to, 4).get().then(function(response) {
                     var formattedTerms = response.data.map(function(t) { return '' +  t.term + ': ' + t.score; });
 
                     var docTip = '<p>Occurs in <b>' + edge.value + '</b> documents</p>';
                     var keywordTip = '<p><b>Keywords</b></p><ul><li>' + formattedTerms.join('</li><li>') + '</li></ul>';
                     var tooltip = docTip + keywordTip;
 
-                    self.edgesDataset.update({ id: event.edge, title: tooltip });
+                    self.edgesDataset.update({ id: edge.id, title: tooltip });
                     // Only update background collection after stabilization.
                     /* if(!$scope.loading) {
                         self.edges.update({ id: event.edge, title: keywords });
                     } */
+                });
+            }
+
+            function hoverNode(event) {
+                var node = self.nodesDataset.get(event.node);
+                // Only fetch keywords if not already fetched
+                if(_.has(node, "title")) {
+                    return;
+                }
+
+                var filters = currentFilter();
+                playRoutes.controllers.NetworkController.getNeighborCounts(filters.fulltext, filters.facets, filters.entities, filters.timeRange, node.id).get().then(function(response) {
+                    var formattedTerms = response.data.map(function(t) { return '' +  t.type + ': ' + t.count; });
+
+                    var docTip = '<p>Occurs in <b>' + node.value + ' </b>documents</p><p>Type: <b>' + node.type + '</b></p>';
+                    var neighborTip = '<p><b>Neighbors</b></p><ul><li>' + formattedTerms.join('</li><li>') + '</li></ul>';
+                    var tooltip = docTip + neighborTip;
+
+                    self.nodesDataset.update({ id: node.id, title: tooltip });
                 });
             }
 

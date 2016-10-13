@@ -28,6 +28,7 @@ GET    /getIdsByName             controllers.NetworkController.getIdsByName(name
 GET    /deleteEntityById		controllers.NetworkController.deleteEntityById(id: Long)
 GET	   /mergeEntitiesById		controllers.NetworkController.mergeEntitiesById(focalid: Int, ids: List[Long])
 GET	   /getEdgeKeywords		controllers.NetworkController.getEdgeKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, first: Long, second: Long, numberOfTerms: Int)
+GET	   /getNeighborCounts		controllers.NetworkController.getNeighborCounts(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, nodeId: Long)
 GET    /changeEntityNameById	controllers.NetworkController.changeEntityNameById(id: Long, newName: String)
 GET    /changeEntityTypeById	controllers.NetworkController.changeEntityTypeById(id: Long, newType: String)
 GET    /getAutocomplete		controllers.SearchController.getAutocomplete(query: String)
