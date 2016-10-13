@@ -98,15 +98,13 @@ line {
 
 div.tooltip {
     position: fixed;
-    /*text-align: center;*/
-    width: 200px;
+    min-width: 200px;
     padding: 2px 5px;
     font: 12px sans-serif;
     color: white;
     background: black;
     border: 1px;
     border-radius: 8px;
-    /*pointer-events: none;*/
 }
 
 .tooltip p {

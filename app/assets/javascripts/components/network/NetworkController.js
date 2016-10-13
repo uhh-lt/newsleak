@@ -139,14 +139,10 @@ define([
             toolShareService.isViewLoading = function(){return $scope.isViewLoading};
             toolShareService.enableOrDisableButtons = enableOrDisableButtons;
 
-            // create a graph here
-            // when the data changes, the graph remains the same,
-            // but the visualization gets updated
-            // http://bl.ocks.org/mbostock/1095795
 
             var nodes = [];
             var edges = [];
-            $scope.addEdgesCache = {};
+            $scope.contextCache = {};
             var guidanceStepCounter= 0;
             //var color      = d3.scale.category10().range($scope.graphShared.categoryColors);
             var color = d3.scale.ordinal()
@@ -1021,9 +1017,13 @@ define([
 
                 node.on("mouseover", function(d){
                     $scope.sNode = d;
-                    console.log($scope.addEdgesCache[d.id] === undefined);
-                    if (($scope.addEdgesCache[d.id] === undefined && !computeAdditionalEdges) || guidanceStepCounter>$scope.addEdgesCache[d.id].counter) {
-                        computeAdditionalEdges = true;
+                    if ($scope.contextCache[d.id] === undefined){
+                        // console.log("cache undefined for "+d.name);
+                        $scope.contextCache[d.id] = {isComputing: true};
+                        getAdditionalEdges(d.id);
+                    }
+                    else if ($scope.contextCache[d.id].isComputing !== true && ($scope.contextCache[d.id].data === undefined  || guidanceStepCounter>$scope.contextCache[d.id].counter) ) {
+                        $scope.contextCache[d.id].isComputing = true;
                         getAdditionalEdges(d.id);
                     }
                     $scope.$apply();
@@ -2000,12 +2000,22 @@ define([
             }
 
             function getGuidanceNodes(focusNodeId,useOldEdges){
-                var uiStr= "";
+                var entities = [];
+                angular.forEach($scope.entityFilters, function(item) {
+                    entities.push(item.data.id);
+                });
+                var facets = $scope.observer.getFacets();
+                var fulltext = [];
+                angular.forEach($scope.fulltextFilters, function(item) {
+                    fulltext.push(item.data.name);
+                });
+
+                    var uiStr= "";
                 for (var i=0;i<toolShareService.UIitems.length;i++){
                     uiStr+=toolShareService.UIitems[i].toString()+';';
                 }
 
-                playRoutes.controllers.NetworkController.getGuidanceNodes(focusNodeId, toolShareService.sliderEdgeAmount(), toolShareService.sliderEdgesPerNode(), uiStr, useOldEdges, sessionid).get().then(function(response) {
+                playRoutes.controllers.NetworkController.getGuidanceNodes(fulltext, facets, entities, $scope.observer.getTimeRange(), focusNodeId, toolShareService.sliderEdgeAmount(), toolShareService.sliderEdgesPerNode(), uiStr, useOldEdges, sessionid).get().then(function(response) {
 
                     //to prevent invisible selections
                     unselectNodes();
@@ -2078,7 +2088,7 @@ define([
                     guidanceStepCounter++;
                     start();
                 });
-            }
+            };
 
             $scope.setFocusNode = function(nodeId) {
                 getGuidanceNodes(nodeId, true);
@@ -2088,9 +2098,9 @@ define([
             };
 
             $scope.expandNode = function(nodeId) {
-                nodes = nodes.concat($scope.addEdgesCache[nodeId].nodes);
-                edges = edges.concat($scope.addEdgesCache[nodeId].edges);
-                delete $scope.addEdgesCache[nodeId];
+                nodes = nodes.concat($scope.contextCache[nodeId].data.expand.nodes);
+                edges = edges.concat($scope.contextCache[nodeId].data.expand.edges);
+                delete $scope.contextCache[nodeId].data;
                 force.nodes(nodes);
                 force.links(edges);
                 start();
@@ -2100,9 +2110,9 @@ define([
             };
 
             function getAdditionalEdges(nodeId) {
-                playRoutes.controllers.NetworkController.getAdditionalEdges(nodeId,toolShareService.sliderEdgesPerNode(),sessionid).get().then(function(response) {
+                playRoutes.controllers.NetworkController.getContext(nodeId,toolShareService.sliderEdgesPerNode(),sessionid).get().then(function(response) {
                     var nNodes = [];
-                    response.data.nodes.forEach(
+                    response.data.expand.nodes.forEach(
                         function (v) {
                             nNodes.push({
                                 id: v.id,
@@ -2119,7 +2129,7 @@ define([
                     var allNodes = nodes.concat(nNodes);
                     var nEdges = [];
                     var addedCon = [];
-                    response.data.links.forEach(
+                    response.data.expand.links.forEach(
                         function (v) {
                             var sourceNode = allNodes.find(function (node) {
                                 return v.sourceNode == node.id
@@ -2145,9 +2155,13 @@ define([
                                 uiLevel: v.uiLevel
                             });
                         });
-                    $scope.addEdgesCache[nodeId] = {nodes: nNodes, edges: nEdges, tooltipInfo: addedCon, counter: guidanceStepCounter};
-                    computeAdditionalEdges = false;
-                    //console.log(edges);
+                    $scope.contextCache[nodeId] = {
+                        data: {
+                            guidance: response.data.guidance,
+                            expand: {nodes: nNodes, edges: nEdges, tooltipInfo: addedCon}},
+                        counter: guidanceStepCounter,
+                        isComputing: false};
+                    console.log($scope.contextCache);
                 })
 
             }

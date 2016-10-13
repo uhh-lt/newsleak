@@ -18,18 +18,22 @@ object NodeFactory {
   implicit val session = AutoSession
 
   /**
+   * @param facets Filter
    * @param nodeIds Liste von Entitaeten-Ids
    * @param distToFocus Distanz zum Fokus-Knoten
    * @param iter gibt an wie viele Guidance Schritte schon absolviert wurden
    * @return Liste von Nodes
    */
-  def createNodes(nodeIds: List[Long], distToFocus: Int, iter: Int)(implicit context: GraphGuidance): List[Node] = {
-    sql"""SELECT id, name, type, dococc FROM entity_ext WHERE id IN (${nodeIds}) AND dococc IS NOT NULL"""
-      .map(rs => (new Node(rs.long(1), rs.string(2), rs.int(4), distToFocus, rs.string(3), iter))).list.apply
+  def createNodes(facets: Facets, nodeIds: List[Long], distToFocus: Int, iter: Int)(implicit context: GraphGuidance): List[Node] = {
+    val esBuckets = FacetedSearch.fromIndexName("cable").aggregateEntities(facets, nodeIds.size, nodeIds, Nil, 1).buckets
+    val nodeDocOccMap = esBuckets.collect { case NodeBucket(id, docOccurrence) => id -> docOccurrence.toInt }.toMap
+
+    sql"""SELECT id, name, type FROM entity_ext WHERE id IN (${nodeIds}) AND dococc IS NOT NULL"""
+      .map(rs => new Node(rs.long(1), rs.string(2), nodeDocOccMap(rs.long(1)), distToFocus, rs.string(3), iter, facets)).list.apply
   }
 }
 
-class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: String, var iter: Int)(implicit context: GraphGuidance) {
+class Node(id: Long, name: String, var docOcc: Int, var distance: Int, category: String, var iter: Int, var facets: Facets)(implicit context: GraphGuidance) {
   implicit val session = AutoSession
 
   val numberOfRelEdges = 4
@@ -43,6 +47,12 @@ class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: Str
 
   def getName: String = {
     name
+  }
+
+  private def computeDocOcc() = {
+    val esBuckets = FacetedSearch.fromIndexName("cable").aggregateEntities(facets, 1, List(id), Nil, 1).buckets
+    docOcc = esBuckets.collect { case NodeBucket(nodeId, docOccurrence) => (nodeId, docOccurrence.toInt) }.head._2
+
   }
 
   def getDocOcc: Int = {
@@ -65,7 +75,10 @@ class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: Str
     connectedEdges
   }
 
-  def update(distance: Int, iter: Int) = {
+  def update(facets: Facets, distance: Int, iter: Int) = {
+    if (facets != this.facets) {
+      computeDocOcc()
+    }
     if (iter == this.iter) {
       if (distance < this.distance) {
         // TODO Kanten müssen rekursiv geupdatet werden
@@ -79,16 +92,21 @@ class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: Str
   }
 
   override def toString: String = {
-    "(Name: " + name + ")"
+    "(Id: " + id + " Name: " + name + ")"
   }
 
-  def getRelevantNodes: Iterator[Node] = {
+  /**
+   * @param amount Anzahl der Knoten im Iterator
+   * @return Gibt einen Iterator mit Knoten zurück, die momentan nicht im generierten Subgraph vorhanden sind,
+   * aber vorhanden wären, wenn von diesem Knoten aus eine Guidance gestartet würde
+   */
+  def getGuidancePreviewNodes(amount: Int): Iterator[Node] = {
     val ggIter = context.getCopyGuidance(id, true)
     // val ggIter = gg.getGuidance(id, context.edgeAmount, context.epn, context.uiMatrix, false, List())
     ggIter.take(context.edgeAmount).filter(t =>
       !(t._2.isEmpty || context.usedNodes.contains(t._2.get.getId))
     // !(context.edges.contains(t._1.getNodes) || context.edges.contains(t._1.getNodes.swap))
-    ).take(numberOfRelEdges).map(_._2.get)
+    ).take(amount).map(_._2.get)
 
     /*
     var pq = mutable.PriorityQueue[Edge]()(Ordering.by[Edge, Double](_.getDoi))
@@ -119,18 +137,8 @@ class Node(id: Long, name: String, docOcc: Int, var distance: Int, category: Str
     */
   }
 
-  /*
-  // scalastyle:off
-  def ==(that: Node): Boolean = {
-    id == that.getId
-  }
-
-  def !=(that: Node): Boolean = {
-    id != that.getId
-  }
-  */
   def copy: Node = {
-    new Node(id, name, docOcc, distance, category, iter)
+    new Node(id, name, docOcc, distance, category, iter, facets)
   }
 
 }

@@ -18,8 +18,8 @@ GET     /changeDataset                                      controllers.Applicat
 GET    /docById           		controllers.DocumentController.getDocById(id: Int)
 GET    /getDocs           		controllers.DocumentController.getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
 
-GET    /getGuidanceNodes        controllers.NetworkController.getGuidanceNodes(focusId: Long, edgeAmount: Int, epn:Int, uiString: String, useOldEdges: Boolean, sessionId: String)
-GET    /getAdditionalEdges      controllers.NetworkController.getAdditionalEdges(nodeId: Long, amount: Int, sessionId: String)
+GET    /getGuidanceNodes        controllers.NetworkController.getGuidanceNodes(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, focusId: Long, edgeAmount: Int, epn: Int, uiString: String, useOldEdges: Boolean, sessionId: String)
+GET    /getAdditionalEdges      controllers.NetworkController.getContext(nodeId: Long, amount: Int, sessionId: String)
 
 GET    /getGraphData         	controllers.NetworkController.getGraphData(leastOrMostFrequent: Int, amount: List[Int], minEdgeFreq: Int, maxEdgeFreq: Int)
 GET    /getRelations            controllers.NetworkController.getRelations(entities: List[Long], minEdgeFreq: Int, maxEdgeFreq: Int)

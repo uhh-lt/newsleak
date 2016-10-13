@@ -39,6 +39,7 @@ class GraphGuidance() {
   var usedNodes = new mutable.HashMap[Long, Node]()
   var oldEdges = new mutable.HashMap[(Long, Long), Edge]()
 
+  var facets = Facets.emptyFacets
   var uiMatrix = Array.ofDim[Int](4, 4)
   var epn = 4
   var edgeAmount = 20
@@ -52,7 +53,8 @@ class GraphGuidance() {
   // var uiMatrix = Array.ofDim[Int](4, 4)
 
   // scalastyle:off
-  def getGuidance(focusId: Long, edgeAmount: Int, epn: Int, uiMatrix: Array[Array[Int]], useOldEdges: Boolean): GuidanceIterator = {
+  def getGuidance(facets: Facets, focusId: Long, edgeAmount: Int, epn: Int, uiMatrix: Array[Array[Int]], useOldEdges: Boolean): GuidanceIterator = {
+    this.facets = facets
     this.epn = epn
     this.uiMatrix = uiMatrix
     this.edgeAmount = edgeAmount
@@ -64,10 +66,10 @@ class GraphGuidance() {
         oldEdges.clear
       }
 
-      var startNode = nodes.getOrElseUpdate(focusId, NodeFactory.createNodes(List(focusId), 0, iter).head)
-      startNode.update(0, iter)
+      var startNode = nodes.getOrElseUpdate(focusId, NodeFactory.createNodes(facets, List(focusId), 0, iter).head)
+      startNode.update(facets, 0, iter)
 
-      Logger.info("start guidance")
+      //Logger.trace("start guidance")
 
       var usedEdges = new mutable.HashMap[(Node, Node), Edge]()
       usedNodes.clear()
@@ -86,7 +88,7 @@ class GraphGuidance() {
           def next = pq.dequeue
         }
         val edgeO = pqIter.find(e => !{
-          Logger.info("" + e.toString(true) + "E1:" + e.getNodes._1.getConn + "E2:" + e.getNodes._2.getConn)
+          //Logger.trace("" + e.toString(true) + "E1:" + e.getNodes._1.getConn + "E2:" + e.getNodes._2.getConn)
           usedEdges.contains(e.getNodes) || usedEdges.contains(e.getNodes.swap) || e.getNodes._1.getConn == epn || e.getNodes._2.getConn == epn
         })
 
@@ -99,8 +101,8 @@ class GraphGuidance() {
 
         usedEdges += ((edge.getNodes, edge))
 
-        Logger.info("" + usedEdges)
-        Logger.info("added: " + edge.toString(true))
+        //Logger.trace("" + usedEdges)
+        //Logger.trace("added: " + edge.toString(true))
 
         var newNode: Option[Node] = None
         if (!usedNodes.contains(edge.getNodes._2.getId)) {
@@ -109,13 +111,7 @@ class GraphGuidance() {
           //if (i < k / 2) { //nur für die ersten k/2 Kanten werden weitere Kanten gesucht
           pq ++= getEdges(edge.getNodes._2)
           //}
-        } // else if (!usedNodes.contains(edge.getNodes._1)) {
-        // usedNodes += edge.getNodes._1
-        //if (i < k / 2) { //nur für die ersten k/2 Kanten werden weitere Kanten gesucht
-        // pq ++= getEdges(edge.getNodes._1)
-        // }
-        // }
-        //Logger.info(edgeMap.toString)
+        }
         oldEdges += (edge.getNodes._1.getId, edge.getNodes._2.getId) -> edge
         (edge, newNode)
       }
@@ -135,7 +131,7 @@ class GraphGuidance() {
             (edge, node)
           }
         }
-        Logger.debug(usedEdges.keySet.toString())
+        // Logger.debug(usedEdges.keySet.toString())
         val (eList, nList) = pqIter.filterNot(tpl => usedEdges.contains(tpl._1.getNodes) || usedEdges.contains(tpl._1.getNodes.swap)).take(amount).map(tpl => {
           usedEdges += tpl._1.getNodes -> tpl._1
           if (tpl._2.nonEmpty) {
@@ -149,20 +145,24 @@ class GraphGuidance() {
         (eList, nList.flatten)
       }
 
+      override def getGuidancePreview(nodeId: Long, amount: Int): List[Node] = {
+        nodes(nodeId).getGuidancePreviewNodes(amount).toList
+      }
+
       private def getEdges(node: Node): mutable.MutableList[Edge] = {
 
         var distToFocus: Int = node.getDistance //Wenn der Knoten nicht in der Map liegt, muss es sich um dem Fokus handeln, also dist=0
         distToFocus += 1
-        val nodeBuckets = FacetedSearch.fromIndexName("cable").aggregateEntities(Facets(List(), Map(), List(node.getId), None, None), newEdgesPerIter, List(), Nil, 1).buckets
+        val nodeBuckets = FacetedSearch.fromIndexName("cable").aggregateEntities(facets.withEntities(List(node.getId)), newEdgesPerIter, List(), Nil, 1).buckets
         val edgeFreqTuple = nodeBuckets.collect { case NodeBucket(id, docOccurrence) => (id, docOccurrence.toInt) }.filter(_._1 != node.getId)
-        val nodeMap = NodeFactory.createNodes(edgeFreqTuple.map(_._1), distToFocus, iter).map(n => n.getId -> n).toMap
+        val nodeMap = NodeFactory.createNodes(facets, edgeFreqTuple.map(_._1), distToFocus, iter).map(n => n.getId -> n).toMap
 
         var newEdges = new mutable.MutableList[Edge]()
         edgeFreqTuple.foreach(et => {
           if (nodeMap.contains(et._1)) {
             var n = nodeMap(et._1)
             n = nodes.getOrElseUpdate(n.getId, n)
-            n.update(distToFocus, iter)
+            n.update(facets, distToFocus, iter)
             var oldDoi = 0.0
             if (oldEdges.contains((node.getId, n.getId))) {
               oldDoi = oldEdges((node.getId, n.getId)).getDoi
@@ -184,6 +184,6 @@ class GraphGuidance() {
     newGG.oldEdges = oldEdges.map(p => p._1 -> p._2.copy)
     newGG.nodes = nodes.map(p => p._1 -> p._2.copy)
     newGG.iter = iter
-    newGG.getGuidance(focusId, edgeAmount, epn, uiMatrix, useOldEdges)
+    newGG.getGuidance(facets, focusId, edgeAmount, epn, uiMatrix, useOldEdges)
   }
 }

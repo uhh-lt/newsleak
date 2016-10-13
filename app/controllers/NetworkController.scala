@@ -363,31 +363,53 @@ class NetworkController @Inject extends Controller {
   }
 
   /**
-   *
+   * Filter:
+   * @param fullText full-text search term
+   * @param generic   mapping of metadata key and a list of corresponding tags
+   * @param entities list of entity ids to filter
+   * @param timeRange string of a time range readable for [[TimeRangeParser]]
+   * Guidance-Parameter:
    * @param focusId anfokussierter Knoten
    * @param edgeAmount Gesamtanzahl der Kanten im Subgraph
    * @param epn maximale Anzahl der Kanten pro Knoten
    * @param uiString User Interesse an verschiedenen Kantentypen (als String gespeicherte Matrix die mit , und ; getrennt ist=
    * @param useOldEdges true: alte DoI-Werte fliessen in Berechnung der neuen DoI-Werte ein
    * @param sessionId SessionId
+   *
    * @return sendet den gebildeten Supgraph in Form von Kanten+Knoten an den Benutzer
    */
-  def getGuidanceNodes(focusId: Long, edgeAmount: Int, epn: Int, uiString: String, useOldEdges: Boolean, sessionId: String) = Action {
+  def getGuidanceNodes(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String,
+    focusId: Long, edgeAmount: Int, epn: Int, uiString: String, useOldEdges: Boolean, sessionId: String) = Action {
+    val times = TimeRangeParser.parseTimeRange(timeRange)
+    val facets = Facets(fullText, generic, entities, times.from, times.to)
 
     val uiMatrix: Array[Array[Int]] = uiString.split(";").map(_.split(",").map(_.toInt))
     implicit val gg = GuindanceMap.getOrElseUpdate(sessionId, new GraphGuidance)
-    val ggIter = gg.getGuidance(focusId, edgeAmount, epn, uiMatrix, useOldEdges)
+    val ggIter = gg.getGuidance(facets, focusId, edgeAmount, epn, uiMatrix, useOldEdges)
     val (edges, nodes) = ggIter.take(edgeAmount).toList.unzip
-    val result = new JsObject(Map(("nodes", Json.toJson(nodes.flatten /*entfernt die leeren Options*/ ++ NodeFactory.createNodes(List(focusId), 0, 0))), ("links", Json.toJson(edges))))
+    val result = new JsObject(Map(("nodes", Json.toJson(nodes.flatten /*entfernt die leeren Options*/ ++ NodeFactory.createNodes(facets, List(focusId), 0, 0))), ("links", Json.toJson(edges))))
     IterMap += (sessionId -> ggIter)
     Logger.debug(result.toString())
     Ok(result).as("application/json")
   }
 
-  def getAdditionalEdges(nodeId: Long, amount: Int, sessionId: String) = Action {
-    val (eList, nList) = IterMap(sessionId).getMoreEdges(nodeId, amount)
-    val result = new JsObject(Map(("nodes", Json.toJson(nList)), ("links", Json.toJson(eList))))
-    Logger.debug("add Eddges for" + nodeId)
+  /**
+   * wird aufgerufen um Kontext-Informationen im Tooltip darzustellen
+   * @param nodeId Knoten für den Kontext-Informationen benötigt werden
+   * @param amount Anzahl der Elemente pro Liste
+   * @param sessionId SessionId
+   * @return
+   */
+  def getContext(nodeId: Long, amount: Int, sessionId: String) = Action {
+    val ggIter = IterMap(sessionId)
+    val guidancePreviewList = ggIter.getGuidancePreview(nodeId, amount)
+    val (edgeExpandList, nodeExpandList) = ggIter.getMoreEdges(nodeId, amount)
+    val result = new JsObject(Map(
+      ("expand", new JsObject(Map(("nodes", Json.toJson(nodeExpandList)), ("links", Json.toJson(edgeExpandList))))),
+      ("guidance", Json.toJson(guidancePreviewList)),
+      ("bargraph", Json.toJson("gibts noch nicht"))
+    ))
+    Logger.debug("send context for " + nodeId)
     Logger.debug(result.toString())
     Ok(result).as("application/json")
   }
@@ -397,18 +419,12 @@ class NetworkController @Inject extends Controller {
       "id" -> n.getId,
       "name" -> n.getName,
       "docOcc" -> n.getDocOcc,
-      "type" -> n.getCategory,
-      "edges" -> n.getRelevantNodes.map(rn => Json.obj(
-        "id" -> rn.getId,
-        "name" -> rn.getName,
-        "type" -> rn.getCategory
-      )).toList
+      "type" -> n.getCategory
     )
   }
 
   implicit val EdgeWrite = new Writes[Edge] {
     def writes(e: Edge) = Json.obj(
-      "id" -> 0,
       "sourceNode" -> e.getNodes._1.getId,
       "targetNode" -> e.getNodes._2.getId,
       "docOcc" -> e.getDocOcc,

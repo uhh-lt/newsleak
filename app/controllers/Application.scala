@@ -116,7 +116,7 @@ class Application @Inject extends Controller {
         controllers.routes.javascript.NetworkController.getRelations,
         controllers.routes.javascript.NetworkController.induceSubgraph,
         controllers.routes.javascript.NetworkController.getGuidanceNodes,
-        controllers.routes.javascript.NetworkController.getAdditionalEdges,
+        controllers.routes.javascript.NetworkController.getContext,
         controllers.routes.javascript.EntityController.getEntities,
         controllers.routes.javascript.EntityController.getEntityTypes,
         controllers.routes.javascript.EntityController.getEntitiesByType,
