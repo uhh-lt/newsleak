@@ -59,26 +59,22 @@ define([
             return graphProperties;
         })
         // Network Legend Controller
-        .controller('LegendController', ['$scope', '$timeout', 'mdPanelRef', 'VisDataSet', 'graphProperties', function ($scope, $timeout, mdPanelRef, VisDataSet, graphProperties) {
-            $scope.legendNodes = new VisDataSet([]);
+        .controller('LegendController', ['$scope', '$timeout', 'VisDataSet', 'graphProperties', function ($scope, $timeout, VisDataSet, graphProperties) {
 
+            $scope.legendNodes = new VisDataSet([]);
             this.legendOptions = graphProperties.legendOptions;
             this.legendData = { nodes: $scope.legendNodes, edges: [] };
             this.legendEvents = { "onload": function(network) { $scope.legendNetwork = network; } };
 
             $scope.addLegend = function() {
-                var x = -70; var y = 0; var distance = 100;
-                /*var mynetwork = document.getElementById('mynetwork');
-                var x = - mynetwork.clientWidth;
-                var y = - mynetwork.clientHeight;
-                var distance = 100;*/
+                var x = 0; var y = 0; var distance = 100;
                 $scope.legendNodes.add([
                     { id: -1, x: x, y: y, label: 'Per', group: 0, value: 1, fixed: true, physics: false },
                     { id: -2, x: x + distance, y: y, label: 'Org', group: 1, value: 1, fixed: true, physics: false },
                     { id: -3, x: x + 2*distance, y: y, label: 'Loc', group: 2, value: 1, fixed: true, physics: false },
                     { id: -4, x: x + 3*distance, y: y, label: 'Misc', group: 3, value: 1, fixed: true, physics: false }
                 ]);
-                $scope.legendNetwork.moveTo({scale: 0.5});
+                $scope.legendNetwork.fit();
             };
 
             // Add nodes after the legend div is added to the dom
@@ -87,7 +83,7 @@ define([
             });
         }])
         // Network Controller
-        .controller('FancyNetworkController', ['$scope', '$timeout', '$compile', '$mdDialog', '$mdPanel', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', function ($scope, $timeout, $compile, $mdDialog, $mdPanel, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties) {
+        .controller('FancyNetworkController', ['$scope', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', function ($scope, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties) {
 
             var self = this;
 
@@ -291,32 +287,11 @@ define([
 
             function addLegendButton() {
                 var panel = angular.element(document.getElementsByClassName('vis-navigation')[0]);
-                var buttonTemplate = '<div class="vis-button vis-legend-button" ng-click="showLegend($event)"></div>';
+                // Show or hide network legend
+                var buttonTemplate = '<div class="vis-button vis-legend-button" ng-click="showLegend = !showLegend"></div>';
                 var button = $compile(buttonTemplate)($scope);
                 panel.append(button);
             }
-
-            $scope.showLegend = function(ev) {
-                // Align legend in the upper left corner of the canvas
-                var position = $mdPanel.newPanelPosition()
-                        .relativeTo(angular.element(document.getElementById('mynetwork')))
-                        .top('80px')
-                        .left('20px');
-
-                var config = {
-                    attachTo: angular.element(document.getElementById('mynetwork')),
-                    controller: 'LegendController',
-                    controllerAs: 'ctrl',
-                    template: '<div id="network-legend"> <vis-network data="ctrl.legendData" options="ctrl.legendOptions" events="ctrl.legendEvents" layout-fill></vis-network> </div>',
-                    position: position,
-                    openFrom: ev,
-                    clickOutsideToClose: true,
-                    escapeToClose: true,
-                    focusOnOpen: false
-                };
-
-                $mdPanel.open(config);
-            };
 
             // ----------------------------------------------------------------------------------
             // Node and edge manipulation
