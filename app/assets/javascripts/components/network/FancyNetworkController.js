@@ -356,7 +356,7 @@ define([
                         }],
                     locals: { e: entity },
                     autoWrap: false,
-                    parent: angular.element(document.getElementById('network'))
+                    parent: $scope.FancyNetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
                 }).then(function(response) {
                     // Adapt tooltip and node color
                     var modified = _.extend(response, {
@@ -396,7 +396,7 @@ define([
                         }],
                     locals: { e: entity, n: neighbors },
                     autoWrap: false,
-                    parent: angular.element(document.getElementById('network'))
+                    parent: $scope.FancyNetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
                 }).then(function(response) { /* apply click */ }, function() { /* cancel click */ });
             }
 
