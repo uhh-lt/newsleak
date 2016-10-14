@@ -258,11 +258,14 @@ define([
             function markNewNodes(nextNodeIds) {
                 // Don't highlight all nodes for the initial graph
                 if(self.nodes.length > 0) {
-                    var currentNodeIds = self.nodes.getIds();
+                    // This dataset contains the nodes from the previous filtering step without dynamic changing information
+                    var previousNodes = new VisDataSet(self.nodes.map(function(n)  { return _.omit(n, 'hidden', 'title', 'value'); }));
+
+                    var currentNodeIds = previousNodes.getIds();
                     var sec = _.intersection(nextNodeIds, currentNodeIds);
                     // Remove old marking from the nodes in order to show only the new nodes for one single step
-                    var cleanNodes = self.nodes.get(sec).map(function(n) { return _.extend(n, { 'shapeProperties': { borderDashes: false }, color: undefined, borderWidth: 1})});
-                    self.nodes.update(cleanNodes);
+                    var cleanNodes = previousNodes.get(sec).map(function(n) { return _.extend(n, { 'shapeProperties': { borderDashes: false }, color: undefined, borderWidth: 1 })});
+                    previousNodes.update(cleanNodes);
                     self.nodesDataset.update(cleanNodes);
 
                     var diff = _.difference(nextNodeIds, currentNodeIds);
@@ -272,8 +275,8 @@ define([
 
                     // TODO Move
                     // Fix nodes from the previous filtering step. This ensures that the node will always preserve its position.
-                    // Also remove hidden state between filtering steps.
-                    var fixedNodes = self.nodes.get(sec).map(function(n) { return _.extend(n, { fixed: { x: true, y: true }, hidden: false })});
+                    // Also remove hidden state between filtering steps and (dynamic) tooltip.
+                    var fixedNodes = previousNodes.get(sec).map(function(n) { return _.extend(n, { fixed: { x: true, y: true } })});
                     self.nodesDataset.update(fixedNodes);
                 }
             }
