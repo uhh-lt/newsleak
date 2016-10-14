@@ -101,7 +101,8 @@ define([
             self.physicOptions = physicOptions;
 
 
-            self.nodeMenu = [
+            // Context menu for single node selection
+            self.singleNodeMenu = [
                 {
                     title: 'Add as filter',
                     action: function(value, nodeId) { addNodeFilter(nodeId); }
@@ -118,6 +119,14 @@ define([
                 }, {
                     title: 'Blacklist',
                     action: function(value, nodeId) { blacklistNode(nodeId); }
+                }
+            ];
+
+            // Context menu for multiple node selection
+            self.multiNodeMenu = [
+                {
+                    title: 'Merge nodes',
+                    action: function(value, nodeIds) { mergeNodes(nodeIds); }
                 }
             ];
 
@@ -400,6 +409,33 @@ define([
                 }).then(function(response) { /* apply click */ }, function() { /* cancel click */ });
             }
 
+            function mergeNodes(nodeIds) {
+                var nodes = self.nodesDataset.get(nodeIds);
+
+                $mdDialog.show({
+                    templateUrl: 'assets/partials/mergeNodes.html',
+                    controller: ['$scope', '$mdDialog', 'playRoutes', 'entities',
+                        function($scope, $mdDialog, playRoutes, entities) {
+
+                            $scope.entities = entities;
+
+                            $scope.apply = function () { $mdDialog.hide($scope.target); };
+                            $scope.closeClick = function() { $mdDialog.cancel(); };
+                        }],
+                    locals: { entities: nodes },
+                    autoWrap: false,
+                    parent: $scope.FancyNetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
+                }).then(function(response) {
+                    var index = nodeIds.indexOf(response);
+                    // Remove target node from the duplicate list
+                    nodeIds.splice(index, 1);
+                    self.nodesDataset.remove(nodeIds);
+
+                    // Don't know why _.without does not remove the id
+                    //self.nodesDataset.remove(_.without(nodeIds, response.targetId));
+                }, function() { /* cancel click */ });
+            }
+
 
             // ----------------------------------------------------------------------------------
             // Network Event Callbacks
@@ -555,14 +591,15 @@ define([
                 var edgeIdOpt = self.network.getEdgeAt(position);
 
                 var selection = self.network.getSelectedNodes();
-                // Multiple nodes selected
-                if(!_.isUndefined(nodeIdOpt) && selection.length > 1) {
-                    console.log("Selection " + selection);
+
+                // Multiple nodes selected and the right-clicked node is in this selection
+                if(!_.isUndefined(nodeIdOpt) && selection.length > 1 && _.contains(selection, nodeIdOpt)) {
+                    showContextMenu(_.extend(position, { id: selection }), self.multiNodeMenu);
                 }
                 // Single node selected
                 else if(!_.isUndefined(nodeIdOpt)) {
                     self.network.selectNodes([nodeIdOpt]);
-                    showContextMenu(_.extend(position, { id: nodeIdOpt }), self.nodeMenu);
+                    showContextMenu(_.extend(position, { id: nodeIdOpt }), self.singleNodeMenu);
                 // Edge selected
                 } else if(!_.isUndefined(edgeIdOpt)) {
                     self.network.selectEdges([edgeIdOpt]);
@@ -573,7 +610,7 @@ define([
                 }
             }
 
-            function showContextMenu(params, menu) {
+            function showContextMenu(params, menuEntries) {
                 var container = document.getElementById('mynetwork');
 
                 var offsetLeft = container.offsetLeft;
@@ -587,15 +624,15 @@ define([
                 var ul = document.createElement('ul');
                 self.popupMenu.appendChild(ul);
 
-                for (var i = 0; i < menu.length; i++) {
+                for (var i = 0; i < menuEntries.length; i++) {
                     var li = document.createElement('li');
                     ul.appendChild(li);
-                    li.innerHTML = li.innerHTML + menu[i].title;
+                    li.innerHTML = li.innerHTML + menuEntries[i].title;
                     (function(value, id, action){
                         li.addEventListener("click", function() {
                             closeContextMenu();
                             action(value, id);
-                        }, false);})(menu[i].title, params.id, menu[i].action);
+                        }, false);})(menuEntries[i].title, params.id, menuEntries[i].action);
                 }
                 container.appendChild(self.popupMenu);
             }
