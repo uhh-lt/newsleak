@@ -73,7 +73,8 @@ define([
                     hover: true,
                     hideEdgesOnDrag: true,
                     navigationButtons: true,
-                    keyboard: false
+                    keyboard: false,
+                    multiselect: true
                 },
                 groups: {
                     '0': { color:  {border: "#2B7CE9", background: "#97C2FC", highlight: {border: "#2B7CE9", background: "#D2E5FF"}, hover: {border: "#2B7CE9", background: "#D2E5FF"}}}, // 0: blue

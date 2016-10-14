@@ -554,10 +554,16 @@ define([
                 var nodeIdOpt = self.network.getNodeAt(position);
                 var edgeIdOpt = self.network.getEdgeAt(position);
 
-                // Node selected
-                if(!_.isUndefined(nodeIdOpt)) {
+                var selection = self.network.getSelectedNodes();
+                // Multiple nodes selected
+                if(!_.isUndefined(nodeIdOpt) && selection.length > 1) {
+                    console.log("Selection " + selection);
+                }
+                // Single node selected
+                else if(!_.isUndefined(nodeIdOpt)) {
                     self.network.selectNodes([nodeIdOpt]);
                     showContextMenu(_.extend(position, { id: nodeIdOpt }), self.nodeMenu);
+                // Edge selected
                 } else if(!_.isUndefined(edgeIdOpt)) {
                     self.network.selectEdges([edgeIdOpt]);
                     showContextMenu(_.extend(position, { id: edgeIdOpt }), self.edgeMenu);
