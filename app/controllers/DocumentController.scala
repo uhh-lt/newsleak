@@ -40,7 +40,7 @@ case class IteratorSession(hits: Long, hitIterator: Iterator[Long], hash: Long)
 class DocumentController @Inject() (cache: CacheApi) extends Controller {
 
   private val defaultPageSize = 50
-  private val defaultFacets = Facets.emptyFacets
+  private val defaultFacets = Facets.empty
   private val (numberOfDocuments, documentIterator) = FacetedSearch.fromIndexName("cable").searchDocuments(defaultFacets, defaultPageSize)
   private val defaultSession = IteratorSession(numberOfDocuments, documentIterator, defaultFacets.hashCode())
   private val metadataKeys = List("Subject", "Origin", "SignedBy", "Classification")

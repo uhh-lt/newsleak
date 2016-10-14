@@ -98,13 +98,18 @@ line {
 
 div.tooltip {
     position: fixed;
-    min-width: 200px;
+    width: 200px;
     padding: 2px 5px;
     font: 12px sans-serif;
     color: white;
     background: black;
     border: 1px;
     border-radius: 8px;
+}
+
+.tooltip.hidden {
+    opacity: 0;
+    pointer-events: none;
 }
 
 .tooltip p {
@@ -116,7 +121,7 @@ div.tooltip {
 .tooltip h1{
     margin: 2px;
     font-size: 20px !important;
-    font-family: Roboto;
+    /*font-family: Roboto;*/
     font-weight: normal;
     text-align: center;
 }
@@ -137,6 +142,20 @@ div.tooltip {
 .tooltip button{
     width: 100%;
     text-align: left;
+}
+
+#bargraph span{
+    /*font: 10px sans-serif;*/
+    text-align: right;
+    padding: 3px;
+    margin: 1px;
+    color: black;
+    border-color: white;
+    display: inline-block;
+}
+
+#bargraph{
+    margin-bottom: 3px;
 }
 
 #network-graph .glyphicon {

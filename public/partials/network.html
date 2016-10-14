@@ -23,7 +23,7 @@
 <!-- Show Graph if available -->
 <div id="network-graph" ng-show="!isViewLoading"></div>
 
-<div id="node-tooltip" class="tooltip" style="opacity: 0.75">
+<div id="node-tooltip" class="tooltip" style="opacity: 0; pointer-events: none">
     <h1 style="color:{{categories[sNode.type].color}}">
         <span ng-if="sNode.isFocusNode">
             <i class="material-icons">adjust</i>
@@ -33,28 +33,35 @@
     id: {{sNode.id}}<br>
     occurs in <span class="tooltipImportantText"> {{sNode.freq}} </span> documents
     <div ng-if="contextCache[sNode.id].data !== undefined">
-        <div ng-if="!sNode.isFocusNode">
-            <button type="button" class="btn btn-primary btn-small" ng-click="setFocusNode(sNode.id)">
-                <i class="material-icons">adjust</i> Set to focus
-            </button>
-            <span ng-if="sNode.relEdges.length !== 0">
-                <br> to see these Nodes:
-                <p ng-repeat="node in contextCache[sNode.id].data.guidance">
-                    <i class="material-icons"> {{categories[node.type].img}}</i>{{node.name}}
-                </p>
-            </span>
+        Connections by type:
+        <div id="bargraph"></div>
+        <div ng-show="showFullTooltip.active">
+            <div ng-if="!sNode.isFocusNode">
+                <button type="button" class="btn btn-primary btn-small" ng-click="setFocusNode(sNode.id)">
+                    <i class="material-icons">adjust</i> Set to focus
+                </button>
+                <span ng-if="contextCache[sNode.id].data.guidance.length !== 0">
+                    <br> to see these Nodes:
+                    <p ng-repeat="node in contextCache[sNode.id].data.guidance">
+                        <i class="material-icons"> {{categories[node.type].img}}</i>{{node.name}}
+                    </p>
+                </span>
+            </div>
+            <button type="button" class="btn btn-primary btn-small" ng-click="expandNode(sNode.id)">
+                <i class="material-icons">add</i> Expand Node
+            </button><br>
+            to see additionally the n most important connections to {{sNode.name}}:
+            <p ng-if="contextCache[sNode.id].data !== undefined" ng-repeat="node in contextCache[sNode.id].data.expand.tooltipInfo">
+                <i class="material-icons"> {{categories[node.type].img}}</i>{{node.name}}
+            </p>
         </div>
-        <button type="button" class="btn btn-primary btn-small" ng-click="expandNode(sNode.id)">
-            <i class="material-icons">add</i> Expand Node
-        </button><br>
-        to see additionally the n most important connections to {{sNode.name}}:
-        <p ng-if="contextCache[sNode.id].data !== undefined" ng-repeat="node in contextCache[sNode.id].data.expand.tooltipInfo">
-            <i class="material-icons"> {{categories[node.type].img}}</i>{{node.name}}
-        </p>
+        <div ng-show="!showFullTooltip.active">
+            <br>
+            <i>press right mouse button to get additional information</i>
+        </div>
     </div>
     <div ng-if="contextCache[sNode.id].data === undefined">
         <br>
-        loading more information...
-        <br>
+        <i>loading more information...</i>
     </div>
 </div>

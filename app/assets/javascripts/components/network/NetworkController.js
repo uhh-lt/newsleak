@@ -91,6 +91,8 @@ define([
                 'MISC': {full: 'Miscellaneous', color: '#ffffb3', img: 'reorder', singular: 'Miscellaneous'}
             };
 
+            $scope.showFullTooltip =  {active: false};
+
             function fireEvent_updateDocs() {
                 $scope.$emit('updateDocs-up', selectedNodes.map(function(n){
                     return n.id
@@ -114,7 +116,8 @@ define([
 
             var loadingNodes = false;
 
-            var computeAdditionalEdges = false;
+
+            var tooltip = d3.select("body").append("div").attr("class", "tooltip");
 
             toolShareService.getSelectedNodes = function(){return selectedNodes;};
             toolShareService.getSelectedElementsText = selectedElementsText;
@@ -144,7 +147,6 @@ define([
             var edges = [];
             $scope.contextCache = {};
             var guidanceStepCounter= 0;
-            //var color      = d3.scale.category10().range($scope.graphShared.categoryColors);
             var color = d3.scale.ordinal()
                 .domain(["LOC", "ORG", "PER", "MISC"])
                 .range($scope.graphShared.categoryColors);
@@ -587,6 +589,11 @@ define([
                     .on('mousedown', function(){
                         // On mousedown store the current time in milliseconds
                         time = moment();
+
+                        d3.select("#node-tooltip").transition().duration(300).style("opacity", 0);
+                        tooltip.style("pointer-events","none");
+
+                        $scope.showFullTooltip =  {active: false};
                     })
                     .on('mouseup', function(d){
                         // Unselect nodes/edges when clicking on the background without dragging.
@@ -824,46 +831,48 @@ define([
                             	return 'nodecircle_' + d.id;
                             })
                             .on('contextmenu', function (d) {
-                                console.log("get add. edges");
                                 d3.event.preventDefault();
-                                getAdditionalEdges(d.id)
+                                $scope.showFullTooltip =  {active: true, node: d.id};
+                                $scope.$apply();
                             })
                             .on('mousedown', function () {  // make nodes clickable
                                 // On mousedown store the current time in milliseconds
                                 time = moment();
                             })
                             .on('mouseup', function (d) {
-                                d3.select(this).classed("fixed", d.fixed = true);  // Fix nodes that where moved.
-                                // On mouseup check if it was a click or dragging a circle and in case of click invoke the callback
-                                var now = moment();
-                                if (time + 500 > now) {
-                                    var index = selectedNodes.indexOf(d);
-                                    var nodeValue = d.name;
-                                    var categoryIndex = $scope.graphShared.getIndexOfCategory(d.type);
-                                    if(index == -1){  // The node is not selected, so select it.
-                                        selectNode(d);
-                                        d3.select(this)
-                                        	.style('stroke-width', 5)
-                                            .style('stroke', selectionColor);
-                                        // Add the selected node name to the words that get highlighted
-                                        // However, add it only once to make deletion of that entry easier
-                                        if (highlightShareService.wordsToHighlight[categoryIndex].indexOf(nodeValue) < 0) {
-                                            highlightShareService.wordsToHighlight[categoryIndex].push(d.name);
-                                            highlightShareService.wasChanged = true;
+                                if (d3.event.button === 0){
+                                    d3.select(this).classed("fixed", d.fixed = true);  // Fix nodes that where moved.
+                                    // On mouseup check if it was a click or dragging a circle and in case of click invoke the callback
+                                    var now = moment();
+                                    if (time + 500 > now) {
+                                        var index = selectedNodes.indexOf(d);
+                                        var nodeValue = d.name;
+                                        var categoryIndex = $scope.graphShared.getIndexOfCategory(d.type);
+                                        if(index == -1){  // The node is not selected, so select it.
+                                            selectNode(d);
+                                            d3.select(this)
+                                                .style('stroke-width', 5)
+                                                .style('stroke', selectionColor);
+                                            // Add the selected node name to the words that get highlighted
+                                            // However, add it only once to make deletion of that entry easier
+                                            if (highlightShareService.wordsToHighlight[categoryIndex].indexOf(nodeValue) < 0) {
+                                                highlightShareService.wordsToHighlight[categoryIndex].push(d.name);
+                                                highlightShareService.wasChanged = true;
+                                            }
                                         }
-                                    }
-                                    else{  // The node is already selected, so unselect it.
-                                        unselectNode(d);  // Remove the node from the list.
-                                        d3.select(this).style('stroke-width', 1.5)
-                                                       .style('stroke', '#000000');
-                                        // Remove the selected node name from the words that get highlighted
-                                        var index = highlightShareService.wordsToHighlight[categoryIndex].indexOf(d.name);
-                                        if (index > -1) {
-                                            highlightShareService.wordsToHighlight[categoryIndex].splice(index, 1);
-                                            highlightShareService.wasChanged = true;
+                                        else{  // The node is already selected, so unselect it.
+                                            unselectNode(d);  // Remove the node from the list.
+                                            d3.select(this).style('stroke-width', 1.5)
+                                                           .style('stroke', '#000000');
+                                            // Remove the selected node name from the words that get highlighted
+                                            var index = highlightShareService.wordsToHighlight[categoryIndex].indexOf(d.name);
+                                            if (index > -1) {
+                                                highlightShareService.wordsToHighlight[categoryIndex].splice(index, 1);
+                                                highlightShareService.wasChanged = true;
+                                            }
                                         }
+                                        enableOrDisableButtons();
                                     }
-                                    enableOrDisableButtons();
                                 }
                             });
 
@@ -937,7 +946,7 @@ define([
                         .on('click', function(d)//Wenn der Plus-Button gedrückt wird
                                                 {
                                                     console.log("button clicked");
-                                                    getGuidanceNodes(d.id,true,true)
+                                                    getGuidanceNodes(d.id,true);
                                                     //$scope.observer.addItem({type: 'entity', data: {id: d.id, name: d.name, type: d.type}});
                                                 })
                         .append('span')
@@ -947,7 +956,7 @@ define([
                         .style('left', '3px')
                         .style('top', '3px')
                         .style('text-align', 'center')
-                        .style('font-size', '10px')
+                        .style('font-size', '10px');
 
 
                     /*buttonlist.html(function(d)
@@ -1005,9 +1014,6 @@ define([
 					}
             }
 
-
-            var tooltip = d3.select("body").append("div").attr("class", "tooltip")//.attr("id", function(d, i){ return 'tt-'+ d.id; })
-                .style("opacity", 0);
             /**
              * This function adds tooltips to the nodes and links.
              * @param node The nodes
@@ -1015,33 +1021,41 @@ define([
              */
             function addTooltip(node, link){
 
-                node.on("mouseover", function(d){
-                    $scope.sNode = d;
-                    if ($scope.contextCache[d.id] === undefined){
-                        // console.log("cache undefined for "+d.name);
-                        $scope.contextCache[d.id] = {isComputing: true};
-                        getAdditionalEdges(d.id);
+                node.on("mouseover", function(d) {
+                    if ($scope.showFullTooltip.node !== d.id){
+                        $scope.showFullTooltip =  {active: false};
+                        $scope.sNode = d;
+                        if ($scope.contextCache[d.id] === undefined) {
+                            // console.log("cache undefined for "+d.name);
+                            $scope.contextCache[d.id] = {isComputing: true};
+                            getAdditionalEdges(d.id);
+                        } else if ($scope.contextCache[d.id].isComputing !== true && ($scope.contextCache[d.id].data === undefined || guidanceStepCounter > $scope.contextCache[d.id].counter)) {
+                            $scope.contextCache[d.id].isComputing = true;
+                            getAdditionalEdges(d.id);
+                        } else if (!$scope.contextCache[d.id].isComputing){
+                            drawBarGraph($scope.contextCache[d.id].data.bargraph)
+                        }
+                        $scope.$apply();
+                        var tooltip = d3.select("#node-tooltip").style("left", (d3.event.pageX + 10) + "px").style("top", d3.event.pageY - 100 + "px");
+                        /*tooltip.transition()
+                         .duration(500)
+                         .style("opacity", 0);*/
+                        tooltip.transition()
+                            .duration(300)
+                            .style("opacity", .9);
+                        tooltip.style("pointer-events","auto");
                     }
-                    else if ($scope.contextCache[d.id].isComputing !== true && ($scope.contextCache[d.id].data === undefined  || guidanceStepCounter>$scope.contextCache[d.id].counter) ) {
-                        $scope.contextCache[d.id].isComputing = true;
-                        getAdditionalEdges(d.id);
-                    }
-                    $scope.$apply();
-                    var tooltip = d3.select("#node-tooltip").style("left", (d3.event.pageX - 75) + "px").style("top", (d3.event.pageY + 25) + "px");
-                    /*tooltip.transition()
-                        .duration(500)
-                        .style("opacity", 0);*/
-                    tooltip.transition()
-                        .duration(200)
-                        .style("opacity", .9);
-
                 });
-                /*node.on("mouseout", function(d){
-                    var tooltip = d3.select("#node-tooltip").style("left", (d3.event.pageX - 75) + "px").style("top", (d3.event.pageY + 25) + "px");
-                    tooltip.transition()
-                        .duration(500)
-                        .style("opacity", 0);
-                });*/
+
+                node.on("mouseout", function(d){
+                    if (!$scope.showFullTooltip.active){
+                        var tooltip = d3.select("#node-tooltip").style("left", (d3.event.pageX - 10) + "px").style("top", (d3.event.pageY - 100) + "px");
+                        tooltip.transition()
+                            .duration(300)
+                            .style("opacity", 0);
+                        tooltip.style("pointer-events","none");
+                    }
+                });
 
                 link.on("mouseover", function(d){
                     tooltip.transition()
@@ -2092,9 +2106,13 @@ define([
 
             $scope.setFocusNode = function(nodeId) {
                 getGuidanceNodes(nodeId, true);
-                d3.select("#node-tooltip").transition()
-                    .duration(200)
+                var tooltip = d3.select("#node-tooltip");
+                tooltip.transition()
+                    .duration(300)
                     .style("opacity",0);
+                tooltip.style("pointer-events","none");
+
+                $scope.showFullTooltip =  {active: false};
             };
 
             $scope.expandNode = function(nodeId) {
@@ -2104,9 +2122,11 @@ define([
                 force.nodes(nodes);
                 force.links(edges);
                 start();
-                d3.select("#node-tooltip").transition()
-                    .duration(200)
+                var tooltip = d3.select("#node-tooltip").transition()
+                    .duration(300)
                     .style("opacity",0);
+                tooltip.style("pointer-events","none");
+                $scope.showFullTooltip = {active: false};
             };
 
             function getAdditionalEdges(nodeId) {
@@ -2158,13 +2178,36 @@ define([
                     $scope.contextCache[nodeId] = {
                         data: {
                             guidance: response.data.guidance,
-                            expand: {nodes: nNodes, edges: nEdges, tooltipInfo: addedCon}},
+                            bargraph: response.data.bargraph,
+                            expand: {nodes: nNodes, edges: nEdges, tooltipInfo: addedCon}
+                        },
                         counter: guidanceStepCounter,
                         isComputing: false};
                     console.log($scope.contextCache);
-                })
-
+                    setTimeout(function () {drawBarGraph(response.data.bargraph)},1);
+                });
             }
+
+            function drawBarGraph(data) {
+                var bargraphscale = d3.scale.linear()
+                    .domain([0, d3.max(data.map(function (elem){return elem.count}))])
+                    .range([0, 170]);
+                var formatter = d3.format(',');
+
+                var bars = d3.select("#bargraph")
+                    .selectAll("div")
+                    .data(data);
+                var newbars = bars.enter().append("div");
+                newbars.append("i").classed("material-icons", true);
+                newbars.append("span");
+
+                bars.select("i").text(function(d){return $scope.categories[d.name].img});
+                bars.select("span")
+                    .style("width", function(d) { return bargraphscale(d.count) + "px"; })
+                    .style("background-color", function(d) {return color(d.name)})
+                    .text(function(d) { return formatter(d.count); });
+            }
+
 
         }
     ]);

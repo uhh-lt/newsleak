@@ -3,7 +3,7 @@
  */
 package controllers.network
 
-import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
+import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket, NodeBucket }
 import play.api.Logger
 import scalikejdbc._
 
@@ -135,6 +135,11 @@ class Node(id: Long, name: String, var docOcc: Int, var distance: Int, category:
 
     pqIter.take(numberOfRelEdges).toList
     */
+  }
+
+  def getConnectionsByType: List[(String, Long)] = {
+    val typeBuckets = FacetedSearch.fromIndexName("cable").getNeighborCounts(facets, id)
+    typeBuckets.buckets.collect { case MetaDataBucket(key, docCount) => (key, docCount) }
   }
 
   def copy: Node = {

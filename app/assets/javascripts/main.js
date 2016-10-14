@@ -47,7 +47,7 @@
 			'ngFileSaver': 'libs/angular-file-saver/dist/angular-file-saver.bundle.min',
 			'drilldown' : 'libs/highcharts-release/modules/drilldown',
 			'underscore': 'libs/underscore/underscore-min',
-			'd3': 'libs/d3/d3.min',
+			'd3': 'libs/d3/d3',
 			'angularResizable': 'libs/angular-resizable/angular-resizable.min',
 			'bootstrapFileField': 'libs/angular-bootstrap-file-field/angular-bootstrap-file-field.min'
 		},

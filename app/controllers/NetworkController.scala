@@ -21,7 +21,7 @@ import javax.inject.Inject
 
 import controllers.network._
 import play.api.Logger
-import play.api.libs.json.Writes
+import play.api.libs.json.{ JsNumber, JsString, Writes }
 
 import scala.collection.mutable
 // to read files
@@ -402,12 +402,18 @@ class NetworkController @Inject extends Controller {
    */
   def getContext(nodeId: Long, amount: Int, sessionId: String) = Action {
     val ggIter = IterMap(sessionId)
-    val guidancePreviewList = ggIter.getGuidancePreview(nodeId, amount)
+    //val guidancePreviewList = ggIter.getGuidancePreview(nodeId, amount)
     val (edgeExpandList, nodeExpandList) = ggIter.getMoreEdges(nodeId, amount)
+    ggIter.getConnectionsByType(nodeId)
     val result = new JsObject(Map(
-      ("expand", new JsObject(Map(("nodes", Json.toJson(nodeExpandList)), ("links", Json.toJson(edgeExpandList))))),
-      ("guidance", Json.toJson(guidancePreviewList)),
-      ("bargraph", Json.toJson("gibts noch nicht"))
+      "expand" -> new JsObject(Map(("nodes", Json.toJson(nodeExpandList)), ("links", Json.toJson(edgeExpandList)))),
+      "guidance" -> Json.toJson(ggIter.getGuidancePreview(nodeId, amount)),
+      "bargraph" -> Json.toJson(ggIter.getConnectionsByType(nodeId).map {
+        case (t, count) => new JsObject(Map(
+          "name" -> JsString(t),
+          "count" -> JsNumber(count)
+        ))
+      })
     ))
     Logger.debug("send context for " + nodeId)
     Logger.debug(result.toString())

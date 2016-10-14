@@ -39,7 +39,7 @@ class GraphGuidance() {
   var usedNodes = new mutable.HashMap[Long, Node]()
   var oldEdges = new mutable.HashMap[(Long, Long), Edge]()
 
-  var facets = Facets.emptyFacets
+  var facets = Facets.empty
   var uiMatrix = Array.ofDim[Int](4, 4)
   var epn = 4
   var edgeAmount = 20
@@ -147,6 +147,10 @@ class GraphGuidance() {
 
       override def getGuidancePreview(nodeId: Long, amount: Int): List[Node] = {
         nodes(nodeId).getGuidancePreviewNodes(amount).toList
+      }
+
+      override def getConnectionsByType(nodeId: Long): List[(String, Long)] = {
+        nodes(nodeId).getConnectionsByType
       }
 
       private def getEdges(node: Node): mutable.MutableList[Edge] = {
