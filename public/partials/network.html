@@ -65,3 +65,31 @@
         <i>loading more information...</i>
     </div>
 </div>
+
+<div id="edge-tooltip" class="tooltip" style="max-width: 300px">
+    <h1>
+        <span style="color:{{categories[sEdge.source.type].color}}">
+            {{sEdge.source.name}} <i class="material-icons">{{categories[sEdge.source.type].img}}</i>
+        </span>
+        –
+        <span style="color:{{categories[sEdge.target.type].color}}">
+            {{sEdge.target.name}} <i class="material-icons">{{categories[sEdge.target.type].img}}</i>
+        </span>
+    </h1>
+    These Entities occur in <span class="tooltipImportantText"> {{sEdge.freq}} </span> documents together.
+    <br>
+    <div ng-show="showFullTooltip.active" class="btn-group-vertical pull-left" data-toggle="buttons">
+        <br>
+        Edges of this type (<i class="material-icons"> {{categories[sEdge.source.type].img}}</i>–<i class="material-icons"> {{categories[sEdge.target.type].img}}</i>) should be
+        <br>
+        <label ng-click="setEdgePrio(sEdge.source.type,sEdge.target.type,elem.number)" ng-repeat="elem in edgePrios" class="btn btn-primary btn-small" style="background-color: {{elem.color}};">
+            <input type="radio" name="options" id="{{elem.id}}" autocomplete="off">
+            <i class="material-icons" style="{{elem.iconstyle}}">{{elem.img}}</i>
+            {{elem.text}}
+        </label>
+    </div>
+    <div ng-show="!showFullTooltip.active">
+        <br>
+        <i>press right mouse button to set weight for this edge type</i>
+    </div>
+</div>

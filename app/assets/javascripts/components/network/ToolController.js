@@ -89,11 +89,36 @@ define([
                 {name:'LOC', img: 'place', val: 1, color: '#8dd3c7', singular: 'Location'},
                 {name:'MISC', img: 'reorder', val: 1, color: '#ffffb3', singular: 'Miscellaneous'}];
 
+            $scope.updateGuidance = function () {
+                if(document.getElementById("settings-button").getAttribute("aria-expanded")){
+                    toolShareService.updateGuidance();
+                }
+            };
 
             var UIgeneralItems = [1,1,1,1];
             // var priorityToColor = ["white","white","#83a2d6","#2759ac"];
 
+            // TODO Refactoring: directives benutzten um die CSS-Properties zu ändern
+
+            function updateToolDisplay(x,y,prio) {
+                x++; //Offset berücksichtigen
+                y++;
+                console.log(x + '.' + y + '.icon');
+                if (prio == 0){
+                    document.getElementById(x + '.' + y + '.icon').style.visibility = "visible";
+                    document.getElementById(y + '.' + x + '.icon').style.visibility = "visible";
+                } else {
+                    document.getElementById(x + '.' + y + '.icon').style.visibility = "hidden";
+                    document.getElementById(y + '.' + x + '.icon').style.visibility = "hidden";
+                }
+                document.getElementById(x + '.' + y).style.backgroundColor = toolShareService.priorityToColor[prio];
+                document.getElementById(y + '.' + x).style.backgroundColor = toolShareService.priorityToColor[prio];
+            };
+            toolShareService.updateToolDisplay = updateToolDisplay;
+
+
             $scope.setUI = function (x,y) {
+                toolShareService.UIitemsChanged = true;
                 if ((x==0 || y==0) && !(x==0 && y==0)){ //Wenn ein Icon angeklickt wurde
                     var prio = (UIgeneralItems[x + y -1] + 1) % 4;
                     UIgeneralItems[x + y -1] = prio;

@@ -126,12 +126,13 @@ div.tooltip {
     text-align: center;
 }
 
+/*
 .tooltip h1 .material-icons{
     font-size: 20px !important;
-}
+}*/
 
 .tooltip .material-icons{
-    vertical-align: bottom;
+    vertical-align: middle;
     font-size: 18px;
 }
 
@@ -169,6 +170,19 @@ div.tooltip {
     color: #FFA836;
 }
 
+#edge-tooltip label{
+    text-align: left !important;
+    border-color: white !important;
+}
+
+#edge-tooltip .btn{
+    border-width: 0px;
+}
+
+#edge-tooltip .btn.active, #edge-tooltip .btn:active{
+    box-shadow: inset 0 5px 8px rgba(0,0,0,.5);
+    /*border-width: 1px;*/
+}
 /* The containers that hold the slider elements */
 .slider-container {
     margin-bottom: 10px;

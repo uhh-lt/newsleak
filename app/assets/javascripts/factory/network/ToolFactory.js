@@ -53,6 +53,10 @@ define([
                         [1, 1, 1, 1],
                         [1, 1, 1, 1]
                     ],
+                    UIitemsChanged: false,
+                    //zur Kommunikation zwischen Toolcontroller und Networkcontroller
+                    updateToolDisplay: function(){},
+                    updateGuidance: function (){},
 
                     freqSortingLeast: false,
                     isViewLoading: function(){return true;},
