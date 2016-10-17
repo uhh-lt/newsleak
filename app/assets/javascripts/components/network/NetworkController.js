@@ -119,10 +119,23 @@ define([
             toolShareService.updateGuidance = function () {
                 if (toolShareService.UIitemsChanged) {
                     toolShareService.UIitemsChanged = false;
-                    getGuidanceNodes(oldFocusNodeId, true);
+                    getGuidanceNodes(oldFocusNodeId, false);
                 }
             };
-            $scope.observer.registerObserverCallback(function (){getGuidanceNodes(oldFocusNodeId,false)});
+            $scope.observer.registerObserverCallback(function (){
+                var history = $scope.observer.getHistory();
+                if (["entity", "metadata", "time", "fulltext"].includes(history[history.length-1].type)){
+                    /*
+                    var disableNode = angular.copy(history).reverse().find(function (item) {
+                        return item.type === "guidance" && item.data.id === oldFocusNodeId;
+                    });
+                    if (disableNode !== undefined) {
+                        history.find(function (item) {
+                            return disableNode.id === item.id
+                        }).active = false;
+                    }*/
+                    getGuidanceNodes(oldFocusNodeId,false);
+                }});
 
 
             $scope.edgePrios =[
@@ -1466,6 +1479,18 @@ define([
                     //calculateNewForceSize();
                     guidanceStepCounter++;
                     oldFocusNodeId= focusNodeId;
+
+                    if (!useOldEdges){
+                        var history = $scope.observer.getHistory();
+                        history.forEach(function (item) {
+                            if (item.type ===  "guidance") {
+                                item.active = false;
+                            }
+                        });
+                    }
+                    $scope.observer.addItem({
+                        type: "guidance",
+                        data: nodes.find(function(node){return focusNodeId == node.id})});
                     start();
                     $scope.isViewLoading = false;
                 });
@@ -1483,6 +1508,9 @@ define([
             };
 
             $scope.expandNode = function(nodeId) {
+                $scope.observer.addItem({
+                    type: "addEdges",
+                    data: nodes.find(function(node){return nodeId == node.id})});
                 nodes = nodes.concat($scope.contextCache[nodeId].data.expand.nodes);
                 edges = edges.concat($scope.contextCache[nodeId].data.expand.edges);
                 delete $scope.contextCache[nodeId].data;

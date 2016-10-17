@@ -50,8 +50,9 @@
 				popover-placement="bottom"
 				popover-trigger="none"
 				popover-is-open="factory.popover.isOpen[{{obj.id}}]">
+			<i ng-if="getIcon(obj.type).materialIcon === undefined" class="glyphicon type-icon glyphicon-{{ getIcon(obj.type).icon }}" ng-class=""></i>
+			<i ng-if="getIcon(obj.type).materialIcon === true" class="material-icons">{{ getIcon(obj.type).icon }}</i>
 
-			<i class="glyphicon type-icon glyphicon-{{ getIcon(obj.type) }}" ng-class=""></i>
 			<i class="glyphicon action-icon glyphicon-{{ getActionIcon(obj.action) }}" ng-class=""></i>
 			<span>{{obj.data.name}}</span>
 		</li>

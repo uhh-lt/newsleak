@@ -91,6 +91,7 @@ define([
 
             $scope.updateGuidance = function () {
                 if(document.getElementById("settings-button").getAttribute("aria-expanded")){
+                    document.getElementById("settings-button").setAttribute("aria-expanded", false);
                     toolShareService.updateGuidance();
                 }
             };

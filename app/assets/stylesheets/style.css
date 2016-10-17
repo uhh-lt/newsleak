@@ -692,6 +692,11 @@ ul#historyList {
     background-color: #2759AC;
 }
 
+#historyList .material-icons {
+    vertical-align: top;
+    font-size: 20px;
+}
+
 /*
     ======================================
     Generic

@@ -38,19 +38,23 @@ define([
             function() {
                 return {
                     icons: {
-                        'entity' : 'filter',
-                        'metadata': 'filter',
-                        'time': 'time',
-                        "expandNode": 'plus',
-                        "collapseNode": 'plus',
-                        "egoNetwork": 'asterisk',
-                        "merge": 'resize-small',
-                        "hide": 'eye-close',
-                        "edit": 'pencil',
-                        "annotate": 'comment',
-                        "fulltext": 'search',
-                        "delete": 'remove',
-                        "openDoc": 'book'
+                        'entity' : {icon: 'filter'},
+                        'metadata': {icon: 'filter'},
+                        'time': {icon: 'time'},
+                        "expandNode": {icon: 'plus'},
+                        "collapseNode": {icon: 'plus'},
+                        "egoNetwork": {icon: 'asterisk'},
+                        "merge": {icon: 'resize-small'},
+                        "hide": {icon: 'eye-close'},
+                        "edit": {icon: 'pencil'},
+                        "annotate": {icon: 'comment'},
+                        "fulltext": {icon: 'search'},
+                        "delete": {icon: 'remove'},
+                        "openDoc": {icon: 'book'},
+                        "guidance": {icon: 'adjust', materialIcon: true},
+                        "addEdges": {icon: 'add', materialIcon: true}
+
+
                     },
                     typeDescriptions: {
                       'entity': 'Entity Filter',

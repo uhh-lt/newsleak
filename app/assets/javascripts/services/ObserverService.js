@@ -33,7 +33,7 @@ define([
             //all item structured by type
             var items = {};
             //types of tracked items
-            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset", "delete", "openDoc"];
+            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset", "delete", "openDoc", "guidance", "addEdges"];
             var metadataTypes = [];
             var entityTypes = [];
             var histogramLoD = [];
@@ -112,8 +112,6 @@ define([
                 },
                 
                 addItem: function (item) {
-
-
                     //looking for already existing items
                     var  isDup =false;
                     var action = "added";
@@ -149,6 +147,16 @@ define([
                         case types[12]:
                             action = "other";
                             break;
+                        case types[13]: //guidance
+                            action = "other";
+                            history.forEach( function (item) {
+                                if (item.type ===  "addEdges"){
+                                item.active = false;
+                            }
+                            });
+                            break;
+                        case types[14]://addEdges
+                            action = "other";
                     }
 
                     if(isDup) return  -1;
@@ -187,6 +195,7 @@ define([
 
                     this.notifyObservers();
                     console.log("added to history: " + item.data.name);
+                    console.log(history);
                     return (lastAdded);
                 },
 
@@ -273,6 +282,9 @@ define([
                   });
                 },
 
+                getHistory: function () {
+                    return history;
+                },
                 getTypes: function() {
                     return types;
                 },
