@@ -74,6 +74,7 @@ define([
             $scope.observer.subscribeItems($scope.observer_subscribe_metadata,"metadata");
             $scope.observer.subscribeItems($scope.observer_subscribe_fulltext,"fulltext");
 
+
             const GRAVITATION_HEIGHT_SUBTRACT_VALUE = 126;
 
             $scope.maxNodeFreq = 251287;
@@ -114,7 +115,6 @@ define([
             var selectedEdges = new Array();
             var selectionColor = '#FFB500';
 
-            var loadingNodes = false;
             var oldFocusNodeId = 1232028; //speichert die Id des Knoten der zuletzt Fokus der Guidance war
             toolShareService.updateGuidance = function () {
                 if (toolShareService.UIitemsChanged) {
@@ -122,6 +122,8 @@ define([
                     getGuidanceNodes(oldFocusNodeId, true);
                 }
             };
+            $scope.observer.registerObserverCallback(function (){getGuidanceNodes(oldFocusNodeId,false)});
+
 
             $scope.edgePrios =[
                 {class: "btn", color: "#FF1111", id:"eo0", number:0, img:"not_interested", text:"ignored", iconstyle:""},
@@ -136,7 +138,6 @@ define([
                     toolShareService.updateToolDisplay($scope.categories[sourceType].number, $scope.categories[targetType].number, state);
                     getGuidanceNodes(oldFocusNodeId, true);
                 }
-
             };
 
             var tooltip = d3.select("body").append("div").attr("class", "tooltip");
@@ -284,7 +285,6 @@ define([
                 fireEvent_updateDocs();
             }
 
-
             /**
              * This function unselects all edges.
              */
@@ -395,7 +395,6 @@ define([
                         text: text
                     }
                 });
-				//alert("Annotation added");
             }
 
 
@@ -512,7 +511,6 @@ define([
                 edgepaths = svg.append('g').selectAll(".edgepath");
                 edgelabels = svg.append('g').selectAll(".edgelabel");
                 node = svg.append('g').selectAll('.node');
-
             }
 
             /**
@@ -757,30 +755,9 @@ define([
                         .style('text-align', 'center')
                         .style('font-size', '10px');
 
-
-                    /*buttonlist.html(function(d)
-                        {
-                        	return '<button type="button" id="nodebutton_' + d.id + '" class="btn btn-xs btn-default neighbor-button" ng-show="!isViewLoading"><i id="nodebuttonicon_' + d.id + '" class="glyphicon glyphicon-plus"></i></button>'
-                        })
-                        .on('click', function(d){
-                        	if(d.expanded)
-                        	{
-                        		collapse(d);
-                        	}
-                        	else
-                        	{
-                            	expand(d);
-                            }
-                        });*/
-
                     console.log("removing nodes:");
                     console.log(node.exit().data());
-                    /*node.exit().data().map(function (n) {return n.id}).forEach(function (id) {
-                        var element = document.getElementById("tt-"+id);
-                        if (element !== null){
-                            element.parentNode.removeChild(element);
-                        }
-                    });*/
+
                     node.exit().remove();
 
                     addTooltip(node, link);  // add the tooltips to the nodes and links
@@ -1412,7 +1389,7 @@ define([
                     fulltext.push(item.data.name);
                 });
 
-                    var uiStr= "";
+                var uiStr= "";
                 for (var i=0;i<toolShareService.UIitems.length;i++){
                     uiStr+=toolShareService.UIitems[i].toString()+';';
                 }
