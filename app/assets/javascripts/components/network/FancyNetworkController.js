@@ -190,8 +190,6 @@ define([
 
             $scope.$watch('edgeImportance', handleEdgeSlider);
 
-
-
             $scope.reloadGraph = function() {
                 var filters = currentFilter();
 
@@ -426,6 +424,7 @@ define([
                     removeNodes(duplicates, self.nodesDataset, self.edgesDataset);
                     // Remove duplicates from the background collection
                     removeNodes(duplicates, self.nodes, self.edges);
+                    playRoutes.controllers.NetworkController.mergeEntitiesById(response, duplicates).get().then(function(response) { /* Error handling */ });
                 }, function() { /* cancel click */ });
             }
 

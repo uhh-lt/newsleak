@@ -160,13 +160,14 @@ class NetworkController @Inject extends Controller {
   /**
    * merge all entities into one entity represented by the focalId
    *
-   * @param focalid the entity to merge into
-   * @param ids     the ids of the entities which are duplicates of
+   * @param focalId the entity to merge into
+   * @param duplicates     the ids of the entities which are duplicates of
    *                the focal entity
    * @return if the merging succeeded
    */
-  def mergeEntitiesById(focalid: Int, ids: List[Long]) = Action { implicit request =>
-    Ok(Json.obj("result" -> Entity.fromDBName(currentDataset).merge(focalid, ids))).as("application/json")
+  def mergeEntitiesById(focalId: Int, duplicates: List[Long]) = Action { implicit request =>
+    Entity.fromDBName(currentDataset).merge(focalId, duplicates)
+    Ok("success").as("Text")
   }
 
   /**
