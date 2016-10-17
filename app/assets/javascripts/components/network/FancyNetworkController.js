@@ -100,6 +100,11 @@ define([
 
             self.physicOptions = physicOptions;
 
+            self.networkButtons = [
+                { name: 'Fullscreen', template: '<div class="vis-button vis-fullscreen-button" ng-click="FancyNetworkController.toggleFullscreen()"></div>' },
+                { name: 'Legend', template: '<div class="vis-button vis-legend-button" ng-click="showLegend = !showLegend"></div>' }
+            ];
+
             // Context menu for single node selection
             self.singleNodeMenu = [
                 {
@@ -185,6 +190,8 @@ define([
 
             $scope.$watch('edgeImportance', handleEdgeSlider);
 
+
+
             $scope.reloadGraph = function() {
                 var filters = currentFilter();
 
@@ -253,6 +260,18 @@ define([
                 $scope.reloadGraph();
             });
 
+            function addNetworkButtons() {
+                self.networkButtons.forEach(function(b) {
+                    addNetworkButtonFromTemplate(b.template);
+                });
+            }
+
+            function addNetworkButtonFromTemplate(template) {
+                var panel = angular.element(document.getElementsByClassName('vis-navigation')[0]);
+                var button = $compile(template)($scope);
+                panel.append(button);
+            }
+
             function applyPhysicsOptions(options) {
                 console.log('Physics simulation turned on');
                 $scope.graphOptions['physics'] = options;
@@ -287,21 +306,6 @@ define([
                     var fixedNodes = previousNodes.get(sec).map(function(n) { return _.extend(n, { fixed: { x: true, y: true } })});
                     self.nodesDataset.update(fixedNodes);
                 }
-            }
-
-            function addFullscreenButton() {
-                var panel = angular.element(document.getElementsByClassName('vis-navigation')[0]);
-                var buttonTemplate = '<div class="vis-button vis-fullscreen-button" ng-click="FancyNetworkController.toggleFullscreen()"></div>';
-                var button = $compile(buttonTemplate)($scope);
-                panel.append(button);
-            }
-
-            function addLegendButton() {
-                var panel = angular.element(document.getElementsByClassName('vis-navigation')[0]);
-                // Show or hide network legend
-                var buttonTemplate = '<div class="vis-button vis-legend-button" ng-click="showLegend = !showLegend"></div>';
-                var button = $compile(buttonTemplate)($scope);
-                panel.append(button);
             }
 
             // ----------------------------------------------------------------------------------
@@ -470,8 +474,7 @@ define([
 
             function onNetworkLoad(network) {
                 self.network = network;
-                addFullscreenButton();
-                addLegendButton();
+                addNetworkButtons();
             }
 
             function stabilizationStart() {
