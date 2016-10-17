@@ -100,7 +100,6 @@ define([
 
             self.physicOptions = physicOptions;
 
-
             // Context menu for single node selection
             self.singleNodeMenu = [
                 {
@@ -311,23 +310,15 @@ define([
             // ----------------------------------------------------------------------------------
 
             function hideNode(nodeId) {
-                // Hide given node
-                self.nodesDataset.remove(nodeId);
-                self.nodes.update({id: nodeId, hidden: true});
-
-                var adjacentEdges = self.edges.get({
-                    filter: function(edge) {
-                        return (edge.to == nodeId || edge.from == nodeId)
-                    }
-                }).map(function(edge) { return _.extend(edge, { hidden: true }); });
-
-                // Hide adjacent edges
-                self.edges.update(adjacentEdges);
-                self.edgesDataset.remove(adjacentEdges);
-
-                // Update new edge max value from non hidden edges
-                var max = new VisDataSet(self.edges.get({ filter: function(edge) { return !edge.hidden; }})).max("value").value;
-                $scope.maxEdgeImportance = max;
+                removeNodes([nodeId], self.nodesDataset, self.edgesDataset);
+                // Hide given node in background collection
+                self.nodes.update({ id: nodeId, hidden: true });
+                // Retrieve adjacent edges from the background collection
+                var adjacentEdges = getAdjacentEdges([nodeId], self.edges);
+                // Hide adjacent edges in background collection
+                var hiddenEdges = adjacentEdges.map(function(edge) { return _.extend(edge, { hidden: true }); });
+                self.edges.update(hiddenEdges);
+                updateImportanceSlider();
             }
 
             function blacklistNode(nodeId) {
@@ -419,23 +410,58 @@ define([
 
                             $scope.entities = entities;
 
-                            $scope.apply = function () { $mdDialog.hide($scope.target); };
+                            $scope.apply = function () { $mdDialog.hide(parseInt($scope.target)); };
                             $scope.closeClick = function() { $mdDialog.cancel(); };
                         }],
                     locals: { entities: nodes },
                     autoWrap: false,
                     parent: $scope.FancyNetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
                 }).then(function(response) {
-                    var index = nodeIds.indexOf(response);
-                    // Remove target node from the duplicate list
-                    nodeIds.splice(index, 1);
-                    self.nodesDataset.remove(nodeIds);
-
-                    // Don't know why _.without does not remove the id
-                    //self.nodesDataset.remove(_.without(nodeIds, response.targetId));
+                    var duplicates = _.without(nodeIds, response);
+                    // Remove duplicates from the current network view
+                    removeNodes(duplicates, self.nodesDataset, self.edgesDataset);
+                    // Remove duplicates from the background collection
+                    removeNodes(duplicates, self.nodes, self.edges);
                 }, function() { /* cancel click */ });
             }
 
+            /**
+             * Adjust the maximum of the edge importance slider to the current maximum of the background collection.
+             */
+            function updateImportanceSlider() {
+                // Update new edge max value from non hidden edges
+                var max = new VisDataSet(self.edges.get({ filter: function(edge) { return !edge.hidden; }})).max("value").value;
+                $scope.maxEdgeImportance = max;
+            }
+
+            // ----------------------------------------------------------------------------------
+            // Network Util Helper
+            //
+            // ----------------------------------------------------------------------------------
+
+
+            /**
+             * Removes nodes from the given data collections including their adjacent edges
+             * and returns the removed node and edge ids.
+             */
+            function removeNodes(nodeIds, nodeDataset, edgeDataset) {
+                var removedNodeIds = nodeDataset.remove(nodeIds);
+                var adjacentEdges = getAdjacentEdges(nodeIds, edgeDataset);
+                edgeDataset.remove(adjacentEdges);
+                // Once the network changes the slider needs to be updated
+                updateImportanceSlider();
+                return { nodes: removedNodeIds, edges: adjacentEdges.map(function(e) { return e.id; }) };
+            }
+
+
+            function getAdjacentEdges(nodeIds, edgeDataset) {
+                var adjacentEdges = edgeDataset.get({
+                    filter: function(edge) {
+                        return (_.contains(nodeIds, edge.to) || _.contains(nodeIds, edge.from))
+                    }
+                });
+                return adjacentEdges;
+            }
 
             // ----------------------------------------------------------------------------------
             // Network Event Callbacks
