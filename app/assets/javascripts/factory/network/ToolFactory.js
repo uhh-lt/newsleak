@@ -74,7 +74,6 @@ define([
                     sliderEdgeAmount: function () {return 20},
                     sliderEdgesPerNode: function () {return 4},
 
-                    updateGraph: function(){},
                     getSelectedNodes: function(){return []},
                     getSelectedElementsText: function(){return ""}
                 };

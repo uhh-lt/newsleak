@@ -15,7 +15,7 @@
   ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<div class="container-fluid" ng-if="!toolShareService.isViewLoading()">
+<div class="container-fluid"> <!--ng-if="!toolShareService.isViewLoading()">-->
   <div class="row" >
     <div id="demo" class="collapse col-md-12" style="margin-bottom: 0px; margin-top: 5px;">
       <!--<div class="slider-container">
@@ -75,12 +75,13 @@
     </div>
 
     <!-- Show sliders -->
-    <div class="col-md-10">
+    <div class="col-md-10" style="height: 34px">
       <div class="btn-group">
         <div class="btn-group btn-block-dropdown">
           <button
                   type="button"
                   class="btn btn-default dropdown-toggle"
+                  ng-disabled="toolShareService.isViewLoading()"
                   data-toggle="dropdown"
                   aria-hashpopup="true"
                   aria-expanded="false"
@@ -118,6 +119,7 @@
           <button
                   type="button"
                   class="btn btn-default dropdown-toggle"
+                  ng-disabled="toolShareService.isViewLoading()"
                   data-toggle="dropdown"
                   aria-hashpopup="true"
                   aria-expanded="false"
@@ -141,7 +143,7 @@
           </div>
         </div>
         <div class="btn-group">
-          <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#demo" ng-click="updateGuidance()" id="settings-button">Settings</button>
+          <button type="button" class="btn btn-info" ng-disabled="toolShareService.isViewLoading()" data-toggle="collapse" data-target="#demo" ng-click="updateGuidance()" id="settings-button">Settings</button>
         </div>
 
         <div class="btn-group">

@@ -16,12 +16,19 @@
   -->
 
 <!-- Loading Image -->
+<!--
 <div class="alert alert-info loading-network-image" ng-show="isViewLoading">
     <img src="./assets/images/loading2.gif"/>
 </div>
+-->
 
 <!-- Show Graph if available -->
-<div id="network-graph" ng-show="!isViewLoading"></div>
+<div id="network-graph">
+    <div class="guidance-load-overlay alert alert-warning" ng-show="isViewLoading">
+        <i class="fa fa-spinner fa-spin fa-2x fa-fw" style="vertical-align: middle"></i>
+        Loading network...
+    </div>
+</div>
 
 <div id="node-tooltip" class="tooltip" style="opacity: 0; pointer-events: none">
     <h1 style="color:{{categories[sNode.type].color}}">

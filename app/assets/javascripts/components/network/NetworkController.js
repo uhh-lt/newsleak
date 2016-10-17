@@ -156,11 +156,8 @@ define([
 
             toolShareService.deleteListener.push(remove);
 
-            toolShareService.getEgoNetworkListener.push(getEgoNetwork);
-
             toolShareService.hideListener.push(hideSelected);
 
-            toolShareService.updateGraph = getEntities;
             toolShareService.isViewLoading = function(){return $scope.isViewLoading};
             toolShareService.enableOrDisableButtons = enableOrDisableButtons;
 
@@ -354,21 +351,6 @@ define([
                 fireEvent_updateDocs();
             }
 
-            /**
-             * get the nodes associated with this specific name
-             *
-             * @param name
-             *		the name to search for
-             */
-            function getNodesByName(name)
-            {
-            	return nodes.filter(
-            	function(element, index, array)
-            	{
-            		return element.name == name;
-            	});
-            }
-
             function getNodeById(id)
             {
             	return nodes.filter(
@@ -378,104 +360,6 @@ define([
             		}
             	)[0];
             }
-
-			/**
-			 *	get all ego networks associated with this specific
-			 *  node
-			 *
-			 *	@param name
-			 *		the name of which to search for search terms
-			 *	@param callback
-			 *		callback called when all ego networks are ready
-			 */
-            function getEgoNetworkByName(name, callback)
-            {
-               	playRoutes.controllers.NetworkController.getIdsByName(name).get().then(function(response)
-               	{
-               		response.data.ids.forEach(function(id){getEgoNetworkById(id, callback);});
-               	});
-            }
-
-
-            /**
-             * paints a circle lowered with the specific size
-             *
-             * @param node
-             * 		the node to reduce
-             * @param value
-             *		the value from which so reduce
-             */
-            function setBorderValue(node, value)
-            {
-                d3
-                    .select('#nodeborder_' + node.id)
-                    .attr('d', d3.svg.arc()
-                    .innerRadius(radius(node.docCount))
-                    .outerRadius(radius(node.docCount)+4)
-                    .startAngle(0)
-                    .endAngle(value*2*Math.PI));
-            }
-
-            function updateNode(node)
-            {
-                d3
-                    .select('#nodecircle_' + node.id)
-                    .transition()
-                    .duration(3000)
-                    .attr('r', function (d) { return radius(d.docCount) })
-
-                d3
-                    .select('#nodebuttons_' + node.id)
-                    .attr('y', function(d){return radius(d.docCount) - 4;})
-
-                d3
-                    .select('#nodebuttonannotate_' + node.id)
-                    .attr('x', function(d){return radius(d.docCount)-2;});
-
-                d3
-                    .select('#nodetext_' + node.id)
-                    .text(function (d){
-                        var r = radius(d.docCount);
-
-                        if(!(r/3 >= d.name.length - 1))
-                        {
-                            //console.log(d3.select(this).style('font-size').split("px")[0])
-                            d3.select(this).attr('y', (-r-d3.select(this).style('font-size').split("px")[0]/2) + 'px')
-                        }
-
-                        /*if(r/3 >= d.name.length - 1)  // If the text fits inside the node.
-                        {
-                        }
-                        else  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
-                        {
-                            d3.select(this).attr('dy', r)
-                        }*/
-                            //return d.name.substring(0, r/3 - 3) + "...";
-
-                        return d.name;
-                    })
-                    .style('font-size', function(d){
-                        var r = radius(d.docCount);
-                        var textLength;
-                        var size;
-                        if(r/3 >= d.name.length - 1){  // If the text fits inside the node.
-                            textLength = d.name.length;
-                            // If the text contains less than 3 characters: act as if
-                            // there where 3 characters so that the font doesn't become to big.
-                            if(textLength < 3)
-                                textLength = 3;
-                            size = r/3;
-                        }
-                        else{  // If the text doesn't fit inside the node the 3 characters "..." are added at the end.
-                            textLength = d.name.substring(0, r/3 - 3).length;
-                            size = r/3 - 3;
-                        }
-                        size *= 7 / textLength;  // This seems to work to get a good text size.
-                        size = Math.max(10, Math.round(size));  // Min. text size = 10px
-                        return size+'px';
-                    });
-            }
-
 
 			/**
 			 *	add an annotation to the specified Node
@@ -610,7 +494,7 @@ define([
                         // On mousedown store the current time in milliseconds
                         time = moment();
 
-                        d3.select("#node-tooltip").transition().duration(300).style("opacity", 0);
+                        var tooltip = d3.select("#node-tooltip").transition().duration(300).style("opacity", 0);
                         tooltip.style("pointer-events","none");
 
                         $scope.showFullTooltip =  {active: false};
@@ -628,118 +512,6 @@ define([
                 edgepaths = svg.append('g').selectAll(".edgepath");
                 edgelabels = svg.append('g').selectAll(".edgelabel");
                 node = svg.append('g').selectAll('.node');
-
-            }
-
-
-            /**
-             * gets new graph data using slider values
-             * and renders the graph
-             */
-            function getGraph(){
-                $scope.isViewLoading    = true;
-                var sliderValue         = [];
-                sliderValue.push(parseInt(toolShareService.sliderLocationsValue()));
-                sliderValue.push(parseInt(toolShareService.sliderOrganizationsValue()));
-                sliderValue.push(parseInt(toolShareService.sliderPersonsValue()));
-                sliderValue.push(parseInt(toolShareService.sliderMiscellaneousValue()));
-                var sliderEdgeMinFreq   = toolShareService.sliderEdgeMinFreq();
-                var sliderEdgeMaxFreq   = toolShareService.sliderEdgeMaxFreq();
-                var leastOrMostFrequent = Number(toolShareService.freqSortingLeast);
-
-                loadingNodes = true;
-                playRoutes.controllers.NetworkController.getGraphData(leastOrMostFrequent, sliderValue, sliderEdgeMinFreq, sliderEdgeMaxFreq).get().then(function(response) {
-                //playRoutes.controllers.EntityController.getEntities(nodes., sliderEdgeMinFreq, sliderEdgeMaxFreq).get().then(function(response) {
-                    var data = response.data;
-
-                    prepareData(data);
-
-                    //calculateNewForceSize();
-
-                    svg.selectAll("*").remove();
-                    createSVG();  // Reset svg.
-                    nodes.length = 0;
-                    edges.length = 0;
-                    for (var i = data.nodes.length - 1; i >= 0; i--) {
-                        nodes.push(data.nodes[i]);
-                    };
-                    for (var i = data.links.length - 1; i >= 0; i--) {
-                        edges.push(data.links[i]);
-                    };
-
-                    start();
-                    loadingNodes = false;
-                });
-            }
-
-            /**
-             *	expands the node to every
-             *
-             *	@param the node to expand
-             */
-            function expand(node)
-            {
-            	getEgoNetworkById(node.id, function(){
-            		d3.select('#nodebuttonicon_' + node.id).attr('class', 'glyphicon glyphicon-minus');
-
-            		node.expanded = true;
-            		//console.log(nodes);
-            	});
-            }
-
-            function collapse(node)
-            {
-
-            	edges.forEach(
-            		function(v,i,a)
-            		{
-						if
-						(
-							(v.target.collapseParent.indexOf(node.id) != -1 && v.target.collapseParent.length == 1) ||
-							(v.source.collapseParent.indexOf(node.id) != -1 && v.source.collapseParent.length == 1)
-						)
-						{
-							d3.select("#edgepath_" + v.id).remove();
-                            d3.select("#edgeline_" + v.id).remove();
-                            d3.select("#edgelabel_" + v.id).remove();
-						}
-            		}
-            	);
-
-				//console.log(nodes);
-				var deletenodes = [];
-            	nodes.forEach(
-            		function(v,i,a)
-            		{
-            			if(v.id == node.id)
-            			{
-            				return;
-            			}
-
-            			//console.log(v);
-            			if(v.collapseParent.length > 1 && v.collapseParent.indexOf(node.id) != -1)
-            			{
-            				v.collapseParent.splice(v.collapseParent.indexOf(node.id), 1)
-            			}
-            			else if(v.collapseParent.length == 1 && v.collapseParent.indexOf(node.id) != -1)
-            			{
-            				deletenodes.push(v.id);
-            				d3.select('#node_' + v.id).remove();
-            			}
-            		}
-            	);
-
-            	nodes = nodes.filter(
-            		function(e)
-            		{
-            			return deletenodes.indexOf(e.id) == -1;
-            		}
-            	)
-            	//console.log(nodes);
-
-            	d3.select('#nodebuttonicon_' + node.id).attr('class', 'glyphicon glyphicon-plus');
-            	node.expanded = false;
-
 
             }
 
@@ -1024,15 +796,15 @@ define([
                     // Set the opacity of all nodes and edges to the normal
                     // values (because the new ones are still invisible).
                     // values (because the new ones are still invisible).
-                    // The tansition starts after 2 seconds and takes 3 seconds.
+                    // The tansition starts after 1.5 seconds and takes 1.5 seconds.
                     setTimeout(function(){
                         d3.selectAll('circle').each(function(d){
-                            d3.select(this).transition().duration(3000).style('opacity', 1);
+                            d3.select(this).transition().duration(1500).style('opacity', 1);
                         });
                         link.each(function(d){
-                            d3.select(this).transition().duration(3000).style('opacity', .8);
+                            d3.select(this).transition().duration(1500).style('opacity', .8);
                         });
-                    }, 2000);
+                    }, 1500);
 
 					//if we have a callback, we execute it
 					if(callback != null)
@@ -1110,7 +882,6 @@ define([
                         $scope.$apply();
                     }
 
-
                 });
                 link.on("mouseout", function(d){
                     hideTooltip("#edge-tooltip");
@@ -1184,46 +955,6 @@ define([
                             $('#MergeButton').attr('disabled', 'disabled');
                     }
                 }
-            }
-
-
-            /**
-             * this function prepares the data to be read by d3
-             * this is done here so the data transmitted by the backend stays relatively small
-             * @param  data a data object consisiting of nodes and links
-             */
-            function prepareData(data){
-                // convert each node from array to object
-                var nodes = [];
-                data.nodes.forEach(function(node) {
-                    nodes.push({
-                        id: node[0],
-                        name: node[1],
-                        freq: node[2],
-                        type: node[3],
-                        size: 2,
-                        collapseParent: [],
-                        expanded: false
-                    });
-                });
-                data.nodes = nodes;
-
-
-                // convert each link from array to object
-                var links = [];
-                data.links.forEach(function(link) {
-                    var sourceNode = data.nodes.filter(function(n) { return n.id === link[1]; })[0];
-                    var targetNode = data.nodes.filter(function(n) { return n.id === link[2]; })[0];
-
-                    links.push({
-                        id: link[0],
-                        source: sourceNode,
-                        target: targetNode,
-                        freq: link[3],
-                    });
-                });
-                data.links = links;
-
             }
 
             $scope.loaded = reload;
@@ -1315,210 +1046,6 @@ define([
                 }).addClass('popover-legend');
             }
 
-
-            /**
-             *  Adds more neighbors of the node with the id 'id'.
-             */
-            function getMoreNeighbors(id){
-                $scope.isViewLoading = true;
-
-                // Get the ids of the nodes that are already in the ego network.
-                var existingNodes = [];
-                edges.forEach(function(edge){
-                    if(edge.source.id == id)
-                        existingNodes.push(edge.target.id);
-                    if(edge.target.id == id)
-                        existingNodes.push(edge.source.id);
-                });
-
-                var leastOrMostFrequent = Number($scope.freqSorting.least);
-                // Get 4 neighbors (1 of each type).
-                loadingNodes = true;
-                playRoutes.controllers.NetworkController.getEgoNetworkData(leastOrMostFrequent, id, [1, 1, 1, 1], existingNodes).get().then(function(response) {
-                    var data = response.data;
-
-                    // remove already existing nodes
-                    data.nodes = data.nodes.filter(function(n){
-                        var arr = nodes.filter(function(m){
-                            return m.id == n[0];
-                        });
-                        return (arr.length == 0);
-                    });
-
-                    // remove already existing edges
-                    data.links = data.links.filter(function(n){
-                        var arr = edges.filter(function(m){
-                            return m.id == n[0];
-                        });
-                        return (arr.length == 0);
-                    });
-
-
-                    force.size([
-                        parseInt($('#network-maps-container').css('width')),
-                        // -164 because we have to exclude the tab bar and the sliders
-                        parseInt($('#network-maps-container').css('height')) - GRAVITATION_HEIGHT_SUBTRACT_VALUE
-                    ]);
-
-                    // update node array
-                    data.nodes.forEach(function(node) {
-                        nodes.push({
-                            id: node[0],
-                            name: node[1],
-                            freq: node[2],
-                            type: node[3],
-                            size: 2,
-                            expanded: false
-                        });
-                    });
-
-                    // update edge array
-                    data.links.forEach(function(link) {
-                        var sourceNode = nodes.filter(function(n) { return n.id === link[1]; })[0];
-                        var targetNode = nodes.filter(function(n) { return n.id === link[2]; })[0];
-
-                        edges.push({
-                            id: link[0],
-                            source: sourceNode,
-                            target: targetNode,
-                            freq: link[3],
-                        });
-                    });
-
-
-
-                    start();
-
-                    loadingNodes = false;
-                });
-            }
-
-
-
-            function getEgoNetworkById(id, callback)
-            {
-            	var leastOrMostFrequent = Number($scope.freqSorting.least);
-                // Get 8 neighbors (2 of each type).
-                loadingNodes = true;
-                playRoutes.controllers.NetworkController.getEgoNetworkData(leastOrMostFrequent, id, [2, 2, 2, 2], []).get().then(function(response) {
-                var data = response.data;
-
-                // remove already existing nodes
-                data.nodes = data.nodes.filter(function(n){
-                	var arr = nodes.filter(function(m){
-                       	return m.id == n[0];
-                    });
-                    return (arr.length == 0);
-                });
-                //data.nodes = data.nodes.filter(function(n){return n.id != id;})
-
-                force.size([
-                 	parseInt($('#network-maps-container').css('width')),
-                    // -164 because we have to exclude the tab bar and the sliders
-                    parseInt($('#network-maps-container').css('height')) - GRAVITATION_HEIGHT_SUBTRACT_VALUE
-                ]);
-
-                // update node array
-                data.nodes.forEach(function(node)
-                {
-                	//console.log(node);
-					nodes.push({
-						id: node[0],
-						name: node[1],
-						freq: node[2],
-						type: node[3],
-						size: 2,
-						collapseParent: [id],
-						expanded: false
-					});
-
-				});
-
-				// update edge array
-				//edges.length = 0;
-				data.links.forEach(function(link) {
-					var sourceNode = nodes.filter(function(n) { return n.id === link[1]; })[0];
-					var targetNode = nodes.filter(function(n) { return n.id === link[2]; })[0];
-
-						edges.push({
-							id: link[0],
-							source: sourceNode,
-							target: targetNode,
-							freq: link[3],
-						});
-				});
-
-				start(callback);
-				loadingNodes = false;
-            	});
-        	}
-
-
-            /**
-             * Loads the ego network for the selected node.
-             */
-            function getEgoNetwork(){
-                if(selectedNodes.length != 0){  // If a node is selected.
-                    // Get the id of the newest selected node.
-                    var id = selectedNodes[selectedNodes.length-1].id;
-
-                    $scope.isViewLoading = true;
-
-                    var leastOrMostFrequent = Number($scope.freqSorting.least);
-                    // Get 8 neighbors (2 of each type).
-                    loadingNodes = true
-                    playRoutes.controllers.NetworkController.getEgoNetworkData(leastOrMostFrequent, id, [2, 2, 2, 2], []).get().then(function(response) {
-                        var data = response.data;
-
-                        // remove already existing nodes
-                        data.nodes = data.nodes.filter(function(n){
-                            var arr = nodes.filter(function(m){
-                                return m.id == n[0];
-                            });
-                            return (arr.length == 0);
-                        });
-
-                        force.size([
-                            parseInt($('#network-maps-container').css('width')),
-                            // -164 because we have to exclude the tab bar and the sliders
-                            parseInt($('#network-maps-container').css('height')) - GRAVITATION_HEIGHT_SUBTRACT_VALUE
-                        ]);
-
-                        // update node array
-                        data.nodes.forEach(function(node) {
-                            nodes.push({
-                                id: node[0],
-                                name: node[1],
-                                freq: node[2],
-                                type: node[3],
-                                size: 2,
-                                collapseParent: [],
-                                expanded: false
-                            });
-                        });
-
-                        // update edge array
-                        edges.length = 0;
-                        data.links.forEach(function(link) {
-                            var sourceNode = nodes.filter(function(n) { return n.id === link[1]; })[0];
-                            var targetNode = nodes.filter(function(n) { return n.id === link[2]; })[0];
-
-                            edges.push({
-                                id: link[0],
-                                source: sourceNode,
-                                target: targetNode,
-                                freq: link[3],
-                            });
-                        });
-
-                        start();
-
-                        loadingNodes = false;
-                    });
-                }
-            }
-
-
             /**
              * Hide the currently selected nodes/edges from the graph. The data
              * will still be in the database.
@@ -1562,15 +1089,6 @@ define([
                 enableOrDisableButtons();
                 start();
             }
-
-
-            /**
-             * This functions loads a new graph with the opposite frequency ordering.
-             */
-            $scope.toggleFreqSorting = function () {
-                getGraph();
-            };
-
 
             /**
              * Hide the currently selected nodes/edges from the graph. The data
@@ -1882,171 +1400,8 @@ define([
                 )
             }
 
-            /*
-
-             //TODO: examples of fetching documents with and without facet
-             playRoutes.controllers.DocumentController.getDocs('Clinton Snowden',[{'key':'Tags','data':['PTER','PREF']},{'key':'Classification','data':['CONFIDENTIAL']}]).get().then(function(x) {
-             //    console.log(x.data);
-             });
-             playRoutes.controllers.DocumentController.getDocs('',[{'key':'dummy','data': []}]).get().then(function(x) {
-             console.log(x.data);
-             });
-             */
-            /**
-             * load entities for current filtering (called on filter update)
-             */
-            $scope.getEntities = getEntities;
-
-            function getEntities() {
-                console.log("reload entities");
-                getGuidanceNodes(135603,false)//Darmstadt!
-                /*
-                var entities = [];
-                angular.forEach($scope.entityFilters, function(item) {
-                    entities.push(item.data.id);
-                });
-                var facets = $scope.observer.getFacets();
-
-                while(loadingNodes)
-                {
-                }
-                var filters = [];
-                angular.forEach(nodes, function(node) {
-                    filters.push(node.id);
-                });
-
-                var size = 20;
-                var fulltext = [];
-                angular.forEach($scope.fulltextFilters, function(item) {
-                    fulltext.push(item.data.name);
-                });
-                var entityType = "";
-
-                if(force != undefined)
-                {
-                    force.nodes().forEach(function(d){d.fixed = true;});
-                }
-
-                playRoutes.controllers.EntityController.getEntities(fulltext,facets,entities,$scope.observer.getTimeRange(),size,entityType).get().then(function(response) {
-
-                    //to prevent invisible selections
-                    unselectNodes();
-                    unselectEdges();
-
-                    var tmpnodes = nodes;
-
-                    //delete all nodes and edges
-                    //nodes.length = 0;
-
-                    response.data.forEach(
-                        function(v, index)
-                        {
-                            var enode = tmpnodes.find(function(node){return node.id === v.id;});
-                            if(enode != undefined)
-                            {
-                                enode.docCount = v.docCount;
-                                updateNode(enode);
-                            }
-                            else
-                            {
-                                nodes.push({
-                                    id: v.id,
-                                    name: v.name,
-                                    freq: v.freq,
-                                    type: v.type,
-                                    docCount: v.docCount,
-                                    size: 2,
-                                });
-                            }
-                        }
-                    );
-
-                    var nodesToDelete = []
-                    nodes.forEach(
-                        function(node, index)
-                        {
-                            if(response.data.find(function(v){return v.id === node.id}) == undefined)
-                            {
-                                nodesToDelete.push(node.id);
-                            }
-                        }
-                    )
-
-                    for(var i=0; i<nodesToDelete.length; i++)
-                    {
-                        nodes.splice(nodes.findIndex(function(v){return nodesToDelete[i] === v.id}), 1);
-                    }
-
-                    //delete all nodes not used
-                    //nodes.filter(function(v){return response.data.find(function(node){return node.id === v.id}) != undefined;})
-
-                    start();
-
-                    $scope.entityFilters.forEach(
-                                            function(v)
-                                            {
-                                                selectNode(v.data)
-                                            }
-                    )
-
-                    playRoutes.controllers.NetworkController.getRelations(response.data.map(function(v){return v.id}), toolShareService.sliderEdgeMinFreq(), toolShareService.sliderEdgeMaxFreq()).get().then(
-                        function(response)
-                        {
-                            edges.length = 0;
-                            response.data.forEach(
-                                function(v)
-                                {
-                                    var sourceNode = nodes.find(function(node){return v[1] == node.id});
-                                    var targetNode = nodes.find(function(node){return v[2] == node.id});
-                                    if(sourceNode == undefined || targetNode == undefined)
-                                    {
-                                        return;
-                                    }
-                                    edges.push({id: v[0], source: sourceNode, target: targetNode, freq: v[3]});
-                                }
-                            )
-
-                            //force.links(edges);
-                            //calculateNewForceSize();
-                            start();
-                            //force.stop();
-                            $timeout
-                            (
-                                function(){force.nodes().forEach(function(d){d.fixed = false;})},
-                                5000
-                            )
-                        }
-                    );
-
-
-                });
-                */
-            }
-
-            //$scope.getEntities();
-            //$scope.observer.registerObserverCallback($scope.getEntities);
-
-            /**
-             *  send a message to the server that the name of the entity
-             *  was edited
-             *
-             *  @param node
-             *      the node
-             */
-            function sendEditedType(node)
-            {
-                playRoutes.controllers.NetworkController.changeEntityTypeById(node.id, node.type).get().then(
-                    function(result)
-                    {
-                        if(result.result == false)
-                        {
-                            alert("Error while editing Entity")
-                        }
-                    }
-                )
-            }
-
             function getGuidanceNodes(focusNodeId,useOldEdges){
+                $scope.isViewLoading = true;
                 var entities = [];
                 angular.forEach($scope.entityFilters, function(item) {
                     entities.push(item.data.id);
@@ -2135,6 +1490,7 @@ define([
                     guidanceStepCounter++;
                     oldFocusNodeId= focusNodeId;
                     start();
+                    $scope.isViewLoading = false;
                 });
             };
 

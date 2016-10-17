@@ -65,6 +65,17 @@ html, body {
     ======================================
 */
 
+.guidance-load-overlay {
+    position: absolute;
+    top:0;
+    left:10px;
+    width:calc(100% - 10px);
+    z-index: 999;
+    border-radius: 0;
+    opacity: 0.8;
+    /*background-color: #ffffb3;*/
+}
+
 line {
     /* Should be the same as edgeLegend#fill */
     stroke: #b0b0b0;
