@@ -93,24 +93,29 @@ class EntityController @Inject extends Controller {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var newSize = size
-    if (filter.nonEmpty) {
+
+    val blacklistedIds = Entity.fromDBName(currentDataset).getBlacklisted().map(_.id)
+    // Filter list without blacklisted entities
+    val validFilter = if (filter.nonEmpty) {
       newSize = filter.length
-    }
+      filter.filterNot(blacklistedIds.contains(_))
+    } else filter
 
     val facetSearch = FacetedSearch.fromIndexName(currentDataset)
     val entitiesRes: List[(Long, Long)] = if (entityType.isEmpty) {
-      facetSearch.aggregateEntities(facets, newSize, filter, Nil).buckets.collect { case NodeBucket(id, count) => (id, count) }
+      facetSearch.aggregateEntities(facets, newSize, validFilter, blacklistedIds).buckets.collect { case NodeBucket(id, count) => (id, count) }
     } else {
-      facetSearch.aggregateEntitiesByType(facets, EntityType.withName(entityType), newSize, filter, Nil).buckets.collect { case NodeBucket(id, count) => (id, count) }
+      facetSearch.aggregateEntitiesByType(facets, EntityType.withName(entityType), newSize, validFilter, blacklistedIds).buckets.collect { case NodeBucket(id, count) => (id, count) }
     }
+
     if (entitiesRes.nonEmpty) {
       val ids = entitiesRes.map(_._1).take(defaultFetchSize)
       val sqlResult = Entity.fromDBName(currentDataset).getByIds(ids).map(e => e.id -> e)
       // TODO: ordering commented out while no zero buckets available
       if (filter.nonEmpty) {
         // if (false) {
-        val res = filter
-          .zip(filter.map(sqlResult.toMap))
+        val res = validFilter
+          .zip(validFilter.map(sqlResult.toMap))
           .map(x => Json.obj(
             "id" -> x._2.id,
             "name" -> x._2.name,
