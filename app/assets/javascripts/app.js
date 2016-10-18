@@ -184,14 +184,31 @@ define([
             $scope.blacklistSelection = [];
             $scope.mergelistSelection = [];
 
-            // Init
-            fetchBlacklisted();
+            // Will be affected by the tab md-change event
+            $scope.isBlacklist = false;
 
-            function fetchBlacklisted() {
+            $scope.init = function() {
+                fetchBlacklist();
+                fetchMergelist();
+            };
+
+            $scope.init();
+
+            function fetchBlacklist() {
                  playRoutes.controllers.EntityController.getBlacklistedEntities().get().then(function (response) {
                      $scope.blacklist = response.data;
                 });
             }
+
+            function fetchMergelist() {
+                playRoutes.controllers.EntityController.getMergedEntities().get().then(function (response) {
+                    $scope.mergelist = response.data;
+                });
+            }
+
+            $scope.joinDuplicates = function(duplicates) {
+                return duplicates.map(function(d) { return d.name; }).join(', ')
+            };
 
             $scope.toggle = function (item, list) {
                 if($scope.exists(item, list)) {
@@ -211,7 +228,7 @@ define([
             };
 
             $scope.removeFromMergelist = function() {
-                removeSelection($scope.mergelist, $scope.mergelistSelection, function(ids) { })
+                removeSelection($scope.mergelist, $scope.mergelistSelection, function(ids) { console.log("Remove from merge list"); })
             };
 
             function removeSelection(list, selection, callback) {

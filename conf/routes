@@ -34,6 +34,7 @@ GET    /changeEntityTypeById	controllers.NetworkController.changeEntityTypeById(
 GET    /getEntities		controllers.EntityController.getEntities(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, size: Int, entityType: String, filter: List[Long])
 GET     /getEntityTypes controllers.EntityController.getEntityTypes
 GET     /getBlacklisted controllers.EntityController.getBlacklistedEntities
+GET     /getMerged controllers.EntityController.getMergedEntities
 GET     /undoBlacklisting controllers.EntityController.undoBlacklistingByIds(ids: List[Long])
 GET     /getEntitiesByDoc controllers.EntityController.getEntitiesByDoc(id: Long)
 GET    /getEntitiesByType		controllers.EntityController.getEntitiesByType(entityType: String)
