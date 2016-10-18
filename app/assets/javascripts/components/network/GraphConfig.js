@@ -84,7 +84,7 @@ define([
                     '0': { color:  {border: "#a50026", background: "#d73027", highlight: {border: "#a50026", background: "#f46d43"}, hover: {border: "#a50026", background: "#f46d43"}}}, // 0: red
                     '1': { color:  {border: "#fdae61", background: "#fee090", highlight: {border: "#fdae61", background: "#ffffbf"}, hover: {border: "#fdae61", background: "#ffffbf"}}}, // 1: yellow
                     '2': { color:  {border: "#74add1", background: "#abd9e9", highlight: {border: "#74add1", background: "#e0f3f8"}, hover: {border: "#74add1", background: "#e0f3f8"}}}, // 2: light blue
-                    '3': { color:  {border: "#313695", background: "#4575b4", highlight: {border: "#313695", background: "#abd9e9"}, hover: {border: "#313695", background: "#abd9e9"}}}  // 3: dark blue
+                    '3': { color:  {border: "#313695", background: "#4575b4", highlight: {border: "#313695", background: "#74add1"}, hover: {border: "#313695", background: "#74add1"}}}  // 3: dark blue
                 }
             }
         )
