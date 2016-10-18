@@ -18,7 +18,6 @@
 define([
     'angular',
     'angularMoment',
-    './factory/network/ToolFactory',
     './factory/metadata/MetaFactory',
     './factory/source/SourceFactory',
     './factory/source/HighlightFactory',
@@ -26,11 +25,6 @@ define([
     './components/sources/DocumentController',
     './components/network/FancyNetworkController',
     './components/network/GraphConfig',
-    './components/network/ToolController',
-    './components/network/TextModalController',
-    './components/network/MergeModalController',
-    './components/network/EditModalController',
-    './components/network/ConfirmModalController',
     './components/metadata/MetadataController',
     './components/sources/SearchController',
     './components/history/HistoryController',
@@ -52,17 +46,11 @@ define([
 ], function (angular) {
     'use strict';
 
-    var app = angular.module('myApp',
-        [
+    var app = angular.module('myApp', [
             'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial', 'ngMdIcons',
-            'angularMoment', 'underscore', 'myApp.observer', 'myApp.util', 'myApp.history', 'myApp.graphConfig',
-            'myApp.tools', 'angularScreenfull',
-            'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
-            'myApp.network', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
-            'myApp.metafactory', 'myApp.toolfactory', 'myApp.document',
-            'myApp.histogram', 'myApp.search',
-            'ngVis'
-        ]
+            'angularMoment', 'underscore', 'myApp.observer', 'myApp.util', 'myApp.history', 'myApp.graphConfig', 'angularScreenfull',
+            'myApp.network', 'myApp.search', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory', 'myApp.metafactory',
+            'myApp.document', 'myApp.histogram', 'ngVis']
     );
 
     app.config(['$stateProvider', '$urlRouterProvider', '$mdThemingProvider', function($stateProvider, $urlRouterProvider, $mdThemingProvider) {
@@ -92,10 +80,6 @@ define([
                 'network': {
                     templateUrl: 'assets/partials/network.html',
                     controller: 'FancyNetworkController'
-                },
-                'tools': {
-                    templateUrl: 'assets/partials/tools.html',
-                    controller: 'ToolController'
                 },
                 'histogram': {
                     templateUrl: 'assets/partials/histogram.html',
