@@ -103,10 +103,15 @@ class Node(id: Long, name: String, var docOcc: Int, var distance: Int, category:
   def getGuidancePreviewNodes(amount: Int): Iterator[Node] = {
     val ggIter = context.getCopyGuidance(id, true)
     // val ggIter = gg.getGuidance(id, context.edgeAmount, context.epn, context.uiMatrix, false, List())
-    ggIter.take(context.edgeAmount).filter(t =>
-      !(t._2.isEmpty || context.usedNodes.contains(t._2.get.getId))
-    // !(context.edges.contains(t._1.getNodes) || context.edges.contains(t._1.getNodes.swap))
-    ).take(amount).map(_._2.get)
+    // Logger.debug(ggIter.map(_._2.get).toString())
+
+    ggIter.take(context.edgeAmount).filterNot(t => {
+      /*if (t._2.nonEmpty) {
+        Logger.trace(t._2.get.toString)
+        Logger.trace(context.usedNodes.contains(t._2.get.getId).toString)
+      }*/
+      (t._2.isEmpty || context.usedNodes.contains(t._2.get.getId))
+    }).take(amount).map(_._2.get)
 
     /*
     var pq = mutable.PriorityQueue[Edge]()(Ordering.by[Edge, Double](_.getDoi))

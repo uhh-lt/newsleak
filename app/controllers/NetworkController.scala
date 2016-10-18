@@ -403,11 +403,12 @@ class NetworkController @Inject extends Controller {
   def getContext(nodeId: Long, amount: Int, sessionId: String) = Action {
     val ggIter = IterMap(sessionId)
     //val guidancePreviewList = ggIter.getGuidancePreview(nodeId, amount)
+    val guidancePreview = ggIter.getGuidancePreview(nodeId, amount)
     val (edgeExpandList, nodeExpandList) = ggIter.getMoreEdges(nodeId, amount)
     ggIter.getConnectionsByType(nodeId)
     val result = new JsObject(Map(
+      "guidance" -> Json.toJson(guidancePreview),
       "expand" -> new JsObject(Map(("nodes", Json.toJson(nodeExpandList)), ("links", Json.toJson(edgeExpandList)))),
-      "guidance" -> Json.toJson(ggIter.getGuidancePreview(nodeId, amount)),
       "bargraph" -> Json.toJson(ggIter.getConnectionsByType(nodeId).map {
         case (t, count) => new JsObject(Map(
           "name" -> JsString(t),
@@ -419,6 +420,11 @@ class NetworkController @Inject extends Controller {
     Logger.debug(result.toString())
     Ok(result).as("application/json")
   }
+
+  /*
+  def undo(sessionId: String) = Action {
+    Ok()
+  }*/
 
   implicit val NodeWrite = new Writes[Node] {
     override def writes(n: Node) = Json.obj(

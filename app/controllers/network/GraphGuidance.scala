@@ -88,7 +88,6 @@ class GraphGuidance() {
           def next = pq.dequeue
         }
         val edgeO = pqIter.find(e => !{
-          //Logger.trace("" + e.toString(true) + "E1:" + e.getNodes._1.getConn + "E2:" + e.getNodes._2.getConn)
           usedEdges.contains(e.getNodes) || usedEdges.contains(e.getNodes.swap) || e.getNodes._1.getConn == epn || e.getNodes._2.getConn == epn
         })
 
@@ -107,6 +106,7 @@ class GraphGuidance() {
         var newNode: Option[Node] = None
         if (!usedNodes.contains(edge.getNodes._2.getId)) {
           newNode = Some(edge.getNodes._2)
+          //Logger.trace(newNode.get.toString)
           usedNodes += (edge.getNodes._2.getId -> edge.getNodes._2)
           //if (i < k / 2) { //nur für die ersten k/2 Kanten werden weitere Kanten gesucht
           pq ++= getEdges(edge.getNodes._2)
