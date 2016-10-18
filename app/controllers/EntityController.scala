@@ -65,7 +65,7 @@ class EntityController @Inject extends Controller {
         val focalFormat = Json.obj("id" -> focalNode.id, "name" -> focalNode.name, "freq" -> focalNode.frequency, "type" -> focalNode.entityType)
         val duplicateFormat = duplicates.map(d => Json.obj("id" -> d.id, "name" -> d.name, "freq" -> d.frequency, "type" -> d.entityType))
 
-        Json.obj("origin" -> focalFormat, "duplicates" -> Json.toJson(duplicateFormat))
+        Json.obj("id" -> focalNode.id, "origin" -> focalFormat, "duplicates" -> Json.toJson(duplicateFormat))
     }
     Ok(Json.toJson(entities)).as("application/json")
   }
@@ -77,7 +77,14 @@ class EntityController @Inject extends Controller {
   }
 
   def undoBlacklistingByIds(ids: List[Long]) = Action { implicit request =>
-    ids.foreach(Entity.fromDBName(currentDataset).undoDelete(_))
+    val entityAPI = Entity.fromDBName(currentDataset)
+    ids.foreach(entityAPI.undoDelete)
+    Ok("success").as("Text")
+  }
+
+  def undoMergeByIds(focalIds: List[Long]) = Action { implicit request =>
+    val entityAPI = Entity.fromDBName(currentDataset)
+    focalIds.foreach(entityAPI.undoMerge)
     Ok("success").as("Text")
   }
 

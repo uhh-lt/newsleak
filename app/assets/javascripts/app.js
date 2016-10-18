@@ -228,7 +228,7 @@ define([
             };
 
             $scope.removeFromMergelist = function() {
-                removeSelection($scope.mergelist, $scope.mergelistSelection, function(ids) { console.log("Remove from merge list"); })
+                removeSelection($scope.mergelist, $scope.mergelistSelection, function(ids) { playRoutes.controllers.EntityController.undoMergeByIds(ids).get(); })
             };
 
             function removeSelection(list, selection, callback) {
