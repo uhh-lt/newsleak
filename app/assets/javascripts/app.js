@@ -240,6 +240,8 @@ define([
                     list.splice(index, 1);
                 });
                 selection.length = 0;
+                // Update view
+                $scope.init();
              }
 
             $scope.closeClick = function() { $mdDialog.cancel(); };
