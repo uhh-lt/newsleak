@@ -187,6 +187,10 @@ define([
 
             /* Indicates whether the network is initialized or new data is being loaded */
             $scope.loading = true;
+            /* Determines how many keywords should be shown in the edge tooltip */
+            self.numEdgeKeywords = 4;
+            /* Determines whether the edge importance filter should be preserved during graph reloading */
+            self.preserveEdgeImportance = false;
 
             $scope.$watch('edgeImportance', handleEdgeSlider);
 
@@ -237,8 +241,6 @@ define([
                         self.edgesDataset.clear();
                         self.edgesDataset.add(edges);
 
-                        // Update the maximum edge importance slider value
-                        $scope.maxEdgeImportance = (self.edgesDataset.length > 0) ? self.edgesDataset.max("value").value : 0;
                         console.log("" + self.nodesDataset.length + " nodes loaded");
 
                         // Initialize the graph
@@ -247,6 +249,15 @@ define([
                             edges: self.edgesDataset
                         };
                 });
+            };
+
+            /**
+             * Reloads the graph and preserves the applied edge importance value. In case the new maximum is lower than
+             * the current applied edgeImportance, the value is set to the maximum value.
+             * **/
+            $scope.reloadGraphWithEdgeImportance = function() {
+                self.preserveEdgeImportance = true;
+                $scope.reloadGraph();
             };
 
 
@@ -328,8 +339,8 @@ define([
                 hideNode(nodeId);
                 // Mark node as blacklisted
                 playRoutes.controllers.NetworkController.deleteEntityById(nodeId).get().then(function(response) {
-                    // Fetch node replacements for the merged nodes
-                    $scope.reloadGraph();
+                    // Fetch node replacements for the merged nodes and preserve the current applied edge importance
+                    $scope.reloadGraphWithEdgeImportance();
                 });
             }
 
@@ -494,9 +505,13 @@ define([
              * Called when the internal iteration threshold is reached. See graphConfig.
              */
             function stabilizationDone() {
+                // Hacky solution since this event seems to be fired twice.
+                if(!$scope.loading) {
+                    return;
+                }
                 console.log("Stabilization Iteration Done");
                 // Release fixed nodes from the previous filter step
-                var releasedNodes = self.nodesDataset.getIds().map(function(id) { return { id: id,  fixed: false }});
+                var releasedNodes = self.nodesDataset.getIds().map(function(id) { return { id: id, fixed: false }});
                 self.nodesDataset.update(releasedNodes);
 
                 // Once the network is stabilized the node positions are stored and the
@@ -506,10 +521,20 @@ define([
                 self.edges = new VisDataSet(self.edgesDataset.get());
 
                 $scope.loading = false;
-                // Reset the current edge slider position, because the new
-                // maximum value could be smaller than the current value.
-                $scope.edgeImportance = 1;
                 disablePhysics();
+
+                // Update new maximum value for the edge importance slider.
+                updateImportanceSlider();
+                // If the value is true, the current applied edge importance will be applied to the network. Otherwise the
+                // edge importance is removed.
+                if(self.preserveEdgeImportance) {
+                    // If the current applied edge importance is larger than the new maximum, then adjust it accordingly.
+                    if($scope.maxEdgeImportance < $scope.edgeImportance) $scope.edgeImportance = $scope.maxEdgeImportance;
+                    handleEdgeSlider($scope.edgeImportance, $scope.edgeImportance - 1);
+                } else {
+                    $scope.edgeImportance = 1;
+                }
+                self.preserveEdgeImportance = false;
             }
 
             // TODO: Remove code duplication
@@ -521,7 +546,7 @@ define([
                 }
 
                 var filters = currentFilter();
-                playRoutes.controllers.NetworkController.getEdgeKeywords(filters.fulltext, filters.facets, filters.entities, filters.timeRange, edge.from, edge.to, 4).get().then(function(response) {
+                playRoutes.controllers.NetworkController.getEdgeKeywords(filters.fulltext, filters.facets, filters.entities, filters.timeRange, edge.from, edge.to, self.numEdgeKeywords).get().then(function(response) {
                     var formattedTerms = response.data.map(function(t) { return '' +  t.term + ': ' + t.score; });
 
                     var docTip = '<p>Occurs in <b>' + edge.value + '</b> documents</p>';
@@ -574,6 +599,7 @@ define([
             }
 
             function handleEdgeSlider(newValue, oldValue) {
+                console.log("Edge slider: " + newValue + ", " + oldValue);
                 closeContextMenu();
                 if(newValue > oldValue) {
                     var edgesToRemove = self.edgesDataset.get({
