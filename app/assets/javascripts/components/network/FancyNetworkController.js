@@ -327,7 +327,10 @@ define([
                 // Remove node from the visual interface
                 hideNode(nodeId);
                 // Mark node as blacklisted
-                playRoutes.controllers.NetworkController.deleteEntityById(nodeId).get().then(function(response) { /* Error handling */ });
+                playRoutes.controllers.NetworkController.deleteEntityById(nodeId).get().then(function(response) {
+                    // Fetch node replacements for the merged nodes
+                    $scope.reloadGraph();
+                });
             }
 
             function addNodeFilter(nodeId) {
@@ -339,8 +342,8 @@ define([
                 var edge = self.edges.get(edgeId);
                 var from = self.nodes.get(edge.from);
                 var to = self.nodes.get(edge.to);
-                // TODO This fires two events. Would be better to have a addItems method
-                $scope.observerService.addItem({ type: 'entity', data: { id: from.id, name: from.label, type: from.type }});
+                // TODO This fires two events. Would be better to have a addItems method that fires once. For the time being this hacks solves the problem.
+                $scope.observerService.addItem({ type: 'entity', data: { id: from.id, name: from.label, type: from.type }}, false);
                 $scope.observerService.addItem({ type: 'entity', data: { id: to.id, name: to.label, type: to.type }});
             }
 
@@ -424,7 +427,10 @@ define([
                     removeNodes(duplicates, self.nodesDataset, self.edgesDataset);
                     // Remove duplicates from the background collection
                     removeNodes(duplicates, self.nodes, self.edges);
-                    playRoutes.controllers.NetworkController.mergeEntitiesById(response, duplicates).get().then(function(response) { /* Error handling */ });
+                    playRoutes.controllers.NetworkController.mergeEntitiesById(response, duplicates).get().then(function(response) {
+                        // Fetch node replacements for the merged nodes
+                        $scope.reloadGraph();
+                    });
                 }, function() { /* cancel click */ });
             }
 

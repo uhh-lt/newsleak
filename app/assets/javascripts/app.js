@@ -176,7 +176,7 @@ define([
             };
         }]);
 
-    app.controller('SettingsController', ['$scope', '$mdDialog', 'playRoutes', '_', function ($scope, $mdDialog, playRoutes, _) {
+    app.controller('SettingsController', ['$scope', '$mdDialog', 'playRoutes', '_', 'ObserverService', function ($scope, $mdDialog, playRoutes, _, ObserverService) {
 
             $scope.blacklist = [];
             $scope.mergelist = [];
@@ -240,8 +240,9 @@ define([
                     list.splice(index, 1);
                 });
                 selection.length = 0;
-                // Update view
-                $scope.init();
+                // Update network and frequency chart
+                // TODO: Enhancement update only special parts of the application
+                ObserverService.notifyObservers();
              }
 
             $scope.closeClick = function() { $mdDialog.cancel(); };
