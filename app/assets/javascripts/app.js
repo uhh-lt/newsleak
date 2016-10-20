@@ -46,7 +46,7 @@ define([
     'use strict';
 
     var app = angular.module('myApp', [
-            'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial', 'ngMdIcons',
+            'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial',
             'angularMoment', 'underscore', 'myApp.observer', 'myApp.util', 'myApp.history', 'myApp.graphConfig', 'angularScreenfull',
             'myApp.network', 'myApp.search', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory', 'myApp.metafactory',
             'myApp.document', 'myApp.histogram', 'ngVis']
