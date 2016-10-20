@@ -168,7 +168,7 @@ define([
                                 fulltext.push(item.data.name);
                             });
                             playRoutes.controllers.DocumentController.getDocs(fulltext, facets, entities, $scope.observer.getTimeRange()).get().then(function (x) {
-                                if (x.data.docs.length == 0)
+                                if (x.data.docs.length == 0 || x.data.docs.length <=50)
                                     $scope.iteratorEmpty = true;
                                 else
                                     $scope.sourceShared.addDocs(x.data.docs);
