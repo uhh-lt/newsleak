@@ -365,6 +365,14 @@ footer > div, footer > div #histogram {
 .load-more-button {
     width: 100%;
 }
+#documents-view .md-body-2 {
+    padding-right: 100px;
+}
+#documents-view .metadata-button {
+    position: absolute !important;
+    right: 10px;
+    top: 10px;
+}
 
 .docs-loading {
     position: absolute;
