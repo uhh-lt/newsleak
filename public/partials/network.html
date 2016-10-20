@@ -38,7 +38,6 @@
             <input ng-model="numMisc" ng-change="reloadGraph()" type="number" step="1" min="0" ng-model-options="{updateOn: 'default blur', debounce: {default: 300, blur: 0} }">
         </md-input-container>
 
-        <!--<h3><span>Network View</span></h3>-->
         <div flex="20" layout layout-align="center center">
             <span class="md-body-1">Edge Importance</span>
         </div>
@@ -46,6 +45,10 @@
     </div>
 </md-toolbar>
 
+<!-- legend and network are rendered above each other -->
+<div id="legend" ng-controller="LegendController as ctrl" ng-if="showLegend">
+    <vis-network data="ctrl.legendData" options="ctrl.legendOptions" events="ctrl.legendEvents" layout-fill></vis-network>
+</div>
 <div id="mynetwork">
     <vis-network data="graphData" options="graphOptions" layout-fill events="graphEvents"></vis-network>
 </div>

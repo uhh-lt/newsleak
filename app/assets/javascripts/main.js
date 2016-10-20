@@ -44,7 +44,6 @@
 			'ngFileSaver': 'libs/angular-file-saver/dist/angular-file-saver.bundle.min',
 			'drilldown' : 'libs/highcharts-release/modules/drilldown',
 			'underscore': 'libs/underscore/underscore-min',
-			'd3': 'libs/d3/d3.min',
 			'angularResizable': 'libs/angular-resizable/angular-resizable.min',
 			'bootstrapFileField': 'libs/angular-bootstrap-file-field/dist/angular-bootstrap-file-field.min',
 			'vis': 'libs/vis/dist/vis.min',
@@ -115,9 +114,6 @@
 			'jquery.mousewheel' :{
 				exports: 'jquery.mousewheel',
 				deps: ['jquery']
-			},
-			'd3': {
-				exports: 'd3'
 			},
 			'angularResizable' : {
 				exports: 'angularResizable',

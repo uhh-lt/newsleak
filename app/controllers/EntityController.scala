@@ -22,7 +22,7 @@ import javax.inject.Inject
 import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
 import model.{ Entity, EntityType }
 import play.api.libs.json.{ JsObject, Json }
-import play.api.mvc.{ Action, Controller, Results }
+import play.api.mvc.{ Action, Controller }
 import util.SessionUtils.currentDataset
 import util.TimeRangeParser
 
@@ -41,7 +41,7 @@ class EntityController @Inject extends Controller {
   def getEntitiesByType(entityType: String) = Action { implicit request =>
     val entities = Entity.fromDBName(currentDataset).getOrderedByFreqDesc(EntityType.withName(entityType), defaultFetchSize)
       .map(x => Json.obj("id" -> x.id, "name" -> x.name, "freq" -> x.frequency))
-    Results.Ok(Json.toJson(entities)).as("application/json")
+    Ok(Json.toJson(entities)).as("application/json")
   }
 
   /**
@@ -50,23 +50,41 @@ class EntityController @Inject extends Controller {
    * @return list of entity types
    */
   def getEntityTypes = Action { implicit request =>
-    Results.Ok(Json.toJson(Entity.fromDBName(currentDataset).getTypes().map(_.toString))).as("application/json")
+    Ok(Json.toJson(Entity.fromDBName(currentDataset).getTypes().map(_.toString))).as("application/json")
   }
 
   def getBlacklistedEntities = Action { implicit request =>
     val entities = Entity.fromDBName(currentDataset).getBlacklisted()
       .map(x => Json.obj("id" -> x.id, "name" -> x.name, "freq" -> x.frequency, "type" -> x.entityType))
-    Results.Ok(Json.toJson(entities)).as("application/json")
+    Ok(Json.toJson(entities)).as("application/json")
+  }
+
+  def getMergedEntities = Action { implicit request =>
+    val entities = Entity.fromDBName(currentDataset).getDuplicates().map {
+      case (focalNode, duplicates) =>
+        val focalFormat = Json.obj("id" -> focalNode.id, "name" -> focalNode.name, "freq" -> focalNode.frequency, "type" -> focalNode.entityType)
+        val duplicateFormat = duplicates.map(d => Json.obj("id" -> d.id, "name" -> d.name, "freq" -> d.frequency, "type" -> d.entityType))
+
+        Json.obj("id" -> focalNode.id, "origin" -> focalFormat, "duplicates" -> Json.toJson(duplicateFormat))
+    }
+    Ok(Json.toJson(entities)).as("application/json")
   }
 
   // TODO Json writer for model types ...
   def getEntitiesByDoc(id: Long) = Action { implicit request =>
     val res = Entity.fromDBName(currentDataset).getByDocId(id).map(e => Json.obj("id" -> e.id, "name" -> e.name, "type" -> e.entityType))
-    Results.Ok(Json.toJson(res)).as("application/json")
+    Ok(Json.toJson(res)).as("application/json")
   }
 
   def undoBlacklistingByIds(ids: List[Long]) = Action { implicit request =>
-    ids.foreach(Entity.fromDBName(currentDataset).undoDelete(_))
+    val entityAPI = Entity.fromDBName(currentDataset)
+    ids.foreach(entityAPI.undoDelete)
+    Ok("success").as("Text")
+  }
+
+  def undoMergeByIds(focalIds: List[Long]) = Action { implicit request =>
+    val entityAPI = Entity.fromDBName(currentDataset)
+    focalIds.foreach(entityAPI.undoMerge)
     Ok("success").as("Text")
   }
 
@@ -93,24 +111,29 @@ class EntityController @Inject extends Controller {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val facets = Facets(fullText, generic, entities, times.from, times.to)
     var newSize = size
-    if (filter.nonEmpty) {
+
+    val blacklistedIds = Entity.fromDBName(currentDataset).getBlacklisted().map(_.id)
+    // Filter list without blacklisted entities
+    val validFilter = if (filter.nonEmpty) {
       newSize = filter.length
-    }
+      filter.filterNot(blacklistedIds.contains(_))
+    } else filter
 
     val facetSearch = FacetedSearch.fromIndexName(currentDataset)
     val entitiesRes: List[(Long, Long)] = if (entityType.isEmpty) {
-      facetSearch.aggregateEntities(facets, newSize, filter, Nil).buckets.collect { case NodeBucket(id, count) => (id, count) }
+      facetSearch.aggregateEntities(facets, newSize, validFilter, blacklistedIds).buckets.collect { case NodeBucket(id, count) => (id, count) }
     } else {
-      facetSearch.aggregateEntitiesByType(facets, EntityType.withName(entityType), newSize, filter, Nil).buckets.collect { case NodeBucket(id, count) => (id, count) }
+      facetSearch.aggregateEntitiesByType(facets, EntityType.withName(entityType), newSize, validFilter, blacklistedIds).buckets.collect { case NodeBucket(id, count) => (id, count) }
     }
+
     if (entitiesRes.nonEmpty) {
       val ids = entitiesRes.map(_._1).take(defaultFetchSize)
       val sqlResult = Entity.fromDBName(currentDataset).getByIds(ids).map(e => e.id -> e)
       // TODO: ordering commented out while no zero buckets available
       if (filter.nonEmpty) {
         // if (false) {
-        val res = filter
-          .zip(filter.map(sqlResult.toMap))
+        val res = validFilter
+          .zip(validFilter.map(sqlResult.toMap))
           .map(x => Json.obj(
             "id" -> x._2.id,
             "name" -> x._2.name,
@@ -118,7 +141,7 @@ class EntityController @Inject extends Controller {
             "freq" -> x._2.frequency,
             "docCount" -> entitiesRes.find(_._1 == x._2.id).get._2.asInstanceOf[Number].longValue
           ))
-        Results.Ok(Json.toJson(res)).as("application/json")
+        Ok(Json.toJson(res)).as("application/json")
       } else {
         val res = sqlResult.map(x => Json.obj(
           "id" -> x._2.id,
@@ -127,10 +150,10 @@ class EntityController @Inject extends Controller {
           "freq" -> x._2.frequency,
           "docCount" -> entitiesRes.find(_._1 == x._2.id).get._2.asInstanceOf[Number].longValue
         ))
-        Results.Ok(Json.toJson(res.sortBy(-_.value("docCount").as[Long]))).as("application/json")
+        Ok(Json.toJson(res.sortBy(-_.value("docCount").as[Long]))).as("application/json")
       }
     } else {
-      Results.Ok(Json.toJson(List[JsObject]())).as("application/json")
+      Ok(Json.toJson(List[JsObject]())).as("application/json")
     }
   }
   // scalastyle:on

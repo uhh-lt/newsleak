@@ -39,7 +39,6 @@ define([
                 '_',
                 'sourceShareService',
                 'highlightShareService',
-                'graphPropertiesShareService',
                 'uiShareService',
                 'ObserverService',
                 function ($scope,
@@ -52,14 +51,12 @@ define([
                           _,
                           sourceShareService,
                           highlightShareService,
-                          graphPropertiesShareService,
                           uiShareService,
                           ObserverService) {
 
                     $scope.sourceShared = sourceShareService;
                     $scope.highlightShared = highlightShareService;
                     $scope.uiShareService = uiShareService;
-                    $scope.graphPropertiesShared = graphPropertiesShareService;
                     $scope.docsLoading = false;
                     $scope.showLoading = false;
                     $scope.iteratorEmpty = false;

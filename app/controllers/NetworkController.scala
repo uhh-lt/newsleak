@@ -49,6 +49,28 @@ class NetworkController @Inject extends Controller {
     Ok(Json.obj("ids" -> Entity.fromDBName(currentDataset).getByName(name).map(_.id))).as("application/json")
   }
 
+  def getNeighborCounts(
+    fullText: List[String],
+    generic: Map[String, List[String]],
+    entities: List[Long],
+    timeRange: String,
+    nodeId: Long
+  ) = Action { implicit request =>
+
+    val times = TimeRangeParser.parseTimeRange(timeRange)
+    val facets = Facets(fullText, generic, entities, times.from, times.to)
+
+    val agg = FacetedSearch
+      .fromIndexName(currentDataset)
+      .getNeighborCounts(facets, nodeId)
+
+    val counts = agg.buckets.collect {
+      case MetaDataBucket(t, c) =>
+        Json.obj("type" -> t, "count" -> c)
+    }
+    Ok(Json.toJson(counts)).as("application/json")
+  }
+
   def getEdgeKeywords(
     fullText: List[String],
     generic: Map[String, List[String]],
@@ -67,7 +89,7 @@ class NetworkController @Inject extends Controller {
       .aggregateKeywords(facets.withEntities(List(first, second)), numberOfTerms, Nil)
 
     val terms = agg.buckets.collect {
-      case a @ MetaDataBucket(term, score) =>
+      case MetaDataBucket(term, score) =>
         Json.obj("term" -> term, "score" -> score)
     }
     Ok(Json.toJson(terms)).as("application/json")
@@ -138,13 +160,14 @@ class NetworkController @Inject extends Controller {
   /**
    * merge all entities into one entity represented by the focalId
    *
-   * @param focalid the entity to merge into
-   * @param ids     the ids of the entities which are duplicates of
+   * @param focalId the entity to merge into
+   * @param duplicates     the ids of the entities which are duplicates of
    *                the focal entity
    * @return if the merging succeeded
    */
-  def mergeEntitiesById(focalid: Int, ids: List[Long]) = Action { implicit request =>
-    Ok(Json.obj("result" -> Entity.fromDBName(currentDataset).merge(focalid, ids))).as("application/json")
+  def mergeEntitiesById(focalId: Int, duplicates: List[Long]) = Action { implicit request =>
+    Entity.fromDBName(currentDataset).merge(focalId, duplicates)
+    Ok("success").as("Text")
   }
 
   /**

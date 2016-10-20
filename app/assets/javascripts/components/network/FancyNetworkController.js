@@ -58,6 +58,30 @@ define([
             };
             return graphProperties;
         })
+        // Network Legend Controller
+        .controller('LegendController', ['$scope', '$timeout', 'VisDataSet', 'graphProperties', function ($scope, $timeout, VisDataSet, graphProperties) {
+
+            $scope.legendNodes = new VisDataSet([]);
+            this.legendOptions = graphProperties.legendOptions;
+            this.legendData = { nodes: $scope.legendNodes, edges: [] };
+            this.legendEvents = { "onload": function(network) { $scope.legendNetwork = network; } };
+
+            $scope.addLegend = function() {
+                var x = 0; var y = 0; var distance = 100;
+                $scope.legendNodes.add([
+                    { id: -1, x: x, y: y, label: 'Per', group: 0, value: 1, fixed: true, physics: false },
+                    { id: -2, x: x + distance, y: y, label: 'Org', group: 1, value: 1, fixed: true, physics: false },
+                    { id: -3, x: x + 2*distance, y: y, label: 'Loc', group: 2, value: 1, fixed: true, physics: false },
+                    { id: -4, x: x + 3*distance, y: y, label: 'Misc', group: 3, value: 1, fixed: true, physics: false }
+                ]);
+                $scope.legendNetwork.fit();
+            };
+
+            // Add nodes after the legend div is added to the dom
+            $timeout(function(){
+                $scope.addLegend();
+            });
+        }])
         // Network Controller
         .controller('FancyNetworkController', ['$scope', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', function ($scope, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties) {
 
@@ -76,8 +100,13 @@ define([
 
             self.physicOptions = physicOptions;
 
+            self.networkButtons = [
+                { name: 'Fullscreen', template: '<div class="vis-button vis-fullscreen-button" ng-click="FancyNetworkController.toggleFullscreen()"></div>' },
+                { name: 'Legend', template: '<div class="vis-button vis-legend-button" ng-click="showLegend = !showLegend"></div>' }
+            ];
 
-            self.nodeMenu = [
+            // Context menu for single node selection
+            self.singleNodeMenu = [
                 {
                     title: 'Add as filter',
                     action: function(value, nodeId) { addNodeFilter(nodeId); }
@@ -94,6 +123,14 @@ define([
                 }, {
                     title: 'Blacklist',
                     action: function(value, nodeId) { blacklistNode(nodeId); }
+                }
+            ];
+
+            // Context menu for multiple node selection
+            self.multiNodeMenu = [
+                {
+                    title: 'Merge nodes',
+                    action: function(value, nodeIds) { mergeNodes(nodeIds); }
                 }
             ];
 
@@ -115,6 +152,15 @@ define([
             $scope.observerService.subscribeItems($scope.observer_subscribe_metadata, "metadata");
             $scope.observerService.subscribeItems($scope.observer_subscribe_entity, "entity");
 
+            function currentFilter() {
+                var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.name; });
+                var entities = $scope.entityFilters.map(function(v) { return v.data.id; });
+                var timeRange = $scope.observerService.getTimeRange();
+                var facets = $scope.observerService.getFacets();
+
+                return { fulltext: fulltext, entities: entities, timeRange: timeRange, facets: facets };
+            }
+
             $scope.graphOptions = graphProperties.options;
             $scope.graphEvents = {
                 "startStabilizing": stabilizationStart,
@@ -125,7 +171,8 @@ define([
                 "oncontext": onContext,
                 "click": clickEvent,
                 "dragging": dragEvent,
-                "hoverEdge": hoverEdge
+                "hoverEdge": hoverEdge,
+                "hoverNode": hoverNode
             };
 
             /* Current value of the edge significance slider */
@@ -140,13 +187,15 @@ define([
 
             /* Indicates whether the network is initialized or new data is being loaded */
             $scope.loading = true;
+            /* Determines how many keywords should be shown in the edge tooltip */
+            self.numEdgeKeywords = 4;
+            /* Determines whether the edge importance filter should be preserved during graph reloading */
+            self.preserveEdgeImportance = false;
 
             $scope.$watch('edgeImportance', handleEdgeSlider);
 
             $scope.reloadGraph = function() {
-                var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.name; });
-                var entities = $scope.entityFilters.map(function(v) { return v.data.id; });
-                var facets = $scope.observerService.getFacets();
+                var filters = currentFilter();
 
                  var fraction = [
                     {"key": "PER", "data": $scope.numPer },
@@ -155,7 +204,7 @@ define([
                     {"key": "MISC", "data": $scope.numMisc }
                 ];
 
-                playRoutes.controllers.NetworkController.induceSubgraph(fulltext, facets, entities, $scope.observerService.getTimeRange(), fraction, []).get().then(function(response) {
+                playRoutes.controllers.NetworkController.induceSubgraph(filters.fulltext, filters.facets, filters.entities, filters.timeRange, fraction, []).get().then(function(response) {
                         // Enable physics for new graph data when network is initialized
                         if(!_.isUndefined(self.network)) {
                             applyPhysicsOptions(self.physicOptions);
@@ -170,20 +219,12 @@ define([
 
                         var nodes = response.data.entities.map(function(n) {
                             // See css property div.network-tooltip for custom tooltip styling
-                            var title = '#Doc: ' + n.count + '<br>Typ: ' + n.type;
                             // map counts to interval [1,2] for nodes mass
                             /*var mass = ((n.count - originalMin) / (originalMax - originalMin)) * (2 - 1) + 1;
                             // If all nodes have the same occurrence assign same mass. This also prevents errors
                             // for wrong interval mappings e.g. [1,1] to [1,2] yields NaN for the mass.
                             if(originalMin == originalMax) mass = 1;*/
-                            return {
-                                id: n.id,
-                                label: n.label,
-                                type: n.type,
-                                value: n.count,
-                                group: n.group,
-                                title: title//,
-                            };
+                            return { id: n.id, label: n.label, type: n.type,  value: n.count, group: n.group };
                         });
 
                         self.nodesDataset.clear();
@@ -200,8 +241,6 @@ define([
                         self.edgesDataset.clear();
                         self.edgesDataset.add(edges);
 
-                        // Update the maximum edge importance slider value
-                        $scope.maxEdgeImportance = (self.edgesDataset.length > 0) ? self.edgesDataset.max("value").value : 0;
                         console.log("" + self.nodesDataset.length + " nodes loaded");
 
                         // Initialize the graph
@@ -212,6 +251,15 @@ define([
                 });
             };
 
+            /**
+             * Reloads the graph and preserves the applied edge importance value. In case the new maximum is lower than
+             * the current applied edgeImportance, the value is set to the maximum value.
+             * **/
+            $scope.reloadGraphWithEdgeImportance = function() {
+                self.preserveEdgeImportance = true;
+                $scope.reloadGraph();
+            };
+
 
             // Initialize graph
             $scope.reloadGraph();
@@ -220,6 +268,18 @@ define([
                 console.log("Update network");
                 $scope.reloadGraph();
             });
+
+            function addNetworkButtons() {
+                self.networkButtons.forEach(function(b) {
+                    addNetworkButtonFromTemplate(b.template);
+                });
+            }
+
+            function addNetworkButtonFromTemplate(template) {
+                var panel = angular.element(document.getElementsByClassName('vis-navigation')[0]);
+                var button = $compile(template)($scope);
+                panel.append(button);
+            }
 
             function applyPhysicsOptions(options) {
                 console.log('Physics simulation turned on');
@@ -234,11 +294,14 @@ define([
             function markNewNodes(nextNodeIds) {
                 // Don't highlight all nodes for the initial graph
                 if(self.nodes.length > 0) {
-                    var currentNodeIds = self.nodes.getIds();
+                    // This dataset contains the nodes from the previous filtering step without dynamic changing information
+                    var previousNodes = new VisDataSet(self.nodes.map(function(n)  { return _.omit(n, 'hidden', 'title', 'value'); }));
+
+                    var currentNodeIds = previousNodes.getIds();
                     var sec = _.intersection(nextNodeIds, currentNodeIds);
                     // Remove old marking from the nodes in order to show only the new nodes for one single step
-                    var cleanNodes = self.nodes.get(sec).map(function(n) { return _.extend(n, { 'shapeProperties': { borderDashes: false }, color: undefined, borderWidth: 1})});
-                    self.nodes.update(cleanNodes);
+                    var cleanNodes = previousNodes.get(sec).map(function(n) { return _.extend(n, { 'shapeProperties': { borderDashes: false }, color: undefined, borderWidth: 1 })});
+                    previousNodes.update(cleanNodes);
                     self.nodesDataset.update(cleanNodes);
 
                     var diff = _.difference(nextNodeIds, currentNodeIds);
@@ -248,17 +311,10 @@ define([
 
                     // TODO Move
                     // Fix nodes from the previous filtering step. This ensures that the node will always preserve its position.
-                    // Also remove hidden state between filtering steps.
-                    var fixedNodes = self.nodes.get(sec).map(function(n) { return _.extend(n, { fixed: { x: true, y: true }, hidden: false })});
+                    // Also remove hidden state between filtering steps and (dynamic) tooltip.
+                    var fixedNodes = previousNodes.get(sec).map(function(n) { return _.extend(n, { fixed: { x: true, y: true } })});
                     self.nodesDataset.update(fixedNodes);
                 }
-            }
-
-            function addFullscreenButton() {
-                var panel = angular.element(document.getElementsByClassName('vis-navigation')[0]);
-                var buttonTemplate = '<div class="vis-button vis-fullscreen-button" ng-click="FancyNetworkController.toggleFullscreen()"></div>';
-                var button = $compile(buttonTemplate)($scope);
-                panel.append(button);
             }
 
             // ----------------------------------------------------------------------------------
@@ -267,30 +323,25 @@ define([
             // ----------------------------------------------------------------------------------
 
             function hideNode(nodeId) {
-                // Hide given node
-                self.nodesDataset.remove(nodeId);
-                self.nodes.update({id: nodeId, hidden: true});
-
-                var adjacentEdges = self.edges.get({
-                    filter: function(edge) {
-                        return (edge.to == nodeId || edge.from == nodeId)
-                    }
-                }).map(function(edge) { return _.extend(edge, { hidden: true }); });
-
-                // Hide adjacent edges
-                self.edges.update(adjacentEdges);
-                self.edgesDataset.remove(adjacentEdges);
-
-                // Update new edge max value from non hidden edges
-                var max = new VisDataSet(self.edges.get({ filter: function(edge) { return !edge.hidden; }})).max("value").value;
-                $scope.maxEdgeImportance = max;
+                removeNodes([nodeId], self.nodesDataset, self.edgesDataset);
+                // Hide given node in background collection
+                self.nodes.update({ id: nodeId, hidden: true });
+                // Retrieve adjacent edges from the background collection
+                var adjacentEdges = getAdjacentEdges([nodeId], self.edges);
+                // Hide adjacent edges in background collection
+                var hiddenEdges = adjacentEdges.map(function(edge) { return _.extend(edge, { hidden: true }); });
+                self.edges.update(hiddenEdges);
+                updateImportanceSlider();
             }
 
             function blacklistNode(nodeId) {
                 // Remove node from the visual interface
                 hideNode(nodeId);
                 // Mark node as blacklisted
-                playRoutes.controllers.NetworkController.deleteEntityById(nodeId).get().then(function(response) { /* Error handling */ });
+                playRoutes.controllers.NetworkController.deleteEntityById(nodeId).get().then(function(response) {
+                    // Fetch node replacements for the merged nodes and preserve the current applied edge importance
+                    $scope.reloadGraphWithEdgeImportance();
+                });
             }
 
             function addNodeFilter(nodeId) {
@@ -302,8 +353,8 @@ define([
                 var edge = self.edges.get(edgeId);
                 var from = self.nodes.get(edge.from);
                 var to = self.nodes.get(edge.to);
-                // TODO This fires two events. Would be better to have a addItems method
-                $scope.observerService.addItem({ type: 'entity', data: { id: from.id, name: from.label, type: from.type }});
+                // TODO This fires two events. Would be better to have a addItems method that fires once. For the time being this hacks solves the problem.
+                $scope.observerService.addItem({ type: 'entity', data: { id: from.id, name: from.label, type: from.type }}, false);
                 $scope.observerService.addItem({ type: 'entity', data: { id: to.id, name: to.label, type: to.type }});
             }
 
@@ -319,11 +370,14 @@ define([
                             $scope.apply = function () { $mdDialog.hide($scope.entity); };
                             $scope.closeClick = function() { $mdDialog.cancel(); };
                         }],
-                    locals: { e: entity }
+                    locals: { e: entity },
+                    autoWrap: false,
+                    parent: $scope.FancyNetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
                 }).then(function(response) {
                     // Adapt tooltip and node color
                     var modified = _.extend(response, {
                         group: self.types[response.type],
+                        // TODO Adapt to new tooltip
                         title: 'Co-occurrence: ' + response.value + '<br>Typ: ' + response.type
                     });
                     self.nodesDataset.update(modified);
@@ -356,10 +410,78 @@ define([
                             $scope.apply = function () { $mdDialog.hide(); };
                             $scope.closeClick = function() { $mdDialog.cancel(); };
                         }],
-                    locals: { e: entity, n: neighbors }
+                    locals: { e: entity, n: neighbors },
+                    autoWrap: false,
+                    parent: $scope.FancyNetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
                 }).then(function(response) { /* apply click */ }, function() { /* cancel click */ });
             }
 
+            function mergeNodes(nodeIds) {
+                var nodes = self.nodesDataset.get(nodeIds);
+
+                $mdDialog.show({
+                    templateUrl: 'assets/partials/mergeNodes.html',
+                    controller: ['$scope', '$mdDialog', 'playRoutes', 'entities',
+                        function($scope, $mdDialog, playRoutes, entities) {
+
+                            $scope.entities = entities;
+
+                            $scope.apply = function () { $mdDialog.hide(parseInt($scope.target)); };
+                            $scope.closeClick = function() { $mdDialog.cancel(); };
+                        }],
+                    locals: { entities: nodes },
+                    autoWrap: false,
+                    parent: $scope.FancyNetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
+                }).then(function(response) {
+                    var duplicates = _.without(nodeIds, response);
+                    // Remove duplicates from the current network view
+                    removeNodes(duplicates, self.nodesDataset, self.edgesDataset);
+                    // Remove duplicates from the background collection
+                    removeNodes(duplicates, self.nodes, self.edges);
+                    playRoutes.controllers.NetworkController.mergeEntitiesById(response, duplicates).get().then(function(response) {
+                        // Fetch node replacements for the merged nodes
+                        $scope.reloadGraph();
+                    });
+                }, function() { /* cancel click */ });
+            }
+
+            /**
+             * Adjust the maximum of the edge importance slider to the current maximum of the background collection.
+             */
+            function updateImportanceSlider() {
+                // Update new edge max value from non hidden edges
+                var max = new VisDataSet(self.edges.get({ filter: function(edge) { return !edge.hidden; }})).max("value").value;
+                $scope.maxEdgeImportance = max;
+            }
+
+            // ----------------------------------------------------------------------------------
+            // Network Util Helper
+            //
+            // ----------------------------------------------------------------------------------
+
+
+            /**
+             * Removes nodes from the given data collections including their adjacent edges
+             * and returns the removed node and edge ids.
+             */
+            function removeNodes(nodeIds, nodeDataset, edgeDataset) {
+                var removedNodeIds = nodeDataset.remove(nodeIds);
+                var adjacentEdges = getAdjacentEdges(nodeIds, edgeDataset);
+                edgeDataset.remove(adjacentEdges);
+                // Once the network changes the slider needs to be updated
+                updateImportanceSlider();
+                return { nodes: removedNodeIds, edges: adjacentEdges.map(function(e) { return e.id; }) };
+            }
+
+
+            function getAdjacentEdges(nodeIds, edgeDataset) {
+                var adjacentEdges = edgeDataset.get({
+                    filter: function(edge) {
+                        return (_.contains(nodeIds, edge.to) || _.contains(nodeIds, edge.from))
+                    }
+                });
+                return adjacentEdges;
+            }
 
             // ----------------------------------------------------------------------------------
             // Network Event Callbacks
@@ -368,7 +490,7 @@ define([
 
             function onNetworkLoad(network) {
                 self.network = network;
-                addFullscreenButton();
+                addNetworkButtons();
             }
 
             function stabilizationStart() {
@@ -383,9 +505,13 @@ define([
              * Called when the internal iteration threshold is reached. See graphConfig.
              */
             function stabilizationDone() {
+                // Hacky solution since this event seems to be fired twice.
+                if(!$scope.loading) {
+                    return;
+                }
                 console.log("Stabilization Iteration Done");
                 // Release fixed nodes from the previous filter step
-                var releasedNodes = self.nodesDataset.getIds().map(function(id) { return { id: id,  fixed: false }});
+                var releasedNodes = self.nodesDataset.getIds().map(function(id) { return { id: id, fixed: false }});
                 self.nodesDataset.update(releasedNodes);
 
                 // Once the network is stabilized the node positions are stored and the
@@ -395,31 +521,62 @@ define([
                 self.edges = new VisDataSet(self.edgesDataset.get());
 
                 $scope.loading = false;
-                // Reset the current edge slider position, because the new
-                // maximum value could be smaller than the current value.
-                $scope.edgeImportance = 1;
                 disablePhysics();
+
+                // Update new maximum value for the edge importance slider.
+                updateImportanceSlider();
+                // If the value is true, the current applied edge importance will be applied to the network. Otherwise the
+                // edge importance is removed.
+                if(self.preserveEdgeImportance) {
+                    // If the current applied edge importance is larger than the new maximum, then adjust it accordingly.
+                    if($scope.maxEdgeImportance < $scope.edgeImportance) $scope.edgeImportance = $scope.maxEdgeImportance;
+                    handleEdgeSlider($scope.edgeImportance, $scope.edgeImportance - 1);
+                } else {
+                    $scope.edgeImportance = 1;
+                }
+                self.preserveEdgeImportance = false;
             }
 
+            // TODO: Remove code duplication
             function hoverEdge(event) {
                 var edge = self.edgesDataset.get(event.edge);
                 // Only fetch keywords if not already fetched
                 if(_.has(edge, "title")) {
                     return;
                 }
-                // TODO Refactor same as load
-                var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.name; });
-                var entities = $scope.entityFilters.map(function(v) { return v.data.id; });
-                var facets = $scope.observerService.getFacets();
 
-                playRoutes.controllers.NetworkController.getEdgeKeywords(fulltext, facets, entities, $scope.observerService.getTimeRange(), edge.from, edge.to, 4).get().then(function(response) {
+                var filters = currentFilter();
+                playRoutes.controllers.NetworkController.getEdgeKeywords(filters.fulltext, filters.facets, filters.entities, filters.timeRange, edge.from, edge.to, self.numEdgeKeywords).get().then(function(response) {
                     var formattedTerms = response.data.map(function(t) { return '' +  t.term + ': ' + t.score; });
-                    var keywords = '<p class="md-body-2">Keywords</p>' + formattedTerms.join('<br>');
-                    self.edgesDataset.update({ id: event.edge, title: keywords });
+
+                    var docTip = '<p>Occurs in <b>' + edge.value + '</b> documents</p>';
+                    var keywordTip = '<p><b>Keywords</b></p><ul><li>' + formattedTerms.join('</li><li>') + '</li></ul>';
+                    var tooltip = docTip + keywordTip;
+
+                    self.edgesDataset.update({ id: edge.id, title: tooltip });
                     // Only update background collection after stabilization.
                     /* if(!$scope.loading) {
                         self.edges.update({ id: event.edge, title: keywords });
                     } */
+                });
+            }
+
+            function hoverNode(event) {
+                var node = self.nodesDataset.get(event.node);
+                // Only fetch keywords if not already fetched
+                if(_.has(node, "title")) {
+                    return;
+                }
+
+                var filters = currentFilter();
+                playRoutes.controllers.NetworkController.getNeighborCounts(filters.fulltext, filters.facets, filters.entities, filters.timeRange, node.id).get().then(function(response) {
+                    var formattedTerms = response.data.map(function(t) { return '' +  t.type + ': ' + t.count; });
+
+                    var docTip = '<p>Occurs in <b>' + node.value + ' </b>documents</p><p>Type: <b>' + node.type + '</b></p>';
+                    var neighborTip = '<p><b>Neighbors</b></p><ul><li>' + formattedTerms.join('</li><li>') + '</li></ul>';
+                    var tooltip = docTip + neighborTip;
+
+                    self.nodesDataset.update({ id: node.id, title: tooltip });
                 });
             }
 
@@ -442,6 +599,7 @@ define([
             }
 
             function handleEdgeSlider(newValue, oldValue) {
+                console.log("Edge slider: " + newValue + ", " + oldValue);
                 closeContextMenu();
                 if(newValue > oldValue) {
                     var edgesToRemove = self.edgesDataset.get({
@@ -492,10 +650,17 @@ define([
                 var nodeIdOpt = self.network.getNodeAt(position);
                 var edgeIdOpt = self.network.getEdgeAt(position);
 
-                // Node selected
-                if(!_.isUndefined(nodeIdOpt)) {
+                var selection = self.network.getSelectedNodes();
+
+                // Multiple nodes selected and the right-clicked node is in this selection
+                if(!_.isUndefined(nodeIdOpt) && selection.length > 1 && _.contains(selection, nodeIdOpt)) {
+                    showContextMenu(_.extend(position, { id: selection }), self.multiNodeMenu);
+                }
+                // Single node selected
+                else if(!_.isUndefined(nodeIdOpt)) {
                     self.network.selectNodes([nodeIdOpt]);
-                    showContextMenu(_.extend(position, { id: nodeIdOpt }), self.nodeMenu);
+                    showContextMenu(_.extend(position, { id: nodeIdOpt }), self.singleNodeMenu);
+                // Edge selected
                 } else if(!_.isUndefined(edgeIdOpt)) {
                     self.network.selectEdges([edgeIdOpt]);
                     showContextMenu(_.extend(position, { id: edgeIdOpt }), self.edgeMenu);
@@ -505,7 +670,7 @@ define([
                 }
             }
 
-            function showContextMenu(params, menu) {
+            function showContextMenu(params, menuEntries) {
                 var container = document.getElementById('mynetwork');
 
                 var offsetLeft = container.offsetLeft;
@@ -519,15 +684,15 @@ define([
                 var ul = document.createElement('ul');
                 self.popupMenu.appendChild(ul);
 
-                for (var i = 0; i < menu.length; i++) {
+                for (var i = 0; i < menuEntries.length; i++) {
                     var li = document.createElement('li');
                     ul.appendChild(li);
-                    li.innerHTML = li.innerHTML + menu[i].title;
+                    li.innerHTML = li.innerHTML + menuEntries[i].title;
                     (function(value, id, action){
                         li.addEventListener("click", function() {
                             closeContextMenu();
                             action(value, id);
-                        }, false);})(menu[i].title, params.id, menu[i].action);
+                        }, false);})(menuEntries[i].title, params.id, menuEntries[i].action);
                 }
                 container.appendChild(self.popupMenu);
             }
