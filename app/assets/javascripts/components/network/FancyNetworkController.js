@@ -83,7 +83,7 @@ define([
             });
         }])
         // Network Controller
-        .controller('FancyNetworkController', ['$scope', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', function ($scope, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties) {
+        .controller('FancyNetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties) {
 
             var self = this;
 
@@ -195,6 +195,8 @@ define([
             $scope.$watch('edgeImportance', handleEdgeSlider);
 
             $scope.reloadGraph = function() {
+                var promise = $q.defer();
+
                 var filters = currentFilter();
 
                  var fraction = [
@@ -249,6 +251,7 @@ define([
                             edges: self.edgesDataset
                         };
                 });
+                return  promise.promise;
             };
 
             /**
@@ -266,7 +269,14 @@ define([
 
             $scope.observerService.registerObserverCallback(function() {
                 console.log("Update network");
-                $scope.reloadGraph();
+                return $scope.reloadGraph();
+            });
+
+            $scope.observerService.subscribeReset(function() {
+                // Do not use data from previous filtering steps when collection is changed
+                self.nodes.clear();
+                self.edges.clear();
+                return $scope.reloadGraph();
             });
 
             function addNetworkButtons() {

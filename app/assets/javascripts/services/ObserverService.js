@@ -369,7 +369,7 @@ define([
                             type: 'reset',
                             active: false,
                             data: {
-                                name: "Filter reseted"
+                                name: "Filter has been reset"
                             }
                         }, false);
                     });

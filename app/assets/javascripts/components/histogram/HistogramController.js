@@ -335,8 +335,6 @@ define([
                     $scope.currentLoD = lod;
                 };
 
-
-
                 $scope.observer.registerObserverCallback(function() {
                     if(!$scope.drilldown && !$scope.drillup) {
                         return $scope.updateHistogram();
