@@ -30,7 +30,7 @@ define([
         .factory('graphPropertiesShareService', function () {
             var graphProperties = {
                 // Order: locations, organizations, persons, miscellaneous
-                categoryColors: ["#8dd3c7", "#fb8072","#bebada", "#ffffb3"],
+                categoryColors: ["#abd9e9", "#fee090","#d73027", "#4575b4"],
                 categories:
                     [
                         {id: 'LOC', full: 'Location'},
