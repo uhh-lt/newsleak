@@ -18,7 +18,6 @@
 define([
     'angular',
     'angularMoment',
-    './factory/network/ToolFactory',
     './factory/metadata/MetaFactory',
     './factory/source/SourceFactory',
     './factory/source/HighlightFactory',
@@ -26,11 +25,6 @@ define([
     './components/sources/DocumentController',
     './components/network/FancyNetworkController',
     './components/network/GraphConfig',
-    './components/network/ToolController',
-    './components/network/TextModalController',
-    './components/network/MergeModalController',
-    './components/network/EditModalController',
-    './components/network/ConfirmModalController',
     './components/metadata/MetadataController',
     './components/sources/SearchController',
     './components/history/HistoryController',
@@ -52,17 +46,11 @@ define([
 ], function (angular) {
     'use strict';
 
-    var app = angular.module('myApp',
-        [
+    var app = angular.module('myApp', [
             'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial', 'ngMdIcons',
-            'angularMoment', 'underscore', 'myApp.observer', 'myApp.util', 'myApp.history', 'myApp.graphConfig',
-            'myApp.tools', 'angularScreenfull',
-            'myApp.textmodal', 'myApp.mergemodal', 'myApp.editmodal', 'myApp.confirmmodal',
-            'myApp.network', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory',
-            'myApp.metafactory', 'myApp.toolfactory', 'myApp.document',
-            'myApp.histogram', 'myApp.search',
-            'ngVis'
-        ]
+            'angularMoment', 'underscore', 'myApp.observer', 'myApp.util', 'myApp.history', 'myApp.graphConfig', 'angularScreenfull',
+            'myApp.network', 'myApp.search', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory', 'myApp.metafactory',
+            'myApp.document', 'myApp.histogram', 'ngVis']
     );
 
     app.config(['$stateProvider', '$urlRouterProvider', '$mdThemingProvider', function($stateProvider, $urlRouterProvider, $mdThemingProvider) {
@@ -92,10 +80,6 @@ define([
                 'network': {
                     templateUrl: 'assets/partials/network.html',
                     controller: 'FancyNetworkController'
-                },
-                'tools': {
-                    templateUrl: 'assets/partials/tools.html',
-                    controller: 'ToolController'
                 },
                 'histogram': {
                     templateUrl: 'assets/partials/histogram.html',
@@ -128,8 +112,8 @@ define([
         return uiProperties;
     });
 
-    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', '$mdDialog', 'moment', 'uiShareService', 'ObserverService', 'playRoutes', '_',
-        function ($scope, $state, $timeout, $window, $mdDialog, moment, uiShareService, ObserverService, playRoutes, _) {
+    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', '$mdDialog', 'moment', 'uiShareService', 'ObserverService', 'playRoutes',
+        function ($scope, $state, $timeout, $window, $mdDialog, moment, uiShareService, ObserverService, playRoutes) {
 
             /* Select graph tab on startup. In order to update the value from the child scope we need
              * an object here. */
@@ -174,42 +158,11 @@ define([
                 //setUILayoutProperties();
             });
 
-
-            // TODO: Refactor move to own file
             $scope.showSettings = function() {
-                var blacklisted = playRoutes.controllers.EntityController.getBlacklistedEntities().get().then(function(response) {
-                    return response.data;
-                });
-
                 $mdDialog.show({
-                templateUrl: 'assets/partials/settings.html',
-                controller: ['$scope', '$mdDialog', 'playRoutes', 'b',
-                    function($scope, $mdDialog, playRoutes, b) {
-                        $scope.blacklisted = b;
-                        $scope.selected = [];
-
-                        $scope.toggle = function (item) {
-                            if($scope.exists(item, $scope.selected)) { $scope.selected = _.without($scope.selected, item); }
-                            else { $scope.selected.push(item); }
-                        };
-
-                        $scope.exists = function (item, list) {
-                            var idx = _.findIndex(list, function(el) { return el.id == item.id; });
-                            return idx > -1;
-                        };
-
-                        $scope.removeItems = function() {
-                            var ids = $scope.selected.map(function(e) { return e.id });
-                            playRoutes.controllers.EntityController.undoBlacklistingByIds(ids).get().then(function(response) { });
-                            $scope.blacklisted = _.reject($scope.blacklisted, function(e) { return $scope.exists(e, $scope.selected); });
-                            $scope.selected.length = 0;
-                        };
-
-                        $scope.closeClick = function() { $mdDialog.cancel(); };
-                    }],
-                    locals: { b: blacklisted }
-                }).then(function(response) {
-                }, function() { /* cancel click */ });
+                    templateUrl: 'assets/partials/settings.html',
+                    controller: 'SettingsController'
+                })
             };
 
             $scope.changeDataset = function() {
@@ -221,6 +174,78 @@ define([
                     }
                 });
             };
+        }]);
+
+    app.controller('SettingsController', ['$scope', '$mdDialog', 'playRoutes', '_', 'ObserverService', function ($scope, $mdDialog, playRoutes, _, ObserverService) {
+
+            $scope.blacklist = [];
+            $scope.mergelist = [];
+
+            $scope.blacklistSelection = [];
+            $scope.mergelistSelection = [];
+
+            // Will be affected by the tab md-change event
+            $scope.isBlacklist = false;
+
+            $scope.init = function() {
+                fetchBlacklist();
+                fetchMergelist();
+            };
+
+            $scope.init();
+
+            function fetchBlacklist() {
+                 playRoutes.controllers.EntityController.getBlacklistedEntities().get().then(function (response) {
+                     $scope.blacklist = response.data;
+                });
+            }
+
+            function fetchMergelist() {
+                playRoutes.controllers.EntityController.getMergedEntities().get().then(function (response) {
+                    $scope.mergelist = response.data;
+                });
+            }
+
+            $scope.joinDuplicates = function(duplicates) {
+                return duplicates.map(function(d) { return d.name; }).join(', ')
+            };
+
+            $scope.toggle = function (item, list) {
+                if($scope.exists(item, list)) {
+                    // Remove element in-place from list
+                    var index = list.indexOf(item);
+                    list.splice(index, 1);
+                } else { list.push(item); }
+            };
+
+            $scope.exists = function (item, list) {
+                var index = list.indexOf(item);
+                return index > -1;
+            };
+
+            $scope.removeFromBlacklist = function() {
+                removeSelection($scope.blacklist, $scope.blacklistSelection, function(ids) { playRoutes.controllers.EntityController.undoBlacklistingByIds(ids).get(); })
+            };
+
+            $scope.removeFromMergelist = function() {
+                removeSelection($scope.mergelist, $scope.mergelistSelection, function(ids) { playRoutes.controllers.EntityController.undoMergeByIds(ids).get(); })
+            };
+
+            function removeSelection(list, selection, callback) {
+                var ids = selection.map(function(e) { return e.id });
+                callback(ids);
+                // Remove selected items from the list in-place
+                selection.forEach(function(el) {
+                    var index = list.indexOf(el);
+                    list.splice(index, 1);
+                });
+                selection.length = 0;
+                // Update network and frequency chart
+                // TODO: Enhancement update only special parts of the application
+                ObserverService.notifyObservers();
+             }
+
+            $scope.closeClick = function() { $mdDialog.cancel(); };
         }]);
 
     return app;
