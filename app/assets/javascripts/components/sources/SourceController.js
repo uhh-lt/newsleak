@@ -194,6 +194,10 @@ define([
                     //subscribe to update document list on filter change
                     $scope.observer.registerObserverCallback({ priority: 2, callback: $scope.updateDocumentList });
 
+                    $scope.observer.subscribeReset(function() {
+                        return $scope.updateDocumentList();
+                    });
+
                     $scope.loadFullDocument = function (doc) {
                         // Focus open tab if document is already opened
                         if($scope.isDocumentOpen(doc.id)) {
