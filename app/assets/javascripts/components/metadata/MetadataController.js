@@ -607,7 +607,7 @@ define([
                     };
 
 
-                    $scope.observer.registerObserverCallback($scope.updateMetadataView);
+                    $scope.observer.registerObserverCallback({ priority: 10, callback: $scope.updateMetadataView });
                     //load another 50 entities for specific metadata
                     $scope.loadMore = function (ele) {
                         if (ele.mcs.top != 0) {

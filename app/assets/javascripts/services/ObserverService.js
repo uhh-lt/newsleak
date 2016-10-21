@@ -23,7 +23,7 @@ define([
 
     angular.module("myApp.observer", ['play.routing', 'angularMoment'])
         .factory('ObserverService', ['playRoutes', '$q', '$timeout', function(playRoutes, $q, $timeout) {
-            //holds all observer functions
+            // Stores callback instances consisting of a callback method and a priority number
             var observerCallbacks = [];
             //holds subscriber functions
             var subscriber = [];
@@ -96,20 +96,22 @@ define([
 
             return {
                 /**
-                 * register an observer with callback function for updating views
-                 * IMPORTANT: the callback function has to return an promise
+                 * Register an observer with callback function and priority for updating the views. The
+                 * callbackInstance has the following format: { priority: 1, callback: foo }
+                 * IMPORTANT: the callback function has to return a promise a
                  */
-                registerObserverCallback: function(callback){
-                    observerCallbacks.push(callback);
-
+                registerObserverCallback: function(callbackInstance){
+                    observerCallbacks.push(callbackInstance);
                 },
                 /**
                  * call all observer callback functions
                  */
                 notifyObservers: function(){
                     var callBackPromises = [];
-                    angular.forEach(observerCallbacks, function(callback){
-                        callBackPromises.push(callback());
+                    var prioritized = observerCallbacks.sort(function(a, b) { return a.priority - b.priority; });
+
+                    angular.forEach(prioritized, function(callbackInstance){
+                        callBackPromises.push(callbackInstance.callback());
                     });
                     var promise = $q.all(callBackPromises);
                     return promise;

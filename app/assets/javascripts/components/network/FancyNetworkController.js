@@ -267,9 +267,12 @@ define([
             // Initialize graph
             $scope.reloadGraph();
 
-            $scope.observerService.registerObserverCallback(function() {
-                console.log("Update network");
-                return $scope.reloadGraph();
+            $scope.observerService.registerObserverCallback({
+                priority: 1,
+                callback: function () {
+                    console.log("Update network");
+                    return $scope.reloadGraph();
+                }
             });
 
             $scope.observerService.subscribeReset(function() {

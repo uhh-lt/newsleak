@@ -335,9 +335,12 @@ define([
                     $scope.currentLoD = lod;
                 };
 
-                $scope.observer.registerObserverCallback(function() {
-                    if(!$scope.drilldown && !$scope.drillup) {
-                        return $scope.updateHistogram();
+                $scope.observer.registerObserverCallback({
+                    priority: 3,
+                    callback: function() {
+                        if(!$scope.drilldown && !$scope.drillup) {
+                            return $scope.updateHistogram();
+                        }
                     }
                 });
 
