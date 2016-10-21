@@ -276,9 +276,11 @@ define([
             });
 
             $scope.observerService.subscribeReset(function() {
+                console.log("Network reset");
                 // Do not use data from previous filtering steps when collection is changed
                 self.nodes.clear();
                 self.edges.clear();
+                //return $q.defer().promise;
                 return $scope.reloadGraph();
             });
 

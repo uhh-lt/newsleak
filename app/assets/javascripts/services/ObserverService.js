@@ -271,12 +271,15 @@ define([
                   angular.forEach(subscriber, function(_subscriber) {
                       switch(_subscriber.type) {
                           case 'reset':
+                              console.log("Reset indi");
                               proms.push(_subscriber.func());
                               break;
                           case 'all':
+                              console.log("A indi");
                               _subscriber.func(items);
                               break;
                           case 'history':
+                              console.log("Histo indi");
                               _subscriber.func(history);
                               break;
                           default:
@@ -352,21 +355,20 @@ define([
                     var rootThis = this;
                     history.forEach(function(item) {
                         if(item.active)
-                            rootThis.removeItem(item.id, item.type);
+                            rootThis.removeItem(item.id, item.type, false);
                     });
                     items = {};
                     types.forEach(function(type) {
                         items[type] = [];
                     });
                     this.initTypes();
-
-
                     $q.all([
                         promiseEntities, promiseLoD, promiseMetadata
                     ]).then(function(values) {
                         rootThis.refreshSubscribers().then(function(val) {
                             rootThis.notifyObservers();
                         });
+
                         rootThis.addItem({
                             type: 'reset',
                             active: false,
