@@ -41,7 +41,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
   private val defaultPageSize = 50
   private val defaultFacets = Facets.empty
   // TODO: request is not available here
-  private val (numberOfDocuments, documentIterator) = FacetedSearch.fromIndexName("cable").searchDocuments(defaultFacets, defaultPageSize)
+  private val (numberOfDocuments, documentIterator) = FacetedSearch.fromIndexName("enron").searchDocuments(defaultFacets, defaultPageSize)
   private val defaultSession = IteratorSession(numberOfDocuments, documentIterator, defaultFacets.hashCode())
   private val metadataKeys = List("Subject", "Origin", "SignedBy", "Classification")
   // metdatakeys for enron

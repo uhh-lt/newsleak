@@ -84,9 +84,14 @@ class Application @Inject extends Controller {
     } else {
       Ok(views.html.index()).withNewSession.withSession(
         "uid" -> uid,
+        // Initialize application with default ES index dataset
         datasetSessionKey -> NewsleakConfigReader.config.getString("es.index.default")
       )
     }
+  }
+
+  def getDatasets() = Action { implicit request =>
+    Ok(Json.obj("current" -> NewsleakConfigReader.esDefaultIndex, "available" -> NewsleakConfigReader.dbNames))
   }
 
   def changeDataset(name: String) = Action { implicit request =>
@@ -103,6 +108,7 @@ class Application @Inject extends Controller {
     Ok(
       JavaScriptReverseRouter(varName)(
         // TODO: You need to add your routes here
+        controllers.routes.javascript.Application.getDatasets,
         controllers.routes.javascript.Application.changeDataset,
         controllers.routes.javascript.DocumentController.getDocById,
         controllers.routes.javascript.DocumentController.getKeywordsById,

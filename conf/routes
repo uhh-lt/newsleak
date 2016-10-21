@@ -14,6 +14,7 @@ GET         /                                                controllers.Applica
 # Play routes serving HTML to AngularJS start with /partials
 #GET			/partials/*file						                 controllers.Application.loadPublicHTML(file)
 
+GET    /getDatasets             controllers.Application.getDatasets()
 GET    /changeDataset           controllers.Application.changeDataset(name: String)
 GET    /docById           		controllers.DocumentController.getDocById(id: Int)
 GET    /getDocsByLabel          controllers.DocumentController.getDocsByLabel(label: String)

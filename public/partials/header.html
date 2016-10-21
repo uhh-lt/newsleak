@@ -24,7 +24,7 @@
 
     <md-input-container>
       <md-select ng-model="selectedDataset" ng-change="changeDataset()" aria-label="dataset">
-        <md-option ng-repeat="data in datasets" ng-value="data" ng-selected="$index === 0">
+        <md-option ng-repeat="data in datasets" ng-value="data">
           {{data}}
         </md-option>
       </md-select>

@@ -118,11 +118,17 @@ define([
              * an object here. */
             $scope.selectedTab = { index: 0 };
             $scope.selectedDataset = '';
-            $scope.datasets = ['cable', 'enron'];
+            $scope.datasets = [];
 
             init();
 
             function init() {
+                // Fetch datasets for dropdown list
+                playRoutes.controllers.Application.getDatasets().get().then(function(response) {
+                    $scope.datasets = response.data.available;
+                    $scope.selectedDataset = response.data.current;
+                });
+
                 $state.go('layout');
                 // TODO Don't know what the resizing is about
                 // $timeout in order to have the right values right from the beginning on
