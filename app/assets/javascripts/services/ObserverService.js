@@ -271,15 +271,12 @@ define([
                   angular.forEach(subscriber, function(_subscriber) {
                       switch(_subscriber.type) {
                           case 'reset':
-                              console.log("Reset indi");
                               proms.push(_subscriber.func());
                               break;
                           case 'all':
-                              console.log("A indi");
                               _subscriber.func(items);
                               break;
                           case 'history':
-                              console.log("Histo indi");
                               _subscriber.func(history);
                               break;
                           default:

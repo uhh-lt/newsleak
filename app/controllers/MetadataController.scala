@@ -25,13 +25,11 @@ import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller, Results }
 import util.SessionUtils.currentDataset
 import util.TimeRangeParser
+import utils.NewsleakConfigReader
 
 class MetadataController @Inject extends Controller {
 
-  private val defaultExcludeTypes = Map(
-    "cable" -> List("Subject", "Header", "ReferenceId", "References", "Keywords", "Entities", "Created", "EventTimes"),
-    "enron" -> List("Subject", "Timezone", "sender.id", "Recipients.id", "Recipients.order")
-  )
+  private lazy val defaultExcludeTypes = NewsleakConfigReader.excludedMetadataTypes
   private val defaultFetchSize = 50
 
   /**
