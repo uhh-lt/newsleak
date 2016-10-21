@@ -37,7 +37,7 @@ define([
                 'ObserverService',
                 function ($scope, $timeout, $q, playRoutes, metaShareService, sourceShareService, ObserverService) {
 
-                    (function (H, $) {
+                    /*(function (H, $) {
                         var fireEvent = H.fireEvent;
 
                         H.wrap(H.Pointer.prototype, 'init', function (proceed) {
@@ -169,7 +169,7 @@ define([
                         applyClickEventHandler('dblclick', 'onDblClick');
 
 
-                    }(Highcharts, jQuery));
+                    }(Highcharts, jQuery));*/
 
 
                     $scope.chartConfig = metaShareService.chartConfig;
@@ -250,7 +250,7 @@ define([
                         });
                     };
 
-                    $scope.contextMenu = function (category, e, type) {
+                    /*$scope.contextMenu = function (category, e, type) {
                         var posx = e.clientX + window.pageXOffset + 'px'; //Left Position of Mouse Pointer
                         var posy = e.clientY + window.pageYOffset + 'px'; //Top Position of Mouse Pointer
                         $('#constext-menu-div').css({top: posy , left: posx });
@@ -283,7 +283,7 @@ define([
                                 break;
                         }
 
-                    });
+                    });*/
 
                     $scope.updateEntityCharts = function () {
                         if ($scope.initializedEntity) {
@@ -649,7 +649,7 @@ define([
                     //console.log(sourceShareService);
                     //console.log(filterShareService);
 
-                    $scope.onContext = function(params) {
+                    /*$scope.onContext = function(params) {
                         params.event.preventDefault();
                         closeContextMenu();
 
@@ -695,7 +695,7 @@ define([
                                 }, false);})(menu[i].title, params.id, menu[i].action);
                         }
                         container.appendChild(self.popupMenu);
-                    };
+                    };*/
 
                 }
             ]
