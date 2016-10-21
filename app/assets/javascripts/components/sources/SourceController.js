@@ -54,6 +54,9 @@ define([
                           uiShareService,
                           ObserverService) {
 
+                    $scope.allDocumentsLoadedMsg = 'All matching Documents loaded';
+                    $scope.noDocumentsMsg = 'No document found for current applied filters.';
+
                     $scope.sourceShared = sourceShareService;
                     $scope.highlightShared = highlightShareService;
                     $scope.uiShareService = uiShareService;
@@ -272,10 +275,10 @@ define([
                         }
                     });
 
-                    $scope.showAllLoaded = function() {
+                    $scope.showDocumentToast = function(message) {
                         $mdToast.show(
                             $mdToast.simple()
-                                .textContent('All matching Documents loaded!')
+                                .textContent(message)
                                 .position('bottom left')
                                 .parent(angular.element('#document'))
                                 .hideDelay(3000)
@@ -316,7 +319,7 @@ define([
                         }
                     };
 
-                    $scope.hidePopover = function (id) {
+                    /*$scope.hidePopover = function (id) {
                         $scope.popover.promises[id] = $timeout(function () {
                             $scope.hideFunction(id)
                         }, 10);
@@ -329,7 +332,7 @@ define([
 
                     $scope.hideFunction = function (x) {
                         $scope.popover.isOpen[x] = false;
-                    };
+                    };*/
                 }
             ]);
 });

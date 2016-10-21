@@ -16,7 +16,12 @@
   -->
 
 <div style="padding: 15px;" id="documents-view">
-<p style="font-size:16px">Document Overview: <span ng-show="hits > 0"> <b>{{hits}}</b> hits out of <b>{{sourceShared.documentsInDB}}</b> docs</span> </p>
+    <p style="font-size:16px">
+        Document Overview:
+        <span ng-show="hits > 0"> <b>{{hits}}</b> hits out of <b>{{sourceShared.documentsInDB}}</b> docs
+        </span>
+    </p>
+
     <md-autocomplete
             md-no-cache
             md-selected-item="selectedItem"
@@ -30,29 +35,20 @@
             <span md-highlight-text="searchText" md-highlight-flags="^i">{{ label }}</span>
         </md-item-template>
         <md-not-found>
-            No tags matching "{{ searchText }}" were found.
-            <a>Create a new one!</a>
+            No tags matching "{{ searchText }}" were found. Create a new one!
         </md-not-found>
     </md-autocomplete>
 
     <p></p>
-    <!--<p ng-show="hits > 0">Hits: {{hits}} out of {{sourceShared.documentsInDB}}</p>-->
-    <div class="btn btn-default load-more-button" ng-show="false" ng-click="loadMore()">
-        Load more documents
-        <i class="glyphicon glyphicon-repeat"></i>
-    </div>
-    <div class="alert alert-info" ng-show="sourceShared.documentList.length == 0">
-        <p>No document for current set filters available. Filter less to get document list.</p>
-    </div>
-    <script type="text/ng-template" id="doc_tooltip_tmpl">
 
 
+    <!--<script type="text/ng-template" id="doc_tooltip_tmpl">
         <div>
             <ul class="list-group-item">
                 <li class="list-group-item" ng-repeat="(key, value) in item.metadata"><span style="font-weight: 700">{{key}}:</span> {{value}}</li>
             </ul>
         </div>
-    </script>
+    </script>-->
 
     <div ng-show="sourceShared.documentList.length > 0" class="docs-ul">
         <b style="text-decoration: underline;">{{ sourceShared.documentListInfo }}</b>
@@ -76,7 +72,9 @@
             </md-list>
         </md-content>
         <!-- Show toast when no documents in the iterator and the doc list is not empty -->
-        <span ng-init="showAllLoaded()" ng-if="iteratorEmpty && hits > 0"></span>
+        <span ng-init="showDocumentToast(allDocumentsLoadedMsg)" ng-if="iteratorEmpty && hits > 0"></span>
+        <!-- Show toast when no documents in the iterator and the doc list is not empty -->
+        <span ng-init="showDocumentToast(noDocumentsMsg)" ng-if="hits == 0"></span>
     </div>
 
     <div class="docs-loading" ng-show="showLoading"><span>Loading ...</span></div>
