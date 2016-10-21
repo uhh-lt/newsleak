@@ -43,9 +43,6 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
   // TODO: request is not available here
   private val (numberOfDocuments, documentIterator) = FacetedSearch.fromIndexName("enron").searchDocuments(defaultFacets, defaultPageSize)
   private val defaultSession = IteratorSession(numberOfDocuments, documentIterator, defaultFacets.hashCode())
-  private val metadataKeys = List("Subject", "Origin", "SignedBy", "Classification")
-  // metdatakeys for enron
-  // private val metadataKeys = List("Subject", "Timezone", "sender.name", "Recipients.email", "Recipients.name", "Recipients.type")
 
   /**
    * returns the document with the id "id", if there is any
@@ -136,7 +133,8 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
     if (docIds.nonEmpty) {
       val docSearch = Document.fromDBName(currentDataset)
 
-      val metadataTriple = docSearch.getMetadataForDocuments(docIds, metadataKeys)
+      val keys = docSearch.getMetadataKeysAndTypes().map(_._1)
+      val metadataTriple = docSearch.getMetadataForDocuments(docIds, keys)
       val response = metadataTriple
         .groupBy(_._1)
         .map { case (id, inner) => id -> inner.map(doc => Json.obj("key" -> doc._2, "val" -> doc._3)) }
