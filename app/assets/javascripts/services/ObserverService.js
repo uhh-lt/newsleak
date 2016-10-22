@@ -53,7 +53,8 @@ define([
                     //TODO: hack for ES issue
                     metadataTypes = [];
                     angular.forEach(response.data, function(type){
-                        metadataTypes.push(type.replace(".","_"));
+                        //metadataTypes.push(type.replace(".","_").toLowerCase());
+                        metadataTypes.push(type.replace("sender","Sender"));
                     });
 
                     angular.forEach(metadataTypes, function (type) {

@@ -39,7 +39,7 @@
                             ng-repeat="metaType in metadataTypes"
                             label="{{metaType}}">
                         <div class="scroll-chart">
-                            <div id="chart_{{metaType | lowercase}}" class="meta-chart"></div>
+                            <div id="chart_{{metaType.replace('.','_') | lowercase}}" class="meta-chart"></div>
                         </div>
                     </md-tab>
                 </md-tabs>

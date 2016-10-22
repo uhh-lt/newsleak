@@ -218,6 +218,7 @@ define([
                             });
                         });
                         $scope.observer.getMetadataTypes().then(function (types) {
+                            console.log(types);
                             $scope.metadataTypes = types;
                             $scope.initMetadataCharts().then(function() {
                                 defer2.resolve("initMeta");
@@ -387,13 +388,13 @@ define([
                                 //console.log(type);
                                 $scope.metaCharts[type].showLoading('Loading ...');
                                 var instances = $scope.chartConfigs[type].xAxis["categories"];
-                                playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext, type, facets, entities, instances, $scope.observer.getTimeRange()).get().then(
+                                playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext, type.replace(".","_"), facets, entities, instances, $scope.observer.getTimeRange()).get().then(
                                     function (result) {
                                         //result.data[type].forEach(function(x) {
                                         //    console.log(x.key + ": " + x.count);
                                         //});
                                         var data = [];
-                                        angular.forEach(result.data[type], function (x) {
+                                        angular.forEach(result.data[type.replace(".","_")], function (x) {
                                             if (x.count <= 0)
                                                 data.push(null);
                                             else
@@ -529,8 +530,9 @@ define([
                                 function (result) {
 
                                     $.each(result.data, function () {
-                                            $.each(this, function (key, value) {
+                                            $.each(this, function (key2, value) {
                                                 //console.log(value);
+                                                var key = key2.replace("_",".");
                                                 if ($scope.metadataTypes.indexOf(key) != -1) {
 
                                                     $scope.chartConfigs[key] = angular.copy($scope.chartConfig);
@@ -583,9 +585,10 @@ define([
                                                             }
                                                         }
                                                     }];
-                                                    $scope.chartConfigs[key].chart.renderTo = "chart_" + key.toLowerCase();
-                                                    $("#chart_" + key.toLowerCase()).css("height", $scope.frequencies[key].length * 35);
+                                                    $scope.chartConfigs[key].chart.renderTo = "chart_" + key.toLowerCase().replace(".","_");
+                                                    $("#chart_" + key.toLowerCase().replace(".","_")).css("height", $scope.frequencies[key].length * 35);
                                                     $scope.metaCharts[key] = new Highcharts.Chart($scope.chartConfigs[key]);
+
                                                 }
 
                                             });
