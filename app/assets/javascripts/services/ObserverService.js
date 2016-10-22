@@ -313,13 +313,13 @@ define([
                 getFacets: function() {
                     var facets = [];
                     if(items.metadata) {
-                        $.each(items.metadata, function(metaType,val) {
+                            metadataTypes.forEach(function(metaType) {
                             if(items.metadata[metaType].length > 0) {
                                 var keys = [];
                                 angular.forEach(items.metadata[metaType], function(x) {
                                     keys.push(x.data.name);
                                 });
-                                facets.push({key: metaType, data: keys});
+                                facets.push({key: metaType.replace(".","_"), data: keys});
                             }
                         });
                         if(facets == 0) facets = [{'key':'dummy','data': []}];
