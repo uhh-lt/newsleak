@@ -183,14 +183,14 @@ define([
 
                     $scope.virtualScroll = {
                         getItemAtIndex: function(index) {
-                            if (!$scope.docsLoading && !$scope.iteratorEmpty && $scope.sourceShared.documentList.length >= 50 && index >  $scope.sourceShared.documentList.length) {
+                            if (!$scope.docsLoading && !$scope.iteratorEmpty && $scope.sourceShared.documentList.length >= 50 && index >  $scope.sourceShared.documentList.length-3) {
                                 $scope.loadMore();
-                                return null;
+                                return "Loading ...";
                             }
                             return  $scope.sourceShared.documentList[index];
                         },
                         getLength: function() {
-                            return  $scope.sourceShared.documentList.length+3;
+                            return  $scope.sourceShared.documentList.length;
                         }
                     };
 
