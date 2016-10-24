@@ -188,7 +188,7 @@ define([
             /* Indicates whether the network is initialized or new data is being loaded */
             $scope.loading = true;
             /* Determines how many keywords should be shown in the edge tooltip */
-            self.numEdgeKeywords = 4;
+            self.numEdgeKeywords = 10;
             /* Determines whether the edge importance filter should be preserved during graph reloading */
             self.preserveEdgeImportance = false;
 
