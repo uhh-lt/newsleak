@@ -78,9 +78,12 @@ define([
 
                     $scope.observer = ObserverService;
 
-                    // Remove all open documents when reset is issued, but keep
-                    // old bindings to the array.
-                    $scope.observer.subscribeReset(function() { $scope.tabs.length = 0; });
+                    $scope.observer.subscribeReset(function() {
+                        // Remove all open documents when reset is issued, but keep old bindings to the array.
+                        $scope.tabs.length = 0;
+                        // Update the document labels when collection is changed
+                        updateTagLabels();
+                    });
 
 
                     init();
