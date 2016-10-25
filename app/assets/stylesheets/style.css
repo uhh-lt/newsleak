@@ -325,6 +325,8 @@ footer > div, footer > div #histogram {
     ======================================
 */
 
+/* TODO clean */
+
 #document div#documents-view, #document > div:first-child {
     height: 100%;
 }

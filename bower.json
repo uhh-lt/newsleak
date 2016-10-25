@@ -4,7 +4,8 @@
   "version": "0.0.1",
   "homepage": "https://github.com/tudarmstadt-lt/newsleak-frontend",
   "authors": [
-    "To be set by next developer"
+    "Uli Fahrer",
+	"Florian Zouhar"
   ],
   "license": "GNU General Public License v3",
   "ignore": [
