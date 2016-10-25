@@ -58,7 +58,7 @@ class NetworkController @Inject extends Controller {
   ) = Action { implicit request =>
 
     val times = TimeRangeParser.parseTimeRange(timeRange)
-    val facets = Facets(fullText, generic, entities, times.from, times.to)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, None, None)
 
     val agg = FacetedSearch
       .fromIndexName(currentDataset)
@@ -82,7 +82,7 @@ class NetworkController @Inject extends Controller {
   ) = Action { implicit request =>
 
     val times = TimeRangeParser.parseTimeRange(timeRange)
-    val facets = Facets(fullText, generic, entities, times.from, times.to)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, None, None)
     val agg = FacetedSearch
       .fromIndexName(currentDataset)
       // Only consider documents where the two entities occur
@@ -104,7 +104,7 @@ class NetworkController @Inject extends Controller {
     filter: List[Long]
   ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
-    val facets = Facets(fullText, generic, entities, times.from, times.to)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, None, None)
     val sizes = nodeFraction.map { case (t, s) => withName(t) -> s.toInt }
 
     val blacklistedIds = Entity.fromDBName(currentDataset).getBlacklisted().map(_.id)

@@ -109,7 +109,7 @@ class EntityController @Inject extends Controller {
     filter: List[Long]
   ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
-    val facets = Facets(fullText, generic, entities, times.from, times.to)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, None, None)
     var newSize = size
 
     val blacklistedIds = Entity.fromDBName(currentDataset).getBlacklisted().map(_.id)

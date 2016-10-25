@@ -104,7 +104,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
   ) = Action { implicit request =>
     val uid = request.session.get("uid").getOrElse("0")
     val times = TimeRangeParser.parseTimeRange(timeRange)
-    val facets = Facets(fullText, generic, entities, times.from, times.to)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, None, None)
     var pageCounter = 0
 
     val facetSearch = FacetedSearch.fromIndexName(currentDataset)

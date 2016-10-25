@@ -54,7 +54,7 @@ class MetadataController @Inject extends Controller {
    */
   def getMetadata(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
-    val facets = Facets(fullText, generic, entities, times.from, times.to)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, None, None)
     val res = FacetedSearch.fromIndexName(currentDataset).aggregateAll(facets, defaultFetchSize, defaultExcludeTypes(currentDataset))
       .map(agg => Json.obj(agg.key -> agg.buckets.map {
         case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
@@ -82,7 +82,7 @@ class MetadataController @Inject extends Controller {
     timeRange: String
   ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
-    val facets = Facets(fullText, generic, entities, times.from, times.to)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, None, None)
     val agg = FacetedSearch.fromIndexName(currentDataset).aggregate(facets, key, defaultFetchSize, instances, Nil)
     if (instances.isEmpty) {
       val res = Json.obj(key -> agg.buckets.map {
@@ -107,7 +107,7 @@ class MetadataController @Inject extends Controller {
    */
   def getKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
-    val facets = Facets(fullText, generic, entities, times.from, times.to)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, None, None)
     val res = FacetedSearch.fromIndexName(currentDataset).aggregateKeywords(facets, defaultFetchSize, List()).buckets.map {
       case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
       case _ => Json.obj()

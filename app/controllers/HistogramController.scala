@@ -45,7 +45,7 @@ class HistogramController @Inject extends Controller {
     lod: String
   ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
-    val facets = Facets(fullText, generic, entities, times.from, times.to)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, None, None)
     val res = FacetedSearch.fromIndexName(currentDataset).histogram(facets, LoD.withName(lod)).buckets.map {
       case MetaDataBucket(key, count) => Json.obj("range" -> key, "count" -> count)
       case _ => Json.obj("" -> 0)
