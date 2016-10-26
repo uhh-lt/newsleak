@@ -236,25 +236,34 @@ define([
             };
 
             $scope.removeFromBlacklist = function() {
-                removeSelection($scope.blacklist, $scope.blacklistSelection, function(ids) { playRoutes.controllers.EntityController.undoBlacklistingByIds(ids).get(); })
+                // TODO: Enhancement update only special parts of the application
+                removeSelection(
+                    $scope.blacklist,
+                    $scope.blacklistSelection,
+                    function(ids, observer) {
+                        // Update network and frequency chart
+                        playRoutes.controllers.EntityController.undoBlacklistingByIds(ids).get().then(function(response) {  observer.notifyObservers(); })
+                    });
             };
 
             $scope.removeFromMergelist = function() {
-                removeSelection($scope.mergelist, $scope.mergelistSelection, function(ids) { playRoutes.controllers.EntityController.undoMergeByIds(ids).get(); })
+                removeSelection(
+                    $scope.mergelist,
+                    $scope.mergelistSelection,
+                    function(ids, observer) {
+                        playRoutes.controllers.EntityController.undoMergeByIds(ids).get().then(function(response) {  observer.notifyObservers(); })
+                    });
             };
 
             function removeSelection(list, selection, callback) {
                 var ids = selection.map(function(e) { return e.id });
-                callback(ids);
+                callback(ids, ObserverService);
                 // Remove selected items from the list in-place
                 selection.forEach(function(el) {
                     var index = list.indexOf(el);
                     list.splice(index, 1);
                 });
                 selection.length = 0;
-                // Update network and frequency chart
-                // TODO: Enhancement update only special parts of the application
-                ObserverService.notifyObservers();
              }
 
             $scope.closeClick = function() { $mdDialog.cancel(); };
