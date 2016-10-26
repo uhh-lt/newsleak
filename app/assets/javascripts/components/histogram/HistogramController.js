@@ -247,7 +247,7 @@ define([
                     angular.forEach($scope.fulltextFilters, function(item) {
                         fulltext.push(item.data.name);
                     });
-                    playRoutes.controllers.HistogramController.getHistogram(fulltext,facets,entities,$scope.currentRange,$scope.observer.getXTimeRange(),$scope.currentLoD).get().then(function(respone) {
+                    playRoutes.controllers.HistogramController.getHistogram(fulltext,facets,entities,$scope.currentRange,"",$scope.currentLoD).get().then(function(respone) {
                         var overallPromise = $q.defer();
                         if($scope.drilldown ||  $scope.drillup) {
                             playRoutes.controllers.HistogramController.getHistogram("",$scope.emptyFacets,[],$scope.currentRange,"",$scope.currentLoD).get().then(function(responeAll) {
