@@ -32,8 +32,8 @@ define([
             //all item structured by type
             var items = {};
             //types of tracked items
-            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset", "delete", "openDoc"];
-            var notfiyTypes = ["entity", "metadata", "time", "fulltext", "reset"];
+            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset", "delete", "openDoc", "timeX"];
+            var notfiyTypes = ["entity", "metadata", "time", "timeX", "fulltext", "reset"];
             var metadataTypes = [];
             var entityTypes = [];
             var histogramLoD = [];
@@ -141,6 +141,10 @@ define([
                         case types[2]:
                             if(items[item.type].length > 0) action = "replaced";
                             break;
+                        //time filter
+                        case types[13]:
+                            if(items[item.type].length > 0) action = "replaced";
+                            break;
                         case types[5]:
                             action = "other";
                             break;
@@ -179,6 +183,10 @@ define([
                             break;
                         //time filter
                         case types[2]:
+                            items[item.type].push(item);
+                            break;
+                        //time filter
+                        case types[13]:
                             items[item.type].push(item);
                             break;
                         //reset
@@ -310,6 +318,10 @@ define([
                     if(items["time"].length == 0) return ""; else return items["time"][items["time"].length-1].data.name;
                 },
 
+                getXTimeRange: function() {
+                    if(items["timeX"].length == 0) return ""; else return items["timeX"][items["timeX"].length-1].data.name;
+                },
+
                 getFacets: function() {
                     var facets = [];
                     if(items.metadata) {
@@ -334,6 +346,12 @@ define([
                     this.removeItem(items["time"][items["time"].length-1].id,'time');
                     while(items["time"][items["time"].length-1] && items["time"][items["time"].length-1].data.lod == "month")
                         this.removeItem(items["time"][items["time"].length-1].id,'time',false);
+                },
+
+                drillUpXTimeFilter: function() {
+                    this.removeItem(items["timeX"][items["timeX"].length-1].id,'timeX');
+                    while(items["timeX"][items["timeX"].length-1] && items["timeX"][items["timeX"].length-1].data.lod == "month")
+                        this.removeItem(items["timeX"][items["timeX"].length-1].id,'timeX',false);
                 },
                 /**
                  * after async type load, you get the types (promise.then(function(lod) [}))

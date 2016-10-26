@@ -100,13 +100,14 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
     fullText: List[String],
     generic: Map[String, List[String]],
     entities: List[Long],
-    timeRange: String
+    timeRange: String,
+    timeRangeX: String
   ) = Action { implicit request =>
     val uid = request.session.get("uid").getOrElse("0")
     val times = TimeRangeParser.parseTimeRange(timeRange)
-    val facets = Facets(fullText, generic, entities, times.from, times.to, None, None)
+    val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
     var pageCounter = 0
-
     val facetSearch = FacetedSearch.fromIndexName(currentDataset)
     var iteratorSession: IteratorSession = cache.get[IteratorSession](uid)
     if (iteratorSession == null || iteratorSession.hash == defaultSession.hash || iteratorSession.hash != facets.hashCode()) {

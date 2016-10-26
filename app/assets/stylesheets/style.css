@@ -259,10 +259,12 @@ main {
 footer {
     height: 200px;
 }
-
-footer > div, footer > div #histogram {
+footer > div {
     height: 100%;
     margin-top: 10px;
+}
+footer > div #histogram {
+    height: calc(100% - 25px);
 }
 
 .rg-bottom, .rg-left, .rg-right, .rg-top {

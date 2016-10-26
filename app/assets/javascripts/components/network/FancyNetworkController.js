@@ -156,9 +156,10 @@ define([
                 var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.name; });
                 var entities = $scope.entityFilters.map(function(v) { return v.data.id; });
                 var timeRange = $scope.observerService.getTimeRange();
+                var timeRangeX = $scope.observerService.getXTimeRange();
                 var facets = $scope.observerService.getFacets();
 
-                return { fulltext: fulltext, entities: entities, timeRange: timeRange, facets: facets };
+                return { fulltext: fulltext, entities: entities, timeRange: timeRange, timeRangeX: timeRangeX, facets: facets };
             }
 
             $scope.graphOptions = graphProperties.options;
@@ -206,7 +207,7 @@ define([
                     {"key": "MISC", "data": $scope.numMisc }
                 ];
 
-                playRoutes.controllers.NetworkController.induceSubgraph(filters.fulltext, filters.facets, filters.entities, filters.timeRange, fraction, []).get().then(function(response) {
+                playRoutes.controllers.NetworkController.induceSubgraph(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX,fraction, []).get().then(function(response) {
                         // Enable physics for new graph data when network is initialized
                         if(!_.isUndefined(self.network)) {
                             applyPhysicsOptions(self.physicOptions);
@@ -561,7 +562,7 @@ define([
                 }
 
                 var filters = currentFilter();
-                playRoutes.controllers.NetworkController.getEdgeKeywords(filters.fulltext, filters.facets, filters.entities, filters.timeRange, edge.from, edge.to, self.numEdgeKeywords).get().then(function(response) {
+                playRoutes.controllers.NetworkController.getEdgeKeywords(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, edge.from, edge.to, self.numEdgeKeywords).get().then(function(response) {
                     var formattedTerms = response.data.map(function(t) { return '' +  t.term + ': ' + t.score; });
 
                     var docTip = '<p>Occurs in <b>' + edge.value + '</b> documents</p>';
@@ -584,7 +585,7 @@ define([
                 }
 
                 var filters = currentFilter();
-                playRoutes.controllers.NetworkController.getNeighborCounts(filters.fulltext, filters.facets, filters.entities, filters.timeRange, node.id).get().then(function(response) {
+                playRoutes.controllers.NetworkController.getNeighborCounts(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, node.id).get().then(function(response) {
                     var formattedTerms = response.data.map(function(t) { return '' +  t.type + ': ' + t.count; });
 
                     var docTip = '<p>Occurs in <b>' + node.value + ' </b>documents</p><p>Type: <b>' + node.type + '</b></p>';

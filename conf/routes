@@ -23,16 +23,16 @@ GET    /addTag           		controllers.DocumentController.addTag(id: Int, label:
 GET    /removeTag           	controllers.DocumentController.removeTagById(tagId: Int)
 GET    /getTagsByDocId          controllers.DocumentController.getTagsByDocId(id: Int)
 GET    /getKeywordsById         controllers.DocumentController.getKeywordsById(id: Int, size: Int)
-GET    /getDocs           		controllers.DocumentController.getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
-GET     /induceSubgraph         controllers.NetworkController.induceSubgraph(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, nodeFraction: Map[String, String], filter: List[Long])
+GET    /getDocs           		controllers.DocumentController.getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String)
+GET     /induceSubgraph         controllers.NetworkController.induceSubgraph(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String, nodeFraction: Map[String, String], filter: List[Long])
 GET    /getIdsByName             controllers.NetworkController.getIdsByName(name: String)
 GET    /deleteEntityById		controllers.NetworkController.deleteEntityById(id: Long)
 GET	   /mergeEntitiesById		controllers.NetworkController.mergeEntitiesById(focalId: Int, duplicates: List[Long])
-GET	   /getEdgeKeywords		controllers.NetworkController.getEdgeKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, first: Long, second: Long, numberOfTerms: Int)
-GET	   /getNeighborCounts		controllers.NetworkController.getNeighborCounts(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, nodeId: Long)
+GET	   /getEdgeKeywords		controllers.NetworkController.getEdgeKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String, first: Long, second: Long, numberOfTerms: Int)
+GET	   /getNeighborCounts		controllers.NetworkController.getNeighborCounts(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String, nodeId: Long)
 GET    /changeEntityNameById	controllers.NetworkController.changeEntityNameById(id: Long, newName: String)
 GET    /changeEntityTypeById	controllers.NetworkController.changeEntityTypeById(id: Long, newType: String)
-GET    /getEntities		controllers.EntityController.getEntities(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, size: Int, entityType: String, filter: List[Long])
+GET    /getEntities		controllers.EntityController.getEntities(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String, size: Int, entityType: String, filter: List[Long])
 GET     /getEntityTypes controllers.EntityController.getEntityTypes
 GET     /getBlacklisted controllers.EntityController.getBlacklistedEntities
 GET     /getMerged controllers.EntityController.getMergedEntities
@@ -40,11 +40,12 @@ GET     /undoBlacklisting controllers.EntityController.undoBlacklistingByIds(ids
 GET     /undoMerge controllers.EntityController.undoMergeByIds(focalIds: List[Long])
 GET     /getEntitiesByDoc controllers.EntityController.getEntitiesByDoc(id: Long)
 GET    /getEntitiesByType		controllers.EntityController.getEntitiesByType(entityType: String)
-GET   /getMetadata     controllers.MetadataController.getMetadata(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
-GET   /getKeywords     controllers.MetadataController.getKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String)
+GET   /getMetadata     controllers.MetadataController.getMetadata(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String)
+GET   /getKeywords     controllers.MetadataController.getKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String)
 GET   /getMetadataTypes       controllers.MetadataController.getMetadataTypes
-GET    /getSpecificMetadata             controllers.MetadataController.getSpecificMetadata(fullText: List[String], key: String, generic: Map[String, List[String]], entities: List[Long], instances: List[String], timeRange: String)
-GET     /getHistogram               controllers.HistogramController.getHistogram(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, lod: String)
+GET    /getSpecificMetadata             controllers.MetadataController.getSpecificMetadata(fullText: List[String], key: String, generic: Map[String, List[String]], entities: List[Long], instances: List[String], timeRange: String, timeRangeX: String)
+GET     /getHistogram               controllers.HistogramController.getHistogram(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String, lod: String)
+GET     /getXHistogram             controllers.HistogramController.getXHistogram(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String, lod: String)
 GET      /getHistogramLod         controllers.HistogramController.getHistogramLod
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

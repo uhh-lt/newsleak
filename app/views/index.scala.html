@@ -78,7 +78,14 @@
 
             </div>
             <footer id="footer" flex="" r-flex="true">
-                <div ui-view="histogram"></div>
+                <md-tabs>
+                    <md-tab label="Time" md-on-select="">
+                        <div  ui-view="histogram"></div>
+                    </md-tab>
+                    <md-tab label="TimeX" md-on-select="">
+                        <div ui-view="histogramX"></div>
+                    </md-tab>
+                </md-tabs>
             </footer>
         </div>
         <div id="constext-menu-div" class="popupMenu" style="display: none;">

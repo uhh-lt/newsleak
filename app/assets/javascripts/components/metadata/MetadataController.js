@@ -218,7 +218,6 @@ define([
                             });
                         });
                         $scope.observer.getMetadataTypes().then(function (types) {
-                            console.log(types);
                             $scope.metadataTypes = types;
                             $scope.initMetadataCharts().then(function() {
                                 defer2.resolve("initMeta");
@@ -308,7 +307,7 @@ define([
                                 var promise = $q.defer();
                                 $scope.entityPromisesLocal[type] = promise;
                                 $scope.entityPromises.push(promise.promise);
-                                playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, $scope.observer.getTimeRange(), 50, entityType, instances).get().then(
+                                playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, $scope.observer.getTimeRange(),$scope.observer.getXTimeRange(), 50, entityType, instances).get().then(
                                     function (result) {
                                         //result.data[type].forEach(function(x) {
                                         //    console.log(x.key + ": " + x.count);
@@ -388,7 +387,7 @@ define([
                                 //console.log(type);
                                 $scope.metaCharts[type].showLoading('Loading ...');
                                 var instances = $scope.chartConfigs[type].xAxis["categories"];
-                                playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext, type.replace(".","_"), facets, entities, instances, $scope.observer.getTimeRange()).get().then(
+                                playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext, type.replace(".","_"), facets, entities, instances, $scope.observer.getTimeRange(),$scope.observer.getXTimeRange()).get().then(
                                     function (result) {
                                         //result.data[type].forEach(function(x) {
                                         //    console.log(x.key + ": " + x.count);
@@ -457,7 +456,7 @@ define([
                                 deferred[x] = $q.defer();
                                 proms.push(deferred[x].promise);
                                 $scope.chartConfigs[x] = angular.copy($scope.chartConfig);
-                                playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, timeRange, 50, x).get().then(function (result) {
+                                playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, timeRange,timeRange, 50, x).get().then(function (result) {
 
                                     $scope.frequencies[x] = [];
                                     $scope.labels[x] = [];

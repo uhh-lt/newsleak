@@ -41,6 +41,7 @@ define([
                         'entity' : 'filter',
                         'metadata': 'filter',
                         'time': 'time',
+                        'timeX': 'time',
                         "expandNode": 'plus',
                         "collapseNode": 'plus',
                         "egoNetwork": 'asterisk',

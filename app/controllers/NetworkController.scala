@@ -20,7 +20,7 @@ package controllers
 import javax.inject.Inject
 
 import model.Entity
-import model.EntityType._
+
 import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket, NodeBucket }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller }
@@ -28,6 +28,7 @@ import util.SessionUtils.currentDataset
 import util.TimeRangeParser
 
 // scalastyle:off
+import model.EntityType._
 import util.TupleWriters._
 // scalastyle:off
 
@@ -54,11 +55,13 @@ class NetworkController @Inject extends Controller {
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
+    timeRangeX: String,
     nodeId: Long
   ) = Action { implicit request =>
 
     val times = TimeRangeParser.parseTimeRange(timeRange)
-    val facets = Facets(fullText, generic, entities, times.from, times.to, None, None)
+    val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
 
     val agg = FacetedSearch
       .fromIndexName(currentDataset)
@@ -76,13 +79,15 @@ class NetworkController @Inject extends Controller {
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
+    timeRangeX: String,
     first: Long,
     second: Long,
     numberOfTerms: Int
   ) = Action { implicit request =>
 
     val times = TimeRangeParser.parseTimeRange(timeRange)
-    val facets = Facets(fullText, generic, entities, times.from, times.to, None, None)
+    val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
     val agg = FacetedSearch
       .fromIndexName(currentDataset)
       // Only consider documents where the two entities occur
@@ -100,11 +105,13 @@ class NetworkController @Inject extends Controller {
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
+    timeRangeX: String,
     nodeFraction: Map[String, String],
     filter: List[Long]
   ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
-    val facets = Facets(fullText, generic, entities, times.from, times.to, None, None)
+    val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
     val sizes = nodeFraction.map { case (t, s) => withName(t) -> s.toInt }
 
     val blacklistedIds = Entity.fromDBName(currentDataset).getBlacklisted().map(_.id)

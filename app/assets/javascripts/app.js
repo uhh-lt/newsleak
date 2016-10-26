@@ -29,6 +29,7 @@ define([
     './components/sources/SearchController',
     './components/history/HistoryController',
     './components/histogram/HistogramController',
+    './components/histogram/HistogramXController',
     './services/playRoutes',
     './services/ObserverService',
     './factory/util',
@@ -49,7 +50,7 @@ define([
             'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial',
             'angularMoment', 'underscore', 'myApp.observer', 'myApp.util', 'myApp.history', 'myApp.graphConfig', 'angularScreenfull',
             'myApp.network', 'myApp.search', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory', 'myApp.metafactory',
-            'myApp.document', 'myApp.histogram', 'ngVis']
+            'myApp.document', 'myApp.histogram', 'myApp.histogramX', 'ngVis']
     );
 
     app.config(['$stateProvider', '$urlRouterProvider', '$mdThemingProvider', function($stateProvider, $urlRouterProvider, $mdThemingProvider) {
@@ -83,6 +84,10 @@ define([
                 'histogram': {
                     templateUrl: 'assets/partials/histogram.html',
                     controller: 'HistogramController'
+                },
+                'histogramX': {
+                    templateUrl: 'assets/partials/histogramX.html',
+                    controller: 'HistogramXController'
                 },
                 'metadata': {
                     templateUrl: 'assets/partials/metadata.html',
@@ -139,7 +144,9 @@ define([
 
             $scope.$on("angular-resizable.resizeEnd", function (event, args) {
                 if(args.id == 'center-box') setUILayoutProperties(args.width, false);
+
                 //if(args.id == 'footer') setUILayoutProperties(false, parseInt($('#network-maps-container').css('height'))-96);
+                $("#histogram").css("height",$("footer").height()-50);
                 $("#histogram").highcharts().reflow();
                 $("#metadata-view .active .active .meta-chart").highcharts().reflow();
             });

@@ -23,8 +23,8 @@ define([
 ], function (angular) {
     'use strict';
 
-    angular.module('myApp.histogram', ['play.routing'])
-        .factory('HistogramFactory', [
+    angular.module('myApp.histogramX', ['play.routing'])
+        .factory('HistogramXFactory', [
             function() {
                 var config = {
                     // Highcharts options
@@ -106,29 +106,29 @@ define([
             }
         ])
         /******************************** CONTROLLER ************************************/
-        .controller('HistogramController', [
+        .controller('HistogramXController', [
             '$scope',
             '$compile',
             '$timeout',
             '$q',
             'playRoutes',
-            'HistogramFactory',
+            'HistogramXFactory',
             'ObserverService',
-            function ($scope, $compile, $timeout, $q, playRoutes, HistogramFactory, ObserverService) {
+            function ($scope, $compile, $timeout, $q, playRoutes, HistogramXFactory, ObserverService) {
 
                 $scope.initialized = false;
                 $scope.drilldown = false;
                 $scope.drillup = false;
 
                 $scope.emptyFacets = [{'key':'dummy','data': []}];
-                $scope.factory = HistogramFactory;
+                $scope.factory = HistogramXFactory;
 
                 $scope.observer = ObserverService;
 
                 $scope.initController = function() {
                     $scope.initialized = false;
                     var defer = $q.defer();
-                    $scope.chartConfig = angular.copy(HistogramFactory.chartConfig.options);
+                    $scope.chartConfig = angular.copy($scope.factory.chartConfig.options);
 
                     $scope.data = [];
                     $scope.dataFilter = [];
@@ -167,7 +167,7 @@ define([
                  */
                 $scope.addTimeFilter = function(range) {
                     $scope.observer.addItem({
-                        type: 'time',
+                        type: 'timeX',
                         data: {
                             name: range,
                             lod: $scope.currentLoD
@@ -221,8 +221,8 @@ define([
                             $scope.drillUp(e)
                         }
                     };
-                    $scope.chartConfig.chart.renderTo = "histogram";
-                    $("#histogram").css("height",$("footer").height()-50);
+                    $scope.chartConfig.chart.renderTo = "histogramX";
+                    $("#histogramX").css("height",$("footer").height()-50);
 
                     $scope.histogram = new Highcharts.Chart($scope.chartConfig);
 
@@ -235,7 +235,7 @@ define([
                 $scope.updateHistogram = function() {
                     if($scope.histogram)
                         $scope.histogram.showLoading('Loading ...');
-                    console.log("reload histogram");
+                    console.log("reload histogramX");
                      var promise = $q.defer();
 
                     var entities = [];
@@ -247,10 +247,10 @@ define([
                     angular.forEach($scope.fulltextFilters, function(item) {
                         fulltext.push(item.data.name);
                     });
-                    playRoutes.controllers.HistogramController.getHistogram(fulltext,facets,entities,$scope.currentRange,$scope.observer.getXTimeRange(),$scope.currentLoD).get().then(function(respone) {
+                    playRoutes.controllers.HistogramController.getXHistogram(fulltext,facets,entities,$scope.observer.getTimeRange(),$scope.currentRange,$scope.currentLoD).get().then(function(respone) {
                         var overallPromise = $q.defer();
                         if($scope.drilldown ||  $scope.drillup) {
-                            playRoutes.controllers.HistogramController.getHistogram("",$scope.emptyFacets,[],$scope.currentRange,"",$scope.currentLoD).get().then(function(responeAll) {
+                            playRoutes.controllers.HistogramController.getXHistogram("",$scope.emptyFacets,[],"",$scope.currentRange,$scope.currentLoD).get().then(function(responeAll) {
                                 $scope.data = [];
                                 angular.forEach(responeAll.data.histogram, function(x) {
                                     var count = x.count;
@@ -352,7 +352,7 @@ define([
 
                 $scope.drillDown = function(e, chart) {
                     if (!e.seriesOptions && !$scope.drilldown) {
-                        console.log("histogram drilldown");
+                        console.log("histogramX drilldown");
                         $scope.drilldown = true;
                         if($scope.lod[$scope.lod.length -1] != $scope.currentLoD) {
                             $scope.currentLoD = $scope.lod[$scope.lod.indexOf($scope.currentLoD) + 1];
@@ -418,14 +418,14 @@ define([
 
                 $scope.drillUp = function(e) {
                     if (!$scope.drillup) {
-                        console.log("histogram drillup");
+                        console.log("histogramX drillup");
                         $scope.drillup = true;
                         $scope.currentLoD = $scope.lod[$scope.lod.indexOf($scope.currentLoD) - 1];
-                        $scope.observer.drillUpTimeFilter();
+                        $scope.observer.drillUpXTimeFilter();
                         if ($scope.lod.indexOf($scope.currentLoD) == 0)
                             $scope.currentRange = "";
                         else
-                            $scope.currentRange = $scope.observer.getTimeRange();
+                            $scope.currentRange = $scope.observer.getXTimeRange();
                         $scope.updateHistogram().then(function () {
                             $scope.histogram.series[0].setData($scope.data);
                             var series = {

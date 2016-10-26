@@ -42,11 +42,40 @@ class HistogramController @Inject extends Controller {
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
+    timeRangeX: String,
     lod: String
   ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
-    val facets = Facets(fullText, generic, entities, times.from, times.to, None, None)
+    val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
     val res = FacetedSearch.fromIndexName(currentDataset).histogram(facets, LoD.withName(lod)).buckets.map {
+      case MetaDataBucket(key, count) => Json.obj("range" -> key, "count" -> count)
+      case _ => Json.obj("" -> 0)
+    }
+    Results.Ok(Json.toJson(Json.obj("histogram" -> Json.toJson(res)))).as("application/json")
+  }
+
+  /**
+   * Gets document counts for entities corresponding to their id's matching the query
+   * @param fullText Full text search term
+   * @param generic   mapping of metadata key and a list of corresponding tags
+   * @param entities list of entity ids to filter
+   * @param timeRange string of a time range readable for [[TimeRangeParser]]
+   * @param lod Level of detail, value of[[LoD]]
+   * @return list of matching entity id's and their overall frequency as well as document count for the applied filters
+   */
+  def getXHistogram(
+    fullText: List[String],
+    generic: Map[String, List[String]],
+    entities: List[Long],
+    timeRange: String,
+    timeRangeX: String,
+    lod: String
+  ) = Action { implicit request =>
+    val times = TimeRangeParser.parseTimeRange(timeRange)
+    val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
+    val res = FacetedSearch.fromIndexName(currentDataset).timeXHistogram(facets, LoD.withName(lod)).buckets.map {
       case MetaDataBucket(key, count) => Json.obj("range" -> key, "count" -> count)
       case _ => Json.obj("" -> 0)
     }
