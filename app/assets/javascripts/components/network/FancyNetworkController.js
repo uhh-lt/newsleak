@@ -119,10 +119,10 @@ define([
                 },
                 {
                     title: 'Hide',
-                    action: function(value, nodeId) { hideNode(nodeId); }
+                    action: function(value, nodeId) { hideNodes([nodeId]); }
                 }, {
                     title: 'Blacklist',
-                    action: function(value, nodeId) { blacklistNode(nodeId); }
+                    action: function(value, nodeId) { blacklistNodes([nodeId]); }
                 }
             ];
 
@@ -131,6 +131,10 @@ define([
                 {
                     title: 'Merge nodes',
                     action: function(value, nodeIds) { mergeNodes(nodeIds); }
+                },
+                {
+                    title: 'Hide nodes',
+                    action: function(value, nodeIds) { hideNodes(nodeIds); }
                 }
             ];
 
@@ -237,7 +241,7 @@ define([
                         self.nodes.clear();
 
                         var edges = response.data.relations.map(function(n) {
-                            return {from: n[0], to: n[1], value: n[2] };
+                            return { from: n[0], to: n[1], value: n[2] };
                         });
 
                         self.edges.clear();
@@ -338,23 +342,23 @@ define([
             //
             // ----------------------------------------------------------------------------------
 
-            function hideNode(nodeId) {
-                removeNodes([nodeId], self.nodesDataset, self.edgesDataset);
-                // Hide given node in background collection
-                self.nodes.update({ id: nodeId, hidden: true });
+            function hideNodes(nodeIds) {
+                removeNodes(nodeIds, self.nodesDataset, self.edgesDataset);
+                // Hide given nodes in background collection
+                self.nodes.update(nodeIds.map(function(n) { return { id: n, hidden: true }}));
                 // Retrieve adjacent edges from the background collection
-                var adjacentEdges = getAdjacentEdges([nodeId], self.edges);
+                var adjacentEdges = getAdjacentEdges(nodeIds, self.edges);
                 // Hide adjacent edges in background collection
                 var hiddenEdges = adjacentEdges.map(function(edge) { return _.extend(edge, { hidden: true }); });
                 self.edges.update(hiddenEdges);
                 updateImportanceSlider();
             }
 
-            function blacklistNode(nodeId) {
+            function blacklistNodes(nodeIds) {
                 // Remove node from the visual interface
-                hideNode(nodeId);
+                hideNodes(nodeIds);
                 // Mark node as blacklisted
-                playRoutes.controllers.NetworkController.deleteEntityById(nodeId).get().then(function(response) {
+                playRoutes.controllers.NetworkController.blacklistEntitiesById(nodeIds).get().then(function(response) {
                     // Fetch node replacements for the merged nodes and preserve the current applied edge importance
                     $scope.reloadGraphWithEdgeImportance();
                 });

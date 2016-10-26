@@ -119,7 +119,7 @@ class Application @Inject extends Controller {
         controllers.routes.javascript.DocumentController.getTagLabels,
         controllers.routes.javascript.DocumentController.getDocsByLabel,
         controllers.routes.javascript.NetworkController.getIdsByName,
-        controllers.routes.javascript.NetworkController.deleteEntityById,
+        controllers.routes.javascript.NetworkController.blacklistEntitiesById,
         controllers.routes.javascript.NetworkController.mergeEntitiesById,
         controllers.routes.javascript.NetworkController.changeEntityNameById,
         controllers.routes.javascript.NetworkController.induceSubgraph,

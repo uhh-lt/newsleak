@@ -26,7 +26,7 @@ GET    /getKeywordsById         controllers.DocumentController.getKeywordsById(i
 GET    /getDocs           		controllers.DocumentController.getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String)
 GET     /induceSubgraph         controllers.NetworkController.induceSubgraph(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String, nodeFraction: Map[String, String], filter: List[Long])
 GET    /getIdsByName             controllers.NetworkController.getIdsByName(name: String)
-GET    /deleteEntityById		controllers.NetworkController.deleteEntityById(id: Long)
+GET    /blacklistEntitiesById		controllers.NetworkController.blacklistEntitiesById(ids: List[Long])
 GET	   /mergeEntitiesById		controllers.NetworkController.mergeEntitiesById(focalId: Int, duplicates: List[Long])
 GET	   /getEdgeKeywords		controllers.NetworkController.getEdgeKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String, first: Long, second: Long, numberOfTerms: Int)
 GET	   /getNeighborCounts		controllers.NetworkController.getNeighborCounts(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String, nodeId: Long)

@@ -154,14 +154,10 @@ class NetworkController @Inject extends Controller {
     Ok("")
   }
 
-  /**
-   * deletes an entity from the graph by its id
-   *
-   * @param id the id of the entity to delete
-   * @return if the deletion succeeded
-   */
-  def deleteEntityById(id: Long) = Action { implicit request =>
-    Ok(Json.obj("result" -> Entity.fromDBName(currentDataset).delete(id))).as("application/json")
+  def blacklistEntitiesById(ids: List[Long]) = Action { implicit request =>
+    val entityAPI = Entity.fromDBName(currentDataset)
+    val response = ids.map(entityAPI.delete).forall(identity)
+    Ok(Json.obj("result" -> response)).as("application/json")
   }
 
   /**
