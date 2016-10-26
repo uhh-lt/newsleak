@@ -134,15 +134,16 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
       val docSearch = Document.fromDBName(currentDataset)
 
       val keys = docSearch.getMetadataKeysAndTypes().map(_._1)
-      val metadataTriple = docSearch.getMetadataForDocuments(docIds, keys)
-      val response = metadataTriple
+      val docToMetadata = docSearch
+        .getMetadataForDocuments(docIds, keys)
         .groupBy(_._1)
-        .map { case (id, inner) => id -> inner.map(doc => Json.obj("key" -> doc._2, "val" -> doc._3)) }
-        .map(x => Json.obj("id" -> x._1, "metadata" -> Json.toJson(x._2)))
+        .map { case (id, l) => id -> l.map { case (_, k, v) => Json.obj("key" -> k, "val" -> v) } }
 
-      Json.toJson(Json.obj("hits" -> hits, "docs" -> Json.toJson(response)))
+      val response = docIds.map { id => Json.obj("id" -> id, "metadata" -> docToMetadata.get(id)) }
+
+      Json.obj("hits" -> hits, "docs" -> response)
     } else {
-      Json.toJson(Json.obj("hits" -> 0, "docs" -> List[JsObject]()))
+      Json.obj("hits" -> 0, "docs" -> List[JsObject]())
     }
   }
 }
