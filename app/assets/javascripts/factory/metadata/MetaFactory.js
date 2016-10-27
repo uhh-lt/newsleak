@@ -62,7 +62,7 @@ define([
                         enabled: false
                     },
                     xAxis: {
-                        categories: 'test'
+                        categories: []
                     },
                     yAxis: {
 

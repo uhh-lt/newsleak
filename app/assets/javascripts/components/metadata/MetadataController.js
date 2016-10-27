@@ -202,7 +202,7 @@ define([
                         $scope.initializedMeta = false;
                         $scope.initializedEntity = false;
                         //TODO: to order by black bars set true
-                        $scope.reorder = false;
+                        $scope.reorder = true;
                         $scope.promiseMetaCharts = undefined;
                         $scope.promiseEntityCharts = undefined;
 
@@ -310,7 +310,7 @@ define([
                                 var instances = [];
 
                                 if($scope.reorder) {
-                                    playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, timeRange ,timeRangeX, 50, entityType).get().then(
+                                    playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, timeRange ,timeRangeX, 50, type).get().then(
                                         function (result) {
                                             var data = [];
                                             angular.forEach(result.data, function (x) {
@@ -346,7 +346,7 @@ define([
                                     defReorder.resolve("reorder");
                                 }
                                 defReorder.promise.then(function() {
-                                playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, timeRange ,timeRangeX, 50, entityType, instances).get().then(
+                                playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, timeRange ,timeRangeX, 50, type, instances).get().then(
                                     function (result) {
                                         var data = [];
                                         angular.forEach(result.data, function (x) {
@@ -387,6 +387,8 @@ define([
                             });
                             var facets = $scope.observer.getFacets();
                             var fulltext = [];
+                            var timeRange = $scope.observer.getTimeRange();
+                            var timeRangeX = $scope.observer.getXTimeRange();
                             angular.forEach($scope.fulltextFilters, function (item) {
                                 fulltext.push(item.data.name);
                             });
@@ -399,10 +401,43 @@ define([
                                 //console.log(type);
                                 $scope.metaCharts[type].showLoading('Loading ...');
                                 var instances = [];
-                                $scope.chartConfigs[type].series[0].data.forEach(function(m) {
-                                   instances.push(m.name);
-                                });
-                                playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext, type.replace(".","_"), facets, entities, instances, $scope.observer.getTimeRange(),$scope.observer.getXTimeRange()).get().then(
+                                var defReorder = $q.defer();
+                                if($scope.reorder) {
+                                    playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext, type.replace(".","_"), facets, entities, undefined, timeRange,timeRangeX).get().then(
+                                        function (result) {
+                                            var data = [];
+                                            angular.forEach(result.data[type.replace(".","_")], function (x) {
+                                                if (x.count <= 0)
+                                                    data.push({
+                                                        y: null,
+                                                        name: x.key
+                                                    });
+                                                else
+                                                    data.push({
+                                                        y: x.count,
+                                                        name: x.key
+                                                    });
+                                            });
+                                            $scope.metaCharts[type].series[1].setData(data);
+                                            $scope.chartConfigs[type].series[1].data.forEach(function(m) {
+                                                instances.push(m.name);
+                                            });
+                                            fulltext = [];
+                                            facets = $scope.emptyFacets;
+                                            entities = [];
+                                            timeRange = "";
+                                            timeRangeX = "";
+                                            defReorder.resolve("suc");
+                                        });
+                                } else {
+                                    $scope.chartConfigs[type].series[0].data.forEach(function(m) {
+                                        instances.push(m.name);
+                                    });
+                                    defReorder.resolve("suc");
+                                }
+                               defReorder.promise.then(function() {
+
+                                playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext, type.replace(".","_"), facets, entities, instances, timeRange,timeRangeX).get().then(
                                     function (result) {
                                         var data = [];
                                         angular.forEach(result.data[type.replace(".","_")], function (x) {
@@ -417,11 +452,16 @@ define([
                                                     name: x.key
                                                 });
                                         });
-                                        $scope.metaCharts[type].series[1].setData(data);
+                                        if($scope.reorder)
+                                            $scope.metaCharts[type].series[0].setData(data);
+                                        else
+                                            $scope.metaCharts[type].series[1].setData(data);
                                         $scope.metaCharts[type].hideLoading();
                                         $scope.metaPromisesLocal[type].resolve("suc: " + type);
                                     }
                                 );
+                               });
+
                             });
                             return $scope.metaPromises;
                         }
