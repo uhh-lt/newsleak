@@ -71,8 +71,12 @@ class EntityController @Inject extends Controller {
   }
 
   // TODO Json writer for model types ...
-  def getEntitiesByDoc(id: Long) = Action { implicit request =>
-    val res = Entity.fromDBName(currentDataset).getByDocId(id).map(e => Json.obj("id" -> e.id, "name" -> e.name, "type" -> e.entityType))
+  def getEntitiesByDoc(docId: Long) = Action { implicit request =>
+    val entityToOccurrences = Entity.fromDBName(currentDataset).getEntityDocumentOffsets(docId).groupBy(_._1)
+    val res = entityToOccurrences.flatMap {
+      case (Entity(id, name, t, _), occ) =>
+        occ.map { case (_, start, end) => Json.obj("id" -> id, "name" -> name, "type" -> t, "start" -> start, "end" -> end) }
+    }
     Ok(Json.toJson(res)).as("application/json")
   }
 

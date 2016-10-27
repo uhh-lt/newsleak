@@ -92,34 +92,33 @@ define([
                         updateTagLabels();
                     }
 
-
-                    /**
-                     * Applies the highlighting and underlining to the given text.
-                     *
-                     * @param toFormat - The string to apply the highlighting and underlining to.
-                     * @return string - Returns the highlighted and underlined text.
-                     */
-                    var getHighlightedText = function (toFormat, wordsToUnderline) {
-                        toFormat = toFormat.replace(/\n/g, "<br>");
-                        var highlightedText = toFormat;
-                        for (var i = 0; i < graphPropertiesShareService.categoryColors.length; i++) {
-                            highlightedText = util.highlight(
-                                highlightedText,
-                                [],
-                                wordsToUnderline[i],
-                                graphPropertiesShareService.categoryColors[i]
-                            );
-                        }
-                        return highlightedText;
-                    };
-
                     $scope.renderDoc = function(doc) {
-                        var marker = [[], [], [], []];
-                        doc.entities.forEach(function(e) {
-                            var index = graphPropertiesShareService.getIndexOfCategory(e.type);
-                            marker[index].push(e.name);
+                        // Order: locations, organizations, persons, miscellaneous
+                        var categoryColors = { 'PER': '#d73027', 'ORG': '#fee090', 'LOC': '#abd9e9', 'MISC': '#4575b4'};
+
+                        var container = document.createElement("div");
+                        var offset = 0;
+
+                        var sortedSpans = doc.entities.sort(function(a, b) { return a.start - b.start; });
+                        sortedSpans.forEach(function(e) {
+                            var textEntity = doc.content.slice(e.start, e.end);
+                            var fragments = doc.content.slice(offset, e.start).split('\n');
+
+                            fragments.forEach(function(f, i) {
+                                container.appendChild(document.createTextNode(f));
+                                if(fragments.length > 1 && i != fragments.length - 1) container.appendChild(document.createElement('br'));
+                            });
+
+                            var highlight = document.createElement('span');
+                            highlight.className = 'highlight-general';
+                            highlight.setAttribute('style', 'text-decoration: none; border-bottom: 3px solid' + categoryColors[e.type] + '');
+                            highlight.appendChild(document.createTextNode(textEntity));
+                            container.appendChild(highlight);
+
+                            offset = e.end;
                         });
-                        return $sce.trustAsHtml(getHighlightedText(doc.content, marker));
+                        container.appendChild(document.createTextNode(doc.content.slice(offset, doc.content.length)));
+                        return $sce.trustAsHtml(container.innerHTML);
                     };
 
                     $scope.retrieveKeywords = function(doc) {
