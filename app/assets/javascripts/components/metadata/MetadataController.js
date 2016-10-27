@@ -196,9 +196,13 @@ define([
                         $(".scroll-chart").css("height",$("#metadata").height()-150);
                     };
 
+                    $scope.emptyFacets = [{'key':'dummy','data': []}];
+
                     $scope.initMetadataView = function () {
                         $scope.initializedMeta = false;
                         $scope.initializedEntity = false;
+                        //TODO: to order by black bars set true
+                        $scope.reorder = false;
                         $scope.promiseMetaCharts = undefined;
                         $scope.promiseEntityCharts = undefined;
 
@@ -291,19 +295,58 @@ define([
                                 fulltext.push(item.data.name);
                             });
                             var entityType = "";
+                            var timeRange = $scope.observer.getTimeRange();
+                            var timeRangeX = $scope.observer.getXTimeRange();
                             $scope.entityPromises = [];
                             $scope.entityPromisesLocal = [];
                             angular.forEach($scope.entityTypes, function (type) {
                                 if($scope.metaCharts[type])
                                      $scope.metaCharts[type].showLoading('Loading ...');
-                                var instances = [];
-                                $scope.metaCharts[type].series[0].data.forEach(function(e) {
-                                   instances.push(e.id);
-                                });
+
                                 var promise = $q.defer();
                                 $scope.entityPromisesLocal[type] = promise;
                                 $scope.entityPromises.push(promise.promise);
-                                playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, $scope.observer.getTimeRange(),$scope.observer.getXTimeRange(), 50, entityType, instances).get().then(
+                                var defReorder = $q.defer();
+                                var instances = [];
+
+                                if($scope.reorder) {
+                                    playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, timeRange ,timeRangeX, 50, entityType).get().then(
+                                        function (result) {
+                                            var data = [];
+                                            angular.forEach(result.data, function (x) {
+                                                if (x.docCount <= 0)
+                                                    data.push({
+                                                        y: null,
+                                                        name: x.name,
+                                                        id: x.id
+                                                    });
+                                                else
+                                                    data.push({
+                                                        y: x.docCount,
+                                                        name: x.name,
+                                                        id: x.id
+                                                    });
+                                            });
+
+                                            $scope.metaCharts[type].series[1].setData(data);
+                                            $scope.metaCharts[type].series[1].data.forEach(function(e) {
+                                                instances.push(e.id);
+                                            });
+                                            fulltext = [];
+                                            facets = $scope.emptyFacets;
+                                            entities = [];
+                                            timeRange = "";
+                                            timeRangeX = "";
+                                            defReorder.resolve("reorder");
+                                        });
+                                } else {
+                                    $scope.metaCharts[type].series[0].data.forEach(function(e) {
+                                        instances.push(e.id);
+                                    });
+                                    defReorder.resolve("reorder");
+                                }
+                                defReorder.promise.then(function() {
+                                playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, timeRange ,timeRangeX, 50, entityType, instances).get().then(
                                     function (result) {
                                         var data = [];
                                         angular.forEach(result.data, function (x) {
@@ -320,15 +363,18 @@ define([
                                                     id: x.id
                                                 });
                                         });
-
+                                        if($scope.reorder)
+                                            $scope.metaCharts[type].series[0].setData(data);
+                                        else
                                             $scope.metaCharts[type].series[1].setData(data);
 
                                         $scope.metaCharts[type].hideLoading();
                                         $scope.entityPromisesLocal[type].resolve("suc: " + type);
                                     }
                                 );
+                                });
+
                             });
-                            //TODO: on adding fulltext filter doc count grows
                         }
                     };
 
@@ -358,9 +404,6 @@ define([
                                 });
                                 playRoutes.controllers.MetadataController.getSpecificMetadata(fulltext, type.replace(".","_"), facets, entities, instances, $scope.observer.getTimeRange(),$scope.observer.getXTimeRange()).get().then(
                                     function (result) {
-                                        //result.data[type].forEach(function(x) {
-                                        //    console.log(x.key + ": " + x.count);
-                                        //});
                                         var data = [];
                                         angular.forEach(result.data[type.replace(".","_")], function (x) {
                                             if (x.count <= 0)
@@ -382,7 +425,6 @@ define([
                             });
                             return $scope.metaPromises;
                         }
-
                     };
 
                     $scope.initEntityCharts = function () {
