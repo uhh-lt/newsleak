@@ -127,7 +127,8 @@ class NetworkController @Inject extends Controller {
       val nodeIdToEntity = Entity.fromDBName(currentDataset).getByIds(ids).map(e => e.id -> e).toMap
 
       val graphEntities = nodes.collect {
-        case NodeBucket(id, count) =>
+        // Only add node if it is not blacklisted
+        case NodeBucket(id, count) if nodeIdToEntity.contains(id) =>
           val node = nodeIdToEntity(id)
           Json.obj(
             "id" -> id,
