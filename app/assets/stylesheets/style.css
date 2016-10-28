@@ -321,6 +321,15 @@ footer > div #histogram {
     font-weight: bold;
 }
 
+.entity-menu {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 20px !important;
+    font-size: 16px !important;
+}
+
 /*
     ======================================
     Document List

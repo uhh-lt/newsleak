@@ -83,11 +83,13 @@ define([
                         updateTagLabels();
                     }
 
+
                     $scope.renderDoc = function(doc) {
                         // Order: locations, organizations, persons, miscellaneous
                         var categoryColors = { 'PER': '#d73027', 'ORG': '#fee090', 'LOC': '#abd9e9', 'MISC': '#4575b4'};
 
-                        var container = document.createElement("div");
+                        var el = angular.element(document.getElementById('document-content'));
+                        var container = angular.element('<div></div>');
                         var offset = 0;
 
                         var sortedSpans = doc.entities.sort(function(a, b) { return a.start - b.start; });
@@ -97,20 +99,33 @@ define([
                             var fragments = doc.content.slice(offset, e.start).split('\n');
 
                             fragments.forEach(function(f, i) {
-                                container.appendChild(document.createTextNode(f));
-                                if(fragments.length > 1 && i != fragments.length - 1) container.appendChild(document.createElement('br'));
+                                container.append(document.createTextNode(f));
+                                if(fragments.length > 1 && i != fragments.length - 1) container.append(angular.element('<br />'));
                             });
 
-                            var highlight = document.createElement('span');
+                            var highlight = angular.element('<span style="text-decoration: none; border-bottom: 3px solid' + categoryColors[e.type] + '"></span>');
                             highlight.className = 'highlight-general';
-                            highlight.setAttribute('style', 'text-decoration: none; border-bottom: 3px solid' + categoryColors[e.type] + '');
-                            highlight.appendChild(document.createTextNode(textEntity));
-                            container.appendChild(highlight);
+                            highlight.append(document.createTextNode(textEntity));
+
+                            // Add entity filter button
+                            //var parameter  = '' + e.id + ',"' + e.name + '","' + e.type + '"';
+                            var buttonTemplate = angular.element('<md-button class="md-icon-button entity-menu" ng-click="addEntityFilter(' + e.id +')"><md-icon class="material-icons entity-menu" aria-label="filter">add_circle</md-icon></md-button>');
+                            var button = $compile(buttonTemplate)($scope);
+
+                            container.append(highlight);
+                            container.append(button);
 
                             offset = e.end;
                         });
-                        container.appendChild(document.createTextNode(doc.content.slice(offset, doc.content.length)));
-                        return $sce.trustAsHtml(container.innerHTML);
+                        container.append(document.createTextNode(doc.content.slice(offset, doc.content.length)));
+                        el.append(container);
+                    };
+
+                    //$scope.addEntityFilter = function(entity) {
+                    $scope.addEntityFilter = function(id) {
+                        console.log("Ca..ed");
+                        console.log(id);
+                        $scope.observer.addItem({ type: 'entity', data: { id: id, name: "", type: "PER" }});
                     };
 
                     $scope.retrieveKeywords = function(doc) {
