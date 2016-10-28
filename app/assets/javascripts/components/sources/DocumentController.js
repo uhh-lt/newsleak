@@ -18,7 +18,6 @@
 define([
     'angular',
     'ngSanitize',
-    '../../factory/util',
     'ngMaterial'
 ], function (angular) {
     'use strict';
@@ -33,11 +32,8 @@ define([
                 '$sce',
                 '$timeout',
                 'playRoutes',
-                'util',
                 '_',
                 'sourceShareService',
-                'highlightShareService',
-                'graphPropertiesShareService',
                 'uiShareService',
                 'ObserverService',
                 function ($scope,
@@ -47,20 +43,15 @@ define([
                           $sce,
                           $timeout,
                           playRoutes,
-                          util,
                           _,
                           sourceShareService,
-                          highlightShareService,
-                          graphPropertiesShareService,
                           uiShareService,
                           ObserverService) {
 
                     var self = this;
 
                     $scope.sourceShared = sourceShareService;
-                    $scope.highlightShared = highlightShareService;
                     $scope.uiShareService = uiShareService;
-                    $scope.graphPropertiesShared = graphPropertiesShareService;
 
                     $scope.tabs = $scope.sourceShared.tabs;
 
@@ -102,6 +93,7 @@ define([
                         var sortedSpans = doc.entities.sort(function(a, b) { return a.start - b.start; });
                         sortedSpans.forEach(function(e) {
                             var textEntity = doc.content.slice(e.start, e.end);
+                            //var fragments = doc.content.slice(offset, e.start).split('/\r|\n/');
                             var fragments = doc.content.slice(offset, e.start).split('\n');
 
                             fragments.forEach(function(f, i) {

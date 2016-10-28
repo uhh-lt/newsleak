@@ -20,7 +20,6 @@ define([
     'angularMoment',
     './factory/metadata/MetaFactory',
     './factory/source/SourceFactory',
-    './factory/source/HighlightFactory',
     './components/sources/SourceController',
     './components/sources/DocumentController',
     './components/network/FancyNetworkController',
@@ -32,7 +31,6 @@ define([
     './components/histogram/HistogramXController',
     './services/playRoutes',
     './services/ObserverService',
-    './factory/util',
     './services/underscore-module',
     'ui-layout',
     'ui-router',
@@ -48,8 +46,8 @@ define([
 
     var app = angular.module('myApp', [
             'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial',
-            'angularMoment', 'underscore', 'myApp.observer', 'myApp.util', 'myApp.history', 'myApp.graphConfig', 'angularScreenfull',
-            'myApp.network', 'myApp.search', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.highlightfactory', 'myApp.metafactory',
+            'angularMoment', 'underscore', 'myApp.observer', 'myApp.history', 'myApp.graphConfig', 'angularScreenfull',
+            'myApp.network', 'myApp.search', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.metafactory',
             'myApp.document', 'myApp.histogram', 'myApp.histogramX', 'ngVis']
     );
 

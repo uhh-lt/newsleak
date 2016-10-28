@@ -25,39 +25,6 @@ define([
 
     angular.module('myApp.network', ['ngMaterial', 'ngVis', 'play.routing', 'angularMoment']);
     angular.module('myApp.network')
-        // TODO This factory is crap, but referenced in the code ... remove it!
-        // This factory is used to share graph properties between this module and the app.js
-        .factory('graphPropertiesShareService', function () {
-            var graphProperties = {
-                // Order: locations, organizations, persons, miscellaneous
-                categoryColors: ["#abd9e9", "#fee090","#d73027", "#4575b4"],
-                categories:
-                    [
-                        {id: 'LOC', full: 'Location'},
-                        {id: 'ORG', full: 'Organization'},
-                        {id: 'PER', full: 'Person'},
-                        {id: 'MISC', full: 'Miscellaneous'}
-                    ],
-                CATEGORY_COLOR_INDEX_LOC: 0,
-                CATEGORY_COLOR_INDEX_ORG: 1,
-                CATEGORY_COLOR_INDEX_PER: 2,
-                CATEGORY_COLOR_INDEX_MISC: 3,
-                // Delivers the index of a given category name
-                getIndexOfCategory: function (category) {
-                    switch (category) {
-                        case 'LOC':
-                            return this.CATEGORY_COLOR_INDEX_LOC;
-                        case 'ORG':
-                            return this.CATEGORY_COLOR_INDEX_ORG;
-                        case 'PER':
-                            return this.CATEGORY_COLOR_INDEX_PER;
-                        default:
-                            return this.CATEGORY_COLOR_INDEX_MISC;
-                    }
-                }
-            };
-            return graphProperties;
-        })
         // Network Legend Controller
         .controller('LegendController', ['$scope', '$timeout', 'VisDataSet', 'graphProperties', function ($scope, $timeout, VisDataSet, graphProperties) {
 

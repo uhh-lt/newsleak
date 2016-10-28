@@ -38,7 +38,6 @@ define([
                 'playRoutes',
                 '_',
                 'sourceShareService',
-                'highlightShareService',
                 'uiShareService',
                 'ObserverService',
                 function ($scope,
@@ -50,7 +49,6 @@ define([
                           playRoutes,
                           _,
                           sourceShareService,
-                          highlightShareService,
                           uiShareService,
                           ObserverService) {
 
@@ -58,7 +56,6 @@ define([
                     $scope.noDocumentsMsg = 'No document found for current applied filters.';
 
                     $scope.sourceShared = sourceShareService;
-                    $scope.highlightShared = highlightShareService;
                     $scope.uiShareService = uiShareService;
                     $scope.docsLoading = false;
                     $scope.showLoading = false;
