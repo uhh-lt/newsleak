@@ -26,7 +26,6 @@
     </md-tab-label>
 
     <md-tab-body>
-        <!--<md-content flex layout-padding ng-init="renderDoc(doc); keywords = retrieveKeywords(doc)">-->
         <md-content flex layout-padding ng-init="keywords = retrieveKeywords(doc)">
             <md-card>
                 <md-card-title>
@@ -61,12 +60,8 @@
                         </span>
                     </md-card-title-text>
                 </md-card-title>
-                <md-card-content>
-                </md-card-content>
+                <doc-content layout-padding document="doc"></doc-content>
             </md-card>
-            <!--<div id="document-content"></div>-->
-            <doc-content content="{{ doc.content }}" entities="doc.entities"></doc-content>
-
         </md-content>
     </md-tab-body>
 </md-tab>
