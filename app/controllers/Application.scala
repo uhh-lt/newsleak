@@ -21,9 +21,10 @@ import javax.inject.Inject
 
 import org.apache.commons.codec.binary.{ Base64, StringUtils }
 import play.api.Logger
+import play.api.cache.CacheApi
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller }
-import util.SessionUtils.{ datasetSessionKey, currentDataset }
+import util.SessionUtils.{ currentDataset, datasetSessionKey }
 import utils.NewsleakConfigReader
 
 import scala.util.Random
@@ -32,7 +33,7 @@ import scala.util.Random
   This class define which URL patterns match which views as well as
   which play routes exist and where they point at.
 */
-class Application @Inject extends Controller {
+class Application @Inject() (cache: CacheApi) extends Controller {
 
   /**
    * Serves the login page.
@@ -49,11 +50,13 @@ class Application @Inject extends Controller {
   // def index_alt = Action { implicit request => Ok(views.html.index_alt()) }
 
   /**
-   * Serves the Networks of Names frontend to the client.
+   * Serves the application frontend to the client.
    */
   def index = Action { implicit request =>
     val uid = request.session.get("uid").getOrElse { (Random.alphanumeric take 8).mkString }
     Logger.debug("Session UID: " + uid)
+    // Remove cache on initial page load
+    cache.remove(uid)
 
     var authorized = false
     // TODO: commented out for disable auth

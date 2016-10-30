@@ -21,15 +21,14 @@ import javax.inject.Inject
 
 import model.faceted.search.{ FacetedSearch, Facets }
 import model.{ Document, KeyTerm, Tag }
+import play.api.cache.CacheApi
 import play.api.libs.json.{ JsObject, JsValue, Json }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
 import util.SessionUtils.currentDataset
 import util.TimeRangeParser
 
 // scalastyle:off
-import play.cache._
 import util.TupleWriters._
-// scalastyle:on
 
 case class IteratorSession(hits: Long, hitIterator: Iterator[Long], hash: Long)
 
@@ -39,10 +38,6 @@ case class IteratorSession(hits: Long, hitIterator: Iterator[Long], hash: Long)
 class DocumentController @Inject() (cache: CacheApi) extends Controller {
 
   private val defaultPageSize = 50
-  private val defaultFacets = Facets.empty
-  // TODO: request is not available here
-  private val (numberOfDocuments, documentIterator) = FacetedSearch.fromIndexName("enron").searchDocuments(defaultFacets, defaultPageSize)
-  private val defaultSession = IteratorSession(numberOfDocuments, documentIterator, defaultFacets.hashCode())
 
   /**
    * returns the document with the id "id", if there is any
@@ -109,11 +104,15 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
     var pageCounter = 0
     val facetSearch = FacetedSearch.fromIndexName(currentDataset)
-    var iteratorSession: IteratorSession = cache.get[IteratorSession](uid)
-    if (iteratorSession == null || iteratorSession.hash == defaultSession.hash || iteratorSession.hash != facets.hashCode()) {
-      val res = facetSearch.searchDocuments(facets, defaultPageSize)
-      iteratorSession = IteratorSession(res._1, res._2, facets.hashCode())
-      cache.set(uid, iteratorSession)
+
+    val cachedIterator = cache.get[IteratorSession](uid)
+    val iteratorSession = if (requiresNewDocIterator(cachedIterator, facets)) {
+      val (numDocs, it) = facetSearch.searchDocuments(facets, defaultPageSize)
+      val session = IteratorSession(numDocs, it, facets.hashCode())
+      cache.set(uid, session)
+      session
+    } else {
+      cachedIterator.get
     }
 
     var docIds: List[Long] = List()
@@ -128,6 +127,11 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
     }
 
     Ok(createJsonReponse(docIds, iteratorSession.hits))
+  }
+
+  def requiresNewDocIterator(itSession: Option[IteratorSession], facets: Facets): Boolean = {
+    // If no document iterator is cached or got different facets receive a new iterator
+    itSession.isEmpty || itSession.forall(_.hash != facets.hashCode())
   }
 
   def createJsonReponse(docIds: List[Long], hits: Long)(implicit request: Request[AnyContent]): JsValue = {
