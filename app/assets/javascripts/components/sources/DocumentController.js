@@ -23,6 +23,59 @@ define([
     'use strict';
 
     angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial'])
+        .directive('docContent', ['$compile', function($compile) {
+            return {
+                restrict: 'E',
+                transclude: true,
+                //replace: true,
+                scope: {
+                    content: '@',
+                    // Need to set-up a bi-directional binding in order to pass an object not a string
+                    entities: '='
+                },
+                link: function(scope, element, attrs) {
+
+                    var categoryColors = { 'PER': '#d73027', 'ORG': '#fee090', 'LOC': '#abd9e9', 'MISC': '#4575b4'};
+
+                    //var el = angular.element(document.getElementById('document-content'));
+                    var container = angular.element('<div></div>');
+                    var offset = 0;
+
+                    var sortedSpans = scope.entities.sort(function(a, b) { return a.start - b.start; });
+                    sortedSpans.forEach(function(e) {
+                        var textEntity = scope.content.slice(e.start, e.end);
+                        //var fragments = doc.content.slice(offset, e.start).split('/\r|\n/');
+                        var fragments = scope.content.slice(offset, e.start).split('\n');
+
+                        fragments.forEach(function(f, i) {
+                            container.append(document.createTextNode(f));
+                            if(fragments.length > 1 && i != fragments.length - 1) container.append(angular.element('<br />'));
+                        });
+
+                        var highlight = angular.element('<span style="text-decoration: none; border-bottom: 3px solid' + categoryColors[e.type] + '"></span>');
+                        highlight.className = 'highlight-general';
+                        highlight.append(document.createTextNode(textEntity));
+
+                        // Add entity filter button
+                        //var parameter  = '' + e.id + ',"' + e.name + '","' + e.type + '"';
+                        var buttonTemplate = angular.element('<md-button class="md-icon-button entity-menu" ng-click="addEntityFilter(' + e.id +')"><md-icon class="material-icons entity-menu" aria-label="filter">add_circle</md-icon></md-button>');
+                        var button = $compile(buttonTemplate)(scope);
+
+                        container.append(highlight);
+                        container.append(button);
+
+                        offset = e.end;
+                    });
+                    container.append(document.createTextNode(scope.content.slice(offset, scope.content.length)));
+                    element.append(container);
+
+
+                    scope.addEntityFilter = function(id) {
+                        console.log('onHandleClick');
+                    };
+                }
+            };
+        }])
         .controller('DocumentController',
             [
                 '$scope',
