@@ -27,8 +27,11 @@ import play.api.mvc.{ Action, AnyContent, Controller, Request }
 import util.SessionUtils.currentDataset
 import util.TimeRangeParser
 
+import scala.collection.mutable.ListBuffer
+
 // scalastyle:off
 import util.TupleWriters._
+// scalastyle:on
 
 case class IteratorSession(hits: Long, hitIterator: Iterator[Long], hash: Long)
 
@@ -106,18 +109,20 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
     val facetSearch = FacetedSearch.fromIndexName(currentDataset)
 
     val cachedIterator = cache.get[IteratorSession](uid)
-    val iteratorSession = if (requiresNewDocIterator(cachedIterator, facets)) {
+    // Initial page load or filter applied
+    val iteratorSession = if (cachedIterator.isEmpty || cachedIterator.forall(_.hash != facets.hashCode())) {
       val (numDocs, it) = facetSearch.searchDocuments(facets, defaultPageSize)
       val session = IteratorSession(numDocs, it, facets.hashCode())
       cache.set(uid, session)
       session
+      // Document list scrolled
     } else {
       cachedIterator.get
     }
 
-    var docIds: List[Long] = List()
+    val docIds = ListBuffer[Long]()
     while (iteratorSession.hitIterator.hasNext && pageCounter <= defaultPageSize) {
-      docIds ::= iteratorSession.hitIterator.next()
+      docIds += iteratorSession.hitIterator.next()
       pageCounter += 1
     }
 
@@ -126,12 +131,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
       cache.set(uid, newIteratorSession)
     }
 
-    Ok(createJsonReponse(docIds, iteratorSession.hits))
-  }
-
-  def requiresNewDocIterator(itSession: Option[IteratorSession], facets: Facets): Boolean = {
-    // If no document iterator is cached or got different facets receive a new iterator
-    itSession.isEmpty || itSession.forall(_.hash != facets.hashCode())
+    Ok(createJsonReponse(docIds.toList, iteratorSession.hits))
   }
 
   def createJsonReponse(docIds: List[Long], hits: Long)(implicit request: Request[AnyContent]): JsValue = {
