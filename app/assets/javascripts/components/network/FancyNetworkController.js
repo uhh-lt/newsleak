@@ -50,7 +50,7 @@ define([
             });
         }])
         // Network Controller
-        .controller('FancyNetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties) {
+        .controller('FancyNetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService) {
 
             var self = this;
 
@@ -89,7 +89,7 @@ define([
                     action: function(value, nodeId) { hideNodes([nodeId]); }
                 }, {
                     title: 'Blacklist',
-                    action: function(value, nodeId) { blacklistNodes([nodeId]); }
+                    action: function(value, nodeId) { EntityService.blacklist([nodeId]); }
                 }
             ];
 
@@ -111,6 +111,7 @@ define([
             }];
 
             $scope.observerService = ObserverService;
+            $scope.entityService = EntityService;
 
             // TODO: would be cool to have the event type as argument i.e. remove or add
             $scope.observer_subscribe_fulltext = function(items) {
@@ -122,6 +123,7 @@ define([
             $scope.observerService.subscribeItems($scope.observer_subscribe_fulltext, "fulltext");
             $scope.observerService.subscribeItems($scope.observer_subscribe_metadata, "metadata");
             $scope.observerService.subscribeItems($scope.observer_subscribe_entity, "entity");
+
 
             function currentFilter() {
                 var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.name; });
@@ -321,15 +323,12 @@ define([
                 updateImportanceSlider();
             }
 
-            function blacklistNodes(nodeIds) {
+            $scope.entityService.subscribeBlacklist($scope, function blacklisted(ev, arg) {
                 // Remove node from the visual interface
-                hideNodes(nodeIds);
-                // Mark node as blacklisted
-                playRoutes.controllers.NetworkController.blacklistEntitiesById(nodeIds).get().then(function(response) {
-                    // Fetch node replacements for the merged nodes and preserve the current applied edge importance
-                    $scope.reloadGraphWithEdgeImportance();
-                });
-            }
+                hideNodes(arg.parameter);
+                // Fetch node replacements for the merged nodes and preserve the current applied edge importance
+                $scope.reloadGraphWithEdgeImportance();
+            });
 
             function addNodeFilter(nodeId) {
                 var entity = self.nodes.get(nodeId);

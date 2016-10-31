@@ -30,6 +30,7 @@ define([
     './components/histogram/HistogramController',
     './components/histogram/HistogramXController',
     './services/playRoutes',
+    './services/EntityService',
     './services/ObserverService',
     './services/underscore-module',
     'ui-layout',
@@ -48,7 +49,7 @@ define([
             'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial',
             'angularMoment', 'underscore', 'myApp.observer', 'myApp.history', 'myApp.graphConfig', 'angularScreenfull',
             'myApp.network', 'myApp.search', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.metafactory',
-            'myApp.document', 'myApp.histogram', 'myApp.histogramX', 'ngVis']
+            'myApp.document', 'myApp.histogram', 'myApp.histogramX', 'ngVis', 'myApp.entityservice']
     );
 
     app.config(['$stateProvider', '$urlRouterProvider', '$mdThemingProvider', function($stateProvider, $urlRouterProvider, $mdThemingProvider) {

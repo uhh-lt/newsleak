@@ -23,7 +23,7 @@ define([
     'use strict';
 
     angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial'])
-        .directive('docContent', ['$compile', 'ObserverService', '_', function($compile, ObserverService, _) {
+        .directive('docContent', ['$compile', 'ObserverService', 'EntityService', '_', function($compile, ObserverService, EntityService, _) {
             return {
                 restrict: 'E',
                 transclude: true,
@@ -33,18 +33,28 @@ define([
                     document: '='
                 },
                 link: function(scope, element, attrs) {
+                    // Stores elements that have been removed via the blacklisting for the current document
+                    scope.removed = {};
+
                     var content = scope.document.content;
                     var entities = scope.document.entities;
 
                     var categoryColors = { 'PER': '#d73027', 'ORG': '#fee090', 'LOC': '#abd9e9', 'MISC': '#4575b4'};
+
 
                     scope.addEntityFilter = function(id) {
                         var el = _.find(entities, function(e) { return e.id == id });
                         ObserverService.addItem({ type: 'entity', data: { id: id, name: el.name, type: el.type }});
                     };
 
+                    scope.blacklistFilter = function(id) {
+                        EntityService.blacklist([id]);
+                        // Remove the highlighting for the given entity
+                        scope.removed[id] = true;
+                    };
+
                     scope.renderDoc = function() {
-                        var container =  element;//angular.element('<div></div>');
+                        var container =  element;
                         var offset = 0;
 
                         var sortedSpans = entities.sort(function(a, b) { return a.start - b.start; });
@@ -58,16 +68,21 @@ define([
                                 if(fragments.length > 1 && i != fragments.length - 1) container.append(angular.element('<br />'));
                             });
 
-                            var highlight = angular.element('<span style="padding: 0; margin: 0; text-decoration: none; border-bottom: 3px solid' + categoryColors[e.type] + '"></span>');
+                            var highlight = angular.element('<span ng-style="removed['+ e.id  +'] ? { padding: 0, margin: 0 } : { padding: 0, margin: 0, \'text-decoration\': none,  \'border-bottom\': \'3px solid ' + categoryColors[e.type] + '\'}"></span>');
                             highlight.className = 'highlight-general';
+
                             highlight.append(document.createTextNode(textEntity));
+                            var highlightElement = $compile(highlight)(scope);
 
-                            // Add entity filter button
-                            var buttonTemplate = angular.element('<md-button class="md-icon-button entity-menu" ng-click="addEntityFilter(' + e.id +')"><md-icon class="material-icons entity-menu" aria-label="filter">add_circle</md-icon></md-button>');
-                            var button = $compile(buttonTemplate)(scope);
+                            // Add entity filter buttons
+                            var addButtonTemplate = angular.element('<md-button class="md-icon-button entity-menu" ng-click="addEntityFilter(' + e.id +')" ng-hide="removed['+ e.id  +']"><md-icon class="material-icons entity-menu" aria-label="filter">add_circle</md-icon></md-button>');
+                            var removeButtonTemplate = angular.element('<md-button class="md-icon-button entity-menu" ng-click="blacklistFilter(' + e.id +')" ng-hide="removed['+ e.id  +']"><md-icon class="material-icons entity-menu" aria-label="filter">remove_circle</md-icon></md-button>');
+                            var addButton = $compile(addButtonTemplate)(scope);
+                            var removeButton = $compile(removeButtonTemplate)(scope);
 
-                            container.append(highlight);
-                            container.append(button);
+                            container.append(highlightElement);
+                            container.append(addButton);
+                            container.append(removeButton);
 
                             offset = e.end;
                         });
