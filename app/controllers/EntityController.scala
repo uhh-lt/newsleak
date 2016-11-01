@@ -75,7 +75,7 @@ class EntityController @Inject extends Controller {
     val entityToOccurrences = Entity.fromDBName(currentDataset).getEntityDocumentOffsets(docId).groupBy(_._1)
     val res = entityToOccurrences.flatMap {
       case (Entity(id, name, t, _), occ) =>
-        occ.map { case (_, start, end) => Json.obj("id" -> id, "name" -> name, "type" -> t, "start" -> start, "end" -> end, "blacklist" -> false) }
+        occ.map { case (_, start, end) => Json.obj("id" -> id, "name" -> name, "type" -> t, "start" -> start, "end" -> end) }
     }
     Ok(Json.toJson(res)).as("application/json")
   }
