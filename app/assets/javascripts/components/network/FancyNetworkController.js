@@ -102,6 +102,10 @@ define([
                 {
                     title: 'Hide nodes',
                     action: function(value, nodeIds) { hideNodes(nodeIds); }
+                },
+                {
+                    title: 'Blacklist nodes',
+                    action: function(value, nodeIds) { EntityService.blacklist(nodeIds); }
                 }
             ];
 
