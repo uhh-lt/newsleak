@@ -15,7 +15,7 @@
   ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<md-dialog aria-label="expand" flex="25">
+<md-dialog aria-label="expand" flex="40">
     <form>
         <md-toolbar>
             <div class="md-toolbar-tools">
@@ -40,8 +40,8 @@
                                 <md-option value="label"><em>Name</em></md-option>
                                 <md-option value="id"><em>Id</em></md-option>
                                 <md-option value="type"><em>Type</em></md-option>
-                                <md-option value="-freq"><em>Freq Decreasing</em></md-option>
-                                <md-option value="freq"><em>Freq Increasing</em></md-option>
+                                <md-option value="-count"><em>Freq Decreasing</em></md-option>
+                                <md-option value="count"><em>Freq Increasing</em></md-option>
                             </md-select>
                         </md-input-container>
                     </div>
@@ -51,17 +51,17 @@
                             <span ng-style="{ width: '30%'}"> Name </span>
                             <span ng-style="{ width: '30%'}"> Type </span>
                         </md-list-item>-->
-                        <md-virtual-repeat-container ng-style="{ height: (neighbors.length * 48) + 'px'}">
+                        <md-virtual-repeat-container style="height: 300px;">
                             <md-list-item layout="row" md-virtual-repeat="n in neighbors | filter: query | orderBy: orderList"  md-item-size="10" ng-click="toggle(n, selection)">
                                 <p ng-style="{ width: '10%'}"> {{ n.id }} </p>
-                                <p ng-style="{ width: '30%'}"> {{ n.label }} </p>
-                                <p ng-style="{ width: '30%'}"> {{ n.type }} </p>
+                                <p ng-style="{ width: '40%'}"> {{ n.label }} </p>
+                                <p ng-style="{ width: '20%'}"> {{ n.type }} </p>
                                 <md-checkbox class="md-secondary" ng-style="{ width: '30%'}" ng-click="toggle(n, selection)" ng-checked="exists(n, selection)" aria-label="remove-item"></md-checkbox>
                             </md-list-item>
                         </md-virtual-repeat-container>
                     </md-list>
                     <md-divider></md-divider>
-                    <span>Number of neighbors: {{ neighbors.length }}</span>
+                    <span>Number of neighbors: {{ neighbors.length }} (fixed selection)</span>
                 </md-content>
         </md-dialog-content>
 

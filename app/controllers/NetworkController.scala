@@ -20,10 +20,9 @@ package controllers
 import javax.inject.Inject
 
 import model.Entity
-
 import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket, NodeBucket }
 import play.api.libs.json.{ JsObject, Json }
-import play.api.mvc.{ Action, Controller }
+import play.api.mvc.{ Action, AnyContent, Controller, Request }
 import util.SessionUtils.currentDataset
 import util.TimeRangeParser
 
@@ -37,13 +36,6 @@ import util.TupleWriters._
  * network graph.
  */
 class NetworkController @Inject extends Controller {
-
-  /**
-   * Returns the associated Id with the given name
-   *
-   * @param name
-   * @return
-   */
 
   // TODO: These methods should actually part of the entity controller
   def getIdsByName(name: String) = Action { implicit request =>
@@ -121,23 +113,9 @@ class NetworkController @Inject extends Controller {
     val nodes = buckets.collect { case a @ NodeBucket(_, _) => a }
 
     if (nodes.isEmpty) {
-      Ok(Json.toJson(Json.obj("entities" -> List[JsObject](), "relations" -> List[JsObject]()))).as("application/json")
+      Ok(Json.obj("entities" -> List[JsObject](), "relations" -> List[JsObject]())).as("application/json")
     } else {
-      val ids = nodes.map(_.id)
-      val nodeIdToEntity = Entity.fromDBName(currentDataset).getByIds(ids).map(e => e.id -> e).toMap
-
-      val graphEntities = nodes.collect {
-        // Only add node if it is not blacklisted
-        case NodeBucket(id, count) if nodeIdToEntity.contains(id) =>
-          val node = nodeIdToEntity(id)
-          Json.obj(
-            "id" -> id,
-            "label" -> node.name,
-            "count" -> count,
-            "type" -> node.entityType.toString,
-            "group" -> node.entityType.id
-          )
-      }
+      val graphEntities = nodesToJson(nodes)
       // Ignore relations that connect blacklisted nodes
       val graphRelations = relations.filterNot { case (from, to, _) => blacklistedIds.contains(from) && blacklistedIds.contains(to) }
 
@@ -147,12 +125,52 @@ class NetworkController @Inject extends Controller {
         Location.toString -> Location.id,
         Misc.toString -> Misc.id
       )
-      Ok(Json.toJson(Json.obj("entities" -> graphEntities, "relations" -> graphRelations, "types" -> types))).as("application/json")
+      Ok(Json.obj("entities" -> graphEntities, "relations" -> graphRelations, "types" -> types)).as("application/json")
     }
   }
 
-  def getNeighbors(id: Long) = Action { implicit request =>
-    Ok("")
+  // TODO: Use json writer and reader to minimize parameter in a case class Facets
+  def getNeighbors(
+    fullText: List[String],
+    generic: Map[String, List[String]],
+    entities: List[Long],
+    timeRange: String,
+    timeRangeX: String,
+    nodeId: Long
+  ) = Action { implicit request =>
+
+    // TODO Duplicated code to parse facets
+    val times = TimeRangeParser.parseTimeRange(timeRange)
+    val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
+
+    // TODO: we don't need to add the blacklist as exclude when we use getById.contains
+    val blacklistedIds = Entity.fromDBName(currentDataset).getBlacklisted().map(_.id)
+    val agg = FacetedSearch
+      .fromIndexName(currentDataset)
+      .aggregateEntities(facets.withEntities(List(nodeId)), 200, List(), blacklistedIds ++ List(nodeId), 1)
+
+    val nodes = agg.buckets.collect { case a @ NodeBucket(_, _) => a }
+    val neighbors = nodesToJson(nodes)
+    Ok(Json.toJson(neighbors)).as("application/json")
+  }
+
+  def nodesToJson(nodes: List[NodeBucket])(implicit request: Request[AnyContent]): List[JsObject] = {
+    val ids = nodes.map(_.id)
+    val nodeIdToEntity = Entity.fromDBName(currentDataset).getByIds(ids).map(e => e.id -> e).toMap
+
+    nodes.collect {
+      // Only add node if it is not blacklisted
+      case NodeBucket(id, count) if nodeIdToEntity.contains(id) =>
+        val node = nodeIdToEntity(id)
+        Json.obj(
+          "id" -> id,
+          "label" -> node.name,
+          "count" -> count,
+          "type" -> node.entityType.toString,
+          "group" -> node.entityType.id
+        )
+    }
   }
 
   def blacklistEntitiesById(ids: List[Long]) = Action { implicit request =>

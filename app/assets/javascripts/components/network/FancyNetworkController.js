@@ -381,21 +381,29 @@ define([
 
             function expandNode(nodeId) {
                 var entity = self.nodes.get(nodeId);
-                var neighbors = [
-                    {id: 1, label: "Titan", type: "God", freq: 10 },
-                    {id: 2, label: "Dr. Who", type: "Timelord", freq: 7 },
-                    {id: 3, label: "Cinderella", type: "Girl", freq: 3 }
-                ];
                 $mdDialog.show({
                     templateUrl: 'assets/partials/expandNode.html',
-                    controller: ['$scope', '$mdDialog', 'playRoutes', 'e', 'n',
-                        function($scope, $mdDialog, playRoutes, e, n) {
+                    controller: ['$scope', '$mdDialog', 'playRoutes', 'e',
+                        function($scope, $mdDialog, playRoutes, e) {
 
                             $scope.title = e.label;
                             $scope.entity = e;
-                            $scope.neighbors = n;
+                            $scope.neighbors = [];
 
                             $scope.selection = [];
+
+                            $scope.init = function() {
+                                fetchNeighbors();
+                            };
+
+                            $scope.init();
+
+                            function fetchNeighbors() {
+                                var filters = currentFilter();
+                                playRoutes.controllers.NetworkController.getNeighbors(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, $scope.entity.id).get().then(function(response) {
+                                    $scope.neighbors = response.data;
+                                });
+                            }
 
                             // TODO duplicate in app.js
                             $scope.toggle = function (item, list) {
@@ -414,7 +422,7 @@ define([
                             $scope.apply = function () { $mdDialog.hide($scope.selection); };
                             $scope.closeClick = function() { $mdDialog.cancel(); };
                         }],
-                    locals: { e: entity, n: neighbors },
+                    locals: { e: entity },
                     autoWrap: false,
                     parent: $scope.FancyNetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
                 }).then(function(response) { console.log(response); }, function() { /* cancel click */ });
