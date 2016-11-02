@@ -57,6 +57,7 @@
                                 <p ng-style="{ width: '40%'}"> {{ n.label }} </p>
                                 <p ng-style="{ width: '20%'}"> {{ n.type }} </p>
                                 <md-checkbox class="md-secondary" ng-style="{ width: '30%'}" ng-click="toggle(n, selection)" ng-checked="exists(n, selection)" aria-label="remove-item"></md-checkbox>
+                                <md-icon ng-click="blacklist(n.id, neighbors)" aria-label="blacklist" class="material-icons md-secondary md-hue-3">remove_circle</md-icon>
                             </md-list-item>
                         </md-virtual-repeat-container>
                     </md-list>

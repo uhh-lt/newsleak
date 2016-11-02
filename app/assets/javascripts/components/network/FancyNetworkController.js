@@ -383,8 +383,8 @@ define([
                 var entity = self.nodes.get(nodeId);
                 $mdDialog.show({
                     templateUrl: 'assets/partials/expandNode.html',
-                    controller: ['$scope', '$mdDialog', 'playRoutes', 'e',
-                        function($scope, $mdDialog, playRoutes, e) {
+                    controller: ['$scope', '$mdDialog', 'playRoutes', 'EntityService', 'e',
+                        function($scope, $mdDialog, playRoutes, EntityService, e) {
 
                             $scope.title = e.label;
                             $scope.entity = e;
@@ -404,6 +404,13 @@ define([
                                     $scope.neighbors = response.data;
                                 });
                             }
+
+                            $scope.blacklist = function(id, list) {
+                                // Blacklist entity and inform other components
+                                EntityService.blacklist([id]);
+                                var index = _.findIndex(list, function(n) { return n.id == id; });
+                                list.splice(index, 1);
+                            };
 
                             // TODO duplicate in app.js
                             $scope.toggle = function (item, list) {
