@@ -391,19 +391,33 @@ define([
                     controller: ['$scope', '$mdDialog', 'playRoutes', 'e', 'n',
                         function($scope, $mdDialog, playRoutes, e, n) {
 
-                            $scope.columns = ['Name', 'Type'];
-
                             $scope.title = e.label;
                             $scope.entity = e;
                             $scope.neighbors = n;
 
-                            $scope.apply = function () { $mdDialog.hide(); };
+                            $scope.selection = [];
+
+                            // TODO duplicate in app.js
+                            $scope.toggle = function (item, list) {
+                                if($scope.exists(item, list)) {
+                                    // Remove element in-place from list
+                                    var index = list.indexOf(item);
+                                    list.splice(index, 1);
+                                } else { list.push(item); }
+                            };
+
+                            $scope.exists = function (item, list) {
+                                var index = list.indexOf(item);
+                                return index > -1;
+                            };
+
+                            $scope.apply = function () { $mdDialog.hide($scope.selection); };
                             $scope.closeClick = function() { $mdDialog.cancel(); };
                         }],
                     locals: { e: entity, n: neighbors },
                     autoWrap: false,
                     parent: $scope.FancyNetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
-                }).then(function(response) { /* apply click */ }, function() { /* cancel click */ });
+                }).then(function(response) { console.log(response); }, function() { /* cancel click */ });
             }
 
             function mergeNodes(nodeIds) {
