@@ -146,8 +146,13 @@ define([
 
                 //if(args.id == 'footer') setUILayoutProperties(false, parseInt($('#network-maps-container').css('height'))-96);
                 $("#histogram").css("height",$("footer").height()-50);
+                $("#histogramX").css("height",$("footer").height()-50);
+                $("#vertical-container").css("height", $("#documents-view").height() - 110);
                 $("#histogram").highcharts().reflow();
-                $("#metadata-view .active .active .meta-chart").highcharts().reflow();
+                $("#histogramX").highcharts().reflow();
+                $(".scroll-chart").css("height",$("#metadata").height()-150);
+                $("#metadata-view .md-active .meta-chart").highcharts().reflow();
+
             });
 
             /*angular.element($window).bind('resize', function () {
