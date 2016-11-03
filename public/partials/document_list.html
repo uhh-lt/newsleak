@@ -41,15 +41,6 @@
 
     <p></p>
 
-
-    <!--<script type="text/ng-template" id="doc_tooltip_tmpl">
-        <div>
-            <ul class="list-group-item">
-                <li class="list-group-item" ng-repeat="(key, value) in item.metadata"><span style="font-weight: 700">{{key}}:</span> {{value}}</li>
-            </ul>
-        </div>
-    </script>-->
-
     <div ng-show="sourceShared.documentList.length > 0" class="docs-ul">
         <b style="text-decoration: underline;">{{ sourceShared.documentListInfo }}</b>
 
@@ -62,7 +53,7 @@
                         md-item-size="50"
                         class="repeated-item md-3-line md-long-text"
                         ng-click="loadFullDocument(item)">
-                    <div class="md-body-2">{{ item.metadata.Subject }} #{{item.id}}</div>
+                    <div class="md-body-2">{{ item.metadata.Subject.join(", ") }} #{{item.id}}</div>
                     <md-button class="md-primary md-raised metadata-button" ng-click="showMetaDialog($event, item.metadata)">Metadata</md-button>
 
                     <md-divider ng-if="!$last"></md-divider>

@@ -142,7 +142,7 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
       val docToMetadata = docSearch
         .getMetadataForDocuments(docIds, keys)
         .groupBy(_._1)
-        .map { case (id, l) => id -> l.map { case (_, k, v) => Json.obj("key" -> k, "val" -> v) } }
+        .map { case (id, l) => id -> l.collect { case (_, k, v) if !v.isEmpty => Json.obj("key" -> k, "val" -> v) } }
 
       val response = docIds.map { id => Json.obj("id" -> id, "metadata" -> docToMetadata.get(id)) }
 

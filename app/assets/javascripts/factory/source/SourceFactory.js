@@ -44,7 +44,10 @@ define([
                             metadata: {}
                         };
                         angular.forEach(doc.metadata, function(metadata) {
-                                currentDoc.metadata[metadata.key] = metadata.val;
+                            if(!currentDoc.metadata.hasOwnProperty(metadata.key)) {
+                                currentDoc.metadata[metadata.key] = [];
+                            }
+                            currentDoc.metadata[metadata.key].push(metadata.val);
                         });
                         sourceShareService.documentList.push(currentDoc);
                     });

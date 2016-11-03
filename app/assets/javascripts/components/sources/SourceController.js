@@ -278,7 +278,7 @@ define([
                                 '<md-subheader class="md-no-sticky">Metadata</md-subheader>'+
                             '    <md-list class="md-dense">'+
                             '      <md-list-item ng-repeat="(key, value) in items">'+
-                            '       <p class="md-body-2">{{key}}: {{value}}</p>' +
+                            '       <p class="md-body-2"><b>{{ key }}</b>: {{ value.join(", ") }}</p>' +
                             '      '+
                             '    </md-list-item></md-list>'+
                             '  </md-dialog-content>' +
@@ -300,21 +300,6 @@ define([
                             }
                         }
                     };
-
-                    /*$scope.hidePopover = function (id) {
-                        $scope.popover.promises[id] = $timeout(function () {
-                            $scope.hideFunction(id)
-                        }, 10);
-                    };
-
-                    $scope.showPopover = function (id) {
-                        if ($scope.popover.promises[id] != undefined) $timeout.cancel($scope.popover.promises[id]);
-                        $scope.popover.isOpen[id] = true;
-                    };
-
-                    $scope.hideFunction = function (x) {
-                        $scope.popover.isOpen[x] = false;
-                    };*/
                 }
             ]);
 });
