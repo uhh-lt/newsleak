@@ -141,10 +141,7 @@ define([
                 }, 100); */
             }
 
-            $scope.$on("angular-resizable.resizeEnd", function (event, args) {
-                if(args.id == 'center-box') setUILayoutProperties(args.width, false);
-
-                //if(args.id == 'footer') setUILayoutProperties(false, parseInt($('#network-maps-container').css('height'))-96);
+            $scope.resizeUI = function() {
                 $("#histogram").css("height",$("footer").height()-50);
                 $("#histogramX").css("height",$("footer").height()-50);
                 $("#vertical-container").css("height", $("#documents-view").height() - 110);
@@ -152,12 +149,20 @@ define([
                 $("#histogramX").highcharts().reflow();
                 $(".scroll-chart").css("height",$("#metadata").height()-150);
                 $("#metadata-view .md-active .meta-chart").highcharts().reflow();
+            };
+
+            $scope.$on("angular-resizable.resizeEnd", function (event, args) {
+                if(args.id == 'center-box') setUILayoutProperties(args.width, false);
+
+                //if(args.id == 'footer') setUILayoutProperties(false, parseInt($('#network-maps-container').css('height'))-96);
+                $scope.resizeUI();
 
             });
 
-            /*angular.element($window).bind('resize', function () {
-                setUILayoutProperties(parseInt($('#network-maps-container').css('width')), parseInt($('#network-maps-container').css('height'))-96);
-            });*/
+            angular.element($window).bind('resize', function () {
+               // setUILayoutProperties(parseInt($('#network-maps-container').css('width')), parseInt($('#network-maps-container').css('height'))-96);
+                $scope.resizeUI();
+            });
 
             /**
              * This function sets properties that describe the dimensions of the UI layout.

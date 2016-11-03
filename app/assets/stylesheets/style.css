@@ -259,7 +259,7 @@ main {
 footer {
     height: 200px;
 }
-footer > div {
+footer > md-tabs {
     height: 100%;
     margin-top: 10px;
 }
