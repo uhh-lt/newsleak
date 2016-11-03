@@ -80,6 +80,7 @@ class NetworkController @Inject extends Controller {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
+
     val agg = FacetedSearch
       .fromIndexName(currentDataset)
       // Only consider documents where the two entities occur
@@ -98,8 +99,7 @@ class NetworkController @Inject extends Controller {
     entities: List[Long],
     timeRange: String,
     timeRangeX: String,
-    nodeFraction: Map[String, String],
-    filter: List[Long]
+    nodeFraction: Map[String, String]
   ) = Action { implicit request =>
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
@@ -110,6 +110,7 @@ class NetworkController @Inject extends Controller {
     val (buckets, relations) = FacetedSearch
       .fromIndexName(currentDataset)
       .induceSubgraph(facets, sizes, blacklistedIds)
+    // TODO Let induceSubgraph return NodeBuckets
     val nodes = buckets.collect { case a @ NodeBucket(_, _) => a }
 
     if (nodes.isEmpty) {
@@ -127,6 +128,27 @@ class NetworkController @Inject extends Controller {
       )
       Ok(Json.obj("entities" -> graphEntities, "relations" -> graphRelations, "types" -> types)).as("application/json")
     }
+  }
+
+  def addNodes(
+    fullText: List[String],
+    generic: Map[String, List[String]],
+    entities: List[Long],
+    timeRange: String,
+    timeRangeX: String,
+    currentNetwork: List[Long],
+    nodes: List[Long]
+  ) = Action { implicit request =>
+
+    val times = TimeRangeParser.parseTimeRange(timeRange)
+    val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
+    val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
+
+    val (buckets, relations) = FacetedSearch
+      .fromIndexName(currentDataset)
+      .addNodes(facets, currentNetwork, nodes)
+
+    Ok(Json.obj("entities" -> nodesToJson(buckets), "relations" -> relations)).as("application/json")
   }
 
   // TODO: Use json writer and reader to minimize parameter in a case class Facets

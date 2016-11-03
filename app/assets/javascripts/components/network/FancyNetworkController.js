@@ -184,7 +184,7 @@ define([
                     {"key": "MISC", "data": $scope.numMisc }
                 ];
 
-                playRoutes.controllers.NetworkController.induceSubgraph(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX,fraction, []).get().then(function(response) {
+                playRoutes.controllers.NetworkController.induceSubgraph(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, fraction).get().then(function(response) {
                         // Enable physics for new graph data when network is initialized
                         if(!_.isUndefined(self.network)) {
                             applyPhysicsOptions(self.physicOptions);
@@ -432,7 +432,32 @@ define([
                     locals: { e: entity },
                     autoWrap: false,
                     parent: $scope.FancyNetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
-                }).then(function(response) { console.log(response); }, function() { /* cancel click */ });
+                }).then(function(response) {
+                    var filters = currentFilter();
+                    var networkNodes = self.nodesDataset.getIds();
+
+                    var n = response.map(function(n) { return n.id; });
+                    playRoutes.controllers.NetworkController.addNodes(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, networkNodes, n).get().then(function(response) {
+                        applyPhysicsOptions(self.physicOptions);
+                        $scope.loading = true;
+                        var nodes = response.data.entities.map(function(n) {
+                            return { id: n.id, label: n.label, type: n.type,  value: n.count, group: n.group };
+                        });
+
+                        var edges = response.data.relations.map(function(n) {
+                            return { from: n[0], to: n[1], value: n[2] };
+                        });
+
+                        self.nodesDataset.add(nodes);
+                        self.edgesDataset.add(edges);
+
+                        // Initialize the graph
+                        $scope.graphData = {
+                            nodes: self.nodesDataset,
+                            edges: self.edgesDataset
+                        };
+                    });
+                }, function() { /* cancel click */ });
             }
 
             function mergeNodes(nodeIds) {

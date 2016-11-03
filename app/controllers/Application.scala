@@ -126,6 +126,7 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         controllers.routes.javascript.NetworkController.mergeEntitiesById,
         controllers.routes.javascript.NetworkController.changeEntityNameById,
         controllers.routes.javascript.NetworkController.induceSubgraph,
+        controllers.routes.javascript.NetworkController.addNodes,
         controllers.routes.javascript.NetworkController.getEdgeKeywords,
         controllers.routes.javascript.NetworkController.getNeighborCounts,
         controllers.routes.javascript.NetworkController.getNeighbors,
