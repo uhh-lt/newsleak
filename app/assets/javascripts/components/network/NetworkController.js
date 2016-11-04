@@ -745,17 +745,17 @@ define([
                         .attr('height', '16')
                         .attr('x', -8)
                         .attr('y', function(d){
-                            return radius(d.docCount) - 4;
+                            return radius(d.freq) - 1;
                         })
                         .append('xhtml:body')
                         .style('padding', '0')
-                        .style('margin-top', '0px')
+                        .style('margin-top', '0px');
 
 
                     buttonlist
                         .append('button')
                         .attr('type', 'button')
-                        .attr('class', 'btn btn-default btn-block')
+                        .attr('class', 'btn btn-default btn-block btn-xs')
                         .style('width', '100%')
                         .style('height', '100%')
                         .style('padding', '0px 0px 0px 0px')
@@ -765,15 +765,31 @@ define([
                                                     getGuidanceNodes(d.id,true);
                                                     //$scope.observer.addItem({type: 'entity', data: {id: d.id, name: d.name, type: d.type}});
                                                 })
-                        .append('span')
-                        .attr('class', 'glyphicon glyphicon-plus')
-                        //TODO: positioning of glyphicons in svg (absolute only works in firefox)
-                        //.style('position', 'absolute')
-                        .style('left', '3px')
-                        .style('top', '3px')
-                        .style('text-align', 'center')
-                        .style('font-size', '10px');
 
+                        .append('i')
+                        .attr('class',"material-icons")
+                        .style('font-size','14px')//20
+                        .text('adjust');
+
+                /* zweiter Button zum expandieren, brauchen wir nicht wirklich
+                buttonlist
+                    .append('button')
+                    .attr('type', 'button')
+                    .attr('class', 'btn btn-default btn-block btn-xs')
+                    .style('width', '100%')
+                    .style('height', '100%')
+                    .style('padding', '0px 0px 0px 0px')
+                    .on('click', function(d)//Wenn der Plus-Button gedrückt wird
+                    {
+                        console.log("button clicked");
+                        //getGuidanceNodes(d.id,true);
+                    })
+                    .append('i')
+                    .attr('class',"material-icons")
+                    .style('font-size','16px')//20
+                    //.attr('fill','#555')
+                    .text('add');
+*/
                     //console.log("removing nodes:");
                     //console.log(node.exit().data());
 

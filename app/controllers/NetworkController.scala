@@ -384,14 +384,15 @@ class NetworkController @Inject extends Controller {
     val facets = Facets(fullText, generic, entities, times.from, times.to)
 
     val uiMatrix: Array[Array[Int]] = uiString.split(";").map(_.split(",").map(_.toInt))
-    val gc = GuindanceMap.getOrElseUpdate(sessionId, new GuidanceControl)
+    var undoAvailable = true
+    val gc = GuindanceMap.getOrElseUpdate(sessionId, { undoAvailable = false; new GuidanceControl })
     implicit val gg = gc.getState.guidance
     val ggIter = gg.createIterator.init(facets, focusId, edgeAmount, epn, uiMatrix, useOldEdges)
     val (edges, nodes) = ggIter.take(edgeAmount).toList.unzip
     val result = new JsObject(Map(
       "nodes" -> Json.toJson(nodes.flatten /*entfernt die leeren Options*/ ++ NodeFactory.createNodes(facets, List(focusId), 0, 0)),
       "links" -> Json.toJson(edges),
-      "undoAvailable" -> JsBoolean(true),
+      "undoAvailable" -> JsBoolean(undoAvailable),
       "redoAvailable" -> JsBoolean(false)
     ))
     gc.addState(State(gg, ggIter.getState, result))

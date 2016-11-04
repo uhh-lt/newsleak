@@ -57,7 +57,7 @@
             <button type="button" class="btn btn-primary btn-small" ng-click="expandNode(sNode.id)">
                 <i class="material-icons">add</i> Expand Node
             </button><br>
-            to see additionally the n most important connections to {{sNode.name}}:
+            to see additionally the {{contextCache[sNode.id].data.expand.tooltipInfo.length}} most important connections to {{sNode.name}}:
             <p ng-if="contextCache[sNode.id].data !== undefined" ng-repeat="node in contextCache[sNode.id].data.expand.tooltipInfo">
                 <i class="material-icons"> {{categories[node.type].img}}</i>{{node.name}}
             </p>

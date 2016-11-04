@@ -41,9 +41,11 @@
         <div class="slider-container">
             <input ng-model="sliderEdgesPerNode.value" type="text" slider options="sliderEdgesPerNode.options"/>
         </div>
+      <!--
         <div class="slider-container">
           <input ng-model="sliderEdgeFrequency.value" type="text" slider options="sliderEdgeFrequency.options"/>
         </div>
+      -->
       </div>
       <div class="col-md-3">
       <table style="float: right; border-collapse: separate;" class="noselect">
@@ -115,6 +117,7 @@
             </div>
           </div>
         </div>
+        <!--
         <div class="btn-group">
           <button
                   type="button"
@@ -142,6 +145,7 @@
             </div>
           </div>
         </div>
+        -->
         <div class="btn-group">
           <button type="button" class="btn btn-info" ng-disabled="toolShareService.isViewLoading()" data-toggle="collapse" data-target="#demo" ng-click="updateGuidance()" id="settings-button">Settings</button>
         </div>
@@ -216,10 +220,10 @@
             </div>
           </div>
         </div>
-        <button ng-click="undoGuidanceStep()" ng-disabled="!undoAvailable()" class="btn">
+        <button ng-click="undoGuidanceStep()" ng-disabled="!undoAvailable()" class="btn btn-default">
           <i class="material-icons" style="font-size: 18px; vertical-align: middle;">undo</i>undo
         </button>
-        <button ng-click="redoGuidanceStep()" ng-disabled="!redoAvailable()" class="btn">
+        <button ng-click="redoGuidanceStep()" ng-disabled="!redoAvailable()" class="btn btn-default">
           <i class="material-icons" style="font-size: 18px; vertical-align: middle;">redo</i>redo
         </button>
       </div>
