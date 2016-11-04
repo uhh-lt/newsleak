@@ -36,7 +36,7 @@ define([
                         'entity' : 'filter',
                         'metadata': 'filter',
                         'time': 'time',
-                        'timeX': 'time',
+                        'timeX': 'calendar',
                         "expandNode": 'plus',
                         "collapseNode": 'plus',
                         "egoNetwork": 'asterisk',
@@ -91,7 +91,6 @@ define([
                     $scope.observer.subscribeReset(function() {
                         $scope.history.length = 0;
                     });
-
 
                     $scope.removeItem = function(item) {
                         $scope.observer.removeItem(item.id, item.type);
