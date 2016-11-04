@@ -56,8 +56,8 @@
           <td ng-repeat-start="y in categories" ng-if="$first" id="{{xIndex}}.{{$index}}" ng-click="setUI(xIndex,$index)" class="uiTableIcon" style="background-color: {{x.color}}" title="Set weight for all edges connecting a {{x.singular}}-Entity">
             <i class="material-icons">{{x.img}}</i>
           </td>
-          <td ng-repeat-end="y in categories" ng-if="!$first" id="{{xIndex}}.{{$index}}" ng-click="setUI(xIndex,$index)" class="uiTable" title="Set weight for all edges connecting a {{x.singular}}-Entity with a {{y.singular}}-Entity">
-            <i class="material-icons red" id="{{xIndex}}.{{$index}}.icon" style="visibility:hidden;">block</i>
+          <td ng-repeat-end="y in categories" ng-if="!$first" id="{{xIndex}}.{{$index}}" ng-click="setUI(xIndex,$index)" class="uiTable" style="background-color: {{prioToColor()[UIitems()[xIndex-1][$index-1]]}}" title="Set weight for all edges connecting a {{x.singular}}-Entity with a {{y.singular}}-Entity">
+            <i class="material-icons red" id="{{xIndex}}.{{$index}}.icon" style="visibility:{{UIitems()[xIndex-1][$index-1]!=0?'hidden':'visible'}};">block</i>
           </td>
         </tr>
       </table>
@@ -216,6 +216,12 @@
             </div>
           </div>
         </div>
+        <button ng-click="undoGuidanceStep()" ng-disabled="!undoAvailable()" class="btn">
+          <i class="material-icons" style="font-size: 18px; vertical-align: middle;">undo</i>undo
+        </button>
+        <button ng-click="redoGuidanceStep()" ng-disabled="!redoAvailable()" class="btn">
+          <i class="material-icons" style="font-size: 18px; vertical-align: middle;">redo</i>redo
+        </button>
       </div>
       <!-- end of legend -->
 

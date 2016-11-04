@@ -21,7 +21,7 @@ import javax.inject.Inject
 
 import controllers.network._
 import play.api.Logger
-import play.api.libs.json.{ JsNumber, JsString, Writes }
+import play.api.libs.json.{ JsBoolean, JsNumber, JsString, Writes }
 
 import scala.collection.mutable
 // to read files
@@ -50,8 +50,8 @@ class NetworkController @Inject extends Controller {
 
   // TODO: fetch entity types from backend API
 
-  var GuindanceMap: mutable.HashMap[String, GraphGuidance] = new mutable.HashMap[String, GraphGuidance]()
-  var IterMap: mutable.HashMap[String, GuidanceIterator] = new mutable.HashMap[String, GuidanceIterator]()
+  var GuindanceMap: mutable.HashMap[String, GuidanceControl] = new mutable.HashMap[String, GuidanceControl]()
+  var IterMap: mutable.HashMap[String, GuidanceControl] = new mutable.HashMap[String, GuidanceControl]()
 
   /**
    * the strings for different types
@@ -384,11 +384,17 @@ class NetworkController @Inject extends Controller {
     val facets = Facets(fullText, generic, entities, times.from, times.to)
 
     val uiMatrix: Array[Array[Int]] = uiString.split(";").map(_.split(",").map(_.toInt))
-    implicit val gg = GuindanceMap.getOrElseUpdate(sessionId, new GraphGuidance)
-    val ggIter = gg.getGuidance(facets, focusId, edgeAmount, epn, uiMatrix, useOldEdges)
+    val gc = GuindanceMap.getOrElseUpdate(sessionId, new GuidanceControl)
+    implicit val gg = gc.getState.guidance
+    val ggIter = gg.createIterator.init(facets, focusId, edgeAmount, epn, uiMatrix, useOldEdges)
     val (edges, nodes) = ggIter.take(edgeAmount).toList.unzip
-    val result = new JsObject(Map(("nodes", Json.toJson(nodes.flatten /*entfernt die leeren Options*/ ++ NodeFactory.createNodes(facets, List(focusId), 0, 0))), ("links", Json.toJson(edges))))
-    IterMap += (sessionId -> ggIter)
+    val result = new JsObject(Map(
+      "nodes" -> Json.toJson(nodes.flatten /*entfernt die leeren Options*/ ++ NodeFactory.createNodes(facets, List(focusId), 0, 0)),
+      "links" -> Json.toJson(edges),
+      "undoAvailable" -> JsBoolean(true),
+      "redoAvailable" -> JsBoolean(false)
+    ))
+    gc.addState(State(gg, ggIter.getState, result))
     Logger.debug(result.toString())
     Ok(result).as("application/json")
   }
@@ -401,7 +407,9 @@ class NetworkController @Inject extends Controller {
    * @return
    */
   def getContext(nodeId: Long, amount: Int, sessionId: String) = Action {
-    val ggIter = IterMap(sessionId)
+    val gState = GuindanceMap(sessionId).getState
+    val gg = gState.guidance
+    val ggIter = gState.ggIter
     //val guidancePreviewList = ggIter.getGuidancePreview(nodeId, amount)
     val guidancePreview = ggIter.getGuidancePreview(nodeId, amount)
     val (edgeExpandList, nodeExpandList) = ggIter.getMoreEdges(nodeId, amount)
@@ -414,17 +422,29 @@ class NetworkController @Inject extends Controller {
           "name" -> JsString(t),
           "count" -> JsNumber(count)
         ))
-      })
+      }),
+      "undoAvailable" -> JsBoolean(GuindanceMap(sessionId).undoAvailable),
+      "redoAvailable" -> JsBoolean(GuindanceMap(sessionId).redoAvailable)
     ))
+    //GuindanceMap(sessionId).addState(State(gg.copy, ggIter.copyState, result.toString()))
     Logger.debug("send context for " + nodeId)
     Logger.debug(result.toString())
     Ok(result).as("application/json")
   }
 
-  /*
   def undo(sessionId: String) = Action {
-    Ok()
-  }*/
+    Ok(GuindanceMap(sessionId).undo.output ++ new JsObject(Map(
+      "undoAvailable" -> JsBoolean(GuindanceMap(sessionId).undoAvailable),
+      "redoAvailable" -> JsBoolean(GuindanceMap(sessionId).redoAvailable)
+    ))).as("application/json")
+  }
+
+  def redo(sessionId: String) = Action {
+    Ok(GuindanceMap(sessionId).redo.output ++ new JsObject(Map(
+      "undoAvailable" -> JsBoolean(GuindanceMap(sessionId).undoAvailable),
+      "redoAvailable" -> JsBoolean(GuindanceMap(sessionId).redoAvailable)
+    ))).as("application/json")
+  }
 
   implicit val NodeWrite = new Writes[Node] {
     override def writes(n: Node) = Json.obj(

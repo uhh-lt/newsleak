@@ -33,7 +33,8 @@ define([
             //all item structured by type
             var items = {};
             //types of tracked items
-            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset", "delete", "openDoc", "guidance", "addEdges"];
+            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate",
+                "fulltext", "reset", "delete", "openDoc", "guidance", "addEdges", "undo", "redo"];
             var metadataTypes = [];
             var entityTypes = [];
             var histogramLoD = [];
@@ -157,6 +158,13 @@ define([
                             break;
                         case types[14]://addEdges
                             action = "other";
+                            break;
+                        case types[15]://undo
+                            action = "other";
+                            break;
+                        case types[16]://redo
+                            action = "other";
+                            break;
                     }
 
                     if(isDup) return  -1;
@@ -164,8 +172,9 @@ define([
                     lastAdded++;
                     item["action"] = action;
                     item["id"] = angular.copy(lastAdded);
-                    item["active"] = true;
-
+                    if (item.active === undefined) {
+                        item["active"] = true;
+                    }
                     history.push(item);
                     //if(items.indexOf(item.type) == -1) items[item.type] = [];
                     //adding item structured
@@ -208,6 +217,7 @@ define([
                     lastAdded++;
                     item["id"] = angular.copy(lastAdded);
                     item["action"] = "removed";
+                    item["reverts"] = toBeRemoved.id;
                     history.push(item);
                     switch(item.type) {
 
@@ -228,9 +238,6 @@ define([
                     this.notifyObservers();
                     console.log("removed from history: " + lastRemoved);
                 },
-
-
-
 
                 //TODO: replace type by array to more then one type can be subscribed in a merged item array
                 subscribeItems: function (_subscriber, type) {
@@ -277,7 +284,9 @@ define([
                               _subscriber.func(history);
                               break;
                           default:
-                              _subscriber.func(items[_subscriber.type]);
+                              _subscriber.func(items[_subscriber.type].filter(function (item) {
+                                  return item[active] !== false;
+                              }));
                       }
                   });
                 },
@@ -315,9 +324,13 @@ define([
                             if(items.metadata[metaType].length > 0) {
                                 var keys = [];
                                 angular.forEach(items.metadata[metaType], function(x) {
-                                    keys.push(x.data.name);
+                                    if (x.active) {
+                                        keys.push(x.data.name);
+                                    }
                                 });
-                                facets.push({key: metaType, data: keys});
+                                if (keys.length > 0){
+                                    facets.push({key: metaType, data: keys});
+                                }
                             }
                         });
                         if(facets == 0) facets = [{'key':'dummy','data': []}];

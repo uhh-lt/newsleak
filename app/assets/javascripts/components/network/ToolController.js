@@ -89,6 +89,14 @@ define([
                 {name:'LOC', img: 'place', val: 1, color: '#8dd3c7', singular: 'Location'},
                 {name:'MISC', img: 'reorder', val: 1, color: '#ffffb3', singular: 'Miscellaneous'}];
 
+            $scope.UIitems = function () {
+                return toolShareService.UIitems
+            };
+
+            $scope.prioToColor = function () {
+                return toolShareService.priorityToColor
+            };
+
             $scope.updateGuidance = function () {
                 if(document.getElementById("settings-button").getAttribute("aria-expanded")){
                     document.getElementById("settings-button").setAttribute("aria-expanded", false);
@@ -96,24 +104,25 @@ define([
                 }
             };
 
+            $scope.undoGuidanceStep = function () {
+                toolShareService.undoGuidance()
+            };
+            $scope.redoGuidanceStep = function () {
+                toolShareService.redoGuidance()
+            };
+            $scope.undoAvailable = function () {
+                return toolShareService.undoAvailable()
+            };
+            $scope.redoAvailable = function () {
+                return toolShareService.redoAvailable()
+            };
+
             var UIgeneralItems = [1,1,1,1];
             // var priorityToColor = ["white","white","#83a2d6","#2759ac"];
 
-            // TODO Refactoring: directives benutzten um die CSS-Properties zu ändern
-
-            function updateToolDisplay(x,y,prio) {
-                x++; //Offset berücksichtigen
-                y++;
-                console.log(x + '.' + y + '.icon');
-                if (prio == 0){
-                    document.getElementById(x + '.' + y + '.icon').style.visibility = "visible";
-                    document.getElementById(y + '.' + x + '.icon').style.visibility = "visible";
-                } else {
-                    document.getElementById(x + '.' + y + '.icon').style.visibility = "hidden";
-                    document.getElementById(y + '.' + x + '.icon').style.visibility = "hidden";
-                }
-                document.getElementById(x + '.' + y).style.backgroundColor = toolShareService.priorityToColor[prio];
-                document.getElementById(y + '.' + x).style.backgroundColor = toolShareService.priorityToColor[prio];
+            function updateToolDisplay(efreq, epn) {
+                $scope.sliderEdgeAmount.value = efreq.toString();
+                $scope.sliderEdgesPerNode.value = epn.toString();
             };
             toolShareService.updateToolDisplay = updateToolDisplay;
 
@@ -126,36 +135,14 @@ define([
                     x = x+y;
                     document.getElementById(x+'.0').style.borderColor = toolShareService.priorityToColorBorder[prio];
                     document.getElementById('0.'+x).style.borderColor = toolShareService.priorityToColorBorder[prio];
-                    for (var i = 1; i<UIgeneralItems.length+1; i++){
-                        if (i != UIgeneralItems.length) {
-                            toolShareService.UIitems[i][x - 1] = prio;
-                            toolShareService.UIitems[x - 1][i] = prio;
-                        }
-                        if (i != 0){
-                            if (prio == 0){
-                                document.getElementById(x + '.' + i + '.icon').style.visibility = "visible";
-                                document.getElementById(i + '.' + x + '.icon').style.visibility = "visible";
-                            } else {
-                                document.getElementById(x + '.' + i + '.icon').style.visibility = "hidden";
-                                document.getElementById(i + '.' + x + '.icon').style.visibility = "hidden";
-                            }
-                        }
-                        document.getElementById(x + '.' + i).style.backgroundColor = toolShareService.priorityToColor[prio];
-                        document.getElementById(i + '.' + x).style.backgroundColor = toolShareService.priorityToColor[prio];
+                    for (var i = 0; i<UIgeneralItems.length; i++){
+                        toolShareService.UIitems[i][x - 1] = prio;
+                        toolShareService.UIitems[x - 1][i] = prio;
                     }
                 } else {
                     var prio = (toolShareService.UIitems[x - 1][y - 1] + 1) % 4;
-                    if (prio == 0){
-                        document.getElementById(x + '.' + y + '.icon').style.visibility = "visible";
-                        document.getElementById(y + '.' + x + '.icon').style.visibility = "visible";
-                    } else if (prio == 1){
-                        document.getElementById(x + '.' + y + '.icon').style.visibility = "hidden";
-                        document.getElementById(y + '.' + x + '.icon').style.visibility = "hidden";
-                    }
                     toolShareService.UIitems[y - 1][x - 1] = prio;
                     toolShareService.UIitems[x - 1][y - 1] = prio;
-                    document.getElementById(x + '.' + y).style.backgroundColor = toolShareService.priorityToColor[prio];
-                    document.getElementById(y + '.' + x).style.backgroundColor = toolShareService.priorityToColor[prio];
                 }
             //console.log(toolShareService.UIitems);
             };

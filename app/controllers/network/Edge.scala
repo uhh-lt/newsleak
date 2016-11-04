@@ -45,6 +45,11 @@ class Edge(n1: Node, n2: Node, docOcc: Int, uiLevel: Int, oldDoi: Double) {
   def getNodes: (Node, Node) = {
     (n1, n2)
   }
+
+  def getNodesId: (Long, Long) = {
+    (n1.getId, n2.getId)
+  }
+
   def getDocOcc: Int = {
     docOcc
   }

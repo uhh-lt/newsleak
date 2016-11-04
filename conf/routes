@@ -20,6 +20,8 @@ GET    /getDocs           		controllers.DocumentController.getDocs(fullText: Lis
 
 GET    /getGuidanceNodes        controllers.NetworkController.getGuidanceNodes(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, focusId: Long, edgeAmount: Int, epn: Int, uiString: String, useOldEdges: Boolean, sessionId: String)
 GET    /getAdditionalEdges      controllers.NetworkController.getContext(nodeId: Long, amount: Int, sessionId: String)
+GET    /undo                    controllers.NetworkController.undo(sessionId: String)
+GET    /redo                    controllers.NetworkController.redo(sessionId: String)
 
 GET    /getGraphData         	controllers.NetworkController.getGraphData(leastOrMostFrequent: Int, amount: List[Int], minEdgeFreq: Int, maxEdgeFreq: Int)
 GET    /getRelations            controllers.NetworkController.getRelations(entities: List[Long], minEdgeFreq: Int, maxEdgeFreq: Int)

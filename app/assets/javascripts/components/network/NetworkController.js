@@ -122,6 +122,13 @@ define([
                     getGuidanceNodes(oldFocusNodeId, false);
                 }
             };
+            toolShareService.undoGuidance = function () {
+                undoStep(sessionid);
+            };
+            toolShareService.redoGuidance = function () {
+                redoStep(sessionid);
+            };
+
             $scope.observer.registerObserverCallback(function (){
                 var history = $scope.observer.getHistory();
                 if (["entity", "metadata", "time", "fulltext"].includes(history[history.length-1].type)){
@@ -148,7 +155,6 @@ define([
                 if (!(toolShareService.UIitems[$scope.categories[sourceType].number][$scope.categories[targetType].number] == state)){
                     toolShareService.UIitems[$scope.categories[sourceType].number][$scope.categories[targetType].number] = state;
                     toolShareService.UIitems[$scope.categories[targetType].number][$scope.categories[sourceType].number] = state;
-                    toolShareService.updateToolDisplay($scope.categories[sourceType].number, $scope.categories[targetType].number, state);
                     getGuidanceNodes(oldFocusNodeId, true);
                 }
             };
@@ -768,8 +774,8 @@ define([
                         .style('text-align', 'center')
                         .style('font-size', '10px');
 
-                    console.log("removing nodes:");
-                    console.log(node.exit().data());
+                    //console.log("removing nodes:");
+                    //console.log(node.exit().data());
 
                     node.exit().remove();
 
@@ -1390,6 +1396,193 @@ define([
                 )
             }
 
+            function undoStep() {
+                $scope.isViewLoading = true;
+                playRoutes.controllers.NetworkController.undo(sessionid).get().then(
+                    function (response) {
+                        console.log(response);
+                        computeNodesAndEdgesJSON(response.data.focusId,response);
+                        toolShareService.sliderEdgesPerNode = function () {return response.data.epn};
+                        toolShareService.updateToolDisplay(response.data.edgeAmount,response.data.epn);
+                        toolShareService.UIitems = response.data.uiMatrix.split(";").map(
+                            function(str) {return str.split(",").map(
+                                function(intStr) {return parseInt(intStr)})});
+                        console.log(toolShareService.UIitems);
+                        start();
+                        var hist = ObserverService.getHistory();
+                        var state = "s-start";
+                        var stopLoop = false;
+                        var undoList = [];
+                        for(var i = hist.length-1; i>=0; i--){
+                            switch (state) {
+                                case "s-start":
+                                    if (hist[i].type == "guidance" && hist[i].active) {
+                                        hist[i].active = false;
+                                        hist[i].undone = true;
+                                        state = "s1";
+                                        undoList.push(i);
+                                    } else if (hist[i].type == "addEdges") {
+                                        hist[i].active = false;
+                                        undoList.push(i);
+                                    }
+                                    break;
+                                case "s1":
+                                    if (hist[i].type == "guidance" && hist[i].active){
+                                        state = "s3"
+                                    }
+                                    else {
+                                        if(["entity","metadata","fulltext","time"].includes(hist[i].type)) {
+                                            if (hist[i].action != "removed") {
+                                                hist[i].active = false;
+                                                undoList.push(i);
+                                            } else {
+                                                hist[hist[i].reverts].active = true;
+                                                undoList.push(hist[i].reverts);
+                                            }
+                                        }
+                                        state = "s2";
+                                    }
+                                    break;
+                                case "s2":
+                                    console.log(hist[i].type);
+                                    /*if (hist[i].type == "addEdges") {
+                                     hist[i].active = true;
+                                     } else*/ if (hist[i].type == "guidance" && !hist[i].undone){
+                                        hist[i].active = true;
+                                        state = "s3";
+                                        undoList.push(i);
+                                    }
+                                    break;
+                                case "s3":
+                                    stopLoop = true;
+                                    break;
+                            }
+                            if (stopLoop){
+                                break;
+                            }
+                        }
+                        ObserverService.addItem({type: "undo", active: false, data:{name: "undo", list: undoList}});
+                        $scope.isViewLoading = false;
+                    })
+            }
+
+            function redoStep() {
+                $scope.isViewLoading = true;
+                playRoutes.controllers.NetworkController.redo(sessionid).get().then(
+                    function (response) {
+                        console.log(response);
+                        computeNodesAndEdgesJSON(response.data.focusId,response);
+                        toolShareService.sliderEdgesPerNode = function () {return response.data.epn};
+                        toolShareService.updateToolDisplay(response.data.edgeAmount,response.data.epn);
+                        toolShareService.UIitems = response.data.uiMatrix.split(";").map(
+                            function(str) {return str.split(",").map(
+                                function(intStr) {return parseInt(intStr)})});
+                        console.log(toolShareService.UIitems);
+                        start();
+                        var hist = ObserverService.getHistory();
+                        for(var i = hist.length-1; i>=0; i--){
+                            if (hist[i].type === "undo" && !hist[i].redone) {
+                                ObserverService.addItem({
+                                    type: "redo",
+                                    active: false,
+                                    data: {name: "redo", correspondingUndo: i}
+                                });
+                                hist[i].redone = true;
+                                var undoList = hist[i].data.list;
+                                break;
+                            }
+                        }
+                        for (var i = 0; i<undoList.length; i++){
+                            var item = hist[undoList[i]];
+                            if (item.type === "guidance"){
+                                item.active = !item.active;
+                                delete item.undone;
+                            } else if (item.type === "addEdges"){
+                                item.active = true;
+                            } else if (["entity","metadata","fulltext","time"].includes(item.type)) {
+                                item.active = !item.active;
+                            }
+                        }
+
+                        //ObserverService.addItem({type: "undo", active: false, data:{name: "undo", list: undoList}});
+                        $scope.isViewLoading = false;
+                    })
+            }
+
+            function computeNodesAndEdgesJSON(focusNodeId,response) {
+                //to prevent invisible selections
+                unselectNodes();
+                unselectEdges();
+
+                toolShareService.undoAvailable = function () {return response.data.undoAvailable};
+                toolShareService.redoAvailable = function () {return response.data.redoAvailable};
+
+                //Object, welches alle alten KnotenId als Schlüssel enthält mit xy-Koordinaten als Wert (=HashMap)
+                var oldNodes = nodes.reduce(function(o, node, index) {
+                    o[node.id] = {x: node.x, y: node.y};
+                    return o;
+                }, {});
+                //console.log(oldNodes);
+
+                //delete all nodes and edges
+                nodes = [];
+                edges = [];
+
+                response.data.nodes.forEach(
+                    function(v)
+                    {
+                        /*var enode = tmpnodes.find(function(node){return node.id === v.id;});
+                         if(enode != undefined)
+                         {
+                         enode.docCount = v.docCount;
+                         nodes.push(enode);
+                         return;
+                         }*/
+
+                        var fixedPos = oldNodes.hasOwnProperty(v.id);//Soll der Knoten die Position halten?
+                        nodes.push({
+                            id: v.id,
+                            isFocusNode: v.id==focusNodeId,
+                            name: v.name,
+                            freq: v.docOcc,
+                            type: v.type,
+                            docCount: -1,
+                            size: 2,
+                            fixed: fixedPos,
+                            x: fixedPos ? oldNodes[v.id].x : undefined,
+                            y: fixedPos ? oldNodes[v.id].y : undefined
+                        });
+
+                        // force.links(edges);
+                        // calculateNewForceSize();
+                        // start();
+                    });
+                //console.log(nodes);
+                response.data.links.forEach(
+                    function(v)
+                    {
+                        var sourceNode = nodes.find(function(node){return v.sourceNode == node.id});
+                        var targetNode = nodes.find(function(node){return v.targetNode == node.id});
+                        if(sourceNode == undefined || targetNode == undefined)
+                        {
+                            return;
+                        }
+                        if(sourceNode.id > targetNode.id){//sourceNodes haben immer die kleinere Id. Das ist notwendig, damit Kanten korrekt neugezeichnet werden
+                            var tempNode = sourceNode;
+                            sourceNode = targetNode;
+                            targetNode = tempNode
+                        }
+                        edges.push({id: sourceNode.id+"-"+targetNode.id, source: sourceNode, target: targetNode, freq: v.docOcc, uiLevel: v.uiLevel});
+                    });
+                //reload();
+
+                force.nodes(nodes);
+                force.links(edges);
+
+                guidanceStepCounter++;
+                oldFocusNodeId= focusNodeId;
+            }
+
             function getGuidanceNodes(focusNodeId,useOldEdges){
                 $scope.isViewLoading = true;
                 var entities = [];
@@ -1409,76 +1602,8 @@ define([
 
                 playRoutes.controllers.NetworkController.getGuidanceNodes(fulltext, facets, entities, $scope.observer.getTimeRange(), focusNodeId, toolShareService.sliderEdgeAmount(), toolShareService.sliderEdgesPerNode(), uiStr, useOldEdges, sessionid).get().then(function(response) {
 
-                    //to prevent invisible selections
-                    unselectNodes();
-                    unselectEdges();
-
-                    //Object, welches alle alten KnotenId als Schlüssel enthält mit xy-Koordinaten als Wert (=HashMap)
-                    var oldNodes = nodes.reduce(function(o, node, index) {
-                        o[node.id] = {x: node.x, y: node.y};
-                        return o;
-                    }, {});
-                    console.log(oldNodes);
-
-                    //delete all nodes and edges
-                    nodes = [];
-                    edges = [];
-
-                    response.data.nodes.forEach(
-                        function(v)
-                        {
-                            /*var enode = tmpnodes.find(function(node){return node.id === v.id;});
-                             if(enode != undefined)
-                             {
-                             enode.docCount = v.docCount;
-                             nodes.push(enode);
-                             return;
-                             }*/
-
-                            var fixedPos = oldNodes.hasOwnProperty(v.id);//Soll der Knoten die Position halten?
-                            nodes.push({
-                                id: v.id,
-                                isFocusNode: v.id==focusNodeId,
-                                name: v.name,
-                                freq: v.docOcc,
-                                type: v.type,
-                                relEdges: v.edges,
-                                docCount: -1,
-                                size: 2,
-                                fixed: fixedPos,
-                                x: fixedPos ? oldNodes[v.id].x : undefined,
-                                y: fixedPos ? oldNodes[v.id].y : undefined
-                            });
-
-                            // force.links(edges);
-                            // calculateNewForceSize();
-                            // start();
-                        });
-                    console.log(nodes);
-                    response.data.links.forEach(
-                        function(v)
-                        {
-                            var sourceNode = nodes.find(function(node){return v.sourceNode == node.id});
-                            var targetNode = nodes.find(function(node){return v.targetNode == node.id});
-                            if(sourceNode == undefined || targetNode == undefined)
-                            {
-                                return;
-                            }
-                            if(sourceNode.id > targetNode.id){//sourceNodes haben immer die kleinere Id. Das ist notwendig, damit Kanten korrekt neugezeichnet werden
-                                var tempNode = sourceNode;
-                                sourceNode = targetNode;
-                                targetNode = tempNode
-                            }
-                            edges.push({id: sourceNode.id+"-"+targetNode.id, source: sourceNode, target: targetNode, freq: v.docOcc, uiLevel: v.uiLevel});
-                        });
-
-                    //reload();
-
-                    force.nodes(nodes);
-                    force.links(edges);
+                    computeNodesAndEdgesJSON(focusNodeId,response);
                     //calculateNewForceSize();
-                    guidanceStepCounter++;
-                    oldFocusNodeId= focusNodeId;
 
                     if (!useOldEdges){
                         var history = $scope.observer.getHistory();
@@ -1535,7 +1660,6 @@ define([
                                 name: v.name,
                                 freq: v.docOcc,
                                 type: v.type,
-                                relEdges: v.edges,
                                 docCount: -1,
                                 size: 2,
                             });

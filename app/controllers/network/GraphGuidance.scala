@@ -24,7 +24,7 @@ import util.SessionUtils.currentDataset
  * Created by martin on 02.10.16.
  */
 
-class GraphGuidance() {
+class GraphGuidance() { outer =>
   implicit val context = this
 
   val typeIndex = collection.immutable.HashMap("PER" -> 0, "ORG" -> 1, "LOC" -> 2, "MISC" -> 3)
@@ -34,50 +34,93 @@ class GraphGuidance() {
   var iter: Int = 0
 
   // cacht schon besuchte Knoten
-  var nodes = new mutable.HashMap[Long, Node]()
-  var nodeList = new mutable.HashMap[Long, mutable.PriorityQueue[Edge]]()
-  var usedNodes = new mutable.HashMap[Long, Node]()
-  var oldEdges = new mutable.HashMap[(Long, Long), Edge]()
+  var nodes = new mutable.HashMap[Long, Node]() // immer gültig
+  var oldEdges = new mutable.HashMap[(Long, Long), Edge]() // wird beibehalten wenn useOldEdges, sonst nicht
+
+  var usedNodes: mutable.HashMap[Long, Node] = _ // wird mit jedem Guidance-Schritt neugeneriert
 
   var facets = Facets.empty
   var uiMatrix = Array.ofDim[Int](4, 4)
   var epn = 4
   var edgeAmount = 20
-
-  var prefferedNodes: List[Long] = List()
+  var focusNodeId: Long = _
 
   implicit val order = Ordering.by[Edge, (Double, Long, Long)](e => (
     e.getDoi, e.getNodes._1.getId, e.getNodes._2.getId
   ))
 
-  // var uiMatrix = Array.ofDim[Int](4, 4)
+  // def getGuidance mit GuidanceInternals
+  // def init erzeugt eigene Internals aus normalen Parametern
+  // normales getGuidance ruft init auf, mit den erstellten Parametern dann das andere getGuidance
 
   // scalastyle:off
-  def getGuidance(facets: Facets, focusId: Long, edgeAmount: Int, epn: Int, uiMatrix: Array[Array[Int]], useOldEdges: Boolean): GuidanceIterator = {
-    this.facets = facets
-    this.epn = epn
-    this.uiMatrix = uiMatrix
-    this.edgeAmount = edgeAmount
+  def createIterator: GuidanceIterator = {
 
     new GuidanceIterator {
-      iter += 1
+      var nodeList: mutable.HashMap[Long, mutable.PriorityQueue[Edge]] = _ // wird mit jedem Guidance-Schritt neugeneriert
+      var usedEdges: mutable.HashMap[(Long, Long), Edge] = _
+      var pq: mutable.PriorityQueue[Edge] = _
 
-      if (!useOldEdges) {
-        oldEdges.clear
+      override def init(facets: Facets, focusId: Long, edgeAmount: Int, epn: Int, uiMatrix: Array[Array[Int]], useOldEdges: Boolean): GuidanceIterator = {
+        outer.facets = facets
+        outer.epn = epn
+        outer.uiMatrix = uiMatrix
+        outer.edgeAmount = edgeAmount
+        outer.focusNodeId = focusId
+
+        iter += 1
+
+        if (!useOldEdges) {
+          oldEdges.clear
+        }
+
+        val startNode = nodes.getOrElseUpdate(focusId, NodeFactory.createNodes(facets, List(focusId), 0, iter).head)
+        startNode.update(facets, 0, iter)
+
+        //Logger.trace("start guidance")
+
+        usedEdges = new mutable.HashMap[(Long, Long), Edge]()
+        nodeList = new mutable.HashMap[Long, mutable.PriorityQueue[Edge]]()
+        usedNodes = new mutable.HashMap[(Long), Node]()
+        // usedNodes.clear()
+        usedNodes += (startNode.getId -> startNode)
+
+        pq = mutable.PriorityQueue[Edge]() ++= getEdges(startNode)
+
+        this
       }
 
-      var startNode = nodes.getOrElseUpdate(focusId, NodeFactory.createNodes(facets, List(focusId), 0, iter).head)
-      startNode.update(facets, 0, iter)
+      override def initWithState(state: GuidanceIteratorState): GuidanceIterator = {
+        nodeList = state.nodeList
+        pq = state.pq
+        usedEdges = state.usedEdges
+        usedNodes = state.usedNodes
 
-      //Logger.trace("start guidance")
+        facets = state.facets
+        epn = state.epn
+        uiMatrix = state.uiMatrix
+        edgeAmount = state.edgeAmount
+        if (!state.useOldEdges) {
+          oldEdges.clear
+        }
+        this
+      }
 
-      var usedEdges = new mutable.HashMap[(Node, Node), Edge]()
-      usedNodes.clear()
-      usedNodes += (startNode.getId -> startNode)
+      override def getState: GuidanceIteratorState =
+        new GuidanceIteratorState(
+          nodeList,
+          pq,
+          usedEdges,
+          usedNodes,
+          facets,
+          edgeAmount,
+          epn,
+          uiMatrix,
+          true
+        )
 
-      var pq = mutable.PriorityQueue[Edge]() ++= getEdges(startNode)
       override def hasNext: Boolean = {
-        pq.exists(e => !(usedEdges.contains(e.getNodes) || usedEdges.contains(e.getNodes.swap) || e.getNodes._1.getConn == epn || e.getNodes._2.getConn == epn))
+        pq.exists(e => !(usedEdges.contains(e.getNodesId) || usedEdges.contains(e.getNodesId.swap) || e.getNodes._1.getConn == epn || e.getNodes._2.getConn == epn))
       }
 
       override def next(): (Edge, Option[Node]) = {
@@ -88,7 +131,7 @@ class GraphGuidance() {
           def next = pq.dequeue
         }
         val edgeO = pqIter.find(e => !{
-          usedEdges.contains(e.getNodes) || usedEdges.contains(e.getNodes.swap) || e.getNodes._1.getConn == epn || e.getNodes._2.getConn == epn
+          usedEdges.contains(e.getNodesId) || usedEdges.contains(e.getNodesId.swap) || e.getNodes._1.getConn == epn || e.getNodes._2.getConn == epn
         })
 
         val edge = edgeO.getOrElse({
@@ -98,10 +141,10 @@ class GraphGuidance() {
         edge.getNodes._1.incConn()
         edge.getNodes._2.incConn()
 
-        usedEdges += ((edge.getNodes, edge))
+        usedEdges += ((edge.getNodesId, edge))
 
-        //Logger.trace("" + usedEdges)
-        //Logger.trace("added: " + edge.toString(true))
+        Logger.trace("" + usedEdges)
+        Logger.trace("added: " + edge.toString(true))
 
         var newNode: Option[Node] = None
         if (!usedNodes.contains(edge.getNodes._2.getId)) {
@@ -132,8 +175,8 @@ class GraphGuidance() {
           }
         }
         // Logger.debug(usedEdges.keySet.toString())
-        val (eList, nList) = pqIter.filterNot(tpl => usedEdges.contains(tpl._1.getNodes) || usedEdges.contains(tpl._1.getNodes.swap)).take(amount).map(tpl => {
-          usedEdges += tpl._1.getNodes -> tpl._1
+        val (eList, nList) = pqIter.filterNot(tpl => usedEdges.contains(tpl._1.getNodesId) || usedEdges.contains(tpl._1.getNodesId.swap)).take(amount).map(tpl => {
+          usedEdges += tpl._1.getNodesId -> tpl._1
           if (tpl._2.nonEmpty) {
             usedNodes += tpl._2.get.getId -> tpl._2.get
             if (!nodeList.contains(tpl._2.get.getId)) {
@@ -183,11 +226,16 @@ class GraphGuidance() {
     }
   }
 
-  def getCopyGuidance(focusId: Long, useOldEdges: Boolean): Iterator[(Edge, Option[Node])] = {
+  def copy: GraphGuidance = {
     val newGG = new GraphGuidance
     newGG.oldEdges = oldEdges.map(p => p._1 -> p._2.copy)
     newGG.nodes = nodes.map(p => p._1 -> p._2.copy)
     newGG.iter = iter
-    newGG.getGuidance(facets, focusId, edgeAmount, epn, uiMatrix, useOldEdges)
+    newGG.facets = facets //new
+    newGG
+  }
+
+  def getCopyGuidance(focusId: Long, useOldEdges: Boolean): Iterator[(Edge, Option[Node])] = {
+    this.copy.createIterator.init(facets, focusId, edgeAmount, epn, uiMatrix, useOldEdges)
   }
 }

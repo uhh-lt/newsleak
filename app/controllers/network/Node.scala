@@ -28,12 +28,14 @@ object NodeFactory {
     val esBuckets = FacetedSearch.fromIndexName("cable").aggregateEntities(facets, nodeIds.size, nodeIds, Nil, 1).buckets
     val nodeDocOccMap = esBuckets.collect { case NodeBucket(id, docOccurrence) => id -> docOccurrence.toInt }.toMap
 
-    sql"""SELECT id, name, type FROM entity_ext WHERE id IN (${nodeIds}) AND dococc IS NOT NULL"""
+    sql"""SELECT id, name, type FROM entity WHERE id IN (${nodeIds})"""
+      // sql"""SELECT id, name, type FROM entity_ext WHERE id IN (${nodeIds}) AND dococc IS NOT NULL"""
       .map(rs => new Node(rs.long(1), rs.string(2), nodeDocOccMap(rs.long(1)), distToFocus, rs.string(3), iter, facets)).list.apply
   }
 }
 
-class Node(id: Long, name: String, var docOcc: Int, var distance: Int, category: String, var iter: Int, var facets: Facets)(implicit context: GraphGuidance) {
+class Node(id: Long, name: String, var docOcc: Int, var distance: Int,
+    category: String, var iter: Int, var facets: Facets)(implicit context: GraphGuidance) {
   implicit val session = AutoSession
 
   val numberOfRelEdges = 4
@@ -78,6 +80,7 @@ class Node(id: Long, name: String, var docOcc: Int, var distance: Int, category:
   def update(facets: Facets, distance: Int, iter: Int) = {
     if (facets != this.facets) {
       computeDocOcc()
+      this.facets = facets
     }
     if (iter == this.iter) {
       if (distance < this.distance) {
@@ -106,11 +109,7 @@ class Node(id: Long, name: String, var docOcc: Int, var distance: Int, category:
     // Logger.debug(ggIter.map(_._2.get).toString())
 
     ggIter.take(context.edgeAmount).filterNot(t => {
-      /*if (t._2.nonEmpty) {
-        Logger.trace(t._2.get.toString)
-        Logger.trace(context.usedNodes.contains(t._2.get.getId).toString)
-      }*/
-      (t._2.isEmpty || context.usedNodes.contains(t._2.get.getId))
+      t._2.isEmpty || context.usedNodes.contains(t._2.get.getId)
     }).take(amount).map(_._2.get)
 
     /*

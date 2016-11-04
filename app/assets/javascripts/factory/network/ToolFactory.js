@@ -58,6 +58,10 @@ define([
                     updateToolDisplay: function(){},
                     updateGuidance: function (){},
 
+                    undoGuidance: function (){},
+                    redoGuidance: function (){},
+
+
                     freqSortingLeast: false,
                     isViewLoading: function(){return true;},
                     getEgoNetwork: function(){},

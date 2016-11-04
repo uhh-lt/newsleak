@@ -52,9 +52,9 @@ define([
                         "delete": {icon: 'remove'},
                         "openDoc": {icon: 'book'},
                         "guidance": {icon: 'adjust', materialIcon: true},
-                        "addEdges": {icon: 'add', materialIcon: true}
-
-
+                        "addEdges": {icon: 'add', materialIcon: true},
+                        "undo": {icon: 'undo', materialIcon: true},
+                        "redo": {icon: 'redo', materialIcon: true}
                     },
                     typeDescriptions: {
                       'entity': 'Entity Filter',
