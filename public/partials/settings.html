@@ -36,7 +36,7 @@
                                 <p class="md-body-2"> Name </p>
                                 <p class="md-body-2"> Type </p>
                             </md-list-item>
-                            <md-virtual-repeat-container style="height: 500px;">
+                            <md-virtual-repeat-container style="height: 300px;">
 
                                 <md-list-item md-virtual-repeat="e in blacklist | orderBy: 'name'"  md-item-size="10" ng-click="toggle(e, blacklistSelection)">
                                     <p> {{ e.id }} </p>
@@ -57,7 +57,7 @@
                                 <p class="md-body-2"> Origin</p>
                                 <p class="md-body-2"> Duplicates</p>
                             </md-list-item>
-                            <md-virtual-repeat-container style="height: 500px;">
+                            <md-virtual-repeat-container style="height: 300px;">
 
                                 <md-list-item md-virtual-repeat="e in mergelist | orderBy: 'name'"  md-item-size="10" ng-click="toggle(e, mergelistSelection)">
                                     <p> {{ e.origin.name }} </p>
