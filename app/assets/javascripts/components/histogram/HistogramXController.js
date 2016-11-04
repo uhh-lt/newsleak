@@ -64,7 +64,7 @@ define([
                             },
                             yAxis: {
                                 title: {
-                                    text: 'Number of Documents<br>(logarithmic)',
+                                    text: 'No. documents<br>(logarithmic)',
                                     offset: 60
                                 }
                                 ,
