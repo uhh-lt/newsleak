@@ -15,11 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * Created by flo on 6/10/16.
- */
-
-
 define([
     'angular',
     'angularMoment',

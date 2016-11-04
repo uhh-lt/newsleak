@@ -239,6 +239,10 @@ div.popupMenu ul li:hover {
     height: calc(100% - 350px);
 }
 
+#top-container {
+    height: 65px;
+}
+
 main {
     width: 50%;
     margin-top: 10px;
@@ -259,10 +263,12 @@ main {
 footer {
     height: 200px;
 }
+
 footer > md-tabs {
     height: 100%;
     margin-top: 10px;
 }
+
 footer > div #histogram {
     height: calc(100% - 25px);
 }
@@ -356,7 +362,7 @@ footer > div #histogram {
     display: block;
 }
 
-#document-list li.doc-list-highlight {
+/*#document-list li.doc-list-highlight {
     font-weight: bold;
     list-style-image: url("assets/../../images/folder-opened-icon.png");
 }
@@ -364,7 +370,7 @@ footer > div #histogram {
 #document-list li.doc-list-no-highlight {
     font-weight: normal;
     list-style-image: url("assets/../../images/folder-closed-icon.png");
-}
+}*/
 
 #document-list li a:hover {
     text-decoration: none;
@@ -542,7 +548,20 @@ footer > div #histogram {
     ======================================
 */
 
-#history {
+.rep-item {
+    border-right: 1px solid #ddd;
+    box-sizing: border-box;
+    display: inline-block;
+    text-align: center;
+    transition: width 0.3s linear;
+    width: auto;
+    padding: 8px;
+    background: #f0f0f0;
+    border-radius: 3px;
+    margin-left: 10px;
+}
+
+/*#history {
     margin-left: 10px;
 }
 
@@ -551,14 +570,13 @@ ul#historyList {
     display: inline-block;
     padding: 3px 10px;
     margin: 0 0 0 10px;
-}
+}*/
 
 /* TODO: calculate remaining space for items */
-#historyList > li {
+/*#historyList > li {
     background-color: #2759AC;
     cursor: pointer;
     white-space: nowrap;
-    /*overflow: hidden;*/
     display: inline-block;
     padding: 7px 10px;
     color: white;
@@ -591,7 +609,7 @@ ul#historyList {
 #historyList .popover-title {
     color: white;
     background-color: #2759AC;
-}
+}*/
 
 /*
     ======================================

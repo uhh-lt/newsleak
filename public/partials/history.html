@@ -17,51 +17,68 @@
 
 <div style="padding-left: 10px;">
 	<div style="float: left; padding-top: 10px">
-	<p style="font-size:16px; ">History Tracker</p>
+		<!--<p style="font-size:16px; ">History Tracker</p>-->
 
 	</div>
 	<script type="text/ng-template" id="tooltip_tmpl">
 		<div ng-mouseleave="hidePopover(obj.id)" ng-mouseenter="showPopover(obj.id)">
-		<ul class="list-group-item">
-			<li class="list-group-item"><span>Content:</span> {{obj.data.name}}</li>
-			<li class="list-group-item" ng-if="obj.data.id && obj.data.id > -1"><span>ID#:</span> {{obj.data.id}}</li>
-			<li class="list-group-item" ng-if="obj.data.type"><span>Typ:</span> {{obj.data.type}}</li>
-			<li class="list-group-item"><span>Tracker-Type:</span> {{obj.type}}</li>
-			<li class="list-group-item"><span>Active:</span> {{obj.active}}</li>
-		</ul>
+			<ul class="list-group-item">
+				<li class="list-group-item"><span>Content:</span> {{obj.data.name}}</li>
+				<li class="list-group-item" ng-if="obj.data.id && obj.data.id > -1"><span>ID#:</span> {{obj.data.id}}</li>
+				<li class="list-group-item" ng-if="obj.data.type"><span>Typ:</span> {{obj.data.type}}</li>
+				<li class="list-group-item"><span>Tracker-Type:</span> {{obj.type}}</li>
+				<li class="list-group-item"><span>Active:</span> {{obj.active}}</li>
+			</ul>
 
 			<button ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" type="button" class="btn btn-primary" ng-click="removeItem(obj)">
 				<i class="glyphicon type-icon glyphicon-trash" ng-class=""></i> Remove
 			</button>
 		</div>
 	</script>
-	<div class="alert alert-info" ng-show="history.length == 0" style="display: inline-block; margin-bottom: 0">
-		<p>No elements in history.</p>
-	</div>
-	<ul id="historyList" class="list-group">
-		<li
-				class="filterListItem list-group-item"
-				ng-repeat="obj in history"
-				ng-mouseleave="hidePopover(obj.id)"
-				ng-mouseenter="showPopover(obj.id)"
-				ng-show="obj.active || showHistory"
-				uib-popover-template="'tooltip_tmpl'"
-				popover-title="{{getTypeDescription(obj.type)}}"
-				popover-placement="bottom"
-				popover-trigger="none"
-				popover-is-open="factory.popover.isOpen[{{obj.id}}]">
 
-			<i class="glyphicon type-icon glyphicon-{{ getIcon(obj.type) }}" ng-class=""></i>
-			<i class="glyphicon action-icon glyphicon-{{ getActionIcon(obj.action) }}" ng-class=""></i>
-			<span>{{obj.data.name}}</span>
-		</li>
-	</ul>
-	<div class="checkbox">
-		<md-button class="md-primary md-raised" type="button" id="reset-history" ng-click="observer.reset()">Reset filters</md-button>
-		<md-button class="md-primary md-raised" type="button" id="save-history" ng-click="saveHistory()"><md-icon class="material-icons md-light">archive</md-icon> Save State</md-button>
-		<file-field class="md-button md-primary md-raised" ng-model="uploadFile" ng-click="loadHistory()"><md-icon class="material-icons md-light">unarchive</md-icon> Load State</file-field>
-		<md-checkbox id="show-history" ng-model="showHistory" aria-label="">
-			Show full history
-		</md-checkbox>
+	<div ng-show="history.length == 0" style="margin-left: 10px;">
+		<h3 class="md-headline">No elements in history.</h3>
 	</div>
+
+	<md-content style="padding: 5px 0 0 0; background: white;" ng-hide="history.length == 0" layout="row">
+		<p style="font-size:16px;"> History Tracker</p>
+		<div style="width: 210px;">
+			<md-button class="md-icon-button" aria-label="Reset">
+				<md-tooltip>
+					Remove all filters
+				</md-tooltip>
+				<md-icon ng-click="observer.reset()" id="reset-history" class="material-icons md-secondary md-hue-3">delete_sweep</md-icon>
+			</md-button>
+			<md-checkbox id="show-history" ng-model="showHistory" aria-label="Show-full-history">
+				<md-tooltip>
+					Show every interaction including remove events
+				</md-tooltip>
+				Full history
+			</md-checkbox>
+		</div>
+		<md-virtual-repeat-container md-orient-horizontal style="max-width: 800px;height: 60px; width: 100%;">
+			<div class="rep-item md-whiteframe-z1" flex
+				 md-virtual-repeat="obj in history"
+				 ng-mouseleave="hidePopover(obj.id)"
+				 ng-mouseenter="showPopover(obj.id)"
+				 ng-show="obj.active || showHistory"
+				 uib-popover-template="'tooltip_tmpl'"
+				 popover-title="{{getTypeDescription(obj.type)}}"
+				 popover-placement="bottom"
+				 popover-trigger="none"
+				 popover-append-to-body='true'
+				 popover-is-open="factory.popover.isOpen[{{obj.id}}]">
+
+				<i class="glyphicon type-icon glyphicon-{{ getIcon(obj.type) }}" ng-class=""></i>
+				<i class="glyphicon action-icon glyphicon-{{ getActionIcon(obj.action) }}" ng-class=""></i>
+				{{obj.data.name}}
+			</div>
+		</md-virtual-repeat-container>
+	</md-content>
+
+	<!--<div class="checkbox">-->
+		<!--<md-button class="md-primary md-raised" type="button" id="reset-history" ng-click="observer.reset()">Reset filters</md-button>-->
+		<!--<md-button class="md-primary md-raised" type="button" id="save-history" ng-click="saveHistory()"><md-icon class="material-icons md-light">archive</md-icon> Save State</md-button>
+		<file-field class="md-button md-primary md-raised" ng-model="uploadFile" ng-click="loadHistory()"><md-icon class="material-icons md-light">unarchive</md-icon> Load State</file-field>-->
+	<!--</div>-->
 </div>
