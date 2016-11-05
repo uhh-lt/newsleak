@@ -31,18 +31,19 @@
                 <md-tab label="blacklist" md-on-select="isBlacklist = !isBlacklist">
                     <md-content class="md-padding">
                         <md-list>
-                            <md-list-item layout="row">
-                                <p class="md-body-2"> Id</p>
-                                <p class="md-body-2"> Name </p>
-                                <p class="md-body-2"> Type </p>
-                            </md-list-item>
-                            <md-virtual-repeat-container style="height: 300px;">
+                            <md-list class="list-sub-head" layout="row">
+                                <md-subheader ng-style="{ width: '10%'}">Id  </md-subheader>
+                                <md-subheader ng-style="{ width: '40%'}">Name</md-subheader>
+                                <md-subheader ng-style="{ width: '20%'}">Type</md-subheader>
+                            </md-list>
+                            <md-divider></md-divider>
 
-                                <md-list-item md-virtual-repeat="e in blacklist | orderBy: 'name'"  md-item-size="10" ng-click="toggle(e, blacklistSelection)">
-                                    <p> {{ e.id }} </p>
-                                    <p> {{ e.name }} </p>
-                                    <p> {{ e.type }} </p>
-                                    <md-checkbox class="md-secondary" ng-click="toggle(e, blacklistSelection)" ng-checked="exists(e, blacklistSelection)" aria-label="remove-item"></md-checkbox>
+                            <md-virtual-repeat-container style="height: 300px;">
+                                <md-list-item layout="row" md-virtual-repeat="e in blacklist | orderBy: 'name'" ng-click="toggle(e, blacklistSelection)">
+                                    <p ng-style="{ width: '10%'}"> {{ e.id }} </p>
+                                    <p ng-style="{ width: '40%'}"> {{ e.name }} </p>
+                                    <p ng-style="{ width: '20%'}"> {{ e.type }} </p>
+                                    <md-checkbox class="md-secondary" ng-style="{ width: '30%'}" ng-click="toggle(e, blacklistSelection)" ng-checked="exists(e, blacklistSelection)" aria-label="remove-item"></md-checkbox>
                                 </md-list-item>
                             </md-virtual-repeat-container>
                         </md-list>
@@ -57,9 +58,10 @@
                                 <p class="md-body-2"> Origin</p>
                                 <p class="md-body-2"> Duplicates</p>
                             </md-list-item>
-                            <md-virtual-repeat-container style="height: 300px;">
 
-                                <md-list-item md-virtual-repeat="e in mergelist | orderBy: 'name'"  md-item-size="10" ng-click="toggle(e, mergelistSelection)">
+                            <md-divider></md-divider>
+                            <md-virtual-repeat-container style="height: 300px;">
+                                <md-list-item md-virtual-repeat="e in mergelist | orderBy: 'name'"  ng-click="toggle(e, mergelistSelection)">
                                     <p> {{ e.origin.name }} </p>
                                     <p> {{ joinDuplicates(e.duplicates) }} </p >
                                     <md-checkbox class="md-secondary" ng-click="toggle(e, mergelistSelection)" ng-checked="exists(e, mergelistSelection)" aria-label="remove-item"></md-checkbox>
@@ -68,6 +70,9 @@
                         </md-list>
                         <md-divider></md-divider>
                     </md-content>
+                </md-tab>
+                <md-tab label="configuration">
+
                 </md-tab>
             </md-tabs>
         </md-dialog-content>

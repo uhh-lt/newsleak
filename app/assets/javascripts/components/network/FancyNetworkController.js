@@ -206,7 +206,7 @@ define([
                             if(originalMin == originalMax) mass = 1;*/
                             return { id: n.id, label: n.label, type: n.type,  value: n.count, group: n.group };
                         });
-                    
+
                         self.nodesDataset.clear();
                         self.nodesDataset.add(nodes);
                         // Highlight new nodes after each filtering step
