@@ -157,7 +157,8 @@ class NetworkController @Inject extends Controller {
     entities: List[Long],
     timeRange: String,
     timeRangeX: String,
-    nodeId: Long
+    currentNetwork: List[Long],
+    focalNode: Long
   ) = Action { implicit request =>
 
     // TODO Duplicated code to parse facets
@@ -169,7 +170,7 @@ class NetworkController @Inject extends Controller {
     val blacklistedIds = Entity.fromDBName(currentDataset).getBlacklisted().map(_.id)
     val agg = FacetedSearch
       .fromIndexName(currentDataset)
-      .aggregateEntities(facets.withEntities(List(nodeId)), 200, List(), blacklistedIds ++ List(nodeId), 1)
+      .aggregateEntities(facets.withEntities(List(focalNode)), 200, List(), blacklistedIds ++ currentNetwork, 1)
 
     val nodes = agg.buckets.collect { case a @ NodeBucket(_, _) => a }
     val neighbors = nodesToJson(nodes)

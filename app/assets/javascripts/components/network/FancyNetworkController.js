@@ -381,10 +381,11 @@ define([
 
             function expandNode(nodeId) {
                 var entity = self.nodes.get(nodeId);
+                var ids = self.nodes.getIds();
                 $mdDialog.show({
                     templateUrl: 'assets/partials/expandNode.html',
-                    controller: ['$scope', '$mdDialog', 'playRoutes', 'EntityService', 'e',
-                        function($scope, $mdDialog, playRoutes, EntityService, e) {
+                    controller: ['$scope', '$mdDialog', 'playRoutes', 'EntityService', 'e', 'networkIds',
+                        function($scope, $mdDialog, playRoutes, EntityService, e, networkIds) {
 
                             $scope.title = e.label;
                             $scope.entity = e;
@@ -400,7 +401,8 @@ define([
 
                             function fetchNeighbors() {
                                 var filters = currentFilter();
-                                playRoutes.controllers.NetworkController.getNeighbors(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, $scope.entity.id).get().then(function(response) {
+                                // Exclude current network nodes from the expansion list
+                                playRoutes.controllers.NetworkController.getNeighbors(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, networkIds, $scope.entity.id).get().then(function(response) {
                                     $scope.neighbors = response.data;
                                 });
                             }
@@ -429,7 +431,7 @@ define([
                             $scope.apply = function () { $mdDialog.hide($scope.selection); };
                             $scope.closeClick = function() { $mdDialog.cancel(); };
                         }],
-                    locals: { e: entity },
+                    locals: { e: entity, networkIds: ids },
                     autoWrap: false,
                     parent: $scope.FancyNetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
                 }).then(function(response) {
