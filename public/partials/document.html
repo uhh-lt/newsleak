@@ -30,7 +30,7 @@
             <md-card>
                 <md-card-title>
                     <md-card-title-text>
-                        <span class="md-headline">{{ doc.meta.Subject }}</span>
+                        <span class="md-headline">{{ doc.meta.Subject.join(', ') }}</span>
                         <md-chips
                                 ng-init="initTags(doc)"
                                 ng-model="tags[doc.id]"
