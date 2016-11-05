@@ -28,7 +28,7 @@
         </md-toolbar>
         <md-dialog-content style="overflow-y: hidden;">
                 <md-content layout-padding layout="column">
-                    <div layout="row">
+                    <div layout="row" style="height: 60px">
                         <md-input-container class="md-block" flex-gt-sm>
                             <label>Filter by name</label>
                             <input ng-model="query">
@@ -45,14 +45,15 @@
                             </md-select>
                         </md-input-container>
                     </div>
-                    <md-list>
-                        <!--<md-list-item md-item-size="10" layout="row">
-                            <span ng-style="{ width: '10%'}"> Id </span>
-                            <span ng-style="{ width: '30%'}"> Name </span>
-                            <span ng-style="{ width: '30%'}"> Type </span>
-                        </md-list-item>-->
+                    <md-list style="height: 100%">
+                        <md-list class="list-sub-head" layout="row">
+                            <md-subheader ng-style="{ width: '10%'}">Id  </md-subheader>
+                            <md-subheader ng-style="{ width: '40%'}">Name</md-subheader>
+                            <md-subheader ng-style="{ width: '20%'}">Type</md-subheader>
+                        </md-list>
+                        <md-divider></md-divider>
                         <md-virtual-repeat-container style="height: 300px;">
-                            <md-list-item layout="row" md-virtual-repeat="n in neighbors | filter: query | orderBy: orderList"  md-item-size="10" ng-click="toggle(n, selection)">
+                            <md-list-item layout="row" md-virtual-repeat="n in neighbors | filter: query | orderBy: orderList"  ng-click="toggle(n, selection)">
                                 <p ng-style="{ width: '10%'}"> {{ n.id }} </p>
                                 <p ng-style="{ width: '40%'}"> {{ n.label }} </p>
                                 <p ng-style="{ width: '20%'}"> {{ n.type }} </p>

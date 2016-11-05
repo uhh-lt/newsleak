@@ -139,7 +139,6 @@ class NetworkController @Inject extends Controller {
     currentNetwork: List[Long],
     nodes: List[Long]
   ) = Action { implicit request =>
-
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
