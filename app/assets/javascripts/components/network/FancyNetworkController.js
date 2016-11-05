@@ -206,7 +206,7 @@ define([
                             if(originalMin == originalMax) mass = 1;*/
                             return { id: n.id, label: n.label, type: n.type,  value: n.count, group: n.group };
                         });
-
+                    
                         self.nodesDataset.clear();
                         self.nodesDataset.add(nodes);
                         // Highlight new nodes after each filtering step
@@ -293,9 +293,8 @@ define([
                     var currentNodeIds = previousNodes.getIds();
                     var sec = _.intersection(nextNodeIds, currentNodeIds);
                     // Remove old marking from the nodes in order to show only the new nodes for one single step
-                    var cleanNodes = previousNodes.get(sec).map(function(n) { return _.extend(n, { 'shapeProperties': { borderDashes: false }, color: undefined, borderWidth: 1 })});
-                    previousNodes.update(cleanNodes);
-                    self.nodesDataset.update(cleanNodes);
+                    removeNodeHighlight(previousNodes, previousNodes.get(sec));
+                    removeNodeHighlight(self.nodesDataset, previousNodes.get(sec));
 
                     var diff = _.difference(nextNodeIds, currentNodeIds);
                     // Give new nodes a white and dashed border
@@ -440,10 +439,27 @@ define([
 
                     var n = response.map(function(n) { return n.id; });
                     playRoutes.controllers.NetworkController.addNodes(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, networkNodes, n).get().then(function(response) {
+
+                        // Remove highlight from previous nodes including background collection
+                        //var cleanNodes = self.nodes.map(function(n) { return _.extend(n, { 'shapeProperties': { borderDashes: false }, color: undefined, borderWidth: 1 })});
+                        //self.nodes.update(cleanNodes);
+
+                        removeNodeHighlight(self.nodes, self.nodes);
+                        removeNodeHighlight(self.nodesDataset, self.nodesDataset);
+
                         applyPhysicsOptions(self.physicOptions);
                         $scope.loading = true;
                         var nodes = response.data.entities.map(function(n) {
-                            return { id: n.id, label: n.label, type: n.type,  value: n.count, group: n.group };
+                            return {
+                                id: n.id,
+                                label: n.label,
+                                type: n.type,
+                                value: n.count,
+                                group: n.group,
+                                // highlight new nodes
+                                shapeProperties: { borderDashes: [5, 5] },
+                                color: { border: 'white' },
+                                borderWidth: 2 };
                         });
 
                         var edges = response.data.relations.map(function(n) {
@@ -527,6 +543,11 @@ define([
                     }
                 });
                 return adjacentEdges;
+            }
+
+            function removeNodeHighlight(dataset, nodesToBeUpdated) {
+                var cleanNodes = nodesToBeUpdated.map(function(n) { return _.extend(n, { 'shapeProperties': { borderDashes: false }, color: undefined, borderWidth: 1 })});
+                dataset.update(cleanNodes);
             }
 
             // ----------------------------------------------------------------------------------
