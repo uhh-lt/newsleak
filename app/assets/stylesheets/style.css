@@ -211,7 +211,7 @@ div.tooltip {
     width: 300px;
 }
 
-.material-icons.red { color: #ff0000; }
+.material-icons.white { color: #FFFFFF; }
 
 /*verhindert, dass Icons markiert werden*/
 .noselect {

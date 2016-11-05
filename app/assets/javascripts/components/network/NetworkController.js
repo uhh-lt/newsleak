@@ -146,16 +146,16 @@ define([
 
 
             $scope.edgePrios =[
-                {class: "btn", color: "#FF1111", id:"eo0", number:0, img:"not_interested", text:"ignored", iconstyle:""},
-                {class: "btn", color: "#777777", id:"eo1", number:1, img:"crop_square", text:"treated normally", iconstyle:"opacity: 0;"},
-                {class: "btn", color: "#83a2d6", id:"eo2", number:2, img:"favorite_border", text:"preffered", iconstyle:""},
-                {class: "btn", color: "#2759ac", id:"eo3", number:3, img:"favorite", text:"extremly preffered", iconstyle:""}];
+                {class: "btn", color: "#FF1111", id:"eo0", number:0, img:"not_interested", text:"ignored", textcolor:"#FFFFFF", iconstyle:""},
+                {class: "btn", color: "#FFFFFF"/*"#777777"*/, id:"eo1", number:1, img:"crop_square", text:"treated normally", textcolor:"#000000", iconstyle:"opacity: 0;"},
+                {class: "btn", color: "#83a2d6", id:"eo2", number:2, img:"favorite_border", text:"preffered", textcolor:"#FFFFFF", iconstyle:""},
+                {class: "btn", color: "#2759ac", id:"eo3", number:3, img:"favorite", text:"extremly preffered", textcolor:"#FFFFFF", iconstyle:""}];
 
             $scope.setEdgePrio = function(sourceType,targetType,state){
                 if (!(toolShareService.UIitems[$scope.categories[sourceType].number][$scope.categories[targetType].number] == state)){
                     toolShareService.UIitems[$scope.categories[sourceType].number][$scope.categories[targetType].number] = state;
                     toolShareService.UIitems[$scope.categories[targetType].number][$scope.categories[sourceType].number] = state;
-                    getGuidanceNodes(oldFocusNodeId, true);
+                    getGuidanceNodes(oldFocusNodeId, false);
                 }
             };
 
@@ -1443,27 +1443,24 @@ define([
                                     }
                                     break;
                                 case "s1":
+                                    console.log(hist[i].type);
                                     if (hist[i].type == "guidance" && hist[i].active){
                                         state = "s3"
                                     }
-                                    else {
-                                        if(["entity","metadata","fulltext","time"].includes(hist[i].type)) {
-                                            if (hist[i].action != "removed") {
-                                                hist[i].active = false;
-                                                undoList.push(i);
-                                            } else {
-                                                hist[hist[i].reverts].active = true;
-                                                undoList.push(hist[i].reverts);
-                                            }
+                                    else if(["entity","metadata","fulltext","time"].includes(hist[i].type)) {
+                                        if (hist[i].action != "removed") {
+                                            hist[i].active = false;
+                                            undoList.push(i);
+                                        } else {
+                                            hist[hist[i].reverts].active = true;
+                                            undoList.push(hist[i].reverts);
                                         }
-                                        state = "s2";
+                                        state = "s1";
                                     }
-                                    break;
-                                case "s2":
-                                    console.log(hist[i].type);
                                     /*if (hist[i].type == "addEdges") {
                                      hist[i].active = true;
-                                     } else*/ if (hist[i].type == "guidance" && !hist[i].undone){
+                                     } else*/
+                                    else if (hist[i].type == "guidance" && !hist[i].undone){
                                         hist[i].active = true;
                                         state = "s3";
                                         undoList.push(i);

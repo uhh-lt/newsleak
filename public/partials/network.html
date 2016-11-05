@@ -89,7 +89,7 @@
         <br>
         Edges of this type (<i class="material-icons"> {{categories[sEdge.source.type].img}}</i>–<i class="material-icons"> {{categories[sEdge.target.type].img}}</i>) should be
         <br>
-        <label ng-click="setEdgePrio(sEdge.source.type,sEdge.target.type,elem.number)" ng-repeat="elem in edgePrios" class="btn btn-primary btn-small" style="background-color: {{elem.color}};">
+        <label ng-click="setEdgePrio(sEdge.source.type,sEdge.target.type,elem.number)" ng-repeat="elem in edgePrios" class="btn btn-primary btn-small" style="background-color: {{elem.color}}; color: {{elem.textcolor}};">
             <input type="radio" name="options" id="{{elem.id}}" autocomplete="off">
             <i class="material-icons" style="{{elem.iconstyle}}">{{elem.img}}</i>
             {{elem.text}}

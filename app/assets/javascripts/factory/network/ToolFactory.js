@@ -29,8 +29,9 @@ define([
             {
                 var toolShareService =
                 {
-                    priorityToColor : ["white","white","#83a2d6","#2759ac"],
+                    priorityToColor : ["#ff1111","white","#83a2d6","#2759ac"],
                     priorityToColorBorder : ["#FFFFFF","#000000","#83a2d6","#2759ac"],
+                    priorityToIcon : ['not_interested','crop_square','favorite_border','favorite'],
 
 
                     deleteListener: [],

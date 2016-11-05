@@ -430,6 +430,7 @@ class NetworkController @Inject extends Controller {
     //GuindanceMap(sessionId).addState(State(gg.copy, ggIter.copyState, result.toString()))
     Logger.debug("send context for " + nodeId)
     Logger.debug(result.toString())
+    GuindanceMap(sessionId).updateState(State(gg, ggIter.getState, gState.output))
     Ok(result).as("application/json")
   }
 

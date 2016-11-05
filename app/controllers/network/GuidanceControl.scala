@@ -4,6 +4,7 @@
 package controllers.network
 
 import play.api.libs.json._
+import play.api.Logger
 
 import scala.collection.mutable
 
@@ -11,6 +12,7 @@ case class State(private val gg: GraphGuidance, private val ggIterState: Guidanc
   def ggIter: GuidanceIterator = gg.createIterator.initWithState(ggIterState.copy)
   def guidance: GraphGuidance = gg.copy
   def output: JsObject = {
+    Logger.debug(gg.uiMatrix.map(_.mkString(",")).mkString(";"))
     lastOutput ++ new JsObject(Map(
       "focusId" -> Json.toJson(gg.focusNodeId),
       "uiMatrix" -> JsString(gg.uiMatrix.map(_.mkString(",")).mkString(";")),
@@ -40,12 +42,14 @@ class GuidanceControl {
   def undo: State = {
     redoStack.push(currentState)
     currentState = undoStack.pop()
+    Logger.debug(currentState.output.toString())
     getState
   }
 
   def redo: State = {
     undoStack.push(currentState)
     currentState = redoStack.pop()
+    Logger.debug(currentState.output.toString())
     getState
   }
 
@@ -54,6 +58,10 @@ class GuidanceControl {
       undoStack.push(currentState)
     }
     redoStack.clear()
+    currentState = state
+  }
+
+  def updateState(state: State) = {
     currentState = state
   }
 

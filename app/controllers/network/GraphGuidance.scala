@@ -231,7 +231,12 @@ class GraphGuidance() { outer =>
     newGG.oldEdges = oldEdges.map(p => p._1 -> p._2.copy)
     newGG.nodes = nodes.map(p => p._1 -> p._2.copy)
     newGG.iter = iter
+
     newGG.facets = facets //new
+    newGG.uiMatrix = uiMatrix
+    newGG.focusNodeId = focusNodeId
+    newGG.epn = epn
+    newGG.edgeAmount = edgeAmount
     newGG
   }
 

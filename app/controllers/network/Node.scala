@@ -4,7 +4,6 @@
 package controllers.network
 
 import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket, NodeBucket }
-import play.api.Logger
 import scalikejdbc._
 
 import scala.collection.mutable
