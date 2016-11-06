@@ -16,10 +16,7 @@
   -->
 
 <div style="padding-left: 10px;">
-	<div style="float: left; padding-top: 10px">
-		<!--<p style="font-size:16px; ">History Tracker</p>-->
 
-	</div>
 	<script type="text/ng-template" id="tooltip_tmpl">
 		<div ng-mouseleave="hidePopover(obj.id)" ng-mouseenter="showPopover(obj.id)">
 			<ul class="list-group-item">
@@ -36,11 +33,7 @@
 		</div>
 	</script>
 
-	<div ng-show="history.length == 0" style="margin-left: 10px;">
-		<h3 class="md-headline">No elements in history.</h3>
-	</div>
-
-	<md-content style="padding: 5px 5px 0 5px; background: white;" ng-hide="history.length == 0" layout="row">
+	<md-content id="history" style="padding: 5px 5px 0 5px; background: white;" layout="row">
 		<p style="font-size:16px;"> History Tracker</p>
 		<div style="width: 210px;">
 			<md-button class="md-icon-button" aria-label="Reset">
@@ -58,6 +51,10 @@
 		</div>
 
 		<md-virtual-repeat-container md-orient-horizontal style="max-width: calc(100% - 40px); height: 60px; width: 100%; margin-right: 5px; background: #D3D3D3;">
+			<div ng-show="history.length == 0" style="margin-left: 10px;">
+				<p>No elements in the history.</p>
+			</div>
+
 			<div class="rep-item md-whiteframe-z1" flex
 				 md-virtual-repeat="obj in history"
 				 ng-mouseleave="hidePopover(obj.id)"

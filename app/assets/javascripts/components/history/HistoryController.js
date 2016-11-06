@@ -83,14 +83,10 @@ define([
                     $scope.observer = ObserverService;
                     $scope.factory = historyFactory;
 
-                    $scope.observer_subscribe = function(history) { $scope.history = history };
-                    $scope.observer_subscribe_items = function(items) { $scope.historyItems = items};
+                    $scope.observer_subscribe = function(history) { $scope.history = history; };
+                    $scope.observer_subscribe_items = function(items) { $scope.historyItems = items; };
                     $scope.observer.subscribeHistory($scope.observer_subscribe);
                     $scope.observer.subscribeAllItems($scope.observer_subscribe_items);
-
-                    $scope.observer.subscribeReset(function() {
-                        $scope.history.length = 0;
-                    });
 
                     $scope.removeItem = function(item) {
                         $scope.observer.removeItem(item.id, item.type);

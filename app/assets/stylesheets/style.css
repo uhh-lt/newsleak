@@ -555,15 +555,13 @@ footer > div #histogram {
     text-align: center;
     transition: width 0.3s linear;
     width: auto;
-   /* padding: 8px;*/
     padding: 3px !important;
     background: #f0f0f0;
     border-radius: 3px;
-    margin-left: 10px;
-    margin-top: 5px;
+    margin: 5px 5px 0 5px;
 }
 
-.md-virtual-repeat-container .md-virtual-repeat-scroller {
+#history .md-virtual-repeat-container .md-virtual-repeat-scroller {
     overflow-x: scroll !important;
 }
 
