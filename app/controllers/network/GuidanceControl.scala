@@ -61,6 +61,7 @@ class GuidanceControl {
       undoStack.push(currentState)
     }
     redoStack.clear()
+    currentExpandedState = None
     currentState = state
   }
 
