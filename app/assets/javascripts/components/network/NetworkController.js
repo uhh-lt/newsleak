@@ -852,7 +852,7 @@ define([
                             // console.log("cache undefined for "+d.name);
                             $scope.contextCache[d.id] = {isComputing: true};
                             getAdditionalEdges(d.id);
-                        } else if ($scope.contextCache[d.id].isComputing !== true && ($scope.contextCache[d.id].data === undefined || guidanceStepCounter > $scope.contextCache[d.id].counter)) {
+                        } else if ($scope.contextCache[d.id].isComputing !== true && ($scope.contextCache[d.id].data === undefined )) {
                             $scope.contextCache[d.id].isComputing = true;
                             getAdditionalEdges(d.id);
                         } else if (!$scope.contextCache[d.id].isComputing){
@@ -1439,7 +1439,7 @@ define([
                                         undoList.push(i);
                                     } else if (hist[i].type == "addEdges") {
                                         hist[i].active = false;
-                                        undoList.push(i);
+                                        // undoList.push(i);
                                     }
                                     break;
                                 case "s1":
@@ -1475,6 +1475,7 @@ define([
                             }
                         }
                         ObserverService.addItem({type: "undo", active: false, data:{name: "undo", list: undoList}});
+                        $scope.contextCache = {};
                         $scope.isViewLoading = false;
                     })
             }
@@ -1501,12 +1502,12 @@ define([
                                     data: {name: "redo", correspondingUndo: i}
                                 });
                                 hist[i].redone = true;
-                                var undoList = hist[i].data.list;
+                                var undoObj = hist[i].data;
                                 break;
                             }
                         }
-                        for (var i = 0; i<undoList.length; i++){
-                            var item = hist[undoList[i]];
+                        for (var i = 0; i<undoObj.list.length; i++){
+                            var item = hist[undoObj.list[i]];
                             if (item.type === "guidance"){
                                 item.active = !item.active;
                                 delete item.undone;
@@ -1518,6 +1519,7 @@ define([
                         }
 
                         //ObserverService.addItem({type: "undo", active: false, data:{name: "undo", list: undoList}});
+                        $scope.contextCache = {};
                         $scope.isViewLoading = false;
                     })
             }
@@ -1631,6 +1633,7 @@ define([
                         data: nodes.find(function(node){return focusNodeId == node.id})});
                     start();
                     $scope.isViewLoading = false;
+                    $scope.contextCache = {};
                 });
             };
 
@@ -1651,6 +1654,7 @@ define([
                     data: nodes.find(function(node){return nodeId == node.id})});
                 nodes = nodes.concat($scope.contextCache[nodeId].data.expand.nodes);
                 edges = edges.concat($scope.contextCache[nodeId].data.expand.edges);
+
                 delete $scope.contextCache[nodeId].data;
                 force.nodes(nodes);
                 force.links(edges);
@@ -1713,7 +1717,6 @@ define([
                             bargraph: response.data.bargraph,
                             expand: {nodes: nNodes, edges: nEdges, tooltipInfo: addedCon}
                         },
-                        counter: guidanceStepCounter,
                         isComputing: false};
                     console.log($scope.contextCache);
                     setTimeout(function () {drawBarGraph(response.data.bargraph)},1);

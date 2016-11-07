@@ -24,12 +24,16 @@ object NodeFactory {
    * @return Liste von Nodes
    */
   def createNodes(facets: Facets, nodeIds: List[Long], distToFocus: Int, iter: Int)(implicit context: GraphGuidance): List[Node] = {
-    val esBuckets = FacetedSearch.fromIndexName("cable").aggregateEntities(facets, nodeIds.size, nodeIds, Nil, 1).buckets
-    val nodeDocOccMap = esBuckets.collect { case NodeBucket(id, docOccurrence) => id -> docOccurrence.toInt }.toMap
+    if (nodeIds.nonEmpty) {
+      val esBuckets = FacetedSearch.fromIndexName("cable").aggregateEntities(facets, nodeIds.size, nodeIds, Nil, 1).buckets
+      val nodeDocOccMap = esBuckets.collect { case NodeBucket(id, docOccurrence) => id -> docOccurrence.toInt }.toMap
 
-    sql"""SELECT id, name, type FROM entity WHERE id IN (${nodeIds})"""
-      // sql"""SELECT id, name, type FROM entity_ext WHERE id IN (${nodeIds}) AND dococc IS NOT NULL"""
-      .map(rs => new Node(rs.long(1), rs.string(2), nodeDocOccMap(rs.long(1)), distToFocus, rs.string(3), iter, facets)).list.apply
+      sql"""SELECT id, name, type FROM entity WHERE id IN (${nodeIds})"""
+        // sql"""SELECT id, name, type FROM entity_ext WHERE id IN (${nodeIds}) AND dococc IS NOT NULL"""
+        .map(rs => new Node(rs.long(1), rs.string(2), nodeDocOccMap(rs.long(1)), distToFocus, rs.string(3), iter, facets)).list.apply
+    } else {
+      List()
+    }
   }
 }
 

@@ -30,10 +30,11 @@ object State {
  */
 class GuidanceControl {
   private var currentState: State = State.initial
+  private var currentExpandedState: Option[State] = None
   private val undoStack = new mutable.Stack[State]
   private val redoStack = new mutable.Stack[State]
 
-  def getState: State = currentState
+  def getState: State = currentExpandedState.getOrElse(currentState)
 
   def undoAvailable: Boolean = undoStack.nonEmpty
 
@@ -43,6 +44,7 @@ class GuidanceControl {
     redoStack.push(currentState)
     currentState = undoStack.pop()
     Logger.debug(currentState.output.toString())
+    currentExpandedState = None
     getState
   }
 
@@ -50,6 +52,7 @@ class GuidanceControl {
     undoStack.push(currentState)
     currentState = redoStack.pop()
     Logger.debug(currentState.output.toString())
+    currentExpandedState = None
     getState
   }
 
@@ -62,7 +65,7 @@ class GuidanceControl {
   }
 
   def updateState(state: State) = {
-    currentState = state
+    currentExpandedState = Option(state)
   }
 
 }
