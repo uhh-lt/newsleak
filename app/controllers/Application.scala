@@ -55,13 +55,13 @@ class Application @Inject() (cache: CacheApi) extends Controller {
   def index = Action { implicit request =>
     val uid = request.session.get("uid").getOrElse { (Random.alphanumeric take 8).mkString }
     Logger.debug("Session UID: " + uid)
-    // Remove cache on initial page load
+    // The application expects having an empty cache after page reload
     cache.remove(uid)
 
     var authorized = false
-    // TODO: commented out for disable auth
-    authorized = true
-
+    if (NewsleakConfigReader.config.getBoolean("authorization.enabled")) {
+      authorized = true
+    }
     // if we have an authorization code, we check it
     if (request.headers.toMap.contains("Authorization")) {
       var login = request.headers
@@ -73,7 +73,7 @@ class Application @Inject() (cache: CacheApi) extends Controller {
 
       if (login.matches("(.*):(.*)")) {
         val password = login.substring(login.indexOf(":") + 1)
-        if (password == "shakti") {
+        if (password == NewsleakConfigReader.config.getString("authorization.password")) {
           authorized = true
         }
       }
