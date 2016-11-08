@@ -16,7 +16,6 @@
   -->
 
 <div style="padding-left: 10px;">
-
 	<script type="text/ng-template" id="tooltip_tmpl">
 		<div ng-mouseleave="hidePopover(obj.id)" ng-mouseenter="showPopover(obj.id)">
 			<ul class="list-group-item">
@@ -70,6 +69,8 @@
 				<i class="glyphicon type-icon glyphicon-{{ getIcon(obj.type) }}" ng-class=""></i>
 				<i class="glyphicon action-icon glyphicon-{{ getActionIcon(obj.action) }}" ng-class=""></i>
 				{{obj.data.name}}
+
+				<i ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" ng-click="removeItem(obj)" class="glyphicon action-icon glyphicon-remove-circle" ng-class="" ></i>
 			</div>
 		</md-virtual-repeat-container>
 	</md-content>
