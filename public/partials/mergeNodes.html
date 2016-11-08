@@ -32,7 +32,7 @@
                     <label>Target Node</label>
                     <md-select ng-model="target">
                         <md-option ng-repeat="e in entities" value="{{ e.id }}">
-                            {{ e.label }}
+                            {{ e.label }} ({{ e.type }})
                         </md-option>
                     </md-select>
                 </md-input-container>
