@@ -36,18 +36,18 @@
 	<md-content id="history" style="padding: 5px 5px 0 5px; background: white;" layout="row">
 		<p style="font-size:16px;"> History Tracker</p>
 		<div style="width: 210px;">
-			<md-button class="md-icon-button" aria-label="Reset">
-				<md-tooltip>
-					Remove all filters
-				</md-tooltip>
-				<md-icon ng-click="observer.reset()" id="reset-history" class="material-icons md-secondary md-hue-3">delete_sweep</md-icon>
-			</md-button>
 			<md-checkbox id="show-history" ng-model="showHistory" aria-label="Show-full-history">
 				<md-tooltip>
 					Show every interaction including remove events
 				</md-tooltip>
 				Full history
 			</md-checkbox>
+			<md-button class="md-icon-button" aria-label="Reset">
+				<md-tooltip>
+					Remove all filters
+				</md-tooltip>
+				<md-icon ng-click="observer.reset()" id="reset-history" class="material-icons md-secondary md-hue-3" style="color: red">cancel</md-icon>
+			</md-button>
 		</div>
 
 		<md-virtual-repeat-container md-orient-horizontal style="max-width: calc(100% - 40px); height: 60px; width: 100%; margin-right: 5px; background: #D3D3D3;">
