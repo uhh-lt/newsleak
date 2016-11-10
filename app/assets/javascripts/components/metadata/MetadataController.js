@@ -241,7 +241,8 @@ define([
                             type: type,
                             data: {
                                 id: id,
-                                name: category.name,
+                                description: category.name,
+                                item: category.name,
                                 type: key
                             }
                         });

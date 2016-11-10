@@ -23,9 +23,12 @@
 				<input type="text" ng-model="fulltextInput">
 			</md-input-container>
 			<div>
-				<md-button class="md-raised md-primary" type="submit">
+				<!--<md-button class="md-raised md-primary" type="submit">
 					<md-icon class="material-icons">search</md-icon>
-				</md-button>
+				</md-button>-->
+
+				<input type="file" on-read-file="loadTermList($fileContent, $fileName)" id="selectedFile" style="display: none;">
+				<md-button class="md-button md-primary md-raised" onclick="document.getElementById('selectedFile').click();">Load List</md-button>
 			</div>
 		</div>
 	</form>

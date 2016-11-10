@@ -335,7 +335,15 @@ define([
 
             function addNodeFilter(nodeId) {
                 var entity = self.nodes.get(nodeId);
-                $scope.observerService.addItem({ type: 'entity', data: { id: entity.id, name: entity.label, type: entity.type }});
+                $scope.observerService.addItem({
+                        type: 'entity',
+                        data: {
+                            id: entity.id,
+                            description: entity.label,
+                            item: entity.label,
+                            type: entity.type
+                        }
+                });
             }
 
             function addEdgeFilter(edgeId) {
@@ -343,8 +351,8 @@ define([
                 var from = self.nodes.get(edge.from);
                 var to = self.nodes.get(edge.to);
                 // TODO This fires two events. Would be better to have a addItems method that fires once. For the time being this hacks solves the problem.
-                $scope.observerService.addItem({ type: 'entity', data: { id: from.id, name: from.label, type: from.type }}, false);
-                $scope.observerService.addItem({ type: 'entity', data: { id: to.id, name: to.label, type: to.type }});
+                $scope.observerService.addItem({ type: 'entity', data: { id: from.id, description: from.label, item: from.label, type: from.type }}, false);
+                $scope.observerService.addItem({ type: 'entity', data: { id: to.id, description: to.label, item: to.label, type: to.type }});
             }
 
             function editNode(nodeId) {

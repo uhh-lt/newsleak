@@ -44,7 +44,7 @@ define([
 
                     scope.addEntityFilter = function(id) {
                         var el = _.find(entities, function(e) { return e.id == id });
-                        ObserverService.addItem({ type: 'entity', data: { id: id, name: el.name, type: el.type }});
+                        ObserverService.addItem({ type: 'entity', data: { id: id, description: el.name, item: el.name, type: el.type }});
                     };
 
                     scope.blacklistFilter = function(id) {

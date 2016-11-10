@@ -142,7 +142,7 @@ define([
 
                     $scope.loadHistory = function() {
                         console.log("load state");
-                        $scope.reader  = new FileReader();
+                        $scope.reader = new FileReader();
                         $scope.reader.onload = function(){
                             $scope.observer.loadState(jQuery.parseJSON(angular.copy($scope.reader.result)));
                             $scope.uploadFile = undefined;

@@ -19,11 +19,11 @@
 	<script type="text/ng-template" id="tooltip_tmpl">
 		<div ng-mouseleave="hidePopover(obj.id)" ng-mouseenter="showPopover(obj.id)">
 			<ul class="list-group-item">
-				<li class="list-group-item"><span>Content:</span> {{obj.data.name}}</li>
-				<li class="list-group-item" ng-if="obj.data.id && obj.data.id > -1"><span>ID#:</span> {{obj.data.id}}</li>
-				<li class="list-group-item" ng-if="obj.data.type"><span>Typ:</span> {{obj.data.type}}</li>
-				<li class="list-group-item"><span>Tracker-Type:</span> {{obj.type}}</li>
-				<li class="list-group-item"><span>Active:</span> {{obj.active}}</li>
+				<li class="list-group-item"><span>Content:</span> {{ obj.data.item }}</li>
+				<li class="list-group-item" ng-if="obj.data.id && obj.data.id > -1"><span>ID#:</span> {{ obj.data.id }}</li>
+				<li class="list-group-item" ng-if="obj.data.type"><span>Typ:</span> {{ obj.data.type }}</li>
+				<li class="list-group-item"><span>Tracker-Type:</span> {{ obj.type }}</li>
+				<li class="list-group-item"><span>Active:</span> {{ obj.active }}</li>
 			</ul>
 
 			<button ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" type="button" class="btn btn-primary" ng-click="removeItem(obj)">
@@ -60,15 +60,15 @@
 				 ng-mouseenter="showPopover(obj.id)"
 				 ng-show="obj.active || showHistory"
 				 uib-popover-template="'tooltip_tmpl'"
-				 popover-title="{{getTypeDescription(obj.type)}}"
+				 popover-title="{{ getTypeDescription(obj.type) }}"
 				 popover-placement="bottom"
 				 popover-trigger="none"
 				 popover-append-to-body='true'
-				 popover-is-open="factory.popover.isOpen[{{obj.id}}]">
+				 popover-is-open="factory.popover.isOpen[{{ obj.id }}]">
 
 				<i class="glyphicon type-icon glyphicon-{{ getIcon(obj.type) }}" ng-class=""></i>
 				<i class="glyphicon action-icon glyphicon-{{ getActionIcon(obj.action) }}" ng-class=""></i>
-				{{obj.data.name}}
+				{{ obj.data.description }}
 
 				<i ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" ng-click="removeItem(obj)" class="glyphicon action-icon glyphicon-remove-circle" ng-class="" ></i>
 			</div>

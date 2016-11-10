@@ -201,7 +201,7 @@ define([
 
                     if(notfiyTypes.indexOf(item.type) >= 0 && notify)
                         this.notifyObservers();
-                    console.log("added to history: " + item.data.name);
+                    console.log("added to history: " + item.data.item);
                     return (lastAdded);
                 },
 
@@ -315,11 +315,11 @@ define([
                 },
 
                 getTimeRange: function() {
-                    if(items["time"].length == 0) return ""; else return items["time"][items["time"].length-1].data.name;
+                    if(items["time"].length == 0) return ""; else return items["time"][items["time"].length-1].data.item;
                 },
 
                 getXTimeRange: function() {
-                    if(items["timeX"].length == 0) return ""; else return items["timeX"][items["timeX"].length-1].data.name;
+                    if(items["timeX"].length == 0) return ""; else return items["timeX"][items["timeX"].length-1].data.item;
                 },
 
                 getFacets: function() {
@@ -329,7 +329,7 @@ define([
                             if(items.metadata[metaType].length > 0) {
                                 var keys = [];
                                 angular.forEach(items.metadata[metaType], function(x) {
-                                    keys.push(x.data.name);
+                                    keys.push(x.data.item);
                                 });
                                 facets.push({key: metaType.replace(".","_"), data: keys});
                             }
@@ -389,7 +389,8 @@ define([
                             type: 'reset',
                             active: false,
                             data: {
-                                name: "Filter has been reset"
+                                item: "",
+                                description: "Filter has been reset"
                             }
                         }, false);
                     });

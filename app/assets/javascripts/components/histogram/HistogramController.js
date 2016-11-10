@@ -169,7 +169,8 @@ define([
                     $scope.observer.addItem({
                         type: 'time',
                         data: {
-                            name: range,
+                            description: range,
+                            item: range,
                             lod: $scope.currentLoD
                         }
                     });

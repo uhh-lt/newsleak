@@ -194,7 +194,8 @@ define([
                                 type: 'openDoc',
                                 data: {
                                     id: doc.id,
-                                    name: "#" + doc.id
+                                    description: "#" + doc.id,
+                                    item: "#" + doc.id
                                 }
                             };
                             $scope.observer.addItem(editItem);

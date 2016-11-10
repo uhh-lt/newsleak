@@ -21,14 +21,30 @@ define([
     'use strict';
 
     angular.module('myApp.search', [])
-        .controller('SearchController',
-            [
-                '$scope',
-                '$window',
-                'ObserverService',
-                function ($scope,
-                          $window,
-                          ObserverService) {
+        .directive('onReadFile', function ($parse) {
+            return {
+                restrict: 'A',
+                scope: false,
+                link: function(scope, element, attrs) {
+                    var fn = $parse(attrs.onReadFile);
+
+                    element.on('change', function(onChangeEvent) {
+                        var reader = new FileReader();
+                        var file = (onChangeEvent.srcElement || onChangeEvent.target).files[0];
+
+                        reader.onload = function(onLoadEvent) {
+                            scope.$apply(function() {
+                                fn(scope, { $fileContent:onLoadEvent.target.result, $fileName:file.name });
+                            });
+                        };
+                        reader.readAsText(file);
+                        element.val(null);  // clear input
+                    });
+                }
+            };
+        })
+        .controller('SearchController', ['$scope', 'ObserverService',
+                function ($scope, ObserverService) {
 
                     $scope.observer = ObserverService;
 
@@ -38,14 +54,27 @@ define([
                                 type: 'fulltext',
                                 data: {
                                     id: -1,
-                                    name: angular.copy(input),
+                                    description: angular.copy(input),
+                                    item: angular.copy(input),
                                     view: 'search'
                                 }
                             });
                             $scope.fulltextInput = "";
                         }
                     };
+
+                    $scope.loadTermList = function(fileContent, fileName) {
+                        var query = fileContent.split('\n').filter(function(t) { return t != "" }).join(' OR ');
+                        $scope.observer.addItem({
+                            type: 'fulltext',
+                            data: {
+                                id: -1,
+                                description: fileName + ' List',
+                                item: query,
+                                view: 'search'
+                            }
+                        });
+                    }
                 }
             ]);
-
 });
