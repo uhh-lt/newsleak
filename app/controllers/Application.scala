@@ -59,7 +59,8 @@ class Application @Inject() (cache: CacheApi) extends Controller {
     cache.remove(uid)
 
     var authorized = false
-    if (NewsleakConfigReader.config.getBoolean("authorization.enabled")) {
+    // Set valid authorization if disabled
+    if (!NewsleakConfigReader.config.getBoolean("authorization.enabled")) {
       authorized = true
     }
     // if we have an authorization code, we check it
