@@ -38,39 +38,143 @@ define([
 
                     var categoryColors = { 'PER': '#d73027', 'ORG': '#fee090', 'LOC': '#abd9e9', 'MISC': '#4575b4'};
 
-
                     scope.addEntityFilter = function(id) {
                         var el = _.find(entities, function(e) { return e.id == id });
                         ObserverService.addItem({ type: 'entity', data: { id: id, description: el.name, item: el.name, type: el.type }});
                     };
 
                     scope.renderDoc = function() {
-                        var container =  element;
+                        var highlights = scope.document.highlighted !== null ? calcHighlightOffsets(scope.document.highlighted, '<em>', '</em>') : [];
+                        // The plain highlighter with query_string search highlights phrases as multiple words
+                        // i.e. "Angela Merkel" -> <em> Angela </em> <em> Merkel </em>. Thus, we need to group
+                        // those subsequent elements
+                        var merged = groupSubsequentHighlights(highlights);
+                        var marks = identifyOverlappingHighlights(entities, merged);
+
+                        var container = element;
                         var offset = 0;
-
-                        var sortedSpans = entities.sort(function(a, b) { return a.start - b.start; });
-                        sortedSpans.forEach(function(e) {
-                            var textEntity = content.slice(e.start, e.end);
+                        marks.forEach(function(e) {
                             var fragments = content.slice(offset, e.start).split('\n');
-
                             fragments.forEach(function(f, i) {
                                 container.append(document.createTextNode(f));
                                 if(fragments.length > 1 && i != fragments.length - 1) container.append(angular.element('<br />'));
                             });
 
-                            var highlight = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none,  \'border-bottom\': \'3px solid ' + categoryColors[e.type] + '\'}"></span>');
-                            highlight.className = 'highlight-general';
-                            var addFilter = angular.element('<a ng-click="addEntityFilter(' + e.id +')" style="text-decoration: none"></a>');
-
-                            addFilter.append(document.createTextNode(textEntity));
-                            highlight.append(addFilter);
-                            var highlightElement = $compile(highlight)(scope);
-                            container.append(highlightElement);
+                            var highlightElement = undefined;
+                            if(_.has(e, 'nested')) {
+                                if(e.type == 'full-text') {
+                                    //Expectation: Nested is always the inner or same element e.g. [[Angela] Merkel]
+                                    var innerElement = createNeHighlight(e.nested.id, e.nested.type, e.nested.name, undefined);
+                                    highlightElement = createFulltextHighlight(e.name.substring(e.nested.end - e.start), innerElement);
+                                } else {
+                                    var innerElement = createFulltextHighlight(e.nested.name, undefined);
+                                    highlightElement = createNeHighlight(e.id, e.type, e.name.substring(e.nested.end - e.start), innerElement);
+                                }
+                            } else if(e.type == 'full-text')  {
+                                highlightElement = createFulltextHighlight(e.name, undefined);
+                            } else {
+                                highlightElement = createNeHighlight(e.id, e.type, e.name);
+                            }
+                            // Append marked element to DOM
+                            var compiledElement = $compile(highlightElement)(scope);
+                            container.append(compiledElement);
 
                             offset = e.end;
                         });
                         container.append(document.createTextNode(content.slice(offset, content.length)));
                     };
+
+                    function calcHighlightOffsets(text, delimiterStart, delimiterEnd) {
+                        var offset = 0;
+                        var markerChars = delimiterStart.length;
+                        var elements = [];
+                        while(true) {
+                            var startTag = text.indexOf(delimiterStart, offset);
+                            var endTag = text.indexOf(delimiterEnd, offset);
+                            // If no more elements stop matching
+                            if(startTag == -1 || endTag == -1) break;
+
+                            var startElement = startTag + delimiterStart.length;
+                            var match = text.substring(startElement, endTag);
+                            elements.push({ start: startElement - markerChars, end: startElement - markerChars + match.length, name: match, type: 'full-text' });
+                            // Adjust pointer
+                            offset = (endTag + delimiterEnd.length);
+                            markerChars += (delimiterStart.length + delimiterEnd.length);
+                        }
+                        return elements;
+                    }
+
+                    function groupSubsequentHighlights(elements) {
+                        var grouped = elements.reduce(function(acc, el) {
+                            var seq = acc.length > 0 ? acc.pop(): [];
+                            // Running sequence
+                            if(seq.length > 0 && _.last(seq).end == el.start - 1) {
+                                seq.push(el);
+                                acc.push(seq)
+                            } else {
+                                // End of sequence
+                                if(seq.length > 0) acc.push(seq);
+                                // Create new starting sequence
+                                acc.push([el]);
+                            }
+                            return acc;
+                        }, []);
+
+                        var merged = grouped.map(function(seq) {
+                            var start = _.first(seq).start;
+                            var end = _.last(seq).end;
+                            var name = _.pluck(seq, 'name').join(' ');
+                            return { start: start, end: end, name: name, type: "full-text" };
+                        });
+                        return merged;
+                    }
+
+                    function identifyOverlappingHighlights(entities, fulltextElements) {
+                        var sortedSpans = entities.concat(fulltextElements).sort(function(a, b) { return a.start - b.start; });
+                        var res = sortedSpans.reduce(function(acc, e, i) {
+                            // If it's not the last element and full-text match overlaps NE match
+                            if(!_.isUndefined(sortedSpans[i+1]) && sortedSpans[i+1].start == e.start) {
+                                // Make sure the longest span is the parent
+                                if (e.name.length > sortedSpans[i + 1].name.length) {
+                                    e.nested = sortedSpans[i + 1];
+                                    acc.push(e);
+                                    // Mark next as skip
+                                    sortedSpans[i + 1].omit = true;
+                                } else {
+                                    sortedSpans[i + 1].nested = e;
+                                }
+                            // No overlapping full-text and NE
+                            } else if(!_.has(e, 'omit')) {
+                                acc.push(e);
+                            }
+                            return acc;
+                        }, []);
+                        return res;
+                    }
+
+                    function createNeHighlight(id, type, name, nested) {
+                        var innerElement = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none, \'border-bottom\': \'3px solid ' + categoryColors[type] + '\'}"></span>');
+                        innerElement.className = 'highlight-general';
+                        var addFilter = angular.element('<a ng-click="addEntityFilter(' + id +')" style="text-decoration: none;"></a>');
+
+                        addFilter.append(document.createTextNode(name));
+                        if(!_.isUndefined(nested)) {
+                            innerElement.append(nested);
+                        }
+                        innerElement.append(addFilter);
+                        return innerElement;
+                    }
+
+                    function createFulltextHighlight(name, nested) {
+                        var outerElement = angular.element('<span style="padding: 0; margin: 0; background-color: #FFFF00"></span>');
+                        outerElement.className = 'highlight-general';
+
+                        if(!_.isUndefined(nested)) {
+                            outerElement.append(nested);
+                        }
+                        outerElement.append(document.createTextNode(name));
+                        return outerElement;
+                    }
 
                     // Init component
                     scope.renderDoc();

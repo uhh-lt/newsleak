@@ -21,6 +21,7 @@ import javax.inject.Inject
 
 import model.faceted.search.{ FacetedSearch, Facets }
 import model.{ Document, KeyTerm, Tag }
+import org.joda.time.LocalDateTime
 import play.api.cache.CacheApi
 import play.api.libs.json.{ JsObject, JsValue, Json }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
@@ -33,7 +34,7 @@ import scala.collection.mutable.ListBuffer
 import util.TupleWriters._
 // scalastyle:on
 
-case class IteratorSession(hits: Long, hitIterator: Iterator[Long], hash: Long)
+case class IteratorSession(hits: Long, hitIterator: Iterator[Document], hash: Long)
 
 /*
     This class provides operations pertaining documents.
@@ -52,7 +53,8 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
 
   def getDocsByLabel(label: String) = Action { implicit request =>
     val docIds = Tag.fromDBName(currentDataset).getByLabel(label).map { case Tag(_, docId, _) => docId }
-    Ok(createJsonReponse(docIds, docIds.length))
+    val documentAPI = Document.fromDBName(currentDataset)
+    Ok(createJsonResponse(docIds.flatMap(documentAPI.getById), docIds.length))
   }
 
   // TODO: Extend ES API and remove KeyTerm API
@@ -120,31 +122,31 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
       cachedIterator.get
     }
 
-    val docIds = ListBuffer[Long]()
+    val docList = ListBuffer[Document]()
     while (iteratorSession.hitIterator.hasNext && pageCounter <= defaultPageSize) {
-      docIds += iteratorSession.hitIterator.next()
+      docList += iteratorSession.hitIterator.next()
       pageCounter += 1
     }
 
-    if (docIds.size < defaultPageSize) {
+    if (docList.size < defaultPageSize) {
       val newIteratorSession = IteratorSession(iteratorSession.hits, iteratorSession.hitIterator, -1)
       cache.set(uid, newIteratorSession)
     }
 
-    Ok(createJsonReponse(docIds.toList, iteratorSession.hits))
+    Ok(createJsonResponse(docList.toList, iteratorSession.hits))
   }
 
-  def createJsonReponse(docIds: List[Long], hits: Long)(implicit request: Request[AnyContent]): JsValue = {
-    if (docIds.nonEmpty) {
+  def createJsonResponse(docList: List[Document], hits: Long)(implicit request: Request[AnyContent]): JsValue = {
+    if (docList.nonEmpty) {
       val docSearch = Document.fromDBName(currentDataset)
 
       val keys = docSearch.getMetadataKeysAndTypes().map(_._1)
       val docToMetadata = docSearch
-        .getMetadataForDocuments(docIds, keys)
+        .getMetadataForDocuments(docList.map(_.id), keys)
         .groupBy(_._1)
         .map { case (id, l) => id -> l.collect { case (_, k, v) if !v.isEmpty => Json.obj("key" -> k, "val" -> v) } }
 
-      val response = docIds.map { id => Json.obj("id" -> id, "metadata" -> docToMetadata.get(id)) }
+      val response = docList.map { d => Json.obj("id" -> d.id, "content" -> d.content, "highlighted" -> d.highlightedContent, "metadata" -> docToMetadata.get(d.id)) }
 
       Json.obj("hits" -> hits, "docs" -> response)
     } else {

@@ -41,6 +41,8 @@ define([
                         angular.forEach(data, function(doc) {
                         var currentDoc = {
                             id: doc.id,
+                            content: doc.content,
+                            highlighted: doc.highlighted,
                             metadata: {}
                         };
                         angular.forEach(doc.metadata, function(metadata) {
