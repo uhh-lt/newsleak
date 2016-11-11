@@ -33,7 +33,8 @@ import scala.collection.mutable.ListBuffer
 import util.TupleWriters._
 // scalastyle:on
 
-case class IteratorSession(hits: Long, hitIterator: Iterator[Long], hash: Long)
+// case class IteratorSession(hits: Long, hitIterator: Iterator[Long], hash: Long)
+case class IteratorSession(hits: Long, hitIterator: Iterator[Document], hash: Long)
 
 /*
     This class provides operations pertaining documents.
@@ -120,18 +121,36 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
       cachedIterator.get
     }
 
-    val docIds = ListBuffer[Long]()
+    val docList = ListBuffer[Document]()
     while (iteratorSession.hitIterator.hasNext && pageCounter <= defaultPageSize) {
-      docIds += iteratorSession.hitIterator.next()
+      docList += iteratorSession.hitIterator.next()
       pageCounter += 1
     }
 
-    if (docIds.size < defaultPageSize) {
+    if (docList.size < defaultPageSize) {
       val newIteratorSession = IteratorSession(iteratorSession.hits, iteratorSession.hitIterator, -1)
       cache.set(uid, newIteratorSession)
     }
 
-    Ok(createJsonReponse(docIds.toList, iteratorSession.hits))
+    Ok(createJsonReponse2(docList.toList, iteratorSession.hits))
+  }
+
+  def createJsonReponse2(docList: List[Document], hits: Long)(implicit request: Request[AnyContent]): JsValue = {
+    if (docList.nonEmpty) {
+      val docSearch = Document.fromDBName(currentDataset)
+
+      val keys = docSearch.getMetadataKeysAndTypes().map(_._1)
+      val docToMetadata = docSearch
+        .getMetadataForDocuments(docList.map(_.id), keys)
+        .groupBy(_._1)
+        .map { case (id, l) => id -> l.collect { case (_, k, v) if !v.isEmpty => Json.obj("key" -> k, "val" -> v) } }
+
+      val response = docList.map { d => Json.obj("id" -> d.id, "content" -> d.content, "highlighted" -> d.highlightedContent, "metadata" -> docToMetadata.get(d.id)) }
+
+      Json.obj("hits" -> hits, "docs" -> response)
+    } else {
+      Json.obj("hits" -> 0, "docs" -> List[JsObject]())
+    }
   }
 
   def createJsonReponse(docIds: List[Long], hits: Long)(implicit request: Request[AnyContent]): JsValue = {

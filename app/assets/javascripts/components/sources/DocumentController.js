@@ -44,7 +44,34 @@ define([
                         ObserverService.addItem({ type: 'entity', data: { id: id, description: el.name, item: el.name, type: el.type }});
                     };
 
+                    function calcHighlightOffsets(text, delimiterStart, delimiterEnd) {
+                        var offset = 0;
+                        var markerChars = delimiterStart.length;
+                        var elements = [];
+                        while(true) {
+                            var startTag = text.indexOf(delimiterStart, offset);
+                            var endTag = text.indexOf(delimiterEnd, offset);
+                            // If no more elements stop matching
+                            if(startTag == -1 || endTag == -1) break;
+
+                            var startElement = startTag + delimiterStart.length;
+                            var match = text.substring(startElement, endTag);
+                            elements.push({ startRaw: startElement - markerChars, endRaw: startElement - markerChars + match.length, match: match });
+                            // Adjust pointer
+                            offset = (endTag + delimiterEnd.length);
+                            markerChars += (delimiterStart.length + delimiterEnd.length);
+                        }
+
+                        return elements;
+                    }
+
                     scope.renderDoc = function() {
+
+                        if(scope.document.highlighted !== null) {
+                            var highlights = calcHighlightOffsets(scope.document.highlighted, '<em>', '</em>');
+                            console.log(highlights);
+                        }
+
                         var container =  element;
                         var offset = 0;
 

@@ -200,7 +200,21 @@ define([
                             };
                             $scope.observer.addItem(editItem);
 
-                            playRoutes.controllers.DocumentController.getDocById(doc.id).get().then(function (response) {
+
+                            playRoutes.controllers.EntityController.getEntitiesByDoc(doc.id).get().then(function (response) {
+                                // Provide document controller with document information
+                                console.log(doc.highlighted);
+                                $scope.sourceShared.tabs.push({
+                                    id: doc.id,
+                                    title: doc.id,
+                                    content: doc.content,
+                                    highlighted: doc.highlighted,
+                                    meta: doc.metadata,
+                                    entities: response.data
+                                });
+                            });
+
+                            /* playRoutes.controllers.DocumentController.getDocById(doc.id).get().then(function (response) {
                                 var content = response.data[2];
                                 playRoutes.controllers.EntityController.getEntitiesByDoc(doc.id).get().then(function (response) {
                                     // Provide document controller with document information
@@ -212,10 +226,9 @@ define([
                                         entities: response.data
                                     });
                                 });
-                            });
+                            }); */
                         }
                     };
-
 
                     $scope.isDocumentOpen = function (id) {
                         var index = _.findIndex($scope.sourceShared.tabs, function(t) { return t.id == id; });
