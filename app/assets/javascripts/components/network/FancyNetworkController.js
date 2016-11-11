@@ -130,7 +130,7 @@ define([
 
 
             function currentFilter() {
-                var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.name; });
+                var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.item; });
                 var entities = $scope.entityFilters.map(function(v) { return v.data.id; });
                 var timeRange = $scope.observerService.getTimeRange();
                 var timeRangeX = $scope.observerService.getXTimeRange();

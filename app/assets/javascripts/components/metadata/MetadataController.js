@@ -293,7 +293,7 @@ define([
                             var facets = $scope.observer.getFacets();
                             var fulltext = [];
                             angular.forEach($scope.fulltextFilters, function (item) {
-                                fulltext.push(item.data.name);
+                                fulltext.push(item.data.item);
                             });
                             var entityType = "";
                             var timeRange = $scope.observer.getTimeRange();
@@ -391,7 +391,7 @@ define([
                             var timeRange = $scope.observer.getTimeRange();
                             var timeRangeX = $scope.observer.getXTimeRange();
                             angular.forEach($scope.fulltextFilters, function (item) {
-                                fulltext.push(item.data.name);
+                                fulltext.push(item.data.item);
                             });
                             $scope.metaPromises = [];
                             $scope.metaPromisesLocal = [];
@@ -480,7 +480,7 @@ define([
                                 deferred[x] = $q.defer();
                                 proms.push(deferred[x].promise);
                                 $scope.chartConfigs[x] = angular.copy($scope.chartConfig);
-                                playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, timeRange,timeRange, 50, x).get().then(function (result) {
+                                playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, timeRange, timeRange, 50, x).get().then(function (result) {
 
                                     $scope.entityData[x] = [];
                                     result.data.forEach(function (entity) {

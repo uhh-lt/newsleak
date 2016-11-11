@@ -114,7 +114,7 @@ define([
                         var facets = $scope.observer.getFacets();
                         var fulltext = [];
                         angular.forEach($scope.fulltextFilters, function (item) {
-                            fulltext.push(item.data.name);
+                            fulltext.push(item.data.item);
                         });
 
                         playRoutes.controllers.DocumentController.getDocs(fulltext, facets, entities, $scope.observer.getTimeRange(),$scope.observer.getXTimeRange()).get().then(function (x) {
@@ -150,7 +150,7 @@ define([
                             var facets = $scope.observer.getFacets();
                             var fulltext = [];
                             angular.forEach($scope.fulltextFilters, function (item) {
-                                fulltext.push(item.data.name);
+                                fulltext.push(item.data.item);
                             });
                             playRoutes.controllers.DocumentController.getDocs(fulltext, facets, entities, $scope.observer.getTimeRange()).get().then(function (x) {
                                 if (x.data.docs.length == 0 || x.data.docs.length <=50)

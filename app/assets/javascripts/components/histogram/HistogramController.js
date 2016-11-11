@@ -246,7 +246,7 @@ define([
                     var facets = $scope.observer.getFacets();
                     var fulltext = [];
                     angular.forEach($scope.fulltextFilters, function(item) {
-                        fulltext.push(item.data.name);
+                        fulltext.push(item.data.item);
                     });
                     playRoutes.controllers.HistogramController.getHistogram(fulltext,facets,entities,$scope.currentRange,"",$scope.currentLoD).get().then(function(respone) {
                         var overallPromise = $q.defer();
