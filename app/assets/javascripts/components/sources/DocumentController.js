@@ -56,7 +56,7 @@ define([
 
                             var startElement = startTag + delimiterStart.length;
                             var match = text.substring(startElement, endTag);
-                            elements.push({ startRaw: startElement - markerChars, endRaw: startElement - markerChars + match.length, match: match });
+                            elements.push({ start: startElement - markerChars, end: startElement - markerChars + match.length, match: match, type: 'full-text' });
                             // Adjust pointer
                             offset = (endTag + delimiterEnd.length);
                             markerChars += (delimiterStart.length + delimiterEnd.length);
@@ -67,15 +67,12 @@ define([
 
                     scope.renderDoc = function() {
 
-                        if(scope.document.highlighted !== null) {
-                            var highlights = calcHighlightOffsets(scope.document.highlighted, '<em>', '</em>');
-                            console.log(highlights);
-                        }
+                        var highlights = scope.document.highlighted !== null ? calcHighlightOffsets(scope.document.highlighted, '<em>', '</em>') : [];
 
                         var container =  element;
                         var offset = 0;
 
-                        var sortedSpans = entities.sort(function(a, b) { return a.start - b.start; });
+                        var sortedSpans = entities.concat(highlights).sort(function(a, b) { return a.start - b.start; });
                         sortedSpans.forEach(function(e) {
                             var textEntity = content.slice(e.start, e.end);
                             var fragments = content.slice(offset, e.start).split('\n');
@@ -85,14 +82,22 @@ define([
                                 if(fragments.length > 1 && i != fragments.length - 1) container.append(angular.element('<br />'));
                             });
 
-                            var highlight = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none,  \'border-bottom\': \'3px solid ' + categoryColors[e.type] + '\'}"></span>');
-                            highlight.className = 'highlight-general';
-                            var addFilter = angular.element('<a ng-click="addEntityFilter(' + e.id +')" style="text-decoration: none"></a>');
+                            if(e.type == 'full-text')  {
+                                var highlight = angular.element('<span style="padding: 0; margin: 0; background-color: #FFFF00""></span>');
+                                highlight.className = 'highlight-general';
+                                highlight.append(document.createTextNode(textEntity));
+                                var highlightElement = $compile(highlight)(scope);
+                                container.append(highlightElement);
+                            } else {
+                                var highlight = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none,  \'border-bottom\': \'3px solid ' + categoryColors[e.type] + '\'}"></span>');
+                                highlight.className = 'highlight-general';
+                                var addFilter = angular.element('<a ng-click="addEntityFilter(' + e.id +')" style="text-decoration: none"></a>');
 
-                            addFilter.append(document.createTextNode(textEntity));
-                            highlight.append(addFilter);
-                            var highlightElement = $compile(highlight)(scope);
-                            container.append(highlightElement);
+                                addFilter.append(document.createTextNode(textEntity));
+                                highlight.append(addFilter);
+                                var highlightElement = $compile(highlight)(scope);
+                                container.append(highlightElement);
+                            }
 
                             offset = e.end;
                         });
