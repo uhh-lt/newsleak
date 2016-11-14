@@ -56,7 +56,7 @@ define([
 
                             var startElement = startTag + delimiterStart.length;
                             var match = text.substring(startElement, endTag);
-                            elements.push({ start: startElement - markerChars, end: startElement - markerChars + match.length, match: match, type: 'full-text' });
+                            elements.push({ start: startElement - markerChars, end: startElement - markerChars + match.length, name: match, type: 'full-text' });
                             // Adjust pointer
                             offset = (endTag + delimiterEnd.length);
                             markerChars += (delimiterStart.length + delimiterEnd.length);
@@ -66,19 +66,57 @@ define([
                     }
 
                     scope.renderDoc = function() {
+                        // The plain highlighter with query_string search highlights phrases as multiple words
+                        // i.e. "Angela Merkel" -> <em> Angela </em> <em> Merkel </em>
                         var highlights = scope.document.highlighted !== null ? calcHighlightOffsets(scope.document.highlighted, '<em>', '</em>') : [];
+
+                        var grouped = highlights.reduce(function(acc, el) {
+                            var seq = acc.length > 0 ? acc.pop(): [];
+                            // Running sequence
+                            if(seq.length > 0 && _.last(seq).end == el.start - 1) {
+                                seq.push(el);
+                                acc.push(seq)
+                            } else {
+                                // End of sequence
+                                if(seq.length > 0) acc.push(seq);
+                                // Create new starting sequence
+                                acc.push([el]);
+                            }
+                            return acc;
+                        }, []);
+
+                        var merged = grouped.map(function(seq) {
+                            var start = _.first(seq).start;
+                            var end = _.last(seq).end;
+                            var name = _.pluck(seq, 'name').join(' ');
+                            return { start: start, end: end, name: name, type: "full-text" };
+                        });
 
                         var container =  element;
                         var offset = 0;
 
-                        var sortedSpans = entities.concat(highlights).sort(function(a, b) { return a.start - b.start; });
+                        var sortedSpans = entities.concat(merged).sort(function(a, b) { return a.start - b.start; });
                         var ne = sortedSpans.reduce(function(acc, e, i) {
                             // If it's not the last element and full-text match overlaps NE match
                             if(!_.isUndefined(sortedSpans[i+1]) && sortedSpans[i+1].start == e.start) {
-                                e.nested = sortedSpans[i + 1];
-                                acc.push(e);
-                                // Mark next as skip
-                                sortedSpans[i+1].omit = true;
+                                // Make sure the longest span is the parent
+                                if(e.name.length > sortedSpans[i+1].name.length) {
+                                    e.nested = sortedSpans[i + 1];
+                                    acc.push(e);
+                                    // Mark next as skip
+                                    sortedSpans[i + 1].omit = true;
+                                } else if(e.name.length < sortedSpans[i+1].name.length) {
+                                    sortedSpans[i+1].nested = e;
+                                // In case the length is the same make the NE type as parent
+                                } else if(e.name.length == sortedSpans[i+1].name.length) {
+                                    if(e.type == 'full-text') {
+                                        sortedSpans[i+1].nested = e;
+                                    } else {
+                                        e.nested = sortedSpans[i + 1];
+                                        acc.push(e);
+                                        sortedSpans[i + 1].omit = true;
+                                    }
+                                }
                             // No overlapping full-text and NE
                             } else if(!_.has(e, 'omit')) {
                                 acc.push(e)
