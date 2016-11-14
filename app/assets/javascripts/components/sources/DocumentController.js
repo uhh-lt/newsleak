@@ -66,14 +66,27 @@ define([
                     }
 
                     scope.renderDoc = function() {
-
                         var highlights = scope.document.highlighted !== null ? calcHighlightOffsets(scope.document.highlighted, '<em>', '</em>') : [];
 
                         var container =  element;
                         var offset = 0;
 
                         var sortedSpans = entities.concat(highlights).sort(function(a, b) { return a.start - b.start; });
-                        sortedSpans.forEach(function(e) {
+                        var ne = sortedSpans.reduce(function(acc, e, i) {
+                            // If it's not the last element and full-text match overlaps NE match
+                            if(!_.isUndefined(sortedSpans[i+1]) && sortedSpans[i+1].start == e.start) {
+                                e.nested = sortedSpans[i + 1];
+                                acc.push(e);
+                                // Mark next as skip
+                                sortedSpans[i+1].omit = true;
+                            // No overlapping full-text and NE
+                            } else if(!_.has(e, 'omit')) {
+                                acc.push(e)
+                            }
+                            return acc;
+                        }, []);
+
+                        ne.forEach(function(e) {
                             var textEntity = content.slice(e.start, e.end);
                             var fragments = content.slice(offset, e.start).split('\n');
 
@@ -82,7 +95,17 @@ define([
                                 if(fragments.length > 1 && i != fragments.length - 1) container.append(angular.element('<br />'));
                             });
 
-                            if(e.type == 'full-text')  {
+                            if(_.has(e, 'nested')) {
+                                console.log(e);
+                                var highlight = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none, \'border-bottom\': \'3px solid ' + categoryColors[e.type] + '\'}"></span>');
+                                highlight.className = 'highlight-general';
+                                var addFilter = angular.element('<a ng-click="addEntityFilter(' + e.id +')" style="text-decoration: none; background-color: #FFFF00"></a>');
+
+                                addFilter.append(document.createTextNode(textEntity));
+                                highlight.append(addFilter);
+                                var highlightElement = $compile(highlight)(scope);
+                                container.append(highlightElement);
+                            } else if(e.type == 'full-text')  {
                                 var highlight = angular.element('<span style="padding: 0; margin: 0; background-color: #FFFF00""></span>');
                                 highlight.className = 'highlight-general';
                                 highlight.append(document.createTextNode(textEntity));
