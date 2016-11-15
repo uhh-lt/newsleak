@@ -61,8 +61,32 @@ define([
                             offset = (endTag + delimiterEnd.length);
                             markerChars += (delimiterStart.length + delimiterEnd.length);
                         }
-
                         return elements;
+                    }
+
+                    function createNeHighlight(id, type, name, nested) {
+                        var innerElement = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none, \'border-bottom\': \'3px solid ' + categoryColors[type] + '\'}"></span>');
+                        innerElement.className = 'highlight-general';
+                        var addFilter = angular.element('<a ng-click="addEntityFilter(' + id +')" style="text-decoration: none;"></a>');
+
+                        addFilter.append(document.createTextNode(name));
+                        if(!_.isUndefined(nested)) {
+                            innerElement.append(nested);
+                        }
+                        innerElement.append(addFilter);
+
+                        return innerElement;
+                    }
+                    
+                    function createFulltextHighlight(name, nested) {
+                        var outerElement = angular.element('<span style="padding: 0; margin: 0; background-color: #FFFF00"></span>');
+                        outerElement.className = 'highlight-general';
+                        if(!_.isUndefined(nested)) {
+                            outerElement.append(nested);
+                        }
+                        outerElement.append(document.createTextNode(name));
+
+                        return outerElement;
                     }
 
                     scope.renderDoc = function() {
@@ -105,17 +129,8 @@ define([
                                     acc.push(e);
                                     // Mark next as skip
                                     sortedSpans[i + 1].omit = true;
-                                } else if(e.name.length < sortedSpans[i+1].name.length) {
+                                } else {
                                     sortedSpans[i+1].nested = e;
-                                // In case the length is the same make the NE type as parent
-                                } else if(e.name.length == sortedSpans[i+1].name.length) {
-                                    if(e.type == 'full-text') {
-                                        sortedSpans[i+1].nested = e;
-                                    } else {
-                                        e.nested = sortedSpans[i + 1];
-                                        acc.push(e);
-                                        sortedSpans[i + 1].omit = true;
-                                    }
                                 }
                             // No overlapping full-text and NE
                             } else if(!_.has(e, 'omit')) {
@@ -135,31 +150,27 @@ define([
 
                             if(_.has(e, 'nested')) {
                                 console.log(e);
-                                var highlight = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none, \'border-bottom\': \'3px solid ' + categoryColors[e.type] + '\'}"></span>');
-                                highlight.className = 'highlight-general';
-                                var addFilter = angular.element('<a ng-click="addEntityFilter(' + e.id +')" style="text-decoration: none; background-color: #FFFF00"></a>');
-
-                                addFilter.append(document.createTextNode(textEntity));
-                                highlight.append(addFilter);
-                                var highlightElement = $compile(highlight)(scope);
-                                container.append(highlightElement);
+                                if(e.type == 'full-text') {
+                                    //Expectation: Nested is always the inner or same element e.g. [[Angela] Merkel]
+                                    var innerElement = createNeHighlight(e.nested.id, e.nested.type, e.nested.name, undefined);
+                                    var outerElement = createFulltextHighlight(e.name.substring(e.nested.end - e.start), innerElement);
+                                    var highlightElement = $compile(outerElement)(scope);
+                                    container.append(highlightElement);
+                                } else {
+                                    var innerElement = createFulltextHighlight(e.nested.name, undefined);
+                                    var outerElement = createNeHighlight(e.id, e.type, e.name.substring(e.nested.end - e.start), innerElement);
+                                    var highlightElement = $compile(outerElement)(scope);
+                                    container.append(highlightElement);
+                                }
                             } else if(e.type == 'full-text')  {
-                                var highlight = angular.element('<span style="padding: 0; margin: 0; background-color: #FFFF00""></span>');
-                                highlight.className = 'highlight-general';
-                                highlight.append(document.createTextNode(textEntity));
+                                var highlight = createFulltextHighlight(textEntity, undefined);
                                 var highlightElement = $compile(highlight)(scope);
                                 container.append(highlightElement);
                             } else {
-                                var highlight = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none,  \'border-bottom\': \'3px solid ' + categoryColors[e.type] + '\'}"></span>');
-                                highlight.className = 'highlight-general';
-                                var addFilter = angular.element('<a ng-click="addEntityFilter(' + e.id +')" style="text-decoration: none"></a>');
-
-                                addFilter.append(document.createTextNode(textEntity));
-                                highlight.append(addFilter);
+                                var highlight = createNeHighlight(e.id, e.type, e.name);
                                 var highlightElement = $compile(highlight)(scope);
                                 container.append(highlightElement);
                             }
-
                             offset = e.end;
                         });
                         container.append(document.createTextNode(content.slice(offset, content.length)));
