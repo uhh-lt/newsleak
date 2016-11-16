@@ -89,16 +89,7 @@ define([
                     $scope.observer.subscribeItems($scope.observer_subscribe_metadata, "metadata");
                     $scope.observer.subscribeItems($scope.observer_subscribe_fulltext, "fulltext");
 
-                    /*
 
-                     //TODO: examples of fetching documents with and without facet
-                     playRoutes.controllers.DocumentController.getDocs('Clinton Snowden',[{'key':'Tags','data':['PTER','PREF']},{'key':'Classification','data':['CONFIDENTIAL']}]).get().then(function(x) {
-                     //    console.log(x.data);
-                     });
-                     playRoutes.controllers.DocumentController.getDocs('',[{'key':'dummy','data': []}]).get().then(function(x) {
-                     console.log(x.data);
-                     });
-                     */
                     /**
                      * load document list for current filtering
                      */
@@ -200,7 +191,6 @@ define([
                             };
                             $scope.observer.addItem(editItem);
 
-
                             playRoutes.controllers.EntityController.getEntitiesByDoc(doc.id).get().then(function (response) {
                                 // Provide document controller with document information
                                 $scope.sourceShared.tabs.push({
@@ -212,20 +202,6 @@ define([
                                     entities: response.data
                                 });
                             });
-
-                            /* playRoutes.controllers.DocumentController.getDocById(doc.id).get().then(function (response) {
-                                var content = response.data[2];
-                                playRoutes.controllers.EntityController.getEntitiesByDoc(doc.id).get().then(function (response) {
-                                    // Provide document controller with document information
-                                    $scope.sourceShared.tabs.push({
-                                        id: doc.id,
-                                        title: doc.id,
-                                        content: content,
-                                        meta: doc.metadata,
-                                        entities: response.data
-                                    });
-                                });
-                            }); */
                         }
                     };
 
