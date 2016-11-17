@@ -19,48 +19,30 @@ package controllers
 
 import javax.inject.Inject
 
-import model.faceted.search.{ FacetedSearch, Facets, NodeBucket }
-import model.{ Entity, EntityType }
+import models.{ Entity, Facets, NodeBucket }
+import models.services.{ AggregateService, EntityService }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller }
 import util.SessionUtils.currentDataset
 import util.TimeRangeParser
 
-class EntityController @Inject extends Controller {
+class EntityController @Inject() (entityService: EntityService, aggregateService: AggregateService) extends Controller {
 
   private val defaultFetchSize = 50
 
-  /**
-   * get the entities, frequency to given type
-   *
-   * @param entityType entity type
-   * @return
-   * an array of entity names and entity frequency
-   * combined
-   */
-  def getEntitiesByType(entityType: String) = Action { implicit request =>
-    val entities = Entity.fromDBName(currentDataset).getOrderedByFreqDesc(EntityType.withName(entityType), defaultFetchSize)
-      .map(x => Json.obj("id" -> x.id, "name" -> x.name, "freq" -> x.frequency))
-    Ok(Json.toJson(entities)).as("application/json")
-  }
-
-  /**
-   * Get all entity types
-   *
-   * @return list of entity types
-   */
   def getEntityTypes = Action { implicit request =>
-    Ok(Json.toJson(Entity.fromDBName(currentDataset).getTypes().map(_.toString))).as("application/json")
+    Ok(Json.toJson(entityService.getTypes()(currentDataset))).as("application/json")
   }
 
   def getBlacklistedEntities = Action { implicit request =>
-    val entities = Entity.fromDBName(currentDataset).getBlacklisted()
+    val entities = entityService.getBlacklisted()(currentDataset)
+      // TODO Entity json mapper
       .map(x => Json.obj("id" -> x.id, "name" -> x.name, "freq" -> x.frequency, "type" -> x.entityType))
     Ok(Json.toJson(entities)).as("application/json")
   }
 
   def getMergedEntities = Action { implicit request =>
-    val entities = Entity.fromDBName(currentDataset).getDuplicates().map {
+    val entities = entityService.getMerged()(currentDataset).map {
       case (focalNode, duplicates) =>
         val focalFormat = Json.obj("id" -> focalNode.id, "name" -> focalNode.name, "freq" -> focalNode.frequency, "type" -> focalNode.entityType)
         val duplicateFormat = duplicates.map(d => Json.obj("id" -> d.id, "name" -> d.name, "freq" -> d.frequency, "type" -> d.entityType))
@@ -72,23 +54,21 @@ class EntityController @Inject extends Controller {
 
   // TODO Json writer for model types ...
   def getEntitiesByDoc(docId: Long) = Action { implicit request =>
-    val entityToOccurrences = Entity.fromDBName(currentDataset).getEntityDocumentOffsets(docId).groupBy(_._1)
+    val entityToOccurrences = entityService.getEntityFragments(docId)(currentDataset).groupBy(_._1)
     val res = entityToOccurrences.flatMap {
       case (Entity(id, name, t, _), occ) =>
-        occ.map { case (_, start, end) => Json.obj("id" -> id, "name" -> name, "type" -> t, "start" -> start, "end" -> end) }
+        occ.map { case (_, fragment) => Json.obj("id" -> id, "name" -> name, "type" -> t, "start" -> fragment.start, "end" -> fragment.end) }
     }
     Ok(Json.toJson(res)).as("application/json")
   }
 
   def undoBlacklistingByIds(ids: List[Long]) = Action { implicit request =>
-    val entityAPI = Entity.fromDBName(currentDataset)
-    ids.foreach(entityAPI.undoDelete)
+    entityService.undoBlacklist(ids)(currentDataset)
     Ok("success").as("Text")
   }
 
   def undoMergeByIds(focalIds: List[Long]) = Action { implicit request =>
-    val entityAPI = Entity.fromDBName(currentDataset)
-    focalIds.foreach(entityAPI.undoMerge)
+    entityService.undoMerge(focalIds)(currentDataset)
     Ok("success").as("Text")
   }
 
@@ -118,23 +98,18 @@ class EntityController @Inject extends Controller {
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
     var newSize = size
 
-    val blacklistedIds = Entity.fromDBName(currentDataset).getBlacklisted().map(_.id)
+    val blacklistedIds = entityService.getBlacklisted()(currentDataset).map(_.id)
     // Filter list without blacklisted entities
     val validFilter = if (filter.nonEmpty) {
       newSize = filter.length
       filter.filterNot(blacklistedIds.contains(_))
     } else filter
 
-    val facetSearch = FacetedSearch.fromIndexName(currentDataset)
-    val entitiesRes: List[(Long, Long)] = if (entityType.isEmpty) {
-      facetSearch.aggregateEntities(facets, newSize, validFilter, blacklistedIds).buckets.collect { case NodeBucket(id, count) => (id, count) }
-    } else {
-      facetSearch.aggregateEntitiesByType(facets, EntityType.withName(entityType), newSize, validFilter, blacklistedIds).buckets.collect { case NodeBucket(id, count) => (id, count) }
-    }
+    val entitiesRes = aggregateService.aggregateEntitiesByType(facets, entityType, newSize, validFilter, blacklistedIds)(currentDataset).buckets.collect { case NodeBucket(id, count) => (id, count) }
 
     if (entitiesRes.nonEmpty) {
       val ids = entitiesRes.map(_._1).take(defaultFetchSize)
-      val sqlResult = Entity.fromDBName(currentDataset).getByIds(ids).map(e => e.id -> e)
+      val sqlResult = entityService.getByIds(ids)(currentDataset).map(e => e.id -> e)
       // TODO: ordering commented out while no zero buckets available
       if (filter.nonEmpty) {
         // if (false) {

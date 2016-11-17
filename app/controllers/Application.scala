@@ -24,8 +24,8 @@ import play.api.Logger
 import play.api.cache.CacheApi
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller }
+import util.NewsleakConfigReader
 import util.SessionUtils.{ currentDataset, datasetSessionKey }
-import utils.NewsleakConfigReader
 
 import scala.util.Random
 
@@ -45,9 +45,6 @@ class Application @Inject() (cache: CacheApi) extends Controller {
     // Show main page
     Ok(views.html.login()).withSession("uid" -> uid)
   }
-
-  // TODO: comment for temporary alternate index-page
-  // def index_alt = Action { implicit request => Ok(views.html.index_alt()) }
 
   /**
    * Serves the application frontend to the client.
@@ -114,7 +111,6 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         // TODO: You need to add your routes here
         controllers.routes.javascript.Application.getDatasets,
         controllers.routes.javascript.Application.changeDataset,
-        controllers.routes.javascript.DocumentController.getDocById,
         controllers.routes.javascript.DocumentController.getKeywordsById,
         controllers.routes.javascript.DocumentController.getDocs,
         controllers.routes.javascript.DocumentController.addTag,
@@ -122,7 +118,6 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         controllers.routes.javascript.DocumentController.getTagsByDocId,
         controllers.routes.javascript.DocumentController.getTagLabels,
         controllers.routes.javascript.DocumentController.getDocsByLabel,
-        controllers.routes.javascript.NetworkController.getIdsByName,
         controllers.routes.javascript.NetworkController.blacklistEntitiesById,
         controllers.routes.javascript.NetworkController.mergeEntitiesById,
         controllers.routes.javascript.NetworkController.changeEntityNameById,
@@ -133,7 +128,6 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         controllers.routes.javascript.NetworkController.getNeighbors,
         controllers.routes.javascript.EntityController.getEntities,
         controllers.routes.javascript.EntityController.getEntityTypes,
-        controllers.routes.javascript.EntityController.getEntitiesByType,
         controllers.routes.javascript.EntityController.getBlacklistedEntities,
         controllers.routes.javascript.EntityController.getMergedEntities,
         controllers.routes.javascript.EntityController.undoBlacklistingByIds,
@@ -142,7 +136,6 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         controllers.routes.javascript.NetworkController.changeEntityTypeById,
         controllers.routes.javascript.MetadataController.getMetadata,
         controllers.routes.javascript.MetadataController.getSpecificMetadata,
-        controllers.routes.javascript.MetadataController.getKeywords,
         controllers.routes.javascript.MetadataController.getMetadataTypes,
         controllers.routes.javascript.HistogramController.getHistogram,
         controllers.routes.javascript.HistogramController.getXHistogram,
