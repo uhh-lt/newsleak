@@ -114,7 +114,6 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         // TODO: You need to add your routes here
         controllers.routes.javascript.Application.getDatasets,
         controllers.routes.javascript.Application.changeDataset,
-        controllers.routes.javascript.DocumentController.getDocById,
         controllers.routes.javascript.DocumentController.getKeywordsById,
         controllers.routes.javascript.DocumentController.getDocs,
         controllers.routes.javascript.DocumentController.addTag,

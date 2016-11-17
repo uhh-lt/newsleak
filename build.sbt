@@ -10,6 +10,7 @@ libraryDependencies ++= Seq(
   jdbc,
   cache,
   "org.postgresql" % "postgresql" % "9.4-1206-jdbc41",
+  "org.scalikejdbc" %% "scalikejdbc-play-initializer" % "2.5.1",
   "commons-io" % "commons-io" % "2.4",
   "de.tudarmstadt.lt" %% "common" %  "0.0.1-SNAPSHOT" exclude("commons-codec","commons-codec")
 )

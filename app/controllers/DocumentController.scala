@@ -19,9 +19,9 @@ package controllers
 
 import javax.inject.Inject
 
-import model.faceted.search.{ FacetedSearch, Facets }
+import model.faceted.search.Facets
 import model.{ Document, KeyTerm, Tag }
-import org.joda.time.LocalDateTime
+import models.elasticsearch.DocumentService
 import play.api.cache.CacheApi
 import play.api.libs.json.{ JsObject, JsValue, Json }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
@@ -30,31 +30,20 @@ import util.TimeRangeParser
 
 import scala.collection.mutable.ListBuffer
 
-// scalastyle:off
-import util.TupleWriters._
-// scalastyle:on
-
 case class IteratorSession(hits: Long, hitIterator: Iterator[Document], hash: Long)
 
 /*
     This class provides operations pertaining documents.
 */
-class DocumentController @Inject() (cache: CacheApi) extends Controller {
+class DocumentController @Inject() (cache: CacheApi, documentService: DocumentService) extends Controller {
 
   private val defaultPageSize = 50
 
-  /**
-   * returns the document with the id "id", if there is any
-   */
-  def getDocById(id: Int) = Action { implicit request =>
-    val docSearch = Document.fromDBName(currentDataset)
-    Ok(Json.toJson(docSearch.getById(id).map(doc => (doc.id, doc.created.toString(), doc.content)))).as("application/json")
-  }
-
   def getDocsByLabel(label: String) = Action { implicit request =>
     val docIds = Tag.fromDBName(currentDataset).getByLabel(label).map { case Tag(_, docId, _) => docId }
-    val documentAPI = Document.fromDBName(currentDataset)
-    Ok(createJsonResponse(docIds.flatMap(documentAPI.getById), docIds.length))
+    // val documentAPI = Document.fromDBName(currentDataset)
+    Ok(createJsonResponse(docIds.flatMap(documentService.getDocumentById(_)(currentDataset)), docIds.length))
+    // Ok(createJsonResponse(docIds.flatMap(documentService.getById), docIds.length))
   }
 
   // TODO: Extend ES API and remove KeyTerm API
@@ -108,12 +97,11 @@ class DocumentController @Inject() (cache: CacheApi) extends Controller {
     val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
     var pageCounter = 0
-    val facetSearch = FacetedSearch.fromIndexName(currentDataset)
 
     val cachedIterator = cache.get[IteratorSession](uid)
     // Initial page load or filter applied
     val iteratorSession = if (cachedIterator.isEmpty || cachedIterator.forall(_.hash != facets.hashCode())) {
-      val (numDocs, it) = facetSearch.searchDocuments(facets, defaultPageSize)
+      val (numDocs, it) = documentService.searchDocuments(facets, defaultPageSize)(currentDataset)
       val session = IteratorSession(numDocs, it, facets.hashCode())
       cache.set(uid, session)
       session
