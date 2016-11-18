@@ -21,7 +21,7 @@ import javax.inject.Inject
 
 import model.faceted.search.Facets
 import model.{ Document, KeyTerm, Tag }
-import models.elasticsearch.DocumentService
+import models.DocumentService
 import play.api.cache.CacheApi
 import play.api.libs.json.{ JsObject, JsValue, Json }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }

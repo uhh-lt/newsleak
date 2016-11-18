@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package models.elasticsearch
+package models
 
 import java.net.InetAddress
 import javax.inject._

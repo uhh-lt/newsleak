@@ -21,6 +21,7 @@ import javax.inject.Inject
 
 import model.Entity
 import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket, NodeBucket }
+import models.EntityService
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
 import util.SessionUtils.currentDataset
@@ -35,12 +36,7 @@ import util.TupleWriters._
  * This class encapsulates all functionality for the
  * network graph.
  */
-class NetworkController @Inject extends Controller {
-
-  // TODO: These methods should actually part of the entity controller
-  def getIdsByName(name: String) = Action { implicit request =>
-    Ok(Json.obj("ids" -> Entity.fromDBName(currentDataset).getByName(name).map(_.id))).as("application/json")
-  }
+class NetworkController @Inject() (entityService: EntityService) extends Controller {
 
   def getNeighborCounts(
     fullText: List[String],
@@ -167,7 +163,7 @@ class NetworkController @Inject extends Controller {
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
 
     // TODO: we don't need to add the blacklist as exclude when we use getById.contains
-    val blacklistedIds = Entity.fromDBName(currentDataset).getBlacklisted().map(_.id)
+    val blacklistedIds = entityService.getBlacklisted()(currentDataset).map(_.id)
     val agg = FacetedSearch
       .fromIndexName(currentDataset)
       .aggregateEntities(facets.withEntities(List(focalNode)), 200, List(), blacklistedIds ++ currentNetwork, 1)
@@ -179,7 +175,7 @@ class NetworkController @Inject extends Controller {
 
   def nodesToJson(nodes: List[NodeBucket])(implicit request: Request[AnyContent]): List[JsObject] = {
     val ids = nodes.map(_.id)
-    val nodeIdToEntity = Entity.fromDBName(currentDataset).getByIds(ids).map(e => e.id -> e).toMap
+    val nodeIdToEntity = entityService.getByIds(ids)(currentDataset).map(e => e.id -> e).toMap
 
     nodes.collect {
       // Only add node if it is not blacklisted
@@ -196,9 +192,7 @@ class NetworkController @Inject extends Controller {
   }
 
   def blacklistEntitiesById(ids: List[Long]) = Action { implicit request =>
-    val entityAPI = Entity.fromDBName(currentDataset)
-    val response = ids.map(entityAPI.delete).forall(identity)
-    Ok(Json.obj("result" -> response)).as("application/json")
+    Ok(Json.obj("result" -> entityService.blacklist(ids)(currentDataset))).as("application/json")
   }
 
   /**
@@ -209,8 +203,8 @@ class NetworkController @Inject extends Controller {
    *                the focal entity
    * @return if the merging succeeded
    */
-  def mergeEntitiesById(focalId: Int, duplicates: List[Long]) = Action { implicit request =>
-    Entity.fromDBName(currentDataset).merge(focalId, duplicates)
+  def mergeEntitiesById(focalId: Long, duplicates: List[Long]) = Action { implicit request =>
+    entityService.merge(focalId, duplicates)(currentDataset)
     Ok("success").as("Text")
   }
 
@@ -222,7 +216,7 @@ class NetworkController @Inject extends Controller {
    * @return if the change succeeded
    */
   def changeEntityNameById(id: Long, newName: String) = Action { implicit request =>
-    Ok(Json.obj("result" -> Entity.fromDBName(currentDataset).changeName(id, newName))).as("application/json")
+    Ok(Json.obj("result" -> entityService.changeName(id, newName)(currentDataset))).as("application/json")
   }
 
   /**
@@ -233,6 +227,6 @@ class NetworkController @Inject extends Controller {
    * @return if the change succeeded
    */
   def changeEntityTypeById(id: Long, newType: String) = Action { implicit request =>
-    Ok(Json.obj("result" -> Entity.fromDBName(currentDataset).changeType(id, withName(newType)))).as("application/json")
+    Ok(Json.obj("result" -> entityService.changeType(id, newType)(currentDataset))).as("application/json")
   }
 }

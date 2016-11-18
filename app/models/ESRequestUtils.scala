@@ -15,12 +15,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package models.elasticsearch
+package models
 
 // scalastyle:off
+import model.EntityType
 import model.faceted.search.Facets
-import org.elasticsearch.action.get.GetResponse
-import org.elasticsearch.action.search.SearchRequestBuilder
+import org.elasticsearch.action.search.{ SearchRequestBuilder, SearchResponse }
 import org.elasticsearch.index.query.QueryStringQueryBuilder._
 import org.elasticsearch.index.query._
 import org.joda.time.LocalDateTime
@@ -30,16 +30,26 @@ class ESRequestUtils {
 
   val docContentField = "Content"
   val docDateField = "Created"
-  private val docXDateField = "SimpleTimeExpresion"
+  val docXDateField = "SimpleTimeExpresion"
 
-  private val entityIdsField = "Entities" -> "Entities.EntId"
+  val entityIdsField = "Entities" -> "Entities.EntId"
+
+  // TODO: in course of making other entity types available, we need to adapt these hardcoded labels
+  val entityTypeToField = Map(
+    EntityType.Person -> "Entitiesper.EntId",
+    EntityType.Organization -> "Entitiesorg.EntId",
+    EntityType.Location -> "Entitiesloc.EntId",
+    EntityType.Misc -> "Entitiesmisc.EntId"
+  )
 
   private val yearMonthDayPattern = "yyyy-MM-dd"
   private val yearMonthPattern = "yyyy-MM"
   private val yearPattern = "yyyy"
   val yearMonthDayFormat = DateTimeFormat.forPattern(yearMonthDayPattern)
 
-  def createSearchRequest(facets: Facets, documentSize: Int = 0, index: String, client: SearchClientService): SearchRequestBuilder = {
+  def executeRequest(request: SearchRequestBuilder, cache: Boolean = true): SearchResponse = request.setRequestCache(cache).execute().actionGet()
+
+  def createSearchRequest(facets: Facets, documentSize: Int, index: String, client: SearchClientService): SearchRequestBuilder = {
     val requestBuilder = client.client.prepareSearch(index)
       .setQuery(createQuery(facets))
       .setSize(documentSize)

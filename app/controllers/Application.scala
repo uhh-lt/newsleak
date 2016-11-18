@@ -46,9 +46,6 @@ class Application @Inject() (cache: CacheApi) extends Controller {
     Ok(views.html.login()).withSession("uid" -> uid)
   }
 
-  // TODO: comment for temporary alternate index-page
-  // def index_alt = Action { implicit request => Ok(views.html.index_alt()) }
-
   /**
    * Serves the application frontend to the client.
    */
@@ -121,7 +118,6 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         controllers.routes.javascript.DocumentController.getTagsByDocId,
         controllers.routes.javascript.DocumentController.getTagLabels,
         controllers.routes.javascript.DocumentController.getDocsByLabel,
-        controllers.routes.javascript.NetworkController.getIdsByName,
         controllers.routes.javascript.NetworkController.blacklistEntitiesById,
         controllers.routes.javascript.NetworkController.mergeEntitiesById,
         controllers.routes.javascript.NetworkController.changeEntityNameById,
@@ -132,7 +128,6 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         controllers.routes.javascript.NetworkController.getNeighbors,
         controllers.routes.javascript.EntityController.getEntities,
         controllers.routes.javascript.EntityController.getEntityTypes,
-        controllers.routes.javascript.EntityController.getEntitiesByType,
         controllers.routes.javascript.EntityController.getBlacklistedEntities,
         controllers.routes.javascript.EntityController.getMergedEntities,
         controllers.routes.javascript.EntityController.undoBlacklistingByIds,

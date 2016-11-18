@@ -15,14 +15,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package models.elasticsearch
+package models
 
 // scalastyle:off
 import com.google.inject.{ ImplementedBy, Inject }
 import model.{ Document, KeyTerm, Tag }
 import model.faceted.search.{ Facets, SearchHitIterator }
 import org.joda.time.LocalDateTime
-import util.SessionUtils._
 import utils.RichString.richString
 
 import scala.collection.JavaConversions._
