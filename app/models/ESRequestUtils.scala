@@ -30,7 +30,7 @@ class ESRequestUtils {
 
   val docContentField = "Content"
   val docDateField = "Created"
-  val docXDateField = "SimpleTimeExpresion"
+  val docTimeExpressionField = "SimpleTimeExpresion"
 
   val entityIdsField = "Entities" -> "Entities.EntId"
   val keywordsField = "Keywords" -> "Keywords.Keyword.raw"
@@ -43,10 +43,13 @@ class ESRequestUtils {
     EntityType.Misc -> "Entitiesmisc.EntId"
   )
 
-  private val yearMonthDayPattern = "yyyy-MM-dd"
-  private val yearMonthPattern = "yyyy-MM"
-  private val yearPattern = "yyyy"
+  val yearMonthDayPattern = "yyyy-MM-dd"
+  val yearMonthPattern = "yyyy-MM"
+  val yearPattern = "yyyy"
+
   val yearMonthDayFormat = DateTimeFormat.forPattern(yearMonthDayPattern)
+  val yearMonthFormat = DateTimeFormat.forPattern(yearMonthPattern)
+  val yearFormat = DateTimeFormat.forPattern(yearPattern)
 
   def executeRequest(request: SearchRequestBuilder, cache: Boolean = true): SearchResponse = request.setRequestCache(cache).execute().actionGet()
 
@@ -114,7 +117,7 @@ class ESRequestUtils {
   }
 
   private def addDateXFilter(facets: Facets): Option[BoolQueryBuilder] = {
-    addGenericDateFilter(docXDateField, facets.fromXDate, facets.toXDate, s"$yearMonthDayPattern || $yearMonthPattern || $yearPattern")
+    addGenericDateFilter(docTimeExpressionField, facets.fromXDate, facets.toXDate, s"$yearMonthDayPattern || $yearMonthPattern || $yearPattern")
   }
 
   private def addGenericDateFilter(field: String, from: Option[LocalDateTime], to: Option[LocalDateTime], dateFormat: String): Option[BoolQueryBuilder] = {

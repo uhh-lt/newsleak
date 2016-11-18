@@ -19,14 +19,16 @@ package controllers
 
 import javax.inject.Inject
 
-import model.faceted.search.{ FacetedSearch, Facets, LoD, MetaDataBucket }
+import model.faceted.search.{ Facets, LoD, MetaDataBucket }
+import models.TimelineService
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller, Results }
 import util.SessionUtils.currentDataset
 import util.TimeRangeParser
-import util.SessionUtils.currentDataset
 
-class HistogramController @Inject extends Controller {
+// TODO: rename Histogram to Timeline and refactor code duplication
+// TODO: rename histogramX to TimeExpression ...
+class HistogramController @Inject() (timelineService: TimelineService) extends Controller {
 
   /**
    * Gets document counts for entities corresponding to their id's matching the query
@@ -48,7 +50,7 @@ class HistogramController @Inject extends Controller {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
-    val res = FacetedSearch.fromIndexName(currentDataset).histogram(facets, LoD.withName(lod)).buckets.map {
+    val res = timelineService.createTimeline(facets, LoD.withName(lod))(currentDataset).buckets.map {
       case MetaDataBucket(key, count) => Json.obj("range" -> key, "count" -> count)
       case _ => Json.obj("" -> 0)
     }
@@ -75,7 +77,7 @@ class HistogramController @Inject extends Controller {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
-    val res = FacetedSearch.fromIndexName(currentDataset).timeXHistogram(facets, LoD.withName(lod)).buckets.map {
+    val res = timelineService.createTimeExpressionTimeline(facets, LoD.withName(lod))(currentDataset).buckets.map {
       case MetaDataBucket(key, count) => Json.obj("range" -> key, "count" -> count)
       case _ => Json.obj("" -> 0)
     }
