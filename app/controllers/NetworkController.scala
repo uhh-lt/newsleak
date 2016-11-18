@@ -19,9 +19,8 @@ package controllers
 
 import javax.inject.Inject
 
-import model.Entity
-import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket, NodeBucket }
-import models.EntityService
+import model.faceted.search.{ Facets, MetaDataBucket, NodeBucket }
+import models.{ EntityService, NetworkService }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
 import util.SessionUtils.currentDataset
@@ -36,7 +35,7 @@ import util.TupleWriters._
  * This class encapsulates all functionality for the
  * network graph.
  */
-class NetworkController @Inject() (entityService: EntityService) extends Controller {
+class NetworkController @Inject() (entityService: EntityService, networkService: NetworkService) extends Controller {
 
   def getNeighborCounts(
     fullText: List[String],
@@ -51,9 +50,7 @@ class NetworkController @Inject() (entityService: EntityService) extends Control
     val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
 
-    val agg = FacetedSearch
-      .fromIndexName(currentDataset)
-      .getNeighborCounts(facets, nodeId)
+    val agg = networkService.getNeighborCountsPerType(facets, nodeId)(currentDataset)
 
     val counts = agg.buckets.collect {
       case MetaDataBucket(t, c) =>
@@ -77,10 +74,7 @@ class NetworkController @Inject() (entityService: EntityService) extends Control
     val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
 
-    val agg = FacetedSearch
-      .fromIndexName(currentDataset)
-      // Only consider documents where the two entities occur
-      .aggregateKeywords(facets.withEntities(List(first, second)), numberOfTerms, Nil)
+    val agg = networkService.getEdgeKeywords(facets, first, second, numberOfTerms)(currentDataset)
 
     val terms = agg.buckets.collect {
       case MetaDataBucket(term, score) =>
@@ -100,14 +94,10 @@ class NetworkController @Inject() (entityService: EntityService) extends Control
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
-    val sizes = nodeFraction.map { case (t, s) => withName(t) -> s.toInt }
+    val sizes = nodeFraction.mapValues(_.toInt)
 
-    val blacklistedIds = Entity.fromDBName(currentDataset).getBlacklisted().map(_.id)
-    val (buckets, relations) = FacetedSearch
-      .fromIndexName(currentDataset)
-      .induceSubgraph(facets, sizes, blacklistedIds)
-    // TODO Let induceSubgraph return NodeBuckets
-    val nodes = buckets.collect { case a @ NodeBucket(_, _) => a }
+    val blacklistedIds = entityService.getBlacklisted()(currentDataset).map(_.id)
+    val (nodes, relations) = networkService.createNetwork(facets, sizes, blacklistedIds)(currentDataset)
 
     if (nodes.isEmpty) {
       Ok(Json.obj("entities" -> List[JsObject](), "relations" -> List[JsObject]())).as("application/json")
@@ -139,9 +129,7 @@ class NetworkController @Inject() (entityService: EntityService) extends Control
     val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
 
-    val (buckets, relations) = FacetedSearch
-      .fromIndexName(currentDataset)
-      .addNodes(facets, currentNetwork, nodes)
+    val (buckets, relations) = networkService.induceNetwork(facets, currentNetwork, nodes)(currentDataset)
 
     Ok(Json.obj("entities" -> nodesToJson(buckets), "relations" -> relations)).as("application/json")
   }
@@ -164,11 +152,8 @@ class NetworkController @Inject() (entityService: EntityService) extends Control
 
     // TODO: we don't need to add the blacklist as exclude when we use getById.contains
     val blacklistedIds = entityService.getBlacklisted()(currentDataset).map(_.id)
-    val agg = FacetedSearch
-      .fromIndexName(currentDataset)
-      .aggregateEntities(facets.withEntities(List(focalNode)), 200, List(), blacklistedIds ++ currentNetwork, 1)
+    val nodes = networkService.getNeighbors(facets, focalNode, 200, blacklistedIds ++ currentNetwork)(currentDataset)
 
-    val nodes = agg.buckets.collect { case a @ NodeBucket(_, _) => a }
     val neighbors = nodesToJson(nodes)
     Ok(Json.toJson(neighbors)).as("application/json")
   }

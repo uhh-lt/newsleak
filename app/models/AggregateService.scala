@@ -18,25 +18,41 @@
 package models
 
 import com.google.inject.{ ImplementedBy, Inject }
+import model.EntityType.withName
 import model.faceted.search.{ Aggregation, Facets, MetaDataBucket, NodeBucket }
+import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.bucket.terms.Terms
-import model.EntityType.withName
 
 import scala.collection.JavaConversions._
 
 @ImplementedBy(classOf[ESAggregateService])
 trait AggregateService {
 
+  def aggregateEntities(facets: Facets, size: Int, include: List[Long], exclude: List[Long])(index: String): Aggregation
   def aggregateEntitiesByType(facets: Facets, etype: String, size: Int, include: List[Long], exclude: List[Long])(index: String): Aggregation
+
+  def aggregateKeywords(facets: Facets, size: Int, include: List[String])(index: String): Aggregation
 }
 
 class ESAggregateService @Inject() (clientService: SearchClientService, utils: ESRequestUtils) extends AggregateService {
 
+  def aggregateEntities(facets: Facets, size: Int, include: List[Long], exclude: List[Long])(index: String): Aggregation = {
+    // TODO Improve
+    val field = aggregationToField(index)(utils.entityIdsField._1)
+    termAggregate(facets, Map(utils.entityIdsField._1 -> (field, size)), include.map(_.toString), exclude.map(_.toString), 1, index).head
+  }
+
   override def aggregateEntitiesByType(facets: Facets, etype: String, size: Int, include: List[Long], exclude: List[Long])(index: String): Aggregation = {
     val agg = Map(utils.entityIdsField._1 -> (utils.entityTypeToField(withName(etype)), size))
     termAggregate(facets, agg, include.map(_.toString), exclude.map(_.toString), 1, index).head
+  }
+
+  override def aggregateKeywords(facets: Facets, size: Int, include: List[String])(index: String): Aggregation = {
+    // TODO Duplicate code
+    val field = aggregationToField(index)(utils.keywordsField._1)
+    termAggregate(facets, Map(utils.keywordsField._1 -> (field, size)), include, Nil, 1, index).head
   }
 
   private def termAggregate(
@@ -97,5 +113,20 @@ class ESAggregateService @Inject() (clientService: SearchClientService, utils: E
         Aggregation(k, resBuckets)
     }
     res.toList
+  }
+
+  private val aggregationToField: (String) => Map[String, String] = {
+    (index: String) => aggregationFields(index).map(k => k -> s"$k.raw").toMap ++ Map(utils.keywordsField, utils.entityIdsField)
+  }
+
+  private def aggregationFields(index: String): List[String] = {
+    val res = clientService.client.admin().indices().getMappings(new GetMappingsRequest().indices(index)).get()
+    val mapping = res.mappings().get(index)
+    val terms = mapping.flatMap { m =>
+      val source = m.value.sourceAsMap()
+      val properties = source.get("properties").asInstanceOf[java.util.LinkedHashMap[String, java.util.LinkedHashMap[String, String]]]
+      properties.keySet()
+    }
+    terms.toList
   }
 }

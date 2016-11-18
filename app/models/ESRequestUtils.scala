@@ -33,6 +33,7 @@ class ESRequestUtils {
   val docXDateField = "SimpleTimeExpresion"
 
   val entityIdsField = "Entities" -> "Entities.EntId"
+  val keywordsField = "Keywords" -> "Keywords.Keyword.raw"
 
   // TODO: in course of making other entity types available, we need to adapt these hardcoded labels
   val entityTypeToField = Map(
