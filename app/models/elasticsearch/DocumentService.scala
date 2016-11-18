@@ -19,25 +19,75 @@ package models.elasticsearch
 
 // scalastyle:off
 import com.google.inject.{ ImplementedBy, Inject }
-import model.Document
+import model.{ Document, KeyTerm, Tag }
 import model.faceted.search.{ Facets, SearchHitIterator }
 import org.joda.time.LocalDateTime
-
+import util.SessionUtils._
 import utils.RichString.richString
 
 import scala.collection.JavaConversions._
 
 @ImplementedBy(classOf[FinalDocumentService])
 trait DocumentService {
-  def getDocumentById(docId: Long)(index: String): Option[Document]
+
+  def getById(docId: Long)(index: String): Option[Document]
+  def getByTagLabel(label: String)(index: String): List[Document]
   def searchDocuments(facets: Facets, pageSize: Int)(index: String): (Long, Iterator[Document])
+
+  // Document tagging
+  def addTag(docId: Long, label: String)(index: String): Tag
+  def removeTag(tagId: Int)(index: String): Boolean
+
+  def getTags(docId: Long)(index: String): List[Tag]
+  def getDocumentLabels()(index: String): List[String]
+
+  // Keywords
+  def getKeywords(docId: Long, size: Option[Int] = None)(index: String): List[KeyTerm]
+
+  // Document metadata
+  // TODO Add metadata abstraction and change return
+  def getMetadata(docIds: List[Long], fields: List[String])(index: String): List[(Long, String, String)]
+  def getMetadataKeys()(index: String): List[String]
 }
 
 // Retrieving large documents via ES is slow. We therefore use the database to fetch documents.
 trait DBDocumentService extends DocumentService {
-  override def getDocumentById(docId: Long)(index: String): Option[Document] = {
-    println("DB")
-    None
+
+  override def getById(docId: Long)(index: String): Option[Document] = {
+    Document.fromDBName(index).getById(docId)
+  }
+
+  override def getByTagLabel(label: String)(index: String): List[Document] = {
+    val docIds = Tag.fromDBName(index).getByLabel(label).map { case Tag(_, docId, _) => docId }
+    docIds.flatMap(getById(_)(index))
+  }
+
+  override def addTag(docId: Long, label: String)(index: String): Tag = {
+    Tag.fromDBName(index).add(docId, label)
+  }
+
+  override def removeTag(tagId: Int)(index: String): Boolean = {
+    Tag.fromDBName(index).delete(tagId)
+  }
+
+  override def getTags(docId: Long)(index: String): List[Tag] = {
+    Tag.fromDBName(index).getByDocumentId(docId)
+  }
+
+  override def getDocumentLabels()(index: String): List[String] = {
+    Tag.fromDBName(index).getDistinctLabels()
+  }
+
+  override def getKeywords(docId: Long, size: Option[Int])(index: String): List[KeyTerm] = {
+    KeyTerm.fromDBName(index).getDocumentKeyTerms(docId, size)
+  }
+
+  override def getMetadata(docIds: List[Long], fields: List[String])(index: String): List[(Long, String, String)] = {
+    Document.fromDBName(index).getMetadataForDocuments(docIds, fields)
+  }
+
+  override def getMetadataKeys()(index: String): List[String] = {
+    Document.fromDBName(index).getMetadataKeysAndTypes().map(_._1)
   }
 }
 

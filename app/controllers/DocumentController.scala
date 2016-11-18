@@ -40,15 +40,13 @@ class DocumentController @Inject() (cache: CacheApi, documentService: DocumentSe
   private val defaultPageSize = 50
 
   def getDocsByLabel(label: String) = Action { implicit request =>
-    val docIds = Tag.fromDBName(currentDataset).getByLabel(label).map { case Tag(_, docId, _) => docId }
-    // val documentAPI = Document.fromDBName(currentDataset)
-    Ok(createJsonResponse(docIds.flatMap(documentService.getDocumentById(_)(currentDataset)), docIds.length))
-    // Ok(createJsonResponse(docIds.flatMap(documentService.getById), docIds.length))
+    val docs = documentService.getByTagLabel(label)(currentDataset)
+    Ok(createJsonResponse(docs, docs.length))
   }
 
   // TODO: Extend ES API and remove KeyTerm API
   def getKeywordsById(id: Int, size: Int) = Action { implicit request =>
-    val terms = KeyTerm.fromDBName(currentDataset).getDocumentKeyTerms(id, Some(size)).map {
+    val terms = documentService.getKeywords(id, Some(size))(currentDataset).map {
       case KeyTerm(term, score) =>
         Json.obj("term" -> term, "score" -> score)
     }
@@ -56,20 +54,20 @@ class DocumentController @Inject() (cache: CacheApi, documentService: DocumentSe
   }
 
   def getTagLabels() = Action { implicit request =>
-    Ok(Json.obj("labels" -> Json.toJson(Tag.fromDBName(currentDataset).getDistinctLabels()))).as("application/json")
+    Ok(Json.obj("labels" -> Json.toJson(documentService.getDocumentLabels()(currentDataset)))).as("application/json")
   }
 
   def addTag(id: Int, label: String) = Action { implicit request =>
-    Ok(Json.obj("id" -> Tag.fromDBName(currentDataset).add(id, label).id)).as("application/json")
+    Ok(Json.obj("id" -> documentService.addTag(id, label)(currentDataset).id)).as("application/json")
   }
 
   def removeTagById(tagId: Int) = Action { implicit request =>
-    Tag.fromDBName(currentDataset).delete(tagId)
+    documentService.removeTag(tagId)(currentDataset)
     Ok("success").as("Text")
   }
 
   def getTagsByDocId(id: Int) = Action { implicit request =>
-    val tags = Tag.fromDBName(currentDataset).getByDocumentId(id).map {
+    val tags = documentService.getTags(id)(currentDataset).map {
       case Tag(tagId, _, label) =>
         Json.obj("id" -> tagId, "label" -> label)
     }
@@ -126,11 +124,10 @@ class DocumentController @Inject() (cache: CacheApi, documentService: DocumentSe
 
   def createJsonResponse(docList: List[Document], hits: Long)(implicit request: Request[AnyContent]): JsValue = {
     if (docList.nonEmpty) {
-      val docSearch = Document.fromDBName(currentDataset)
 
-      val keys = docSearch.getMetadataKeysAndTypes().map(_._1)
-      val docToMetadata = docSearch
-        .getMetadataForDocuments(docList.map(_.id), keys)
+      val keys = documentService.getMetadataKeys()(currentDataset)
+      val docToMetadata = documentService
+        .getMetadata(docList.map(_.id), keys)(currentDataset)
         .groupBy(_._1)
         .map { case (id, l) => id -> l.collect { case (_, k, v) if !v.isEmpty => Json.obj("key" -> k, "val" -> v) } }
 
