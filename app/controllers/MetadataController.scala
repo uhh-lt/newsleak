@@ -19,10 +19,10 @@ package controllers
 
 import javax.inject.Inject
 
-import model.faceted.search.{Facets, MetaDataBucket}
-import models.{AggregateService, DocumentService}
+import model.faceted.search.{ Facets, MetaDataBucket }
+import models.{ AggregateService, DocumentService }
 import play.api.libs.json.Json
-import play.api.mvc.{Action, Controller, Results}
+import play.api.mvc.{ Action, Controller, Results }
 import util.SessionUtils.currentDataset
 import util.TimeRangeParser
 import utils.NewsleakConfigReader

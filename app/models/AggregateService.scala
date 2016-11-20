@@ -31,30 +31,28 @@ import scala.collection.JavaConversions._
 trait AggregateService {
 
   def aggregate(facets: Facets, aggregateKey: String, size: Int, include: List[String], exclude: List[String])(index: String): Aggregation
-  def aggregateAll(facets: Facets, size: Int, excludeKeys: List[String])(index: String): List[Aggregation]
+  def aggregateAll(facets: Facets, size: Int, keyExclusion: List[String])(index: String): List[Aggregation]
 
   def aggregateEntities(facets: Facets, size: Int, include: List[Long], exclude: List[Long])(index: String): Aggregation
   def aggregateEntitiesByType(facets: Facets, etype: String, size: Int, include: List[Long], exclude: List[Long])(index: String): Aggregation
 
-  def aggregateKeywords(facets: Facets, size: Int, include: List[String])(index: String): Aggregation
+  def aggregateKeywords(facets: Facets, size: Int, include: List[String], exclude: List[String])(index: String): Aggregation
 }
 
 class ESAggregateService @Inject() (clientService: SearchClientService, utils: ESRequestUtils) extends AggregateService {
 
   def aggregate(facets: Facets, aggregateKey: String, size: Int, include: List[String], exclude: List[String])(index: String): Aggregation = {
     val field = aggregationToField(index)(aggregateKey)
-    termAggregate(facets, Map(aggregateKey -> (field, size)), include, Nil, 1, index).head
+    termAggregate(facets, Map(aggregateKey -> (field, size)), include, exclude, 1, index).head
   }
 
-  def aggregateAll(facets: Facets, size: Int, excludeKeys: List[String])(index: String): List[Aggregation] = {
-    val validAggregations = aggregationToField(index).filterKeys(!excludeKeys.contains(_))
+  def aggregateAll(facets: Facets, size: Int, keyExclusion: List[String])(index: String): List[Aggregation] = {
+    val validAggregations = aggregationToField(index).filterKeys(!keyExclusion.contains(_))
     termAggregate(facets, validAggregations.map { case (k, v) => (k, (v, size)) }, Nil, Nil, 1, index)
   }
 
   def aggregateEntities(facets: Facets, size: Int, include: List[Long], exclude: List[Long])(index: String): Aggregation = {
-    // TODO Improve
-    val field = aggregationToField(index)(utils.entityIdsField._1)
-    termAggregate(facets, Map(utils.entityIdsField._1 -> (field, size)), include.map(_.toString), exclude.map(_.toString), 1, index).head
+    aggregate(facets, utils.entityIdsField._1, size, include.map(_.toString), exclude.map(_.toString))(index)
   }
 
   override def aggregateEntitiesByType(facets: Facets, etype: String, size: Int, include: List[Long], exclude: List[Long])(index: String): Aggregation = {
@@ -62,10 +60,8 @@ class ESAggregateService @Inject() (clientService: SearchClientService, utils: E
     termAggregate(facets, agg, include.map(_.toString), exclude.map(_.toString), 1, index).head
   }
 
-  override def aggregateKeywords(facets: Facets, size: Int, include: List[String])(index: String): Aggregation = {
-    // TODO Duplicate code
-    val field = aggregationToField(index)(utils.keywordsField._1)
-    termAggregate(facets, Map(utils.keywordsField._1 -> (field, size)), include, Nil, 1, index).head
+  override def aggregateKeywords(facets: Facets, size: Int, include: List[String], exclude: List[String])(index: String): Aggregation = {
+    aggregate(facets, utils.keywordsField._1, size, include, exclude)(index)
   }
 
   private def termAggregate(

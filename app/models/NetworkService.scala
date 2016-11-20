@@ -33,7 +33,7 @@ trait NetworkService {
   def induceNetwork(facets: Facets, currentNetwork: List[Long], nodes: List[Long])(index: String): (List[NodeBucket], List[(Long, Long, Long)])
 
   // TODO maybe change return type since it's not aggregation service here i.e. Bucket and aggregation
-  // TODO: Include exclude inconsitent. Maybe create second case class for parameters?
+  // TODO: Include exclude inconsistent. Maybe create second case class for parameters?
   def getNeighbors(facets: Facets, entityId: Long, size: Int, exclude: List[Long])(index: String): List[NodeBucket]
   def getNeighborCountsPerType(facets: Facets, entityId: Long)(index: String): Aggregation
   def getEdgeKeywords(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): Aggregation
@@ -126,6 +126,6 @@ class ESNetworkService @Inject() (clientService: SearchClientService, aggregateS
 
   override def getEdgeKeywords(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): Aggregation = {
     // Only consider documents where the two entities occur
-    aggregateService.aggregateKeywords(facets.withEntities(List(source, dest)), numTerms, Nil)(index)
+    aggregateService.aggregateKeywords(facets.withEntities(List(source, dest)), numTerms, Nil, Nil)(index)
   }
 }
