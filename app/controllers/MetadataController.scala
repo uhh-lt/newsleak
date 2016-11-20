@@ -19,13 +19,11 @@ package controllers
 
 import javax.inject.Inject
 
-import model.faceted.search.{ Facets, MetaDataBucket }
-import models.{ AggregateService, DocumentService }
+import models.{ AggregateService, DocumentService, Facets, MetaDataBucket }
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller, Results }
 import util.SessionUtils.currentDataset
-import util.TimeRangeParser
-import utils.NewsleakConfigReader
+import util.{ NewsleakConfigReader, TimeRangeParser }
 
 class MetadataController @Inject() (documentService: DocumentService, aggregateService: AggregateService) extends Controller {
 

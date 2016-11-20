@@ -9,10 +9,12 @@ scalacOptions += "-feature"
 libraryDependencies ++= Seq(
   jdbc,
   cache,
-  "org.postgresql" % "postgresql" % "9.4-1206-jdbc41",
-  "org.scalikejdbc" %% "scalikejdbc-play-initializer" % "2.5.1",
-  "commons-io" % "commons-io" % "2.4",
-  "de.tudarmstadt.lt" %% "common" %  "0.0.1-SNAPSHOT" exclude("commons-codec","commons-codec")
+  "org.postgresql" % "postgresql" % "9.4-1206-jdbc41", // PostgreSQL Licence
+  "org.scalikejdbc" %% "scalikejdbc" % "2.5.0", // ApacheV2
+  "org.scalikejdbc" %% "scalikejdbc-config" % "2.5.0", // ApacheV2
+  "org.scalikejdbc" %% "scalikejdbc-play-initializer" % "2.5.1", // ApacheV2
+  "org.elasticsearch" % "elasticsearch" % "2.3.5", // ApacheV2
+  "commons-io" % "commons-io" % "2.4"
 )
 
 routesImport += "util.Binders._"

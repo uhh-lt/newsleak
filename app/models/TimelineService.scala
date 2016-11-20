@@ -20,7 +20,6 @@ package models
 // scalastyle:off
 
 import com.google.inject.{ ImplementedBy, Inject }
-import model.faceted.search._
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.bucket.histogram.{ DateHistogramInterval, Histogram }
@@ -37,11 +36,16 @@ trait TimelineService {
   def createTimeExpressionTimeline(facets: Facets, levelOfDetail: LoD.Value)(index: String): Aggregation
 }
 
+// Level of detail for Timeline
+object LoD extends Enumeration {
+  val overview, decade, year, month = Value
+}
+
 class ESTimelineService @Inject() (clientService: SearchClientService, utils: ESRequestUtils) extends TimelineService {
 
   private val timelineAggName = "timeline"
 
-  override def createTimeline(facets: Facets, levelOfDetail: _root_.model.faceted.search.LoD.Value)(index: String): Aggregation = {
+  override def createTimeline(facets: Facets, levelOfDetail: LoD.Value)(index: String): Aggregation = {
     val lodToFormat = Map(
       LoD.overview -> utils.yearPattern,
       LoD.decade -> utils.yearPattern,
@@ -61,9 +65,9 @@ class ESTimelineService @Inject() (clientService: SearchClientService, utils: ES
       LoD.year -> s"${utils.yearMonthPattern} || ${utils.yearPattern} || ${utils.yearMonthDayPattern}",
       LoD.month -> s"${utils.yearMonthDayPattern} || ${utils.yearMonthPattern} || ${utils.yearPattern}"
     )
-    val parser = (r: SearchResponse) => parseTimeExpressionTimeline(r, levelOfDetail, facets.fromXDate, facets.toXDate)
+    val parser = (r: SearchResponse) => parseTimeExpressionTimeline(r, levelOfDetail, facets.fromTimeExpression, facets.toTimeExpression)
 
-    createDateTimeline(facets, utils.docTimeExpressionField, facets.fromXDate, facets.toXDate, levelOfDetail, parser, lodToFormat, index)
+    createDateTimeline(facets, utils.docTimeExpressionField, facets.fromTimeExpression, facets.toTimeExpression, levelOfDetail, parser, lodToFormat, index)
   }
 
   private def createDateTimeline(

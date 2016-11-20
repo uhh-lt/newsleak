@@ -19,15 +19,14 @@ package controllers
 
 import javax.inject.Inject
 
-import model.faceted.search.{ Facets, MetaDataBucket, NodeBucket }
-import models.{ EntityService, NetworkService }
+import models._
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
 import util.SessionUtils.currentDataset
 import util.TimeRangeParser
+import EntityType._
 
 // scalastyle:off
-import model.EntityType._
 import util.TupleWriters._
 // scalastyle:off
 

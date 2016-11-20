@@ -19,8 +19,7 @@ package controllers
 
 import javax.inject.Inject
 
-import model.faceted.search.{ Facets, LoD, MetaDataBucket }
-import models.TimelineService
+import models.{ Facets, LoD, MetaDataBucket, TimelineService }
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller, Results }
 import util.SessionUtils.currentDataset
@@ -36,7 +35,7 @@ class HistogramController @Inject() (timelineService: TimelineService) extends C
    * @param generic   mapping of metadata key and a list of corresponding tags
    * @param entities list of entity ids to filter
    * @param timeRange string of a time range readable for [[TimeRangeParser]]
-   * @param lod Level of detail, value of[[LoD]]
+   * @param lod Level of detail, value of[[models.LoD]]
    * @return list of matching entity id's and their overall frequency as well as document count for the applied filters
    */
   def getHistogram(

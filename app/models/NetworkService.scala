@@ -19,7 +19,6 @@ package models
 
 import scala.collection.mutable.ListBuffer
 import com.google.inject.{ ImplementedBy, Inject }
-import model.faceted.search.{ Aggregation, Facets, MetaDataBucket, NodeBucket }
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
 

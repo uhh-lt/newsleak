@@ -18,12 +18,12 @@
 package models
 
 import com.google.inject.{ ImplementedBy, Inject }
-import model.EntityType.withName
-import model.faceted.search.{ Aggregation, Facets, MetaDataBucket, NodeBucket }
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.bucket.terms.Terms
+
+import EntityType.withName
 
 import scala.collection.JavaConversions._
 

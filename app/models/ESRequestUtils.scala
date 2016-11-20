@@ -18,8 +18,6 @@
 package models
 
 // scalastyle:off
-import model.EntityType
-import model.faceted.search.Facets
 import org.elasticsearch.action.search.{ SearchRequestBuilder, SearchResponse }
 import org.elasticsearch.index.query.QueryStringQueryBuilder._
 import org.elasticsearch.index.query._
@@ -117,7 +115,7 @@ class ESRequestUtils {
   }
 
   private def addDateXFilter(facets: Facets): Option[BoolQueryBuilder] = {
-    addGenericDateFilter(docTimeExpressionField, facets.fromXDate, facets.toXDate, s"$yearMonthDayPattern || $yearMonthPattern || $yearPattern")
+    addGenericDateFilter(docTimeExpressionField, facets.fromTimeExpression, facets.toTimeExpression, s"$yearMonthDayPattern || $yearMonthPattern || $yearPattern")
   }
 
   private def addGenericDateFilter(field: String, from: Option[LocalDateTime], to: Option[LocalDateTime], dateFormat: String): Option[BoolQueryBuilder] = {

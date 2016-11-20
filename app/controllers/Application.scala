@@ -24,8 +24,8 @@ import play.api.Logger
 import play.api.cache.CacheApi
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller }
+import util.NewsleakConfigReader
 import util.SessionUtils.{ currentDataset, datasetSessionKey }
-import utils.NewsleakConfigReader
 
 import scala.util.Random
 

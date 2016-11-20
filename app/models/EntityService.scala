@@ -18,8 +18,7 @@
 package models
 
 import com.google.inject.ImplementedBy
-import model.Entity
-import model.EntityType.withName
+import scalikejdbc._
 
 case class Fragment(start: Int, end: Int)
 
@@ -46,50 +45,96 @@ trait EntityService {
 
 class DBEntityService extends EntityService {
 
-  override def getByIds(ids: List[Long])(index: String): List[Entity] = {
-    Entity.fromDBName(index).getByIds(ids)
+  // private implicit val session = AutoSession
+  val db = (index: String) => NamedDB(Symbol(index))
+
+  override def getByIds(ids: List[Long])(index: String): List[Entity] = db(index).readOnly { implicit session =>
+    sql"""SELECT * FROM entity
+          WHERE id IN (${ids})
+                AND NOT isblacklisted
+          ORDER BY frequency DESC""".map(Entity(_)).list.apply()
   }
 
-  override def blacklist(ids: List[Long])(index: String): Boolean = {
-    val entityAPI = Entity.fromDBName(index)
-    ids.map(entityAPI.delete).forall(identity)
+  override def blacklist(ids: List[Long])(index: String): Boolean = db(index).localTx { implicit session =>
+    val entityCount = sql"UPDATE entity SET isblacklisted = TRUE WHERE id IN (${ids})".update().apply()
+    entityCount == ids.sum
   }
 
-  override def undoBlacklist(ids: List[Long])(index: String): Boolean = {
-    val entityAPI = Entity.fromDBName(index)
-    ids.map(entityAPI.undoDelete).forall(identity)
+  override def undoBlacklist(ids: List[Long])(index: String): Boolean = db(index).localTx { implicit session =>
+    val entityCount = sql"UPDATE entity SET isblacklisted = FALSE WHERE id IN (${ids})".update().apply()
+    // Remove entity also from the duplicates list
+    val duplicateCount = sql"DELETE FROM duplicates WHERE duplicateid IN (${ids})".update().apply()
+    // Successful, if updates one entity
+    entityCount == ids.sum && duplicateCount == ids.sum
   }
 
-  override def getBlacklisted()(index: String): List[Entity] = {
-    Entity.fromDBName(index).getBlacklisted()
+  override def getBlacklisted()(index: String): List[Entity] = db(index).readOnly { implicit session =>
+    sql"SELECT * FROM entity WHERE isblacklisted".map(Entity(_)).list.apply()
   }
 
-  override def merge(focalId: Long, duplicates: List[Long])(index: String): Boolean = {
-    Entity.fromDBName(index).merge(focalId, duplicates)
+  override def merge(focalId: Long, duplicates: List[Long])(index: String): Boolean = db(index).localTx { implicit session =>
+    // Keep track of the origin entities for the given duplicates
+    val merged = duplicates.map { id =>
+      sql"INSERT INTO duplicates VALUES (${id}, ${focalId})".update.apply()
+      // Blacklist duplicates in order to prevent that they show up in any query
+      blacklist(List(id))(index)
+    }
+    merged.length == duplicates.length && merged.forall(a => true)
   }
 
-  override def undoMerge(focalIds: List[Long])(index: String): Boolean = {
-    val entityAPI = Entity.fromDBName(index)
-    focalIds.map(entityAPI.undoMerge).forall(identity)
+  override def undoMerge(focalIds: List[Long])(index: String): Boolean = db(index).localTx { implicit session =>
+    // Remove blacklist flag from all duplicate entries with matching focalIds
+    sql"""UPDATE entity
+          SET isblacklisted = FALSE
+          FROM duplicates
+          WHERE duplicateid = id AND focalid IN (${focalIds})""".update().apply()
+
+    sql"DELETE FROM duplicates WHERE focalid IN (${focalIds})".update().apply()
+    // TODO
+    true
   }
 
-  override def getMerged()(index: String): Map[Entity, List[Entity]] = {
-    Entity.fromDBName(index).getDuplicates()
+  override def getMerged()(index: String): Map[Entity, List[Entity]] = db(index).readOnly { implicit session =>
+    val duplicates = sql"""SELECT e1.id, e1.name, e1.type, e1.frequency,
+                                  e2.id AS focalId, e2.name AS focalName, e2.type AS focalType, e2.frequency AS focalFreq
+                           FROM duplicates AS d
+                           INNER JOIN entity AS e1 ON e1.id = d.duplicateid
+                           INNER JOIN entity AS e2 ON e2.id = d.focalid""".map { rs =>
+      (Entity(rs), Entity(
+        rs.long("focalId"),
+        rs.string("focalName"),
+        EntityType.withName(rs.string("focalType")),
+        rs.int("focalFreq")
+      ))
+    }.list.apply()
+
+    duplicates.groupBy { case (_, focalEntity) => focalEntity }.mapValues(_.map(_._1))
   }
 
-  override def changeName(id: Long, newName: String)(index: String): Boolean = {
-    Entity.fromDBName(index).changeName(id, newName)
+  override def changeName(id: Long, newName: String)(index: String): Boolean = db(index).localTx { implicit session =>
+    val count = sql"UPDATE entity SET name = ${newName} WHERE id = ${id}".update().apply()
+    // Successful, if apply updates one row
+    count == 1
   }
 
-  override def changeType(id: Long, newType: String)(index: String): Boolean = {
-    Entity.fromDBName(index).changeType(id, withName(newType))
+  override def changeType(id: Long, newType: String)(index: String): Boolean = db(index).localTx { implicit session =>
+    val count = sql"UPDATE entity SET type = ${newType.toString} WHERE id = ${id}".update().apply()
+    count == 1
   }
 
   override def getEntityFragments(docId: Long)(index: String): List[(Entity, Fragment)] = {
-    Entity.fromDBName(index).getEntityDocumentOffsets(docId).map { case (e, start, end) => (e, Fragment(start, end)) }
+    // TODO Add apply method to Fragment
+    val fragments = db(index).readOnly { implicit session =>
+      sql"""SELECT entid AS id, e.name, e.type, e.frequency, entitystart, entityend FROM entityoffset
+          INNER JOIN entity AS e ON e.id = entid
+          WHERE docid = ${docId}
+          AND NOT e.isblacklisted
+       """.map(rs => (Entity(rs), rs.int("entitystart"), rs.int("entityend"))).list.apply()
+    }
+    fragments.map { case (e, start, end) => (e, Fragment(start, end)) }
   }
 
-  override def getTypes()(index: String): List[String] = {
-    Entity.fromDBName(index).getTypes().map(_.toString)
+  override def getTypes()(index: String): List[String] = db(index).readOnly { implicit session =>
+    sql"SELECT DISTINCT type FROM entity WHERE NOT isblacklisted".map(rs => rs.string("type")).list.apply()
   }
 }

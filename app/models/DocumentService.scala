@@ -19,10 +19,9 @@ package models
 
 // scalastyle:off
 import com.google.inject.{ ImplementedBy, Inject }
-import model.{ Document, KeyTerm, Tag }
-import model.faceted.search.{ Facets, SearchHitIterator }
 import org.joda.time.LocalDateTime
-import utils.RichString.richString
+import scalikejdbc._
+import util.RichString.richString
 
 import scala.collection.JavaConversions._
 
@@ -52,41 +51,115 @@ trait DocumentService {
 // Retrieving large documents via ES is slow. We therefore use the database to fetch documents.
 trait DBDocumentService extends DocumentService {
 
-  override def getById(docId: Long)(index: String): Option[Document] = {
-    Document.fromDBName(index).getById(docId)
+  // private implicit val session = AutoSession
+
+  val db = (index: String) => NamedDB(Symbol(index))
+
+  override def getById(docId: Long)(index: String): Option[Document] = db(index).readOnly { implicit session =>
+    sql"""SELECT * FROM document d
+            WHERE id = $docId
+      """.map(Document(_)).toOption().apply()
   }
 
   override def getByTagLabel(label: String)(index: String): List[Document] = {
-    val docIds = Tag.fromDBName(index).getByLabel(label).map { case Tag(_, docId, _) => docId }
+    val tags = db(index).readOnly { implicit session =>
+      sql"""SELECT t.id, t.documentid, l.label FROM tags t
+            INNER JOIN labels AS l ON l.id = t.labelid
+            WHERE l.label = ${label}
+        """.map(Tag(_)).list().apply()
+    }
+    val docIds = tags.map { case Tag(_, docId, _) => docId }
     docIds.flatMap(getById(_)(index))
   }
 
-  override def addTag(docId: Long, label: String)(index: String): Tag = {
-    Tag.fromDBName(index).add(docId, label)
+  override def addTag(docId: Long, label: String)(index: String): Tag = db(index).localTx { implicit session =>
+    val labelId = getOrCreateLabel(label)
+    val tagOpt = getByValues(docId, labelId)
+    tagOpt.getOrElse {
+      val tagId = sql"INSERT INTO tags (documentid, labelid) VALUES (${docId}, ${labelId})".updateAndReturnGeneratedKey().apply()
+      Tag(tagId, docId, label)
+    }
   }
 
-  override def removeTag(tagId: Int)(index: String): Boolean = {
-    Tag.fromDBName(index).delete(tagId)
+  override def removeTag(tagId: Int)(index: String): Boolean = db(index).autoCommit { implicit session =>
+    val tagOpt = getTagById(tagId)
+    tagOpt.exists { t =>
+      val count = sql"DELETE FROM tags WHERE id = ${t.id}".update().apply()
+
+      // Check if there are remaining tags that reference the label
+      val otherTags = getByLabel(t.label)
+      if (otherTags.isEmpty) {
+        // We need to remove those labels
+        sql"DELETE FROM labels WHERE label = ${t.label}".update().apply()
+      }
+      count == 1
+    }
   }
 
-  override def getTags(docId: Long)(index: String): List[Tag] = {
-    Tag.fromDBName(index).getByDocumentId(docId)
+  // Tag utility methods
+  private def getOrCreateLabel(label: String)(implicit session: DBSession): Long = {
+    val idOpt = sql"SELECT id FROM labels WHERE label = ${label}".map(_.long("id")).single().apply()
+    idOpt getOrElse {
+      sql"INSERT INTO labels (label) VALUES (${label})".updateAndReturnGeneratedKey().apply()
+    }
   }
 
-  override def getDocumentLabels()(index: String): List[String] = {
-    Tag.fromDBName(index).getDistinctLabels()
+  private def getByValues(docId: Long, labelId: Long)(implicit session: DBSession): Option[Tag] = {
+    sql"""SELECT t.id, t.documentid, l.label FROM tags t
+          INNER JOIN labels AS l ON l.id = t.labelid
+          WHERE t.documentid = ${docId} AND t.labelid = ${labelId}
+    """.map(Tag(_)).single().apply()
   }
 
-  override def getKeywords(docId: Long, size: Option[Int])(index: String): List[KeyTerm] = {
-    KeyTerm.fromDBName(index).getDocumentKeyTerms(docId, size)
+  private def getTagById(tagId: Long)(implicit session: DBSession): Option[Tag] = {
+    sql"""SELECT t.id, t.documentid, l.label FROM tags t
+          INNER JOIN labels AS l ON l.id = t.labelid
+          WHERE t.id = ${tagId}
+    """.map(Tag(_)).single().apply()
   }
 
-  override def getMetadata(docIds: List[Long], fields: List[String])(index: String): List[(Long, String, String)] = {
-    Document.fromDBName(index).getMetadataForDocuments(docIds, fields)
+  private def getByLabel(label: String)(implicit session: DBSession): List[Tag] = {
+    sql"""SELECT t.id, t.documentid, l.label FROM tags t
+          INNER JOIN labels AS l ON l.id = t.labelid
+          WHERE l.label = ${label}
+    """.map(Tag(_)).list().apply()
   }
 
-  override def getMetadataKeys()(index: String): List[String] = {
-    Document.fromDBName(index).getMetadataKeysAndTypes().map(_._1)
+  override def getTags(docId: Long)(index: String): List[Tag] = db(index).readOnly { implicit session =>
+    sql"""SELECT t.id, t.documentid, l.label FROM tags t
+          INNER JOIN labels AS l ON l.id = t.labelid
+          WHERE t.documentid = ${docId}
+    """.map(Tag(_)).list().apply()
+  }
+
+  override def getDocumentLabels()(index: String): List[String] = db(index).readOnly { implicit session =>
+    sql"SELECT label FROM labels".map(_.string("label")).list().apply()
+  }
+
+  override def getKeywords(docId: Long, size: Option[Int])(index: String): List[KeyTerm] = db(index).readOnly { implicit session =>
+    SQL("""SELECT term, frequency
+          FROM terms
+          WHERE docid = {docId}
+          %s
+        """.format(if (size.isDefined) "LIMIT " + size.get else "")).bindByName('docId -> docId).map(KeyTerm(_)).list.apply()
+  }
+
+  override def getMetadata(docIds: List[Long], fields: List[String])(index: String): List[(Long, String, String)] = db(index).readOnly { implicit session =>
+    if (fields.nonEmpty && docIds.nonEmpty) {
+      val generic = sql"""SELECT m.docid id, m.value, m.key
+                          FROM metadata m
+                          WHERE m.key IN (${fields}) AND m.docid IN (${docIds})
+                      """.map(rs => (rs.long("id"), rs.string("key"), rs.string("value"))).list().apply()
+      // Add creates fields for documents that are not explicit added as metadata
+      val dates = sql"SELECT id, created FROM document WHERE id IN (${docIds})".map(rs => (rs.long("id"), "Created", rs.string("created"))).list().apply()
+      dates ++ generic
+    } else {
+      List()
+    }
+  }
+
+  override def getMetadataKeys()(index: String): List[String] = db(index).readOnly { implicit session =>
+    sql"SELECT DISTINCT key, type FROM metadata".map(rs => (rs.string("key"))).list.apply()
   }
 }
 

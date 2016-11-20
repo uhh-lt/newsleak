@@ -19,9 +19,7 @@ package controllers
 
 import javax.inject.Inject
 
-import model.Entity
-import model.faceted.search.{ Facets, NodeBucket }
-import models.{ AggregateService, EntityService }
+import models._
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller }
 import util.SessionUtils.currentDataset
