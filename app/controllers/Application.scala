@@ -136,7 +136,6 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         controllers.routes.javascript.NetworkController.changeEntityTypeById,
         controllers.routes.javascript.MetadataController.getMetadata,
         controllers.routes.javascript.MetadataController.getSpecificMetadata,
-        controllers.routes.javascript.MetadataController.getKeywords,
         controllers.routes.javascript.MetadataController.getMetadataTypes,
         controllers.routes.javascript.HistogramController.getHistogram,
         controllers.routes.javascript.HistogramController.getXHistogram,

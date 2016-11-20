@@ -40,7 +40,6 @@ GET     /undoBlacklisting controllers.EntityController.undoBlacklistingByIds(ids
 GET     /undoMerge controllers.EntityController.undoMergeByIds(focalIds: List[Long])
 GET     /getEntitiesByDoc controllers.EntityController.getEntitiesByDoc(id: Long)
 GET   /getMetadata     controllers.MetadataController.getMetadata(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String)
-GET   /getKeywords     controllers.MetadataController.getKeywords(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String)
 GET   /getMetadataTypes       controllers.MetadataController.getMetadataTypes
 GET    /getSpecificMetadata             controllers.MetadataController.getSpecificMetadata(fullText: List[String], key: String, generic: Map[String, List[String]], entities: List[Long], instances: List[String], timeRange: String, timeRangeX: String)
 GET     /getHistogram               controllers.HistogramController.getHistogram(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String, lod: String)

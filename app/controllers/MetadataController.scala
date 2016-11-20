@@ -19,17 +19,19 @@ package controllers
 
 import javax.inject.Inject
 
-import model.faceted.search.{ FacetedSearch, Facets, MetaDataBucket }
-import model.Document
+import model.faceted.search.{Facets, MetaDataBucket}
+import models.{AggregateService, DocumentService}
 import play.api.libs.json.Json
-import play.api.mvc.{ Action, Controller, Results }
+import play.api.mvc.{Action, Controller, Results}
 import util.SessionUtils.currentDataset
 import util.TimeRangeParser
 import utils.NewsleakConfigReader
 
-class MetadataController @Inject extends Controller {
+class MetadataController @Inject() (documentService: DocumentService, aggregateService: AggregateService) extends Controller {
 
   private lazy val defaultExcludeTypes = NewsleakConfigReader.excludedMetadataTypes
+
+  // TODO Duplicate from other controller
   private val defaultFetchSize = 50
 
   /**
@@ -37,11 +39,8 @@ class MetadataController @Inject extends Controller {
    * @return list of metadata types
    */
   def getMetadataTypes = Action { implicit request =>
-    Results.Ok(Json.toJson(Document
-      .fromDBName(currentDataset)
-      .getMetadataKeysAndTypes()
-      .map(x => x._1)
-      .filter(!defaultExcludeTypes(currentDataset).contains(_)))).as("application/json")
+    val keys = documentService.getMetadataKeys()(currentDataset).filter(!defaultExcludeTypes(currentDataset).contains(_))
+    Results.Ok(Json.toJson(keys)).as("application/json")
   }
 
   /**
@@ -62,7 +61,7 @@ class MetadataController @Inject extends Controller {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
-    val res = FacetedSearch.fromIndexName(currentDataset).aggregateAll(facets, defaultFetchSize, defaultExcludeTypes(currentDataset))
+    val res = aggregateService.aggregateAll(facets, defaultFetchSize, defaultExcludeTypes(currentDataset))(currentDataset)
       .map(agg => Json.obj(agg.key -> agg.buckets.map {
         case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
         case _ => Json.obj()
@@ -92,7 +91,9 @@ class MetadataController @Inject extends Controller {
     val times = TimeRangeParser.parseTimeRange(timeRange)
     val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
-    val agg = FacetedSearch.fromIndexName(currentDataset).aggregate(facets, key, defaultFetchSize, instances, Nil)
+
+    val agg = aggregateService.aggregate(facets, key, defaultFetchSize, instances, Nil)(currentDataset)
+
     if (instances.isEmpty) {
       val res = Json.obj(key -> agg.buckets.map {
         case MetaDataBucket(metaKey, count) => Json.obj("key" -> metaKey, "count" -> count)
@@ -106,29 +107,5 @@ class MetadataController @Inject extends Controller {
       }.toMap)).map(x => Json.obj("key" -> x._1, "count" -> x._2.asInstanceOf[Number].longValue()))
       Results.Ok(Json.obj(key -> res)).as("application/json")
     }
-  }
-
-  /**
-   * Gets document counts for keywords
-   * @param fullText Full text search term
-   * @param generic mapping of metadata key and a list of corresponding tags
-   * @return list of matching keywords and document count
-   */
-  def getKeywords(
-    fullText: List[String],
-    generic: Map[String, List[String]],
-    entities: List[Long],
-    timeRange: String,
-    timeRangeX: String
-  ) = Action { implicit request =>
-    val times = TimeRangeParser.parseTimeRange(timeRange)
-    val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
-    val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
-    val res = FacetedSearch.fromIndexName(currentDataset).aggregateKeywords(facets, defaultFetchSize, List()).buckets.map {
-      case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
-      case _ => Json.obj()
-    }
-
-    Results.Ok(Json.toJson(res)).as("application/json")
   }
 }

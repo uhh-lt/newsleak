@@ -30,6 +30,9 @@ import scala.collection.JavaConversions._
 @ImplementedBy(classOf[ESAggregateService])
 trait AggregateService {
 
+  def aggregate(facets: Facets, aggregateKey: String, size: Int, include: List[String], exclude: List[String])(index: String): Aggregation
+  def aggregateAll(facets: Facets, size: Int, excludeKeys: List[String])(index: String): List[Aggregation]
+
   def aggregateEntities(facets: Facets, size: Int, include: List[Long], exclude: List[Long])(index: String): Aggregation
   def aggregateEntitiesByType(facets: Facets, etype: String, size: Int, include: List[Long], exclude: List[Long])(index: String): Aggregation
 
@@ -37,6 +40,16 @@ trait AggregateService {
 }
 
 class ESAggregateService @Inject() (clientService: SearchClientService, utils: ESRequestUtils) extends AggregateService {
+
+  def aggregate(facets: Facets, aggregateKey: String, size: Int, include: List[String], exclude: List[String])(index: String): Aggregation = {
+    val field = aggregationToField(index)(aggregateKey)
+    termAggregate(facets, Map(aggregateKey -> (field, size)), include, Nil, 1, index).head
+  }
+
+  def aggregateAll(facets: Facets, size: Int, excludeKeys: List[String])(index: String): List[Aggregation] = {
+    val validAggregations = aggregationToField(index).filterKeys(!excludeKeys.contains(_))
+    termAggregate(facets, validAggregations.map { case (k, v) => (k, (v, size)) }, Nil, Nil, 1, index)
+  }
 
   def aggregateEntities(facets: Facets, size: Int, include: List[Long], exclude: List[Long])(index: String): Aggregation = {
     // TODO Improve
