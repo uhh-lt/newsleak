@@ -17,5 +17,5 @@
 
 package models
 
-
-case class IteratorSession(hits: Long, hitIterator: Iterator[Document], hash: Long)
+/** Provides classes for accessing the underlying data. */
+package object services

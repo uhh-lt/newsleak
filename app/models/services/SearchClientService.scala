@@ -27,27 +27,19 @@ import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.transport.InetSocketTransportAddress
 import util.NewsleakConfigReader
 
-/**
- * Wrapper around an ElasticSearch {@link Client}. Different ways of obtaining a
- * {@link Client} can be implemented in classes implementing this interface.
+/** Wrapper around an ElasticSearch [[Client]]. Different ways of obtaining a [[Client]] can be implemented in classes
+  * implementing this interface.
  */
 @ImplementedBy(classOf[ESTransportClient])
 trait SearchClientService {
-  /**
-   * Get a reference to an ElasticSearch {@link Client}.
-   */
+  /** Get a reference to an ElasticSearch [[Client]]. */
   def client(): Client
 
-  /**
-   * Shutdown the ElasticSearch {@link Client}. The client is not available
-   * for querying and indexing.
-   */
+  /** Shutdown the ElasticSearch [[Client]]. The client is not available for querying and indexing. */
   def shutdown(): Unit
 }
 
-/**
- * Wrapper around an ElasticSearch {@link TransportClient} node.
- */
+/** Wrapper around an ElasticSearch [[TransportClient]] node. */
 @Singleton
 class ESTransportClient extends SearchClientService {
 

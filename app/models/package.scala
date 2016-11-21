@@ -15,7 +15,5 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package models
-
-
-case class IteratorSession(hits: Long, hitIterator: Iterator[Document], hash: Long)
+/** Provides classes for dealing with the backend services. */
+package object models
