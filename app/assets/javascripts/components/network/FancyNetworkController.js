@@ -214,7 +214,7 @@ define([
                         self.nodes.clear();
 
                         var edges = response.data.relations.map(function(n) {
-                            return { from: n[0], to: n[1], value: n[2] };
+                            return { from: n.source, to: n.dest, value: n.occurrence };
                         });
 
                         self.edges.clear();
@@ -471,7 +471,7 @@ define([
                         });
 
                         var edges = response.data.relations.map(function(n) {
-                            return { from: n[0], to: n[1], value: n[2] };
+                            return { from: n.source, to: n.dest, value: n.occurrence };
                         });
 
                         self.nodesDataset.add(nodes);

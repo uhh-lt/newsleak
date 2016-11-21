@@ -26,10 +26,6 @@ import util.SessionUtils.currentDataset
 import util.TimeRangeParser
 import EntityType._
 
-// scalastyle:off
-import util.TupleWriters._
-// scalastyle:off
-
 /**
  * This class encapsulates all functionality for the
  * network graph.
@@ -103,7 +99,7 @@ class NetworkController @Inject() (entityService: EntityService, networkService:
     } else {
       val graphEntities = nodesToJson(nodes)
       // Ignore relations that connect blacklisted nodes
-      val graphRelations = relations.filterNot { case (from, to, _) => blacklistedIds.contains(from) && blacklistedIds.contains(to) }
+      val graphRelations = relations.filterNot { case Relationship(from, to, _) => blacklistedIds.contains(from) && blacklistedIds.contains(to) }
 
       val types = Json.obj(
         Person.toString -> Person.id,

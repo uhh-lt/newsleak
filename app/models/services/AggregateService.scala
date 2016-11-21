@@ -15,15 +15,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package models
+package models.services
 
 import com.google.inject.{ ImplementedBy, Inject }
+import models.EntityType._
+import models._
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.bucket.terms.Terms
-
-import EntityType.withName
 
 import scala.collection.JavaConversions._
 

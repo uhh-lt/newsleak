@@ -45,7 +45,6 @@ trait EntityService {
 
 class DBEntityService extends EntityService {
 
-  // private implicit val session = AutoSession
   val db = (index: String) => NamedDB(Symbol(index))
 
   override def getByIds(ids: List[Long])(index: String): List[Entity] = db(index).readOnly { implicit session =>
@@ -79,7 +78,7 @@ class DBEntityService extends EntityService {
       // Blacklist duplicates in order to prevent that they show up in any query
       blacklist(List(id))(index)
     }
-    merged.length == duplicates.length && merged.forall(a => true)
+    merged.length == duplicates.length && merged.forall(identity)
   }
 
   override def undoMerge(focalIds: List[Long])(index: String): Boolean = db(index).localTx { implicit session =>
@@ -123,7 +122,6 @@ class DBEntityService extends EntityService {
   }
 
   override def getEntityFragments(docId: Long)(index: String): List[(Entity, Fragment)] = {
-    // TODO Add apply method to Fragment
     val fragments = db(index).readOnly { implicit session =>
       sql"""SELECT entid AS id, e.name, e.type, e.frequency, entitystart, entityend FROM entityoffset
           INNER JOIN entity AS e ON e.id = entid

@@ -17,23 +17,11 @@
 
 package models
 
-import com.google.inject.ImplementedBy
-import org.elasticsearch.client.Client
+import play.api.libs.json._
 
-/**
- * Wrapper around an ElasticSearch {@link Client}. Different ways of obtaining a
- * {@link Client} can be implemented in classes implementing this interface.
- */
-@ImplementedBy(classOf[ESTransportClient])
-trait SearchClientService {
-  /**
-   * Get a reference to an ElasticSearch {@link Client}.
-   */
-  def client(): Client
+case class Relationship(source: Long, dest: Long, occurrence: Long)
 
-  /**
-   * Shutdown the ElasticSearch {@link Client}. The client is not available
-   * for querying and indexing.
-   */
-  def shutdown(): Unit
+object Relationship {
+
+  implicit val relationshipFormat = Json.format[Relationship]
 }

@@ -18,13 +18,32 @@
 package models
 
 import java.net.InetAddress
-import javax.inject._
+import javax.inject.Singleton
 
+import com.google.inject.ImplementedBy
 import org.elasticsearch.client.Client
 import org.elasticsearch.client.transport.TransportClient
 import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.transport.InetSocketTransportAddress
 import util.NewsleakConfigReader
+
+/**
+ * Wrapper around an ElasticSearch {@link Client}. Different ways of obtaining a
+ * {@link Client} can be implemented in classes implementing this interface.
+ */
+@ImplementedBy(classOf[ESTransportClient])
+trait SearchClientService {
+  /**
+   * Get a reference to an ElasticSearch {@link Client}.
+   */
+  def client(): Client
+
+  /**
+   * Shutdown the ElasticSearch {@link Client}. The client is not available
+   * for querying and indexing.
+   */
+  def shutdown(): Unit
+}
 
 /**
  * Wrapper around an ElasticSearch {@link TransportClient} node.

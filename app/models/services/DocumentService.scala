@@ -51,13 +51,11 @@ trait DocumentService {
 // Retrieving large documents via ES is slow. We therefore use the database to fetch documents.
 trait DBDocumentService extends DocumentService {
 
-  // private implicit val session = AutoSession
-
   val db = (index: String) => NamedDB(Symbol(index))
 
   override def getById(docId: Long)(index: String): Option[Document] = db(index).readOnly { implicit session =>
     sql"""SELECT * FROM document d
-            WHERE id = $docId
+          WHERE id = $docId
       """.map(Document(_)).toOption().apply()
   }
 

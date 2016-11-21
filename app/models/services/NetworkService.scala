@@ -19,6 +19,7 @@ package models
 
 import scala.collection.mutable.ListBuffer
 import com.google.inject.{ ImplementedBy, Inject }
+import models.services.AggregateService
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
 
@@ -27,9 +28,8 @@ import scala.collection.JavaConversions._
 @ImplementedBy(classOf[ESNetworkService])
 trait NetworkService {
 
-  // TODO Improve return type
-  def createNetwork(facets: Facets, nodeFraction: Map[String, Int], exclude: List[Long])(index: String): (List[NodeBucket], List[(Long, Long, Long)])
-  def induceNetwork(facets: Facets, currentNetwork: List[Long], nodes: List[Long])(index: String): (List[NodeBucket], List[(Long, Long, Long)])
+  def createNetwork(facets: Facets, nodeFraction: Map[String, Int], exclude: List[Long])(index: String): (List[NodeBucket], List[Relationship])
+  def induceNetwork(facets: Facets, currentNetwork: List[Long], nodes: List[Long])(index: String): (List[NodeBucket], List[Relationship])
 
   // TODO maybe change return type since it's not aggregation service here i.e. Bucket and aggregation
   // TODO: Include exclude inconsistent. Maybe create second case class for parameters?
@@ -44,7 +44,7 @@ class ESNetworkService @Inject() (clientService: SearchClientService, aggregateS
     facets: Facets,
     nodeFraction: Map[String, Int],
     exclude: List[Long]
-  )(index: String): (List[NodeBucket], List[(Long, Long, Long)]) = {
+  )(index: String): (List[NodeBucket], List[Relationship]) = {
     val buckets = nodeFraction.flatMap {
       case (t, size) =>
         aggregateService.aggregateEntitiesByType(facets, t, size, List(), exclude)(index).buckets
@@ -54,7 +54,7 @@ class ESNetworkService @Inject() (clientService: SearchClientService, aggregateS
     (buckets.collect { case a @ NodeBucket(_, _) => a }, rels)
   }
 
-  private def induceRelationships(facets: Facets, nodes: List[Long], index: String): List[(Long, Long, Long)] = {
+  private def induceRelationships(facets: Facets, nodes: List[Long], index: String): List[Relationship] = {
     val visitedList = ListBuffer[Long]()
     val rels = nodes.flatMap { source =>
       visitedList.add(source)
@@ -64,7 +64,7 @@ class ESNetworkService @Inject() (clientService: SearchClientService, aggregateS
     rels
   }
 
-  private def getRelationship(facets: Facets, source: Long, dest: Long, index: String): Option[(Long, Long, Long)] = {
+  private def getRelationship(facets: Facets, source: Long, dest: Long, index: String): Option[Relationship] = {
     val t = List(source, dest)
     val agg = aggregateService.aggregateEntities(facets.withEntities(t), 2, t, Nil)(index)
     agg match {
@@ -73,12 +73,12 @@ class ESNetworkService @Inject() (clientService: SearchClientService, aggregateS
         None
       case Aggregation(_, NodeBucket(nodeA, freqA) :: NodeBucket(nodeB, freqB) :: Nil) =>
         // freqA and freqB are the same since we query for docs containing both
-        Some((nodeA, nodeB, freqA))
+        Some(Relationship(nodeA, nodeB, freqA))
       case _ => None
     }
   }
 
-  override def induceNetwork(facets: Facets, currentNetwork: List[Long], nodes: List[Long])(index: String): (List[NodeBucket], List[(Long, Long, Long)]) = {
+  override def induceNetwork(facets: Facets, currentNetwork: List[Long], nodes: List[Long])(index: String): (List[NodeBucket], List[Relationship]) = {
     val buckets = aggregateService.aggregateEntities(facets, nodes.length, nodes, Nil)(index).buckets.collect { case a @ NodeBucket(_, _) => a }
     // Fetch relationships between new nodes
     val inBetweenRels = induceRelationships(facets, nodes, index)
