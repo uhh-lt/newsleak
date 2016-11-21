@@ -19,12 +19,13 @@ package controllers
 
 import javax.inject.Inject
 
-import models._
+import models.{ Facets, MetaDataBucket, Relationship, NodeBucket }
+import models.EntityType.{ Location, Person, Misc, Organization }
+import models.services.{ EntityService, NetworkService }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
 import util.SessionUtils.currentDataset
 import util.TimeRangeParser
-import EntityType._
 
 /**
  * This class encapsulates all functionality for the

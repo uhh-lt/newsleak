@@ -15,13 +15,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package models
+package models.services
 
 import scala.collection.mutable.ListBuffer
 import com.google.inject.{ ImplementedBy, Inject }
-import models.services.AggregateService
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
+import util.es.ESRequestUtils
+import models.{ Facets, NodeBucket, MetaDataBucket, Aggregation, Relationship }
 
 import scala.collection.JavaConversions._
 
@@ -31,8 +32,6 @@ trait NetworkService {
   def createNetwork(facets: Facets, nodeFraction: Map[String, Int], exclude: List[Long])(index: String): (List[NodeBucket], List[Relationship])
   def induceNetwork(facets: Facets, currentNetwork: List[Long], nodes: List[Long])(index: String): (List[NodeBucket], List[Relationship])
 
-  // TODO maybe change return type since it's not aggregation service here i.e. Bucket and aggregation
-  // TODO: Include exclude inconsistent. Maybe create second case class for parameters?
   def getNeighbors(facets: Facets, entityId: Long, size: Int, exclude: List[Long])(index: String): List[NodeBucket]
   def getNeighborCountsPerType(facets: Facets, entityId: Long)(index: String): Aggregation
   def getEdgeKeywords(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): Aggregation

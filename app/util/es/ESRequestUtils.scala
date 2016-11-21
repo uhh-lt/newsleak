@@ -15,9 +15,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package models
+package util.es
 
 // scalastyle:off
+import models.services.SearchClientService
+import models.{ EntityType, Facets }
 import org.elasticsearch.action.search.{ SearchRequestBuilder, SearchResponse }
 import org.elasticsearch.index.query.QueryStringQueryBuilder._
 import org.elasticsearch.index.query._

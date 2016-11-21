@@ -15,17 +15,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package models
-
-// scalastyle:off
+package models.services
 
 import com.google.inject.{ ImplementedBy, Inject }
+import models.{ Facets, LoD, Aggregation, MetaDataBucket, Bucket }
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.bucket.histogram.{ DateHistogramInterval, Histogram }
 import org.elasticsearch.search.aggregations.metrics.max.Max
 import org.elasticsearch.search.aggregations.metrics.min.Min
 import org.joda.time.LocalDateTime
+import util.es.ESRequestUtils
 
 import scala.collection.JavaConversions._
 
@@ -34,11 +34,6 @@ trait TimelineService {
 
   def createTimeline(facets: Facets, levelOfDetail: LoD.Value)(index: String): Aggregation
   def createTimeExpressionTimeline(facets: Facets, levelOfDetail: LoD.Value)(index: String): Aggregation
-}
-
-// Level of detail for Timeline
-object LoD extends Enumeration {
-  val overview, decade, year, month = Value
 }
 
 class ESTimelineService @Inject() (clientService: SearchClientService, utils: ESRequestUtils) extends TimelineService {

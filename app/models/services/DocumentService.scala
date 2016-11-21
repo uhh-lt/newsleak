@@ -15,15 +15,16 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package models
+package models.services
 
-// scalastyle:off
 import com.google.inject.{ ImplementedBy, Inject }
 import org.joda.time.LocalDateTime
 import scalikejdbc._
-import util.RichString.richString
-
 import scala.collection.JavaConversions._
+
+import models.{ Document, Facets, KeyTerm, Tag }
+import util.es.{ ESRequestUtils, SearchHitIterator }
+import util.RichString.richString
 
 @ImplementedBy(classOf[FinalDocumentService])
 trait DocumentService {

@@ -19,8 +19,8 @@ package controllers
 
 import javax.inject.Inject
 
-import models.services.AggregateService
-import models.{ DocumentService, Facets, MetaDataBucket }
+import models.services.{ AggregateService, DocumentService }
+import models.{ Facets, MetaDataBucket }
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller, Results }
 import util.SessionUtils.currentDataset

@@ -19,16 +19,15 @@ package controllers
 
 import javax.inject.Inject
 
-import models._
 import play.api.cache.CacheApi
 import play.api.libs.json.{ JsObject, JsValue, Json }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
-import util.SessionUtils.currentDataset
-import util.TimeRangeParser
-
 import scala.collection.mutable.ListBuffer
 
-case class IteratorSession(hits: Long, hitIterator: Iterator[Document], hash: Long)
+import models.{ Document, Facets, IteratorSession, KeyTerm, Tag }
+import models.services.DocumentService
+import util.SessionUtils.currentDataset
+import util.TimeRangeParser
 
 /*
     This class provides operations pertaining documents.

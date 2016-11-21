@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package models
+package models.services
 
 import java.net.InetAddress
 import javax.inject.Singleton

@@ -19,7 +19,8 @@ package controllers
 
 import javax.inject.Inject
 
-import models.{ Facets, LoD, MetaDataBucket, TimelineService }
+import models.services.TimelineService
+import models.{ Facets, LoD, MetaDataBucket }
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller, Results }
 import util.SessionUtils.currentDataset

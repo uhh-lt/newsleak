@@ -15,12 +15,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package models
+package models.services
 
 import com.google.inject.ImplementedBy
+import models.{ Entity, EntityType, Fragment }
 import scalikejdbc._
-
-case class Fragment(start: Int, end: Int)
 
 @ImplementedBy(classOf[DBEntityService])
 trait EntityService {
