@@ -29,7 +29,7 @@ import models.{ Facets, Aggregation, MetaDataBucket, NodeBucket }
 import models.EntityType.withName
 import util.es.ESRequestUtils
 
-/** Defines common methods for generating aggregated data based on a search query.
+/** Defines common data access methods for generating aggregated data based on a search query.
   *
   * The search query is given as [[models.Facets]]. The service builds analytic information over a set of documents and
   * provides the result as [[models.Aggregation]]. Such a [[models.Aggregation]] consists of a list of [[models.Bucket]],
@@ -84,7 +84,7 @@ trait AggregateService {
     *   aggregateEntities(Facets.empty, 5, Nil, Nil)("enron")
     * }}}
     *
-    * @param facets facets the search query.
+    * @param facets the search query.
     * @param size the number of unique [[models.NodeBucket]] to create.
     * @param include a list of values to filter the result. The result will only contain the [[models.NodeBucket]] associated
     * with one of the keys given in this list. The size parameter is ignored when given a non empty include list.
@@ -98,7 +98,7 @@ trait AggregateService {
 
   /** Creates multiple buckets - one per unique entity. The aggregation only considers entities belonging to the given type.
     *
-    * @param facets facets the search query.
+    * @param facets the search query.
     * @param etype the entity type to filter for.
     * @param size the number of unique [[models.NodeBucket]] to create.
     * @param include a list of values to filter the result. The result will only contain the [[models.NodeBucket]] associated
@@ -115,7 +115,7 @@ trait AggregateService {
     *
     * Each document has a list important keywords, which is used to build this aggregation.
     *
-    * @param facets facets the search query.
+    * @param facets the search query.
     * @param size the number of unique [[models.MetaDataBucket]] to create.
     * @param include a list of values to filter the result. The result will only contain the [[models.MetaDataBucket]] associated
     * with one of the keys given in this list. The size parameter is ignored when given a non empty include list.

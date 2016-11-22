@@ -44,7 +44,7 @@ trait EntityService {
 
 class DBEntityService extends EntityService {
 
-  val db = (index: String) => NamedDB(Symbol(index))
+  private val db = (index: String) => NamedDB(Symbol(index))
 
   override def getByIds(ids: List[Long])(index: String): List[Entity] = db(index).readOnly { implicit session =>
     sql"""SELECT * FROM entity
