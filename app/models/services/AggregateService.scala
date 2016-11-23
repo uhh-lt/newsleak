@@ -62,7 +62,7 @@ trait AggregateService {
    * @param exclude a list of values that should be excluded from the result. The result will contain no [[models.MetaDataBucket]]
    * associated with one of the keys given in this list.
    * @param index the data source index or database name to query.
-   * @return an [[models.Aggregation]] with '''size''' [[models.MetaDataBucket]] matching the given filters and using the aggregationKey.
+   * @return an instance of [[models.Aggregation]] with '''size''' [[models.MetaDataBucket]] matching the given filters and using the aggregationKey.
    */
   def aggregate(facets: Facets, aggregateKey: String, size: Int, include: List[String], exclude: List[String])(index: String): Aggregation
 
@@ -95,7 +95,7 @@ trait AggregateService {
    * @param exclude a list of values that should be excluded from the result. The result will contain no [[models.NodeBucket]]
    * associated with one of the keys given in this list.
    * @param index the data source index or database name to query.
-   * @return an [[models.Aggregation]] with '''size''' [[models.NodeBucket]] representing most occurring entities in the
+   * @return an instance of [[models.Aggregation]] with '''size''' [[models.NodeBucket]] representing most occurring entities in the
    * underlying collection.
    */
   def aggregateEntities(facets: Facets, size: Int, include: List[Long], exclude: List[Long])(index: String): Aggregation
@@ -111,7 +111,7 @@ trait AggregateService {
    * @param exclude a list of values that should be excluded from the result. The result will contain no [[models.NodeBucket]]
    * associated with one of the keys given in this list.
    * @param index the data source index or database name to query.
-   * @return an [[models.Aggregation]] with '''size''' [[models.NodeBucket]] representing most occurring entities of the given type
+   * @return an instance of [[models.Aggregation]] with '''size''' [[models.NodeBucket]] representing most occurring entities of the given type
    * in the underlying collection.
    */
   def aggregateEntitiesByType(facets: Facets, etype: String, size: Int, include: List[Long], exclude: List[Long])(index: String): Aggregation
@@ -128,7 +128,7 @@ trait AggregateService {
    * @param exclude a list of values that should be excluded from the result. The result will contain no [[models.MetaDataBucket]]
    * associated with one of the keys given in this list.
    * @param index the data source index or database name to query.
-   * @return an [[models.Aggregation]] with '''size''' [[models.MetaDataBucket]] representing most occurring entities in the
+   * @return an instance of  [[models.Aggregation]] with '''size''' [[models.MetaDataBucket]] representing most occurring entities in the
    * underlying collection.
    */
   def aggregateKeywords(facets: Facets, size: Int, include: List[String], exclude: List[String])(index: String): Aggregation

@@ -18,28 +18,70 @@
 package models.services
 
 import com.google.inject.{ ImplementedBy, Inject }
-import models.{ Facets, LoD, Aggregation, MetaDataBucket, Bucket }
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.bucket.histogram.{ DateHistogramInterval, Histogram }
 import org.elasticsearch.search.aggregations.metrics.max.Max
 import org.elasticsearch.search.aggregations.metrics.min.Min
 import org.joda.time.LocalDateTime
+// scalastyle:off
+import scala.collection.JavaConversions._
+// scalastyle:on
+import models.{ Facets, LoD, Aggregation, MetaDataBucket, Bucket }
 import util.es.ESRequestUtils
 
-import scala.collection.JavaConversions._
-
+/**
+ * Defines common methods for creating timeline instances based on document creation dates and time expressions matching
+ * a search query.
+ *
+ * The trait is implemented by [[models.services.ESTimelineService]].
+ */
 @ImplementedBy(classOf[ESTimelineService])
 trait TimelineService {
 
+  /**
+   * Creates a timeline mapping from dates to the number of documents per date based on the document creation date.
+   *
+   * The timeline supports different drill-down steps called "level of detail (lod)". In the most coarse grained level
+   * the result maps from grouped decades to number of documents that fall in the decade i.e. 1990-1999: 10 docs,
+   * 2000-2009: 20 docs, etc.
+   *
+   * Similar, the most fine grained level maps from days of a month to the number of documents that fall in a certain day.
+   *
+   * @param facets the search query.
+   * @param levelOfDetail the timeline level.
+   * @param index the data source index or database name to query.
+   * @return  an instance of [[models.Aggregation]] consisting of [[models.MetaDataBucket]], each representing a time unit with the
+   * number of documents for this unit.
+   */
   def createTimeline(facets: Facets, levelOfDetail: LoD.Value)(index: String): Aggregation
+
+  /**
+   * Creates a timeline mapping from dates to the number of documents per date based on time expression that occur in the
+   * document content.
+   *
+   * @param facets the search query.
+   * @param levelOfDetail the timeline level.
+   * @param index the data source index or database name to query.
+   * @return an instance of [[models.Aggregation]] consisting of [[models.MetaDataBucket]], each representing a time unit with the
+   * number of documents for this unit.
+   *
+   * @see the method [[models.services.TimelineService#createTimeline]].
+   */
   def createTimeExpressionTimeline(facets: Facets, levelOfDetail: LoD.Value)(index: String): Aggregation
 }
 
+/**
+ * Implementation of [[models.services.TimelineService]] using an elasticsearch index as backend.
+ *
+ * @param clientService the elasticsearch client.
+ * @param utils common helper to issue elasticsearch queries.
+ */
 class ESTimelineService @Inject() (clientService: SearchClientService, utils: ESRequestUtils) extends TimelineService {
 
   private val timelineAggName = "timeline"
 
+  /** @inheritdoc */
   override def createTimeline(facets: Facets, levelOfDetail: LoD.Value)(index: String): Aggregation = {
     val lodToFormat = Map(
       LoD.overview -> utils.yearPattern,
@@ -52,6 +94,7 @@ class ESTimelineService @Inject() (clientService: SearchClientService, utils: ES
     createDateTimeline(facets, utils.docDateField, facets.fromDate, facets.toDate, levelOfDetail, parser, lodToFormat, index)
   }
 
+  /** @inheritdoc */
   override def createTimeExpressionTimeline(facets: Facets, levelOfDetail: LoD.Value)(index: String): Aggregation = {
     // The first element in the format is used as bucket key format
     val lodToFormat = Map(

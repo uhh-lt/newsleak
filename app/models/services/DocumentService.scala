@@ -268,7 +268,7 @@ trait DBDocumentService extends DocumentService {
 /**
  * Partial implementation of [[models.services.DocumentService]] using an elasticsearch index as backend.
  *
- * @param clientService the elasticsearch client interface.
+ * @param clientService the elasticsearch client.
  * @param utils common helper to issue elasticsearch queries.
  */
 abstract class ESDocumentService(clientService: SearchClientService, utils: ESRequestUtils) extends DocumentService {
