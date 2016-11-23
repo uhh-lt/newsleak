@@ -29,113 +29,120 @@ import models.{ Facets, Aggregation, MetaDataBucket, NodeBucket }
 import models.EntityType.withName
 import util.es.ESRequestUtils
 
-/** Defines common data access methods for generating aggregated data based on a search query.
-  *
-  * The search query is given as [[models.Facets]]. The service builds analytic information over a set of documents and
-  * provides the result as [[models.Aggregation]]. Such a [[models.Aggregation]] consists of a list of [[models.Bucket]],
-  * where each bucket is associated with a key and the number of documents that match the given search query. The trait
-  * further supports mechanisms to exclude and include specific keys.
-  *
-  * The trait is implemented by [[models.services.ESAggregateService]], which uses an elasticsearch index as backend.
-  */
+/**
+ * Defines common data access methods for generating aggregated data based on a search query.
+ *
+ * The search query is given as [[models.Facets]]. The service builds analytic information over a set of documents and
+ * provides the result as [[models.Aggregation]]. Such a [[models.Aggregation]] consists of a list of [[models.Bucket]],
+ * where each bucket is associated with a key and the number of documents that match the given search query. The trait
+ * further supports mechanisms to exclude and include specific keys.
+ *
+ * The trait is implemented by [[models.services.ESAggregateService]], which uses an elasticsearch index as backend.
+ */
 @ImplementedBy(classOf[ESAggregateService])
 trait AggregateService {
 
-  /** Creates multiple buckets - one per unique value that is associated with the given key.
-    *
-    * The following snippet will create five buckets. Each bucket represents one of the five
-    * most occurring recipient names that are associated with a document and match the empty filter:
-    * {{{
-    *   aggregate(Facets.empty, "Recipient_names", 5, Nil, Nil)("enron")
-    * }}}
-    *
-    * Use [[models.services.DocumentService#getMetadataKeys]] in order to retrieve the available
-    * aggregation keys for the underlying collection.
-    *
-    * @param facets the search query.
-    * @param aggregateKey the key that belongs to the aggregated values.
-    * @param size the number of unique [[models.MetaDataBucket]] to create.
-    * @param include a list of values to filter the result. The result will only contain the [[models.MetaDataBucket]] associated
-    * with one of the keys given in this list. The size parameter is ignored when given a non empty include list.
-    * @param exclude a list of values that should be excluded from the result. The result will contain no [[models.MetaDataBucket]]
-    * associated with one of the keys given in this list.
-    * @param index the data source index or database name to query.
-    * @return an [[models.Aggregation]] with '''size''' [[models.MetaDataBucket]] matching the given filters and using the aggregationKey.
-    */
+  /**
+   * Creates multiple buckets - one per unique value that is associated with the given key.
+   *
+   * The following snippet will create five buckets. Each bucket represents one of the five
+   * most occurring recipient names that are associated with a document and match the empty filter:
+   * {{{
+   *   aggregate(Facets.empty, "Recipient_names", 5, Nil, Nil)("enron")
+   * }}}
+   *
+   * Use [[models.services.DocumentService#getMetadataKeys]] in order to retrieve the available
+   * aggregation keys for the underlying collection.
+   *
+   * @param facets the search query.
+   * @param aggregateKey the key that belongs to the aggregated values.
+   * @param size the number of unique [[models.MetaDataBucket]] to create.
+   * @param include a list of values to filter the result. The result will only contain the [[models.MetaDataBucket]] associated
+   * with one of the keys given in this list. The size parameter is ignored when given a non empty include list.
+   * @param exclude a list of values that should be excluded from the result. The result will contain no [[models.MetaDataBucket]]
+   * associated with one of the keys given in this list.
+   * @param index the data source index or database name to query.
+   * @return an [[models.Aggregation]] with '''size''' [[models.MetaDataBucket]] matching the given filters and using the aggregationKey.
+   */
   def aggregate(facets: Facets, aggregateKey: String, size: Int, include: List[String], exclude: List[String])(index: String): Aggregation
 
-  /** Creates multiple aggregations - one for each metadata from the underlying collection.
-    *
-    * @param facets the search query.
-    * @param size the number of unique [[models.MetaDataBucket]] to create. The size is the same for all aggregations.
-    * @param keyExclusion a list of metadata keys that should be excluded from the aggregation.
-    * @param index the data source index or database name to query.
-    * @return a list of [[models.Aggregation]]. Each with '''size''' [[models.MetaDataBucket]] matching the given filters.
-    */
+  /**
+   * Creates multiple aggregations - one for each metadata from the underlying collection.
+   *
+   * @param facets the search query.
+   * @param size the number of unique [[models.MetaDataBucket]] to create. The size is the same for all aggregations.
+   * @param keyExclusion a list of metadata keys that should be excluded from the aggregation.
+   * @param index the data source index or database name to query.
+   * @return a list of [[models.Aggregation]]. Each with '''size''' [[models.MetaDataBucket]] matching the given filters.
+   */
   def aggregateAll(facets: Facets, size: Int, keyExclusion: List[String])(index: String): List[Aggregation]
 
-  /** Creates multiple buckets - one per unique entity.
-    *
-    * Each document has a list of co-occurring entities, which is used to build this aggregation.
-    *
-    * The following snippet will create five buckets. Each bucket represents one of the five
-    * most occurring entity ids that are associated with a document and match the empty filter:
-    * {{{
-    *   aggregateEntities(Facets.empty, 5, Nil, Nil)("enron")
-    * }}}
-    *
-    * @param facets the search query.
-    * @param size the number of unique [[models.NodeBucket]] to create.
-    * @param include a list of values to filter the result. The result will only contain the [[models.NodeBucket]] associated
-    * with one of the keys given in this list. The size parameter is ignored when given a non empty include list.
-    * @param exclude a list of values that should be excluded from the result. The result will contain no [[models.NodeBucket]]
-    * associated with one of the keys given in this list.
-    * @param index the data source index or database name to query.
-    * @return an [[models.Aggregation]] with '''size''' [[models.NodeBucket]] representing most occurring entities in the
-    * underlying collection.
-    */
+  /**
+   * Creates multiple buckets - one per unique entity.
+   *
+   * Each document has a list of co-occurring entities, which is used to build this aggregation.
+   *
+   * The following snippet will create five buckets. Each bucket represents one of the five
+   * most occurring entity ids that are associated with a document and match the empty filter:
+   * {{{
+   *   aggregateEntities(Facets.empty, 5, Nil, Nil)("enron")
+   * }}}
+   *
+   * @param facets the search query.
+   * @param size the number of unique [[models.NodeBucket]] to create.
+   * @param include a list of values to filter the result. The result will only contain the [[models.NodeBucket]] associated
+   * with one of the keys given in this list. The size parameter is ignored when given a non empty include list.
+   * @param exclude a list of values that should be excluded from the result. The result will contain no [[models.NodeBucket]]
+   * associated with one of the keys given in this list.
+   * @param index the data source index or database name to query.
+   * @return an [[models.Aggregation]] with '''size''' [[models.NodeBucket]] representing most occurring entities in the
+   * underlying collection.
+   */
   def aggregateEntities(facets: Facets, size: Int, include: List[Long], exclude: List[Long])(index: String): Aggregation
 
-  /** Creates multiple buckets - one per unique entity. The aggregation only considers entities belonging to the given type.
-    *
-    * @param facets the search query.
-    * @param etype the entity type to filter for.
-    * @param size the number of unique [[models.NodeBucket]] to create.
-    * @param include a list of values to filter the result. The result will only contain the [[models.NodeBucket]] associated
-    * with one of the keys given in this list. The size parameter is ignored when given a non empty include list.
-    * @param exclude a list of values that should be excluded from the result. The result will contain no [[models.NodeBucket]]
-    * associated with one of the keys given in this list.
-    * @param index the data source index or database name to query.
-    * @return an [[models.Aggregation]] with '''size''' [[models.NodeBucket]] representing most occurring entities of the given type
-    * in the underlying collection.
-    */
+  /**
+   * Creates multiple buckets - one per unique entity. The aggregation only considers entities belonging to the given type.
+   *
+   * @param facets the search query.
+   * @param etype the entity type to filter for.
+   * @param size the number of unique [[models.NodeBucket]] to create.
+   * @param include a list of values to filter the result. The result will only contain the [[models.NodeBucket]] associated
+   * with one of the keys given in this list. The size parameter is ignored when given a non empty include list.
+   * @param exclude a list of values that should be excluded from the result. The result will contain no [[models.NodeBucket]]
+   * associated with one of the keys given in this list.
+   * @param index the data source index or database name to query.
+   * @return an [[models.Aggregation]] with '''size''' [[models.NodeBucket]] representing most occurring entities of the given type
+   * in the underlying collection.
+   */
   def aggregateEntitiesByType(facets: Facets, etype: String, size: Int, include: List[Long], exclude: List[Long])(index: String): Aggregation
 
-  /** Creates multiple buckets - one per unique keyword.
-    *
-    * Each document has a list important keywords, which is used to build this aggregation.
-    *
-    * @param facets the search query.
-    * @param size the number of unique [[models.MetaDataBucket]] to create.
-    * @param include a list of values to filter the result. The result will only contain the [[models.MetaDataBucket]] associated
-    * with one of the keys given in this list. The size parameter is ignored when given a non empty include list.
-    * @param exclude a list of values that should be excluded from the result. The result will contain no [[models.MetaDataBucket]]
-    * associated with one of the keys given in this list.
-    * @param index the data source index or database name to query.
-    * @return an [[models.Aggregation]] with '''size''' [[models.MetaDataBucket]] representing most occurring entities in the
-    * underlying collection.
-    */
+  /**
+   * Creates multiple buckets - one per unique keyword.
+   *
+   * Each document has a list important keywords, which is used to build this aggregation.
+   *
+   * @param facets the search query.
+   * @param size the number of unique [[models.MetaDataBucket]] to create.
+   * @param include a list of values to filter the result. The result will only contain the [[models.MetaDataBucket]] associated
+   * with one of the keys given in this list. The size parameter is ignored when given a non empty include list.
+   * @param exclude a list of values that should be excluded from the result. The result will contain no [[models.MetaDataBucket]]
+   * associated with one of the keys given in this list.
+   * @param index the data source index or database name to query.
+   * @return an [[models.Aggregation]] with '''size''' [[models.MetaDataBucket]] representing most occurring entities in the
+   * underlying collection.
+   */
   def aggregateKeywords(facets: Facets, size: Int, include: List[String], exclude: List[String])(index: String): Aggregation
 }
 
-/** Implementation of [[models.services.AggregateService]] using an elasticsearch index as backend.
-  *
-  * @param clientService the elasticsearch client interface.
-  * @param utils common helper to issue elasticsearch queries.
-  *
-  * @see See [[https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket.html ES documentation]]
-  * for more information.
-  */
+/**
+ * Implementation of [[models.services.AggregateService]] using an elasticsearch index as backend.
+ *
+ * @param clientService the elasticsearch client interface.
+ * @param utils common helper to issue elasticsearch queries.
+ *
+ * @see See [[https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket.html ES documentation]]
+ * for more information.
+ */
 class ESAggregateService @Inject() (clientService: SearchClientService, utils: ESRequestUtils) extends AggregateService {
 
   /** @inheritdoc */

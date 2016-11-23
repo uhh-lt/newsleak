@@ -19,40 +19,113 @@ package models.services
 
 import scala.collection.mutable.ListBuffer
 import com.google.inject.{ ImplementedBy, Inject }
+import models.KeyTerm
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
-import util.es.ESRequestUtils
-import models.{ Facets, NodeBucket, MetaDataBucket, Aggregation, Relationship }
-
+// scalastyle:off
 import scala.collection.JavaConversions._
+// scalastyle:on
+import models.{ Facets, NodeBucket, MetaDataBucket, Aggregation, Relationship, Network }
+import util.es.ESRequestUtils
 
+/**
+ * Defines common method for creating and extending co-occurrence networks given a search query.
+ *
+ * The trait is implemented by [[models.services.ESNetworkService]].
+ */
 @ImplementedBy(classOf[ESNetworkService])
 trait NetworkService {
 
-  def createNetwork(facets: Facets, nodeFraction: Map[String, Int], exclude: List[Long])(index: String): (List[NodeBucket], List[Relationship])
-  def induceNetwork(facets: Facets, currentNetwork: List[Long], nodes: List[Long])(index: String): (List[NodeBucket], List[Relationship])
+  /**
+   * Returns a co-occurrence network matching the given search query.
+   *
+   * @param facets the search query.
+   * @param nodeFraction a map linking from entity types to the number of nodes to request for each type.
+   * @param exclude a list of entity ids that should be excluded from the result. The result will contain no [[models.NodeBucket]]
+   * associated with one of the ids given in this list.
+   * @param index the data source index or database name to query.
+   * @return a [[models.Network]] consisting of the nodes and relationships of the created co-occurrence network.
+   */
+  def createNetwork(facets: Facets, nodeFraction: Map[String, Int], exclude: List[Long])(index: String): Network
 
+  /**
+   * Adds new nodes to the current network matching the given search query.
+   *
+   * The method induces relationships and nodes for the given entitiesToAdd considering the already present network i.e.
+   * it induces relationships between the new nodes and the current network and between the new nodes. It does not
+   * provide nodes for the current network nor relationships between those nodes.
+   *
+   * @param facets the search query.
+   * @param currentNetwork the entity ids of the current network.
+   * @param entitiesToAdd new entities to be added to the network.
+   * @param index the data source index or database name to query.
+   * @return a [[models.Network]] consisting of the nodes and relationships of the created co-occurrence network.
+   */
+  def induceNetwork(facets: Facets, currentNetwork: List[Long], entitiesToAdd: List[Long])(index: String): Network
+
+  /**
+   * Returns entities co-occurring with the given entity matching the search query.
+   *
+   * @param facets the search query.
+   * @param entityId the entity id.
+   * @param size the number of neighbors to fetch.
+   * @param exclude a list of entity ids that should be excluded from the result. The result will contain no [[models.NodeBucket]]
+   * associated with one of the ids given in this list.
+   * @param index the data source index or database name to query.
+   * @return a list of [[models.NodeBucket]] co-occurring with the given entity.
+   */
   def getNeighbors(facets: Facets, entityId: Long, size: Int, exclude: List[Long])(index: String): List[NodeBucket]
-  def getNeighborCountsPerType(facets: Facets, entityId: Long)(index: String): Aggregation
-  def getEdgeKeywords(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): Aggregation
+
+  /**
+   * Accumulates the number of entities that fall in a certain entity type and co-occur with the given entity.
+   *
+   * The result will contain ''n'' different buckets with ''n'' representing the distinct entity types for the underlying collection.
+   *
+   * @param facets the search query.
+   * @param entityId the entity id.
+   * @param index the data source index or database name to query.
+   * @return a map linking from the unique entity type to the number of neighbors of that type.
+   */
+  def getNeighborCountsPerType(facets: Facets, entityId: Long)(index: String): Map[String, Int]
+
+  /**
+   * Returns important terms representing the relationship between both nodes based on the underlying document content.
+   *
+   * @param facets the search query.
+   * @param source the first adjacent node of the edge.
+   * @param dest the second adjacent node of the edge.
+   * @param numTerms the number of keywords to fetch.
+   * @param index the data source index or database name to query.
+   * @return a list of [[models.KeyTerm]] representing important terms for the given relationship.
+   */
+  def getEdgeKeywords(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): List[KeyTerm]
 }
 
+/**
+ * Implementation of [[models.services.NetworkService]] using an elasticsearch index as backend.
+ *
+ * @param clientService the elasticsearch client.
+ * @param aggregateService the aggregation service.
+ * @param utils common helper to issue elasticsearch queries.
+ */
 class ESNetworkService @Inject() (clientService: SearchClientService, aggregateService: AggregateService, utils: ESRequestUtils) extends NetworkService {
 
+  /** @inheritdoc */
   override def createNetwork(
     facets: Facets,
     nodeFraction: Map[String, Int],
     exclude: List[Long]
-  )(index: String): (List[NodeBucket], List[Relationship]) = {
+  )(index: String): Network = {
     val buckets = nodeFraction.flatMap {
       case (t, size) =>
         aggregateService.aggregateEntitiesByType(facets, t, size, List(), exclude)(index).buckets
     }.toList
 
     val rels = induceRelationships(facets, buckets.collect { case NodeBucket(id, _) => id }, index)
-    (buckets.collect { case a @ NodeBucket(_, _) => a }, rels)
+    Network(buckets.collect { case a @ NodeBucket(_, _) => a }, rels)
   }
 
+  /** @inheritdoc */
   private def induceRelationships(facets: Facets, nodes: List[Long], index: String): List[Relationship] = {
     val visitedList = ListBuffer[Long]()
     val rels = nodes.flatMap { source =>
@@ -63,6 +136,7 @@ class ESNetworkService @Inject() (clientService: SearchClientService, aggregateS
     rels
   }
 
+  /** @inheritdoc */
   private def getRelationship(facets: Facets, source: Long, dest: Long, index: String): Option[Relationship] = {
     val t = List(source, dest)
     val agg = aggregateService.aggregateEntities(facets.withEntities(t), 2, t, Nil)(index)
@@ -77,7 +151,8 @@ class ESNetworkService @Inject() (clientService: SearchClientService, aggregateS
     }
   }
 
-  override def induceNetwork(facets: Facets, currentNetwork: List[Long], nodes: List[Long])(index: String): (List[NodeBucket], List[Relationship]) = {
+  /** @inheritdoc */
+  override def induceNetwork(facets: Facets, currentNetwork: List[Long], nodes: List[Long])(index: String): Network = {
     val buckets = aggregateService.aggregateEntities(facets, nodes.length, nodes, Nil)(index).buckets.collect { case a @ NodeBucket(_, _) => a }
     // Fetch relationships between new nodes
     val inBetweenRels = induceRelationships(facets, nodes, index)
@@ -85,18 +160,21 @@ class ESNetworkService @Inject() (clientService: SearchClientService, aggregateS
     val connectingRels = nodes.flatMap { source =>
       currentNetwork.flatMap { dest => getRelationship(facets, source, dest, index) }
     }
-    (buckets, inBetweenRels ++ connectingRels)
+    Network(buckets, inBetweenRels ++ connectingRels)
   }
 
+  /** @inheritdoc */
   override def getNeighbors(facets: Facets, entityId: Long, size: Int, exclude: List[Long])(index: String): List[NodeBucket] = {
     val res = aggregateService.aggregateEntities(facets.withEntities(List(entityId)), size, List(), exclude)(index)
     res.buckets.collect { case a @ NodeBucket(_, _) => a }
   }
 
-  override def getNeighborCountsPerType(facets: Facets, entityId: Long)(index: String): Aggregation = {
+  /** @inheritdoc */
+  override def getNeighborCountsPerType(facets: Facets, entityId: Long)(index: String): Map[String, Int] = {
     // Add entity id as entities filter in order to receive documents where both co-occur
     val neighborFacets = facets.withEntities(List(entityId))
-    cardinalityAggregate(neighborFacets, 0, index)
+    val res = cardinalityAggregate(neighborFacets, 0, index)
+    res.buckets.collect { case MetaDataBucket(term, count) => (term, count.toInt) }.toMap
   }
 
   // TODO: Maybe move to aggregateService
@@ -122,8 +200,10 @@ class ESNetworkService @Inject() (clientService: SearchClientService, aggregateS
     Aggregation("neighbors", buckets)
   }
 
-  override def getEdgeKeywords(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): Aggregation = {
+  /** @inheritdoc */
+  override def getEdgeKeywords(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): List[KeyTerm] = {
     // Only consider documents where the two entities occur
-    aggregateService.aggregateKeywords(facets.withEntities(List(source, dest)), numTerms, Nil, Nil)(index)
+    val res = aggregateService.aggregateKeywords(facets.withEntities(List(source, dest)), numTerms, Nil, Nil)(index)
+    res.buckets.collect { case MetaDataBucket(term, count) => KeyTerm(term, count.toInt) }
   }
 }

@@ -17,12 +17,15 @@
 
 package models
 
+import play.api.libs.json.Json
 import scalikejdbc.WrappedResultSet
 
 case class KeyTerm(term: String, score: Int)
 
 @deprecated("Use ES methods instead")
 object KeyTerm {
+
+  implicit val keyTermFormat = Json.format[KeyTerm]
 
   def apply(rs: WrappedResultSet): KeyTerm = KeyTerm(rs.string("term"), rs.int("frequency"))
 }

@@ -19,8 +19,9 @@ package controllers
 
 import javax.inject.Inject
 
-import models.{ Facets, MetaDataBucket, Relationship, NodeBucket }
-import models.EntityType.{ Location, Person, Misc, Organization }
+import models._
+import models.KeyTerm.keyTermFormat
+import models.EntityType.{ Location, Misc, Organization, Person }
 import models.services.{ EntityService, NetworkService }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
@@ -46,12 +47,8 @@ class NetworkController @Inject() (entityService: EntityService, networkService:
     val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
 
-    val agg = networkService.getNeighborCountsPerType(facets, nodeId)(currentDataset)
-
-    val counts = agg.buckets.collect {
-      case MetaDataBucket(t, c) =>
-        Json.obj("type" -> t, "count" -> c)
-    }
+    val res = networkService.getNeighborCountsPerType(facets, nodeId)(currentDataset)
+    val counts = res.map { case (t, c) => Json.obj("type" -> t, "count" -> c) }
     Ok(Json.toJson(counts)).as("application/json")
   }
 
@@ -70,12 +67,7 @@ class NetworkController @Inject() (entityService: EntityService, networkService:
     val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
 
-    val agg = networkService.getEdgeKeywords(facets, first, second, numberOfTerms)(currentDataset)
-
-    val terms = agg.buckets.collect {
-      case MetaDataBucket(term, score) =>
-        Json.obj("term" -> term, "score" -> score)
-    }
+    val terms = networkService.getEdgeKeywords(facets, first, second, numberOfTerms)(currentDataset)
     Ok(Json.toJson(terms)).as("application/json")
   }
 
@@ -93,7 +85,7 @@ class NetworkController @Inject() (entityService: EntityService, networkService:
     val sizes = nodeFraction.mapValues(_.toInt)
 
     val blacklistedIds = entityService.getBlacklisted()(currentDataset).map(_.id)
-    val (nodes, relations) = networkService.createNetwork(facets, sizes, blacklistedIds)(currentDataset)
+    val Network(nodes, relations) = networkService.createNetwork(facets, sizes, blacklistedIds)(currentDataset)
 
     if (nodes.isEmpty) {
       Ok(Json.obj("entities" -> List[JsObject](), "relations" -> List[JsObject]())).as("application/json")
@@ -125,7 +117,7 @@ class NetworkController @Inject() (entityService: EntityService, networkService:
     val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
     val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
 
-    val (buckets, relations) = networkService.induceNetwork(facets, currentNetwork, nodes)(currentDataset)
+    val Network(buckets, relations) = networkService.induceNetwork(facets, currentNetwork, nodes)(currentDataset)
 
     Ok(Json.obj("entities" -> nodesToJson(buckets), "relations" -> relations)).as("application/json")
   }

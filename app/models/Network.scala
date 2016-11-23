@@ -17,4 +17,4 @@
 
 package models
 
-case class IteratorSession(hits: Long, hitIterator: Iterator[Document], hash: Long)
+case class Network(nodes: List[NodeBucket], relations: List[Relationship])

@@ -27,8 +27,9 @@ import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.transport.InetSocketTransportAddress
 import util.NewsleakConfigReader
 
-/** Wrapper around an ElasticSearch [[Client]]. Different ways of obtaining a [[Client]] can be implemented in classes
-  * implementing this interface.
+/**
+ * Wrapper around an ElasticSearch [[Client]]. Different ways of obtaining a [[Client]] can be implemented in classes
+ * implementing this interface.
  */
 @ImplementedBy(classOf[ESTransportClient])
 trait SearchClientService {

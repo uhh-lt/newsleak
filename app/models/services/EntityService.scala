@@ -23,102 +23,113 @@ import scalikejdbc._
 // scalastyle:on
 import models.{ Entity, EntityType, Fragment }
 
-/** Defines common data access methods for retrieving and manipulating [[models.Entity]].
-  *
-  * The trait is implemented by [[models.services.DBDocumentService]].
-  */
+/**
+ * Defines common data access methods for retrieving and manipulating [[models.Entity]].
+ *
+ * The trait is implemented by [[models.services.DBDocumentService]].
+ */
 @ImplementedBy(classOf[DBEntityService])
 trait EntityService {
 
-  /** Returns a list of [[models.Entity]] matching the given entity ids.
-    *
-    * @param ids a list of entity ids.
-    * @param index the data source index or database name to query.
-    * @return a list of [[models.Entity]] corresponding to the given ids or [[scala.Nil]] if no
-    * matching entity is found.
-    */
+  /**
+   * Returns a list of [[models.Entity]] matching the given entity ids.
+   *
+   * @param ids a list of entity ids.
+   * @param index the data source index or database name to query.
+   * @return a list of [[models.Entity]] corresponding to the given ids or [[scala.Nil]] if no
+   * matching entity is found.
+   */
   def getByIds(ids: List[Long])(index: String): List[Entity]
 
-  /** Marks the entities associated with the given ids as blacklisted.
-    *
-    * Blacklisted entities don't appear in any result set.
-    *
-    * @param ids the entity ids to blacklist.
-    * @param index the data source index or database name to query.
-    * @return ''true'', if all entities are successfully marked as blacklisted. ''False'' if at least one entity
-    * is not correct marked.
-    */
+  /**
+   * Marks the entities associated with the given ids as blacklisted.
+   *
+   * Blacklisted entities don't appear in any result set.
+   *
+   * @param ids the entity ids to blacklist.
+   * @param index the data source index or database name to query.
+   * @return ''true'', if all entities are successfully marked as blacklisted. ''False'' if at least one entity
+   * is not correct marked.
+   */
   def blacklist(ids: List[Long])(index: String): Boolean
 
-  /** Removes the blacklisted mark from the entities associated with the given ids.
-    *
-    * After executing this operation, the respective entities do appear in result sets again.
-    *
-    * @param ids the entity ids to remove the blacklist mark from.
-    * @param index the data source index or database name to query.
-    * @return ''true'', if the blacklist mark is successfully removed from all entities. ''False'' if at least one blacklist
-    * mark for an entity is not correct removed.
-    */
+  /**
+   * Removes the blacklisted mark from the entities associated with the given ids.
+   *
+   * After executing this operation, the respective entities do appear in result sets again.
+   *
+   * @param ids the entity ids to remove the blacklist mark from.
+   * @param index the data source index or database name to query.
+   * @return ''true'', if the blacklist mark is successfully removed from all entities. ''False'' if at least one blacklist
+   * mark for an entity is not correct removed.
+   */
   def undoBlacklist(ids: List[Long])(index: String): Boolean
 
-  /** Returns all blacklisted entities for the underlying collection.
-    *
-    * @param index the data source index or database name to query.
-    * @return a list of [[models.Entity]], where each entity is marked as blacklisted.
-    */
+  /**
+   * Returns all blacklisted entities for the underlying collection.
+   *
+   * @param index the data source index or database name to query.
+   * @return a list of [[models.Entity]], where each entity is marked as blacklisted.
+   */
   def getBlacklisted()(index: String): List[Entity]
 
-  /** Merges multiple nodes in a given focal node.
-    *
-    * The duplicates don't appear in any result set anymore. Further, any entity-related search using the focal node as
-    * instance also queries for its duplicates i.e. searching for "Angela Merkel" will also search for "Angela" or "Dr. Merkel".
-    *
-    * @param focalId the central entity id.
-    * @param duplicates entity ids referring to similar textual mentions of the focal id.
-    * @param index the data source index or database name to query.
-    * @return ''true'', if the operation was successful. ''False'' otherwise.
-    */
+  /**
+   * Merges multiple nodes in a given focal node.
+   *
+   * The duplicates don't appear in any result set anymore. Further, any entity-related search using the focal node as
+   * instance also queries for its duplicates i.e. searching for "Angela Merkel" will also search for "Angela" or "Dr. Merkel".
+   *
+   * @param focalId the central entity id.
+   * @param duplicates entity ids referring to similar textual mentions of the focal id.
+   * @param index the data source index or database name to query.
+   * @return ''true'', if the operation was successful. ''False'' otherwise.
+   */
   def merge(focalId: Long, duplicates: List[Long])(index: String): Boolean
 
-  /** Withdraws [[models.services.EntityService#merge]] for the given entity id.
-    *
-    * @param focalIds the central entity id.
-    * @param index the data source index or database name to query.
-    * @return ''true'', if the removal was successful. ''False'' otherwise.
-    */
+  /**
+   * Withdraws [[models.services.EntityService#merge]] for the given entity id.
+   *
+   * @param focalIds the central entity id.
+   * @param index the data source index or database name to query.
+   * @return ''true'', if the removal was successful. ''False'' otherwise.
+   */
   def undoMerge(focalIds: List[Long])(index: String): Boolean
 
-  /** Returns all merged entities for the underlying collection.
-    *
-    * @param index the data source index or database name to query.
-    * @return a map linking from the focal entity to its duplicates.
-    */
+  /**
+   * Returns all merged entities for the underlying collection.
+   *
+   * @param index the data source index or database name to query.
+   * @return a map linking from the focal entity to its duplicates.
+   */
   def getMerged()(index: String): Map[Entity, List[Entity]]
 
-  /** Changes the name of the entity corresponding to the given entity id.
-    *
-    * @param id the entity id to change.
-    * @param newName the new name to apply.
-    * @param index the data source index or database name to query.
-    * @return ''true'', if the operation was successful. ''False'' otherwise.
-    */
+  /**
+   * Changes the name of the entity corresponding to the given entity id.
+   *
+   * @param id the entity id to change.
+   * @param newName the new name to apply.
+   * @param index the data source index or database name to query.
+   * @return ''true'', if the operation was successful. ''False'' otherwise.
+   */
   def changeName(id: Long, newName: String)(index: String): Boolean
 
-  /** Changes the type of the entity corresponding to the given entity id.
-    *
-    * @param id the entity id to change.
-    * @param newType the new type to apply.
-    * @param index the data source index or database name to query.
-    * @return ''true'', if the operation was successful. ''False'' otherwise.
-    */
+  /**
+   * Changes the type of the entity corresponding to the given entity id.
+   *
+   * @param id the entity id to change.
+   * @param newType the new type to apply.
+   * @param index the data source index or database name to query.
+   * @return ''true'', if the operation was successful. ''False'' otherwise.
+   */
   def changeType(id: Long, newType: String)(index: String): Boolean
 
-  /** Returns all entity occurrences for the given document including their position in the document.
-    *
-    * @param docId the document id.
-    * @param index the data source index or database name to query.
-    * @return a list of tuple consisting of an entity and its position in the document.
-    */
+  /**
+   * Returns all entity occurrences for the given document including their position in the document.
+   *
+   * @param docId the document id.
+   * @param index the data source index or database name to query.
+   * @return a list of tuple consisting of an entity and its position in the document.
+   */
   def getEntityFragments(docId: Long)(index: String): List[(Entity, Fragment)]
 
   /** Returns a list of distinct entity types in the underlying collection */
