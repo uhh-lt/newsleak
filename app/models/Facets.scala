@@ -20,6 +20,19 @@ package models
 import org.joda.time.LocalDateTime
 
 // TODO Builder pattern ?
+/**
+ * Representation for a search query to find the most relevant documents.
+ *
+ * @param fullTextSearch match documents that contain the given expression in the document body.
+ * @param generic a map linking from document metadata keys to a list of instances for this metadata. Different metadata
+ * keys are joined via a logical ''and'', whereas different instances of the same metadata key are joined via a logical
+ * ''or''.
+ * @param entities a list of entity ids that should occur in the document.
+ * @param fromDate start date for the document creation date (inclusive).
+ * @param toDate end date for the document creation date (inclusive).
+ * @param fromTimeExpression start date for the time expression mentioned in the document body (inclusive).
+ * @param toTimeExpression end date for the time expresson mentioned in the document body (inclusive).
+ */
 case class Facets(
     fullTextSearch: List[String],
     generic: Map[String, List[String]],
@@ -32,15 +45,20 @@ case class Facets(
 
   def withEntities(ids: List[Long]): Facets = this.copy(entities = this.entities ++ ids)
 
-  def isEmpty(): Boolean = fullTextSearch.isEmpty && generic.isEmpty && entities.isEmpty && !hasDateFilter
-  def hasDateFilter(): Boolean = fromDate.isDefined || toDate.isDefined || fromTimeExpression.isDefined || toTimeExpression.isDefined
+  /** Returns ''true'' when the filter is empty i.e. it matches all documents. ''False'' otherwise. */
+  def isEmpty: Boolean = fullTextSearch.isEmpty && generic.isEmpty && entities.isEmpty && !hasDateFilter
+
+  /**
+   * Returns ''true'' when the filter defines any date restriction such as the document creation date or a time expression
+   * occurring in the document. ''False'' otherwise.
+   */
+  def hasDateFilter: Boolean = fromDate.isDefined || toDate.isDefined || fromTimeExpression.isDefined || toTimeExpression.isDefined
 }
 
-/**
- * Companion object for Facets
- */
+/** Companion object for [[models.Facets]]. */
 object Facets {
 
+  /** Represents an empty filter search i.e. retrieve all documents */
   val empty = Facets(List(), Map(), List(), None, None, None, None)
 }
 

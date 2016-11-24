@@ -19,10 +19,19 @@ package models
 
 import scalikejdbc.WrappedResultSet
 
+/**
+ * Representation for a document tag.
+ *
+ * @param id the unique tag id.
+ * @param documentId the unique document id.
+ * @param label the corresponding tag label.
+ */
 case class Tag(id: Long, documentId: Long, label: String)
 
+/** Companion object for [[models.Tag]] instances. */
 object Tag {
 
+  /** Factory method to create tags from database result sets. */
   def apply(rs: WrappedResultSet): Tag = Tag(
     rs.long("id"),
     rs.long("documentid"),

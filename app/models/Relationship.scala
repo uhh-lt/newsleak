@@ -17,11 +17,22 @@
 
 package models
 
+// scalastyle:off
 import play.api.libs.json._
+// scalastyle:on
 
+/**
+ * Representation for a relationship.
+ *
+ * @param source the first adjacent node.
+ * @param dest the second adjacent node.
+ * @param occurrence the document occurrence i.e. in how many documents does this relationship occur.
+ */
 case class Relationship(source: Long, dest: Long, occurrence: Long)
 
+/** Companion object for [[models.Relationship]] instances. */
 object Relationship {
 
+  /** Automatic mapping for [[models.Relationship]] to read and write from and to json. */
   implicit val relationshipFormat = Json.format[Relationship]
 }

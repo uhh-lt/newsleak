@@ -23,17 +23,18 @@ import scalikejdbc.WrappedResultSet
 /**
  * Document representation.
  *
- * @param id       unique document identifier.
- * @param content  document body that contains raw text.
- * @param created  creation date and time of the document.
+ * @param id unique document identifier.
+ * @param content document body containing raw text.
+ * @param created creation date and time of the document.
+ * @param highlightedContent document content enriched with tags (<em> [...] </em>) for highlighting. This field is used
+ * to highlight full-text search results.
  */
 case class Document(id: Long, content: String, created: LocalDateTime, highlightedContent: Option[String] = None)
 
-/**
- * Companion object for [[Document]] instances.
- */
+/** Companion object for [[models.Document]] instances. */
 object Document {
 
+  /** Factory method to create documents from database result sets. */
   def apply(rs: WrappedResultSet): Document = Document(
     rs.int("id"),
     rs.string("content"),

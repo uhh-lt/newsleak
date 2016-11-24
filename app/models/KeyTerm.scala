@@ -20,12 +20,20 @@ package models
 import play.api.libs.json.Json
 import scalikejdbc.WrappedResultSet
 
+/**
+ * Representation for important terms including their importance value.
+ *
+ * @param term the important term value.
+ * @param score the score of the important term. Higher values represent more important terms.
+ */
 case class KeyTerm(term: String, score: Int)
 
-@deprecated("Use ES methods instead")
+/** Companion object for [[models.KeyTerm]] instances. */
 object KeyTerm {
 
+  /** Automatic mapping for [[models.KeyTerm]] to read and write from and to json. */
   implicit val keyTermFormat = Json.format[KeyTerm]
 
+  /** Factory method to create key terms from database result sets. */
   def apply(rs: WrappedResultSet): KeyTerm = KeyTerm(rs.string("term"), rs.int("frequency"))
 }

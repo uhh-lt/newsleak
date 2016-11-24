@@ -17,4 +17,10 @@
 
 package models
 
+/**
+ * Representation for a co-occurrence network.
+ *
+ * @param nodes the vertices of the network.
+ * @param relations the edges of the network.
+ */
 case class Network(nodes: List[NodeBucket], relations: List[Relationship])

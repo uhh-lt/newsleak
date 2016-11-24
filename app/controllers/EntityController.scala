@@ -36,16 +36,16 @@ class EntityController @Inject() (entityService: EntityService, aggregateService
 
   def getBlacklistedEntities = Action { implicit request =>
     val entities = entityService.getBlacklisted()(currentDataset)
-      // TODO Entity json mapper
-      .map(x => Json.obj("id" -> x.id, "name" -> x.name, "freq" -> x.frequency, "type" -> x.entityType))
+      // TODO use Entity json mapper
+      .map(x => Json.obj("id" -> x.id, "name" -> x.name, "freq" -> x.occurrence, "type" -> x.entityType))
     Ok(Json.toJson(entities)).as("application/json")
   }
 
   def getMergedEntities = Action { implicit request =>
     val entities = entityService.getMerged()(currentDataset).map {
       case (focalNode, duplicates) =>
-        val focalFormat = Json.obj("id" -> focalNode.id, "name" -> focalNode.name, "freq" -> focalNode.frequency, "type" -> focalNode.entityType)
-        val duplicateFormat = duplicates.map(d => Json.obj("id" -> d.id, "name" -> d.name, "freq" -> d.frequency, "type" -> d.entityType))
+        val focalFormat = Json.obj("id" -> focalNode.id, "name" -> focalNode.name, "freq" -> focalNode.occurrence, "type" -> focalNode.entityType)
+        val duplicateFormat = duplicates.map(d => Json.obj("id" -> d.id, "name" -> d.name, "freq" -> d.occurrence, "type" -> d.entityType))
 
         Json.obj("id" -> focalNode.id, "origin" -> focalFormat, "duplicates" -> Json.toJson(duplicateFormat))
     }
@@ -119,7 +119,7 @@ class EntityController @Inject() (entityService: EntityService, aggregateService
             "id" -> x._2.id,
             "name" -> x._2.name,
             "type" -> x._2.entityType,
-            "freq" -> x._2.frequency,
+            "freq" -> x._2.occurrence,
             "docCount" -> entitiesRes.find(_._1 == x._2.id).get._2.asInstanceOf[Number].longValue
           ))
         Ok(Json.toJson(res)).as("application/json")
@@ -128,7 +128,7 @@ class EntityController @Inject() (entityService: EntityService, aggregateService
           "id" -> x._2.id,
           "name" -> x._2.name,
           "type" -> x._2.entityType,
-          "freq" -> x._2.frequency,
+          "freq" -> x._2.occurrence,
           "docCount" -> entitiesRes.find(_._1 == x._2.id).get._2.asInstanceOf[Number].longValue
         ))
         Ok(Json.toJson(res.sortBy(-_.value("docCount").as[Long]))).as("application/json")

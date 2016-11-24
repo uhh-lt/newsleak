@@ -207,7 +207,7 @@ class ESTimelineService @Inject() (clientService: SearchClientService, utils: ES
     val decadeToCount = originalBuckets.collect {
       case (b: MetaDataBucket) =>
         val decade = getDecade(LocalDateTime.parse(b.key, utils.yearFormat))
-        decade -> b.docCount
+        decade -> b.occurrence
     }.groupBy(_._1).mapValues(_.map(_._2))
 
     val buckets = (0 to numDecades).map { decade =>

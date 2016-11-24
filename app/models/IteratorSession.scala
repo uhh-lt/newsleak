@@ -17,4 +17,16 @@
 
 package models
 
+/**
+ * Storage representation for the document iterator.
+ *
+ * This representation is used to store the current document iterator matching a search query
+ * between different user requests.
+ *
+ * @param hits the number of documents matching the search query.
+ * @param hitIterator the document iterator consisting of documents matching the search query.
+ * @param hash the hash code of the search query i.e. [[models.Facets#hashCode]].
+ *
+ * @see For usage see [[controllers.DocumentController]].
+ */
 case class IteratorSession(hits: Long, hitIterator: Iterator[Document], hash: Long)
