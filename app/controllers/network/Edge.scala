@@ -26,17 +26,20 @@ class Edge(n1: Node, n2: Node, docOcc: Int, uiLevel: Int, oldDoi: Double) {
   private val doi = if (uiLevel == 0) {
     Double.NegativeInfinity // Wenn Kanten dieses Types nicht berücksichtig werden sollen, setze den DoI Wert auf -inf
   } else {
+    val pmi = log(((docOcc: Double) / docs) / ((n1.getDocOcc: Double) / docs * (n2.getDocOcc: Double) / docs))
     val pmi2 = log(((docOcc: Double) / docs * (docOcc: Double) / docs) / ((n1.getDocOcc: Double) / docs * (n2.getDocOcc: Double) / docs))
+    val npmi = pmi / (-log((docOcc: Double) / docs))
     val npmi2 = pmi2 / (-log((docOcc: Double) / docs * (docOcc: Double) / docs))
     val npmi2plus = (npmi2 + 1) / 2
+    val npmiplus = (npmi + 1) / 2
 
     val alpha = 1
     val beta = 1
     val gamma = 1
 
-    val API = npmi2plus
-    val D = -(1 - pow(0.5, dist)) * npmi2plus
-    val UI = npmi2plus * uiFactor + oldDoi * 0.08
+    val API = npmiplus
+    val D = -(1 - pow(0.5, dist)) * npmiplus
+    val UI = npmiplus * uiFactor + oldDoi * 0.08
 
     doiDebugString = " api: " + API
     API * alpha + beta * D + UI * gamma

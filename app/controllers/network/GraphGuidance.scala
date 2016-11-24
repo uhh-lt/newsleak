@@ -188,8 +188,19 @@ class GraphGuidance() { outer =>
         (eList, nList.flatten)
       }
 
+      /**
+       * @param amount Anzahl der Knoten im Iterator
+       * @return Gibt einen Iterator mit Knoten zurück, die momentan nicht im generierten Subgraph vorhanden sind,
+       * aber vorhanden wären, wenn von diesem Knoten aus eine Guidance gestartet würde
+       */
       override def getGuidancePreview(nodeId: Long, amount: Int): List[Node] = {
-        nodes(nodeId).getGuidancePreviewNodes(amount).toList
+        val ggIter = getCopyGuidance(nodeId, true)
+        // val ggIter = gg.getGuidance(id, context.edgeAmount, context.epn, context.uiMatrix, false, List())
+        // Logger.debug(ggIter.map(_._2.get).toString())
+
+        ggIter.take(edgeAmount).filterNot(t => {
+          t._2.isEmpty || usedNodes.contains(t._2.get.getId)
+        }).take(amount).map(_._2.get).toList
       }
 
       override def getConnectionsByType(nodeId: Long): List[(String, Long)] = {
