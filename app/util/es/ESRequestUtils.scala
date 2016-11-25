@@ -17,25 +17,34 @@
 
 package util.es
 
-// scalastyle:off
-import models.services.SearchClientService
-import models.{ EntityType, Facets }
 import org.elasticsearch.action.search.{ SearchRequestBuilder, SearchResponse }
+// scalastyle:off
 import org.elasticsearch.index.query.QueryStringQueryBuilder._
 import org.elasticsearch.index.query._
+// scalastyle:on
 import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
 
+import models.services.SearchClientService
+import models.{ EntityType, Facets }
+
+/** Common helper to create and parse elasticsearch queries. Further provides elasticsearch field mappings. */
 class ESRequestUtils {
 
+  /** Elasticsearch field storing the document content. */
   val docContentField = "Content"
+  /** Elasticsearch field storing the document creation date. */
   val docDateField = "Created"
+  /** Elasticsearch field storing the time expression occurring in the document. */
   val docTimeExpressionField = "SimpleTimeExpresion"
 
+  /** Elasticsearch field for running aggregation queries using entity ids. */
   val entityIdsField = "Entities" -> "Entities.EntId"
+  /** Elasticsearch field for running aggregation queries using document keywords. */
   val keywordsField = "Keywords" -> "Keywords.Keyword.raw"
 
   // TODO: in course of making other entity types available, we need to adapt these hardcoded labels
+  /** Elasticsearch fields for running aggregation queries using entity ids from separate entity types. */
   val entityTypeToField = Map(
     EntityType.Person -> "Entitiesper.EntId",
     EntityType.Organization -> "Entitiesorg.EntId",
@@ -43,16 +52,32 @@ class ESRequestUtils {
     EntityType.Misc -> "Entitiesmisc.EntId"
   )
 
+  /** Date format representation consisting of a year, month and a day e.g. 2014-12-01. */
   val yearMonthDayPattern = "yyyy-MM-dd"
+  /** Date format representation consisting of a year and a month e.g. 2014-12. */
   val yearMonthPattern = "yyyy-MM"
+  /** Date format representation consisting of a year only e.g. 2014. */
   val yearPattern = "yyyy"
 
+  /** Date format parser according to the following pattern ''yyyy-MM-dd''. */
   val yearMonthDayFormat = DateTimeFormat.forPattern(yearMonthDayPattern)
+  /** Date format parser according to the following pattern ''yyyy-MM''. */
   val yearMonthFormat = DateTimeFormat.forPattern(yearMonthPattern)
+  /** Date format parser according to the following pattern ''yyyy''. */
   val yearFormat = DateTimeFormat.forPattern(yearPattern)
 
+  /** Executes the given search request. */
   def executeRequest(request: SearchRequestBuilder, cache: Boolean = true): SearchResponse = request.setRequestCache(cache).execute().actionGet()
 
+  /**
+   * Converts an internal search query represented as [[models.Facets]] to an elasticsearch query.
+   *
+   * @param facets the internal search query.
+   * @param documentSize the number of documents to return for the given request. Pass ''0'', if only interested in aggregation.
+   * @param index the data source index or database name to query.
+   * @param client the elasticsearch client.
+   * @return an elasticsearch query builder.
+   */
   def createSearchRequest(facets: Facets, documentSize: Int, index: String, client: SearchClientService): SearchRequestBuilder = {
     val requestBuilder = client.client.prepareSearch(index)
       .setQuery(createQuery(facets))
@@ -117,7 +142,12 @@ class ESRequestUtils {
   }
 
   private def addDateXFilter(facets: Facets): Option[BoolQueryBuilder] = {
-    addGenericDateFilter(docTimeExpressionField, facets.fromTimeExpression, facets.toTimeExpression, s"$yearMonthDayPattern || $yearMonthPattern || $yearPattern")
+    addGenericDateFilter(
+      docTimeExpressionField,
+      facets.fromTimeExpression,
+      facets.toTimeExpression,
+      s"$yearMonthDayPattern || $yearMonthPattern || $yearPattern"
+    )
   }
 
   private def addGenericDateFilter(field: String, from: Option[LocalDateTime], to: Option[LocalDateTime], dateFormat: String): Option[BoolQueryBuilder] = {

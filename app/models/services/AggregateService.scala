@@ -137,7 +137,7 @@ trait AggregateService {
 /**
  * Implementation of [[models.services.AggregateService]] using an elasticsearch index as backend.
  *
- * @param clientService the elasticsearch client interface.
+ * @param clientService the elasticsearch client.
  * @param utils common helper to issue elasticsearch queries.
  *
  * @see See [[https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket.html ES documentation]]

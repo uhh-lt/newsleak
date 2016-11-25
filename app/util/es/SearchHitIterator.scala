@@ -21,13 +21,15 @@ import org.elasticsearch.action.search.SearchRequestBuilder
 import org.elasticsearch.search.{ SearchHit, SearchHits }
 
 /**
- * Custom implementation for paging results. ES implemented scrolling is not intended for real time user requests,
- * but rather for processing large amounts of data, e.g. in order to reindex the contents of one index into a
- * new index with a different configuration
- * See:
- * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
+ * Custom implementation for document paging.
  *
- * @param request
+ * The elasticsearch default implementation of scrolling is not intended for real time user requests, but rather for
+ * processing large amounts of data e.g. in order to re-index the contents of one index into a new index with a different
+ * configuration.
+ *
+ * @param request the elasticsearch request defining the document filters.
+ *
+ * @see [[https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html]]
  */
 class SearchHitIterator(request: SearchRequestBuilder) extends Iterator[SearchHit] {
 
@@ -35,6 +37,7 @@ class SearchHitIterator(request: SearchRequestBuilder) extends Iterator[SearchHi
   private var currentResultIndex = 0
   private var currentPageResults = scroll()
 
+  /** The number of documents matching the given search query. */
   lazy val hits = currentPageResults.getTotalHits
 
   private def scroll(): SearchHits = {
@@ -44,6 +47,7 @@ class SearchHitIterator(request: SearchRequestBuilder) extends Iterator[SearchHi
     response.getHits
   }
 
+  /** @inheritdoc */
   override def hasNext: Boolean = {
     if (currentResultIndex >= currentPageResults.getHits.length) {
       currentPageResults = scroll()
@@ -53,6 +57,7 @@ class SearchHitIterator(request: SearchRequestBuilder) extends Iterator[SearchHi
     }
   }
 
+  /** @inheritdoc */
   override def next(): SearchHit = {
     val searchHit = currentPageResults.getAt(currentResultIndex)
     searchHitCounter += 1
