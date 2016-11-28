@@ -27,30 +27,37 @@ import util.SessionUtils.currentDataset
 import util.DateUtils
 
 // TODO: rename Histogram to Timeline and refactor code duplication
-// TODO: rename histogramX to TimeExpression ...
+/**
+ * Provides timeline related actions.
+ *
+ * @param timelineService the timeline backend service.
+ * @param dateUtils common helper for date and time operations.
+ */
 class HistogramController @Inject() (timelineService: TimelineService, dateUtils: DateUtils) extends Controller {
 
   /**
-   * Gets document counts for entities corresponding to their id's matching the query
+   * Returns entity document counts based on the document creation date matching the search query.
    *
-   * @param fullText  Full text search term
-   * @param generic   mapping of metadata key and a list of corresponding tags
-   * @param entities  list of entity ids to filter
-   * @param timeRange string of a time range readable for [[DateUtils]]
-   * @param lod       Level of detail, value of[[models.LoD]]
-   * @return list of matching entity id's and their overall frequency as well as document count for the applied filters
+   * @param fullText match documents that contain the given expression in the document body.
+   * @param generic a map linking from document metadata keys to a list of instances for this metadata.
+   * @param entities a list of entity ids that should occur in the document.
+   * @param timeRange a string representing a time range for the document creation date.
+   * @param timeExprRange a string representing a time range for the document time expression.
+   * @param lod the level of detail value. One of [[models.LoD]].
+   * @return a list of entity id's and their occurrence in the documents matching the search query.
    */
-  def getHistogram(
+  def getTimeline(
     fullText: List[String],
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
-    timeRangeX: String,
+    timeExprRange: String,
     lod: String
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
-    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
     val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+
     val res = timelineService.createTimeline(facets, LoD.withName(lod))(currentDataset).buckets.map {
       case MetaDataBucket(key, count) => Json.obj("range" -> key, "count" -> count)
       case _ => Json.obj("" -> 0)
@@ -59,26 +66,28 @@ class HistogramController @Inject() (timelineService: TimelineService, dateUtils
   }
 
   /**
-   * Gets document counts for entities corresponding to their id's matching the query
+   * Returns entity document counts based on the time expression occurring in the documents matching the search query.
    *
-   * @param fullText  Full text search term
-   * @param generic   mapping of metadata key and a list of corresponding tags
-   * @param entities  list of entity ids to filter
-   * @param timeRange string of a time range readable for [[DateUtils]]
-   * @param lod       Level of detail, value of[[LoD]]
-   * @return list of matching entity id's and their overall frequency as well as document count for the applied filters
+   * @param fullText match documents that contain the given expression in the document body.
+   * @param generic a map linking from document metadata keys to a list of instances for this metadata.
+   * @param entities a list of entity ids that should occur in the document.
+   * @param timeRange a string representing a time range for the document creation date.
+   * @param timeExprRange a string representing a time range for the document time expression.
+   * @param lod the level of detail value. One of [[models.LoD]].
+   * @return a list of entity id's and their occurrence in the documents matching the search query.
    */
-  def getXHistogram(
+  def getTimeExprTimeline(
     fullText: List[String],
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
-    timeRangeX: String,
+    timeExprRange: String,
     lod: String
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
-    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
     val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+
     val res = timelineService.createTimeExpressionTimeline(facets, LoD.withName(lod))(currentDataset).buckets.map {
       case MetaDataBucket(key, count) => Json.obj("range" -> key, "count" -> count)
       case _ => Json.obj("" -> 0)
@@ -86,11 +95,8 @@ class HistogramController @Inject() (timelineService: TimelineService, dateUtils
     Results.Ok(Json.toJson(Json.obj("histogram" -> Json.toJson(res)))).as("application/json")
   }
 
-  /**
-   *
-   * @return identifiers for the levels of detail in backend API
-   */
-  def getHistogramLod = Action {
+  /** Returns the available instances for the level of detail type [[models.LoD]]. */
+  def getTimelineLOD = Action {
     Results.Ok(Json.toJson(LoD.values.toList.map(_.toString))).as("application/json")
   }
 }

@@ -79,7 +79,7 @@ define([
             //fetch levels of detail for histogram
             function updateLoD() {
                 var deferred = $q.defer();
-                playRoutes.controllers.HistogramController.getHistogramLod().get().then(function (response) {
+                playRoutes.controllers.HistogramController.getTimelineLOD().get().then(function (response) {
                     histogramLoD = angular.copy(response.data);
                     deferred.resolve(histogramLoD);
                 });

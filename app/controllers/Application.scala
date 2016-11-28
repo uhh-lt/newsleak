@@ -130,9 +130,9 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         controllers.routes.javascript.MetadataController.getMetadata,
         controllers.routes.javascript.MetadataController.getSpecificMetadata,
         controllers.routes.javascript.MetadataController.getMetadataTypes,
-        controllers.routes.javascript.HistogramController.getHistogram,
-        controllers.routes.javascript.HistogramController.getXHistogram,
-        controllers.routes.javascript.HistogramController.getHistogramLod
+        controllers.routes.javascript.HistogramController.getTimeline,
+        controllers.routes.javascript.HistogramController.getTimeExprTimeline,
+        controllers.routes.javascript.HistogramController.getTimelineLOD
       )
     ).as(JAVASCRIPT)
   }

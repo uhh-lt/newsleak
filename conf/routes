@@ -35,9 +35,9 @@ GET     /getEntitiesByDoc controllers.EntityController.getEntitiesByDoc(id: Long
 GET   /getMetadata     controllers.MetadataController.getMetadata(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String)
 GET   /getMetadataTypes       controllers.MetadataController.getMetadataTypes
 GET    /getSpecificMetadata             controllers.MetadataController.getSpecificMetadata(fullText: List[String], key: String, generic: Map[String, List[String]], entities: List[Long], instances: List[String], timeRange: String, timeRangeX: String)
-GET     /getHistogram               controllers.HistogramController.getHistogram(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String, lod: String)
-GET     /getXHistogram             controllers.HistogramController.getXHistogram(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String, lod: String)
-GET      /getHistogramLod         controllers.HistogramController.getHistogramLod
+GET     /getTimeline               controllers.HistogramController.getTimeline(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, lod: String)
+GET     /getTimeExprTimeline        controllers.HistogramController.getTimeExprTimeline(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, lod: String)
+GET      /getTimelineLOD         controllers.HistogramController.getTimelineLOD
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # JS ROUTING AND RESOURCES                                                                      #
