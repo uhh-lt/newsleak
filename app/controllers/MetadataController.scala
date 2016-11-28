@@ -26,6 +26,13 @@ import play.api.mvc.{ Action, Controller, Results }
 import util.SessionUtils.currentDataset
 import util.{ NewsleakConfigReader, DateUtils }
 
+/**
+ * Provides metadata related actions.
+ *
+ * @param documentService the service for document backend operations.
+ * @param aggregateService the aggregation service.
+ * @param dateUtils common helper for date and time operations.
+ */
 class MetadataController @Inject() (
     documentService: DocumentService,
     aggregateService: AggregateService,
@@ -33,37 +40,34 @@ class MetadataController @Inject() (
 ) extends Controller {
 
   private lazy val defaultExcludeTypes = NewsleakConfigReader.excludedMetadataTypes
-
   // TODO Duplicate from other controller
   private val defaultFetchSize = 50
 
-  /**
-   * Get all metadata types
-   * @return list of metadata types
-   */
+  /** Returns all unique metadata keys for the underlying collection. */
   def getMetadataTypes = Action { implicit request =>
     val keys = documentService.getMetadataKeys()(currentDataset).filter(!defaultExcludeTypes(currentDataset).contains(_))
     Results.Ok(Json.toJson(keys)).as("application/json")
   }
 
   /**
-   * Gets document counts for all metadata types corresponding to their keys
+   * Gets document counts for all metadata types corresponding to their keys matching the given query.
    *
-   * @param fullText  Full text search term
-   * @param generic   mapping of metadata key and a list of corresponding tags
-   * @param entities  list of entity ids to filter
-   * @param timeRange string of a time range readable for [[DateUtils]]
-   * @return list of matching metadata keys and document count
+   * @param fullText match documents that contain the given expression in the document body.
+   * @param generic a map linking from document metadata keys to a list of instances for this metadata.
+   * @param entities a list of entity ids that should occur in the document.
+   * @param timeRange a string representing a time range for the document creation date.
+   * @param timeExprRange a string representing a time range for the document time expression.
+   * @return list of matching metadata keys and document counts.
    */
   def getMetadata(
     fullText: List[String],
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
-    timeRangeX: String
+    timeExprRange: String
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
-    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
     val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
     val res = aggregateService.aggregateAll(facets, defaultFetchSize, defaultExcludeTypes(currentDataset))(currentDataset)
       .map(agg => Json.obj(agg.key -> agg.buckets.map {
@@ -74,15 +78,15 @@ class MetadataController @Inject() (
   }
 
   /**
-   * Gets document counts for one metadata types corresponding to their keys for given list of instances
+   * Returns document counts for a metadata type matching the given key and search query.
    *
-   * @param fullText  Full text search term
-   * @param key       metadata type key to aggregate on
-   * @param generic   mapping of metadata key and a list of corresponding tags
-   * @param entities  list of entity ids to filter
-   * @param instances list of metadata instaces to buckets for
-   * @param timeRange string of a time range readable for [[DateUtils]]
-   * @return list of matching metadata keys and document count
+   * @param fullText match documents that contain the given expression in the document body.
+   * @param key the metadata key to aggregate.
+   * @param generic a map linking from document metadata keys to a list of instances for this metadata.
+   * @param entities a list of entity ids that should occur in the document.
+   * @param timeRange a string representing a time range for the document creation date.
+   * @param timeExprRange a string representing a time range for the document time expression.
+   * @return list of matching metadata keys and document counts.
    */
   def getSpecificMetadata(
     fullText: List[String],
@@ -91,10 +95,10 @@ class MetadataController @Inject() (
     entities: List[Long],
     instances: List[String],
     timeRange: String,
-    timeRangeX: String
+    timeExprRange: String
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
-    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
     val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
 
     val agg = aggregateService.aggregate(facets, key, defaultFetchSize, instances, Nil)(currentDataset)

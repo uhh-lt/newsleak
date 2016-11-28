@@ -28,8 +28,11 @@ import util.SessionUtils.currentDataset
 import util.DateUtils
 
 /**
- * This class encapsulates all functionality for the
- * network graph.
+ * Provides network related actions.
+ *
+ * @param entityService the service for entity backend operations.
+ * @param networkService the service for network backend operations.
+ * @param dateUtils common helper for date and time operations.
  */
 class NetworkController @Inject() (
     entityService: EntityService,
@@ -37,17 +40,28 @@ class NetworkController @Inject() (
     dateUtils: DateUtils
 ) extends Controller {
 
+  /**
+   * Accumulates the number of entities that fall in a certain entity type and co-occur with the given entity.
+   *
+   * @param fullText match documents that contain the given expression in the document body.
+   * @param generic a map linking from document metadata keys to a list of instances for this metadata.
+   * @param entities a list of entity ids that should occur in the document.
+   * @param timeRange a string representing a time range for the document creation date.
+   * @param timeExprRange a string representing a time range for the document time expression.
+   * @param nodeId the entity id.
+   * @return mapping from unique entity types to the number of neighbors of that type.
+   */
   def getNeighborCounts(
     fullText: List[String],
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
-    timeRangeX: String,
+    timeExprRange: String,
     nodeId: Long
   ) = Action { implicit request =>
 
     val (from, to) = dateUtils.parseTimeRange(timeRange)
-    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
     val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
 
     val res = networkService.getNeighborCountsPerType(facets, nodeId)(currentDataset)
@@ -55,35 +69,58 @@ class NetworkController @Inject() (
     Ok(Json.toJson(counts)).as("application/json")
   }
 
+  /**
+   * Returns important terms representing the relationship between both nodes based on the underlying document content.
+   *
+   * @param fullText match documents that contain the given expression in the document body.
+   * @param generic a map linking from document metadata keys to a list of instances for this metadata.
+   * @param entities a list of entity ids that should occur in the document.
+   * @param timeRange a string representing a time range for the document creation date.
+   * @param timeExprRange a string representing a time range for the document time expression.
+   * @param first the first adjacent node of the edge.
+   * @param second the second adjacent node of the edge.
+   * @param numberOfTerms the number of keywords to fetch.
+   * @return a list of [[models.KeyTerm]] representing important terms for the given relationship.
+   */
   def getEdgeKeywords(
     fullText: List[String],
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
-    timeRangeX: String,
+    timeExprRange: String,
     first: Long,
     second: Long,
     numberOfTerms: Int
   ) = Action { implicit request =>
-
     val (from, to) = dateUtils.parseTimeRange(timeRange)
-    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
     val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
 
     val terms = networkService.getEdgeKeywords(facets, first, second, numberOfTerms)(currentDataset)
     Ok(Json.toJson(terms)).as("application/json")
   }
 
+  /**
+   * Returns a co-occurrence network matching the given search query.
+   *
+   * @param fullText match documents that contain the given expression in the document body.
+   * @param generic a map linking from document metadata keys to a list of instances for this metadata.
+   * @param entities a list of entity ids that should occur in the document.
+   * @param timeRange a string representing a time range for the document creation date.
+   * @param timeExprRange a string representing a time range for the document time expression.
+   * @param nodeFraction a map linking from entity types to the number of nodes to request for each type.
+   * @return a network consisting of the nodes and relationships of the created co-occurrence network.
+   */
   def induceSubgraph(
     fullText: List[String],
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
-    timeRangeX: String,
+    timeExprRange: String,
     nodeFraction: Map[String, String]
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
-    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
     val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
     val sizes = nodeFraction.mapValues(_.toInt)
 
@@ -102,17 +139,29 @@ class NetworkController @Inject() (
     }
   }
 
+  /**
+   * Adds new nodes to the current network matching the given search query.
+   *
+   * @param fullText match documents that contain the given expression in the document body.
+   * @param generic a map linking from document metadata keys to a list of instances for this metadata.
+   * @param entities a list of entity ids that should occur in the document.
+   * @param timeRange a string representing a time range for the document creation date.
+   * @param timeExprRange a string representing a time range for the document time expression.
+   * @param currentNetwork the entity ids of the current network.
+   * @param nodes new entities to be added to the network.
+   * @return a network consisting of the nodes and relationships of the created co-occurrence network.
+   */
   def addNodes(
     fullText: List[String],
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
-    timeRangeX: String,
+    timeExprRange: String,
     currentNetwork: List[Long],
     nodes: List[Long]
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
-    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
     val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
 
     val Network(buckets, relations) = networkService.induceNetwork(facets, currentNetwork, nodes)(currentDataset)
@@ -121,19 +170,30 @@ class NetworkController @Inject() (
   }
 
   // TODO: Use json writer and reader to minimize parameter in a case class Facets
+  /**
+   * Returns entities co-occurring with the given entity matching the search query.
+   *
+   * @param fullText match documents that contain the given expression in the document body.
+   * @param generic a map linking from document metadata keys to a list of instances for this metadata.
+   * @param entities a list of entity ids that should occur in the document.
+   * @param timeRange a string representing a time range for the document creation date.
+   * @param timeExprRange a string representing a time range for the document time expression.
+   * @param currentNetwork the entity ids of the current network.
+   * @param focalNode the entity id.
+   * @return co-occurring entities with the given entity.
+   */
   def getNeighbors(
     fullText: List[String],
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
-    timeRangeX: String,
+    timeExprRange: String,
     currentNetwork: List[Long],
     focalNode: Long
   ) = Action { implicit request =>
-
     // TODO Duplicated code to parse facets
     val (from, to) = dateUtils.parseTimeRange(timeRange)
-    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
     val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
 
     // TODO: we don't need to add the blacklist as exclude when we use getById.contains
@@ -144,7 +204,7 @@ class NetworkController @Inject() (
     Ok(Json.toJson(neighbors)).as("application/json")
   }
 
-  def nodesToJson(nodes: List[NodeBucket])(implicit request: Request[AnyContent]): List[JsObject] = {
+  private def nodesToJson(nodes: List[NodeBucket])(implicit request: Request[AnyContent]): List[JsObject] = {
     val ids = nodes.map(_.id)
     val nodeIdToEntity = entityService.getByIds(ids)(currentDataset).map(e => e.id -> e).toMap
 
@@ -163,41 +223,28 @@ class NetworkController @Inject() (
     }
   }
 
+  /** Marks the entities associated with the given ids as blacklisted. */
   def blacklistEntitiesById(ids: List[Long]) = Action { implicit request =>
     Ok(Json.obj("result" -> entityService.blacklist(ids)(currentDataset))).as("application/json")
   }
 
   /**
-   * merge all entities into one entity represented by the focalId
+   * Merges multiple nodes in a given focal node.
    *
-   * @param focalId the entity to merge into
-   * @param duplicates     the ids of the entities which are duplicates of
-   *                the focal entity
-   * @return if the merging succeeded
+   * @param focalId the central entity id.
+   * @param duplicates entity ids referring to similar textual mentions of the focal id.
    */
   def mergeEntitiesById(focalId: Long, duplicates: List[Long]) = Action { implicit request =>
     entityService.merge(focalId, duplicates)(currentDataset)
     Ok("success").as("Text")
   }
 
-  /**
-   * change the entity name by a new name of the given Entity
-   *
-   * @param id      the id of the entity to change
-   * @param newName the new name of the entity
-   * @return if the change succeeded
-   */
+  /** Changes the name of the entity corresponding to the given entity id. */
   def changeEntityNameById(id: Long, newName: String) = Action { implicit request =>
     Ok(Json.obj("result" -> entityService.changeName(id, newName)(currentDataset))).as("application/json")
   }
 
-  /**
-   * change the entity type by a new type
-   *
-   * @param id      the id of the entity to change
-   * @param newType the new type of the entity
-   * @return if the change succeeded
-   */
+  /** Changes the type of the entity corresponding to the given entity id. */
   def changeEntityTypeById(id: Long, newType: String) = Action { implicit request =>
     Ok(Json.obj("result" -> entityService.changeType(id, newType)(currentDataset))).as("application/json")
   }

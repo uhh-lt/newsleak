@@ -35,7 +35,7 @@ import scala.collection.mutable.ListBuffer
  * Provides document related actions.
  *
  * @param cache the application cache.
- * @param documentService the document backend operations.
+ * @param documentService the service for document backend operations.
  * @param dateUtils common helper for date and time operations.
  */
 class DocumentController @Inject() (

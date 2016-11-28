@@ -134,7 +134,7 @@ trait DocumentService {
    */
   def getMetadata(docIds: List[Long], fields: List[String])(index: String): List[(Long, String, String)]
 
-  /** Returns all unique metadata keys for the underlying collection */
+  /** Returns all unique metadata keys for the underlying collection. */
   def getMetadataKeys()(index: String): List[String]
 }
 

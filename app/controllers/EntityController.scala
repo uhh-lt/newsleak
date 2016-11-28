@@ -30,7 +30,7 @@ import util.DateUtils
 /**
  * Provides entity related actions.
  *
- * @param entityService the entity backend operations.
+ * @param entityService the service for entity backend operations.
  * @param aggregateService the aggregation service.
  * @param dateUtils common helper for date and time operations.
  */
