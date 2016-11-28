@@ -21,7 +21,7 @@ import com.google.inject.ImplementedBy
 // scalastyle:off
 import scalikejdbc._
 // scalastyle:on
-import models.{ Entity, EntityType, Fragment }
+import models.{ Entity, Fragment }
 
 /**
  * Defines common data access methods for retrieving and manipulating [[models.Entity]].
@@ -89,7 +89,7 @@ trait EntityService {
   /**
    * Withdraws [[models.services.EntityService#merge]] for the given entity id.
    *
-   * @param focalIds the central entity id.
+   * @param focalIds the central entity ids.
    * @param index the data source index or database name to query.
    * @return ''true'', if the removal was successful. ''False'' otherwise.
    */
@@ -132,7 +132,7 @@ trait EntityService {
    */
   def getEntityFragments(docId: Long)(index: String): List[(Entity, Fragment)]
 
-  /** Returns a list of distinct entity types in the underlying collection */
+  /** Returns a list of distinct entity types in the underlying collection. */
   def getTypes()(index: String): List[String]
 }
 
@@ -203,7 +203,7 @@ class DBEntityService extends EntityService {
       (Entity(rs), Entity(
         rs.long("focalId"),
         rs.string("focalName"),
-        EntityType.withName(rs.string("focalType")),
+        rs.string("focalType"),
         rs.int("focalFreq")
       ))
     }.list.apply()

@@ -17,37 +17,30 @@
 
 package models
 
-// scalastyle:off
-import play.api.libs.json._
-// scalastyle:on
+import play.api.libs.json.Json
 import scalikejdbc.WrappedResultSet
-
-/** Entity type (''Person'', ''Organisation'', ''Location'', ''Miscellaneous''). */
-object EntityType extends Enumeration {
-  val Person = Value("PER")
-  val Organization = Value("ORG")
-  val Location = Value("LOC")
-  val Misc = Value("MISC")
-}
 
 /**
  * Representation for an entity.
  *
  * @param id unique id and primary key of the entity.
  * @param name the entity name.
- * @param entityType the entity type.
- * @param occurrence the document occurrence i.e. in how many documents does this entity occur.
+ * @param entityType the entity type e.g. ''Person'', ''Organisation'', ''Location'' or ''Miscellaneous''.
+ * @param freq the document occurrence i.e. in how many documents does this entity occur.
  */
-case class Entity(id: Long, name: String, entityType: EntityType.Value, occurrence: Int)
+case class Entity(id: Long, name: String, entityType: String, freq: Int)
 
 /** Companion object for [[models.Entity]] instances. */
 object Entity {
+
+  /** Automatic mapping for [[models.Entity]] to read and write from and to json. */
+  implicit val entityFormat = Json.format[Entity]
 
   /** Factory method to create entities from database result sets. */
   def apply(rs: WrappedResultSet): Entity = Entity(
     rs.long("id"),
     rs.string("name"),
-    EntityType.withName(rs.string("type")),
+    rs.string("type"),
     rs.int("frequency")
   )
 }

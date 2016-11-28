@@ -228,7 +228,7 @@ define([
             }
 
             $scope.joinDuplicates = function(duplicates) {
-                return duplicates.map(function(d) { return '' + d.name + ' (' + d.type + ')'; }).join(', ')
+                return duplicates.map(function(d) { return '' + d.name + ' (' + d.entityType + ')'; }).join(', ')
             };
 
             $scope.toggle = function (item, list) {

@@ -19,9 +19,8 @@ package controllers
 
 import javax.inject.Inject
 
-import models._
+import models.{ Facets, Network, NodeBucket, Relationship }
 import models.KeyTerm.keyTermFormat
-import models.EntityType.{ Location, Misc, Organization, Person }
 import models.services.{ EntityService, NetworkService }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
@@ -33,7 +32,7 @@ import util.DateUtils
  * network graph.
  */
 class NetworkController @Inject() (
-  entityService: EntityService,
+    entityService: EntityService,
     networkService: NetworkService,
     dateUtils: DateUtils
 ) extends Controller {
@@ -96,14 +95,9 @@ class NetworkController @Inject() (
     } else {
       val graphEntities = nodesToJson(nodes)
       // Ignore relations that connect blacklisted nodes
-      val graphRelations = relations.filterNot { case Relationship(from, to, _) => blacklistedIds.contains(from) && blacklistedIds.contains(to) }
+      val graphRelations = relations.filterNot { case Relationship(source, target, _) => blacklistedIds.contains(source) && blacklistedIds.contains(target) }
 
-      val types = Json.obj(
-        Person.toString -> Person.id,
-        Organization.toString -> Organization.id,
-        Location.toString -> Location.id,
-        Misc.toString -> Misc.id
-      )
+      val types = entityService.getTypes()(currentDataset).zipWithIndex.map { case (t, id) => Json.obj(t -> id) }
       Ok(Json.obj("entities" -> graphEntities, "relations" -> graphRelations, "types" -> types)).as("application/json")
     }
   }
@@ -154,6 +148,7 @@ class NetworkController @Inject() (
     val ids = nodes.map(_.id)
     val nodeIdToEntity = entityService.getByIds(ids)(currentDataset).map(e => e.id -> e).toMap
 
+    val typesToId = entityService.getTypes()(currentDataset).zipWithIndex.toMap
     nodes.collect {
       // Only add node if it is not blacklisted
       case NodeBucket(id, count) if nodeIdToEntity.contains(id) =>
@@ -163,7 +158,7 @@ class NetworkController @Inject() (
           "label" -> node.name,
           "count" -> count,
           "type" -> node.entityType.toString,
-          "group" -> node.entityType.id
+          "group" -> typesToId(node.entityType)
         )
     }
   }

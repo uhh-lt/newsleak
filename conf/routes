@@ -15,7 +15,7 @@ GET    /addTag           		controllers.DocumentController.addTag(id: Int, label:
 GET    /removeTag           	controllers.DocumentController.removeTagById(tagId: Int)
 GET    /getTagsByDocId          controllers.DocumentController.getTagsByDocId(id: Int)
 GET    /getKeywordsById         controllers.DocumentController.getKeywordsById(id: Int, size: Int)
-GET    /getDocs           		controllers.DocumentController.getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String)
+GET    /getDocs           		controllers.DocumentController.getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String)
 GET     /induceSubgraph         controllers.NetworkController.induceSubgraph(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String, nodeFraction: Map[String, String])
 GET     /addNode                controllers.NetworkController.addNodes(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String, currentNetwork: List[Long], nodes: List[Long])
 GET    /blacklistEntitiesById		controllers.NetworkController.blacklistEntitiesById(ids: List[Long])
@@ -25,7 +25,7 @@ GET	   /getNeighborCounts		controllers.NetworkController.getNeighborCounts(fullT
 GET	   /getNeighbors		controllers.NetworkController.getNeighbors(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String, currentNetwork: List[Long], focalNode: Long)
 GET    /changeEntityNameById	controllers.NetworkController.changeEntityNameById(id: Long, newName: String)
 GET    /changeEntityTypeById	controllers.NetworkController.changeEntityTypeById(id: Long, newType: String)
-GET    /getEntities		controllers.EntityController.getEntities(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeRangeX: String, size: Int, entityType: String, filter: List[Long])
+GET    /getEntities		controllers.EntityController.getEntitiesByType(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, size: Int, entityType: String, filter: List[Long])
 GET     /getEntityTypes controllers.EntityController.getEntityTypes
 GET     /getBlacklisted controllers.EntityController.getBlacklistedEntities
 GET     /getMerged controllers.EntityController.getMergedEntities

@@ -27,7 +27,7 @@ import org.elasticsearch.index.query._
 import org.joda.time.LocalDateTime
 
 import models.services.SearchClientService
-import models.{ EntityType, Facets }
+import models.Facets
 
 /** Common helper to create and parse elasticsearch queries. Further provides elasticsearch field mappings. */
 class ESRequestUtils @Inject() (dateUtils: DateUtils) {
@@ -47,10 +47,10 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
   // TODO: in course of making other entity types available, we need to adapt these hardcoded labels
   /** Elasticsearch fields for running aggregation queries using entity ids from separate entity types. */
   val entityTypeToField = Map(
-    EntityType.Person -> "Entitiesper.EntId",
-    EntityType.Organization -> "Entitiesorg.EntId",
-    EntityType.Location -> "Entitiesloc.EntId",
-    EntityType.Misc -> "Entitiesmisc.EntId"
+    "PER" -> "Entitiesper.EntId",
+    "ORG" -> "Entitiesorg.EntId",
+    "LOC" -> "Entitiesloc.EntId",
+    "MISC" -> "Entitiesmisc.EntId"
   )
 
   /** Executes the given search request. */

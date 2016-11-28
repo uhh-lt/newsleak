@@ -476,46 +476,46 @@ define([
                         var deferred = [];
                         var proms = [];
                         $scope.observer.getEntityTypes().then(function (types) {
-                            types.forEach(function (x) {
-                                deferred[x] = $q.defer();
-                                proms.push(deferred[x].promise);
-                                $scope.chartConfigs[x] = angular.copy($scope.chartConfig);
-                                playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, timeRange, timeRange, 50, x).get().then(function (result) {
+                            types.forEach(function (t) {
+                                deferred[t] = $q.defer();
+                                proms.push(deferred[t].promise);
+                                $scope.chartConfigs[t] = angular.copy($scope.chartConfig);
+                                playRoutes.controllers.EntityController.getEntitiesByType(fulltext, facets, entities, timeRange, timeRange, 50, t).get().then(function (result) {
 
-                                    $scope.entityData[x] = [];
+                                    $scope.entityData[t] = [];
                                     result.data.forEach(function (entity) {
-                                        $scope.entityData[x].push({
+                                        $scope.entityData[t].push({
                                             y: entity.docCount,
                                             name: entity.name,
                                             id: entity.id
                                         });
                                     });
-                                    $scope.chartConfigs[x]["series"] = [{
+                                    $scope.chartConfigs[t]["series"] = [{
                                         name: 'Total',
-                                        data: $scope.entityData[x],
+                                        data: $scope.entityData[t],
                                         cursor: 'pointer',
                                         point: {
                                             events: {
                                                 click: function () {
-                                                    $scope.clickedItem(this, 'entity', x);
+                                                    $scope.clickedItem(this, 'entity', t);
                                                 },
                                                 contextmenu: function (e) {
-                                                    $scope.contextMenu(this, e, x);
+                                                    $scope.contextMenu(this, e, t);
                                                 }
                                             }
                                         }
                                     }, {
                                         name: 'Filter',
-                                        data: $scope.entityData[x],
+                                        data: $scope.entityData[t],
                                         color: 'black',
                                         cursor: 'pointer',
                                         point: {
                                             events: {
                                                 click: function () {
-                                                    $scope.clickedItem(this, 'entity', x);
+                                                    $scope.clickedItem(this, 'entity', t);
                                                 },
                                                 contextmenu: function (e) {
-                                                    $scope.contextMenu(this, e, x);
+                                                    $scope.contextMenu(this, e, t);
                                                 }
                                             }
                                         },
@@ -530,10 +530,10 @@ define([
                                             }
                                         }
                                     }];
-                                    $scope.chartConfigs[x].chart.renderTo = "chart_" + x.toLowerCase();
-                                    $("#chart_" + x.toLowerCase()).css("height", $scope.entityData[x].length * 35);
-                                    $scope.metaCharts[x] = new Highcharts.Chart($scope.chartConfigs[x]);
-                                    deferred[x].resolve(x);
+                                    $scope.chartConfigs[t].chart.renderTo = "chart_" + t.toLowerCase();
+                                    $("#chart_" + t.toLowerCase()).css("height", $scope.entityData[t].length * 35);
+                                    $scope.metaCharts[t] = new Highcharts.Chart($scope.chartConfigs[t]);
+                                    deferred[t].resolve(t);
                                 });
                             });
                             $scope.initializedEntity = true;

@@ -20,57 +20,80 @@ package controllers
 import javax.inject.Inject
 
 import models.{ Entity, Facets, NodeBucket }
+import models.Entity.entityFormat
 import models.services.{ AggregateService, EntityService }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller }
 import util.SessionUtils.currentDataset
 import util.DateUtils
 
+/**
+ * Provides entity related actions.
+ *
+ * @param entityService the entity backend operations.
+ * @param aggregateService the aggregation service.
+ * @param dateUtils common helper for date and time operations.
+ */
 class EntityController @Inject() (
-  entityService: EntityService,
+    entityService: EntityService,
     aggregateService: AggregateService,
     dateUtils: DateUtils
 ) extends Controller {
 
   private val defaultFetchSize = 50
 
+  /** Returns a list of distinct entity types in the underlying collection. */
   def getEntityTypes = Action { implicit request =>
     Ok(Json.toJson(entityService.getTypes()(currentDataset))).as("application/json")
   }
 
+  /** Returns all blacklisted entities for the underlying collection. */
   def getBlacklistedEntities = Action { implicit request =>
     val entities = entityService.getBlacklisted()(currentDataset)
-      // TODO use Entity json mapper
-      .map(x => Json.obj("id" -> x.id, "name" -> x.name, "freq" -> x.occurrence, "type" -> x.entityType))
     Ok(Json.toJson(entities)).as("application/json")
   }
 
+  /** Returns all merged entities for the underlying collection. */
   def getMergedEntities = Action { implicit request =>
     val entities = entityService.getMerged()(currentDataset).map {
       case (focalNode, duplicates) =>
-        val focalFormat = Json.obj("id" -> focalNode.id, "name" -> focalNode.name, "freq" -> focalNode.occurrence, "type" -> focalNode.entityType)
-        val duplicateFormat = duplicates.map(d => Json.obj("id" -> d.id, "name" -> d.name, "freq" -> d.occurrence, "type" -> d.entityType))
-
-        Json.obj("id" -> focalNode.id, "origin" -> focalFormat, "duplicates" -> Json.toJson(duplicateFormat))
+        Json.obj("id" -> focalNode.id, "origin" -> focalNode, "duplicates" -> Json.toJson(duplicates))
     }
     Ok(Json.toJson(entities)).as("application/json")
   }
 
-  // TODO Json writer for model types ...
+  /**
+   * Returns all entity occurrences for the given document including their position in the document.
+   *
+   * @param docId the document id.
+   */
   def getEntitiesByDoc(docId: Long) = Action { implicit request =>
     val entityToOccurrences = entityService.getEntityFragments(docId)(currentDataset).groupBy(_._1)
     val res = entityToOccurrences.flatMap {
       case (Entity(id, name, t, _), occ) =>
-        occ.map { case (_, fragment) => Json.obj("id" -> id, "name" -> name, "type" -> t, "start" -> fragment.start, "end" -> fragment.end) }
+        occ.map {
+          case (_, fragment) =>
+            Json.obj("id" -> id, "name" -> name, "type" -> t, "start" -> fragment.start, "end" -> fragment.end)
+        }
     }
     Ok(Json.toJson(res)).as("application/json")
   }
 
+  /**
+   * Removes the blacklisted mark from the entities associated with the given ids.
+   *
+   * @param ids the entity ids to remove the blacklist mark from.
+   */
   def undoBlacklistingByIds(ids: List[Long]) = Action { implicit request =>
     entityService.undoBlacklist(ids)(currentDataset)
     Ok("success").as("Text")
   }
 
+  /**
+   * Withdraws [[models.services.EntityService#merge]] for the given entity id.
+   *
+   * @param focalIds the central entity ids.
+   */
   def undoMergeByIds(focalIds: List[Long]) = Action { implicit request =>
     entityService.undoMerge(focalIds)(currentDataset)
     Ok("success").as("Text")
@@ -78,28 +101,30 @@ class EntityController @Inject() (
 
   // scalastyle:off
   /**
-   * Gets document counts for entities corresponding to their id's matching the query
+   * Returns frequent entities occurring in the documents matching the given query.
    *
-   * @param fullText  Full text search term
-   * @param generic   mapping of metadata key and a list of corresponding tags
-   * @param entities  list of entity ids to filter
-   * @param timeRange string of a time range readable for [[DateUtils]]
-   * @param size      amount of entities to fetch
-   * @param filter    provide a list of entities you want to aggregate
+   * @param fullText match documents that contain the given expression in the document body.
+   * @param generic a map linking from document metadata keys to a list of instances for this metadata.
+   * @param entities a list of entity ids that should occur in the document.
+   * @param timeRange a string representing a time range for the document creation date.
+   * @param timeExprRange a string representing a time range for the document time expression.
+   * @param size the number of entities to fetch.
+   * @param entityType the entity type to fetch.
+   * @param filter a list of entity ids to filter the result.
    * @return list of matching entity id's and their overall frequency as well as document count for the applied filters
    */
-  def getEntities(
+  def getEntitiesByType(
     fullText: List[String],
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
-    timeRangeX: String,
+    timeExprRange: String,
     size: Int,
     entityType: String,
     filter: List[Long]
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
-    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
     val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
     var newSize = size
 
@@ -124,7 +149,7 @@ class EntityController @Inject() (
             "id" -> x._2.id,
             "name" -> x._2.name,
             "type" -> x._2.entityType,
-            "freq" -> x._2.occurrence,
+            "freq" -> x._2.freq,
             "docCount" -> entitiesRes.find(_._1 == x._2.id).get._2.asInstanceOf[Number].longValue
           ))
         Ok(Json.toJson(res)).as("application/json")
@@ -133,7 +158,7 @@ class EntityController @Inject() (
           "id" -> x._2.id,
           "name" -> x._2.name,
           "type" -> x._2.entityType,
-          "freq" -> x._2.occurrence,
+          "freq" -> x._2.freq,
           "docCount" -> entitiesRes.find(_._1 == x._2.id).get._2.asInstanceOf[Number].longValue
         ))
         Ok(Json.toJson(res.sortBy(-_.value("docCount").as[Long]))).as("application/json")

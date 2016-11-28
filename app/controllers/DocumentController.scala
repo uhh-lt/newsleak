@@ -113,7 +113,8 @@ class DocumentController @Inject() (
    * @param fullText match documents that contain the given expression in the document body.
    * @param generic a map linking from document metadata keys to a list of instances for this metadata.
    * @param entities a list of entity ids that should occur in the document.
-   * @param timeRange a string representing a time range.
+   * @param timeRange a string representing a time range for the document creation date.
+   * @param timeExprRange a string representing a time range for the document time expression.
    * @return list of matching documents with their metadata.
    */
   def getDocs(
@@ -121,11 +122,11 @@ class DocumentController @Inject() (
     generic: Map[String, List[String]],
     entities: List[Long],
     timeRange: String,
-    timeRangeX: String
+    timeExprRange: String
   ) = Action { implicit request =>
     val uid = request.session.get("uid").getOrElse("0")
     val (from, to) = dateUtils.parseTimeRange(timeRange)
-    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
     val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
     var pageCounter = 0
 
