@@ -15,30 +15,5 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package models
-
-import play.api.libs.json.Json
-import scalikejdbc.WrappedResultSet
-
-/**
- * Representation for a document tag.
- *
- * @param id the unique tag id.
- * @param documentId the unique document id.
- * @param label the corresponding tag label.
- */
-case class Tag(id: Long, documentId: Long, label: String)
-
-/** Companion object for [[models.Tag]] instances. */
-object Tag {
-
-  /** Automatic mapping for [[models.Tag]] to read and write from and to json. */
-  implicit val tagFormat = Json.format[Tag]
-
-  /** Factory method to create tags from database result sets. */
-  def apply(rs: WrappedResultSet): Tag = Tag(
-    rs.long("id"),
-    rs.long("documentid"),
-    rs.string("label")
-  )
-}
+/** Defines the controller instances of the application. */
+package object controllers

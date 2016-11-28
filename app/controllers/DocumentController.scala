@@ -19,70 +19,102 @@ package controllers
 
 import javax.inject.Inject
 
+import models.services.DocumentService
+import models.{ Document, Facets, IteratorSession }
+import models.KeyTerm.keyTermFormat
+import models.Tag.tagFormat
 import play.api.cache.CacheApi
 import play.api.libs.json.{ JsObject, JsValue, Json }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
+import util.DateUtils
+import util.SessionUtils.currentDataset
+
 import scala.collection.mutable.ListBuffer
 
-import models.{ Document, Facets, IteratorSession, KeyTerm, Tag }
-import models.services.DocumentService
-import util.SessionUtils.currentDataset
-import util.DateUtils
-
-/*
-    This class provides operations pertaining documents.
-*/
+/**
+ * Provides document related actions.
+ *
+ * @param cache the application cache.
+ * @param documentService the document backend operations.
+ * @param dateUtils common helper for date and time operations.
+ */
 class DocumentController @Inject() (
-  cache: CacheApi,
+    cache: CacheApi,
     documentService: DocumentService,
     dateUtils: DateUtils
 ) extends Controller {
 
   private val defaultPageSize = 50
 
+  /**
+   * Returns a list of documents associated with the given tag label.
+   *
+   * @param label the tag label to search for.
+   * @return a list of documents associated with the given tag label.
+   */
   def getDocsByLabel(label: String) = Action { implicit request =>
     val docs = documentService.getByTagLabel(label)(currentDataset)
     Ok(createJsonResponse(docs, docs.length))
   }
 
   // TODO: Extend ES API and remove KeyTerm API
+  /**
+   * Returns important terms occurring in the document content for the given document id.
+   *
+   * @param id the document id.
+   * @param size the number of terms to fetch.
+   * @return a list of terms representing important keywords for the given document.
+   */
   def getKeywordsById(id: Int, size: Int) = Action { implicit request =>
-    val terms = documentService.getKeywords(id, Some(size))(currentDataset).map {
-      case KeyTerm(term, score) =>
-        Json.obj("term" -> term, "score" -> score)
-    }
+    val terms = documentService.getKeywords(id, Some(size))(currentDataset)
     Ok(Json.toJson(terms)).as("application/json")
   }
 
+  /** Returns all distinct annotated document labels. */
   def getTagLabels() = Action { implicit request =>
     Ok(Json.obj("labels" -> Json.toJson(documentService.getDocumentLabels()(currentDataset)))).as("application/json")
   }
 
+  /**
+   * Annotates a document with the given label.
+   *
+   * @param id the document id to annotate.
+   * @param label the label to assign.
+   * @return the added tag or if already present the existing tag.
+   */
   def addTag(id: Int, label: String) = Action { implicit request =>
     Ok(Json.obj("id" -> documentService.addTag(id, label)(currentDataset).id)).as("application/json")
   }
 
+  /**
+   * Removes the tag from the document associated with the given id.
+   *
+   * @param tagId the tag id associated with a document.
+   */
   def removeTagById(tagId: Int) = Action { implicit request =>
     documentService.removeTag(tagId)(currentDataset)
     Ok("success").as("Text")
   }
 
+  /**
+   * Returns a list of tags associated with the given document id.
+   *
+   * @param id the document id.
+   * @return a list of tags.
+   */
   def getTagsByDocId(id: Int) = Action { implicit request =>
-    val tags = documentService.getTags(id)(currentDataset).map {
-      case Tag(tagId, _, label) =>
-        Json.obj("id" -> tagId, "label" -> label)
-    }
+    val tags = documentService.getTags(id)(currentDataset)
     Ok(Json.toJson(tags)).as("application/json")
   }
 
   /**
-   * Search for Document by fulltext term and faceted search map via elasticsearch
+   * Search for documents given a search query.
    *
-   * @param fullText full-text search term
-   * @param generic   mapping of metadata key and a list of corresponding tags
-   * @param entities list of entity ids to filter
-   * @param timeRange string of a time range readable for [[DateUtils]]
-   * @return list of matching document id's
+   * @param fullText match documents that contain the given expression in the document body.
+   * @param generic a map linking from document metadata keys to a list of instances for this metadata.
+   * @param entities a list of entity ids that should occur in the document.
+   * @param timeRange a string representing a time range.
+   * @return list of matching documents with their metadata.
    */
   def getDocs(
     fullText: List[String],
@@ -123,16 +155,22 @@ class DocumentController @Inject() (
     Ok(createJsonResponse(docList.toList, iteratorSession.hits))
   }
 
-  def createJsonResponse(docList: List[Document], hits: Long)(implicit request: Request[AnyContent]): JsValue = {
+  private def createJsonResponse(docList: List[Document], hits: Long)(implicit request: Request[AnyContent]): JsValue = {
     if (docList.nonEmpty) {
-
       val keys = documentService.getMetadataKeys()(currentDataset)
       val docToMetadata = documentService
         .getMetadata(docList.map(_.id), keys)(currentDataset)
         .groupBy(_._1)
         .map { case (id, l) => id -> l.collect { case (_, k, v) if !v.isEmpty => Json.obj("key" -> k, "val" -> v) } }
 
-      val response = docList.map { d => Json.obj("id" -> d.id, "content" -> d.content, "highlighted" -> d.highlightedContent, "metadata" -> docToMetadata.get(d.id)) }
+      val response = docList.map { d =>
+        Json.obj(
+          "id" -> d.id,
+          "content" -> d.content,
+          "highlighted" -> d.highlightedContent,
+          "metadata" -> docToMetadata.get(d.id)
+        )
+      }
 
       Json.obj("hits" -> hits, "docs" -> response)
     } else {

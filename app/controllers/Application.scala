@@ -29,30 +29,21 @@ import util.SessionUtils.{ currentDataset, datasetSessionKey }
 
 import scala.util.Random
 
-/*
-  This class define which URL patterns match which views as well as
-  which play routes exist and where they point at.
-*/
+/**
+ * Provides the application view, handles the login, dataset change and the javascript reverse routes.
+ *
+ * @param cache the application cache.
+ */
 class Application @Inject() (cache: CacheApi) extends Controller {
 
-  /**
-   * Serves the login page.
-   */
-  def login = Action { implicit request =>
-    // Assign the user a UID (used to associate action logs with user sessions)
-    val uid = request.session.get("uid").getOrElse { (Random.alphanumeric take 8).mkString }
-    Logger.debug("Session UID: " + uid)
-    // Show main page
-    Ok(views.html.login()).withSession("uid" -> uid)
-  }
+  private val uidLength = 8
+  private def generateUid: String = Random.alphanumeric.take(uidLength).mkString
 
-  /**
-   * Serves the application frontend to the client.
-   */
+  /** Serves the application frontend to the client. */
   def index = Action { implicit request =>
-    val uid = request.session.get("uid").getOrElse { (Random.alphanumeric take 8).mkString }
+    val uid = request.session.get("uid").getOrElse(generateUid)
     Logger.debug("Session UID: " + uid)
-    // The application expects having an empty cache after page reload
+    // The application expects an empty cache after page reload
     cache.remove(uid)
 
     var authorized = false
@@ -77,7 +68,7 @@ class Application @Inject() (cache: CacheApi) extends Controller {
       }
     }
 
-    // now check if authorization was successful
+    // Check if authorization was successful
     if (!authorized) {
       // send a login request
       Unauthorized(views.html.defaultpages.unauthorized())
@@ -85,22 +76,25 @@ class Application @Inject() (cache: CacheApi) extends Controller {
     } else {
       Ok(views.html.index()).withNewSession.withSession(
         "uid" -> uid,
-        // Initialize application with default ES index dataset
+        // Initialize application with the default ES index dataset
         datasetSessionKey -> NewsleakConfigReader.config.getString("es.index.default")
       )
     }
   }
 
+  /** Returns the current applied dataset and all available datasets. */
   def getDatasets() = Action { implicit request =>
     Ok(Json.obj("current" -> NewsleakConfigReader.esDefaultIndex, "available" -> NewsleakConfigReader.dbNames))
   }
 
+  /** Issues a dataset switch. */
   def changeDataset(name: String) = Action { implicit request =>
     Ok(Json.obj("newDataset" -> name, "oldDataset" -> currentDataset))
       .withSession(request.session + (datasetSessionKey, name))
   }
 
   // scalastyle:off
+  /** Returns the application route for the given call. */
   def jsRoutes(varName: String = "jsRoutes") = Action { implicit request =>
     // Note: feature warning is produced by play itself
     import play.api.routing._
@@ -108,7 +102,6 @@ class Application @Inject() (cache: CacheApi) extends Controller {
 
     Ok(
       JavaScriptReverseRouter(varName)(
-        // TODO: You need to add your routes here
         controllers.routes.javascript.Application.getDatasets,
         controllers.routes.javascript.Application.changeDataset,
         controllers.routes.javascript.DocumentController.getKeywordsById,

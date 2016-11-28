@@ -76,7 +76,7 @@ trait DocumentService {
    * belong to the same group. Each tag belongs exactly to one document. However, multiple tags can share the same label.
    * In case the document is already annotated with the given label the existing [[models.Tag]] is returned.
    *
-   * @param docId the document id to annotate.
+   * @param docId the document id corresponding to the document to annotate.
    * @param label the label to assign.
    * @param index the data source index or database name to query.
    * @return a [[models.Tag]] representing the added tag or if already present the existing tag.
