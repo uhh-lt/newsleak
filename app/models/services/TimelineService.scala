@@ -28,6 +28,7 @@ import org.joda.time.LocalDateTime
 import scala.collection.JavaConversions._
 // scalastyle:on
 import models.{ Facets, LoD, Aggregation, MetaDataBucket, Bucket }
+import util.DateUtils
 import util.es.ESRequestUtils
 
 /**
@@ -75,19 +76,24 @@ trait TimelineService {
  * Implementation of [[models.services.TimelineService]] using an elasticsearch index as backend.
  *
  * @param clientService the elasticsearch client.
+ * @param dateUtils common heper for date and time operations.
  * @param utils common helper to issue elasticsearch queries.
  */
-class ESTimelineService @Inject() (clientService: SearchClientService, utils: ESRequestUtils) extends TimelineService {
+class ESTimelineService @Inject() (
+  clientService: SearchClientService,
+    dateUtils: DateUtils,
+    utils: ESRequestUtils
+) extends TimelineService {
 
   private val timelineAggName = "timeline"
 
   /** @inheritdoc */
   override def createTimeline(facets: Facets, levelOfDetail: LoD.Value)(index: String): Aggregation = {
     val lodToFormat = Map(
-      LoD.overview -> utils.yearPattern,
-      LoD.decade -> utils.yearPattern,
-      LoD.year -> utils.yearMonthPattern,
-      LoD.month -> utils.yearMonthDayPattern
+      LoD.overview -> dateUtils.yearPattern,
+      LoD.decade -> dateUtils.yearPattern,
+      LoD.year -> dateUtils.yearMonthPattern,
+      LoD.month -> dateUtils.yearMonthDayPattern
     )
     val parser = (r: SearchResponse) => parseTimeline(r)
 
@@ -98,10 +104,10 @@ class ESTimelineService @Inject() (clientService: SearchClientService, utils: ES
   override def createTimeExpressionTimeline(facets: Facets, levelOfDetail: LoD.Value)(index: String): Aggregation = {
     // The first element in the format is used as bucket key format
     val lodToFormat = Map(
-      LoD.overview -> s"${utils.yearPattern} || ${utils.yearMonthPattern} || ${utils.yearMonthDayPattern}",
-      LoD.decade -> s"${utils.yearPattern} || ${utils.yearMonthPattern} || ${utils.yearMonthDayPattern}",
-      LoD.year -> s"${utils.yearMonthPattern} || ${utils.yearPattern} || ${utils.yearMonthDayPattern}",
-      LoD.month -> s"${utils.yearMonthDayPattern} || ${utils.yearMonthPattern} || ${utils.yearPattern}"
+      LoD.overview -> s"${dateUtils.yearPattern} || ${dateUtils.yearMonthPattern} || ${dateUtils.yearMonthDayPattern}",
+      LoD.decade -> s"${dateUtils.yearPattern} || ${dateUtils.yearMonthPattern} || ${dateUtils.yearMonthDayPattern}",
+      LoD.year -> s"${dateUtils.yearMonthPattern} || ${dateUtils.yearPattern} || ${dateUtils.yearMonthDayPattern}",
+      LoD.month -> s"${dateUtils.yearMonthDayPattern} || ${dateUtils.yearMonthPattern} || ${dateUtils.yearPattern}"
     )
     val parser = (r: SearchResponse) => parseTimeExpressionTimeline(r, levelOfDetail, facets.fromTimeExpression, facets.toTimeExpression)
 
@@ -157,16 +163,16 @@ class ESTimelineService @Inject() (clientService: SearchClientService, utils: ES
         assert(toDate.isEmpty)
         (lodToFormat(levelOfDetail), DateHistogramInterval.YEAR, None, None)
       case LoD.decade =>
-        val from = fromDate.map(_.toString(utils.yearFormat))
-        val to = toDate.map(_.toString(utils.yearFormat))
+        val from = fromDate.map(_.toString(dateUtils.yearFormat))
+        val to = toDate.map(_.toString(dateUtils.yearFormat))
         (lodToFormat(levelOfDetail), DateHistogramInterval.YEAR, from, to)
       case LoD.year =>
-        val from = fromDate.map(_.toString(utils.yearMonthFormat))
-        val to = toDate.map(_.toString(utils.yearMonthFormat))
+        val from = fromDate.map(_.toString(dateUtils.yearMonthFormat))
+        val to = toDate.map(_.toString(dateUtils.yearMonthFormat))
         (lodToFormat(levelOfDetail), DateHistogramInterval.MONTH, from, to)
       case LoD.month =>
-        val from = fromDate.map(_.toString(utils.yearMonthDayFormat))
-        val to = toDate.map(_.toString(utils.yearMonthDayFormat))
+        val from = fromDate.map(_.toString(dateUtils.yearMonthDayFormat))
+        val to = toDate.map(_.toString(dateUtils.yearMonthDayFormat))
         (lodToFormat(levelOfDetail), DateHistogramInterval.DAY, from, to)
       case _ => throw new IllegalArgumentException("Unknown level of detail.")
     }
@@ -181,7 +187,7 @@ class ESTimelineService @Inject() (clientService: SearchClientService, utils: ES
     val response = utils.executeRequest(requestBuilder)
     val res: Min = response.getAggregations.get(aggName)
 
-    LocalDateTime.parse(res.getValueAsString, utils.yearMonthDayFormat)
+    LocalDateTime.parse(res.getValueAsString, dateUtils.yearMonthDayFormat)
   }
 
   private def maxDate(field: String, index: String): LocalDateTime = {
@@ -193,7 +199,7 @@ class ESTimelineService @Inject() (clientService: SearchClientService, utils: ES
     val response = utils.executeRequest(requestBuilder)
     val res: Max = response.getAggregations.get(aggName)
 
-    LocalDateTime.parse(res.getValueAsString, utils.yearMonthDayFormat)
+    LocalDateTime.parse(res.getValueAsString, dateUtils.yearMonthDayFormat)
   }
 
   private def groupToOverview(originalBuckets: List[Bucket], minDate: LocalDateTime, maxDate: LocalDateTime): Aggregation = {
@@ -206,7 +212,7 @@ class ESTimelineService @Inject() (clientService: SearchClientService, utils: ES
     // Create map from decade start to buckets
     val decadeToCount = originalBuckets.collect {
       case (b: MetaDataBucket) =>
-        val decade = getDecade(LocalDateTime.parse(b.key, utils.yearFormat))
+        val decade = getDecade(LocalDateTime.parse(b.key, dateUtils.yearFormat))
         decade -> b.occurrence
     }.groupBy(_._1).mapValues(_.map(_._2))
 

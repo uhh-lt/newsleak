@@ -19,6 +19,7 @@ package util
 
 import play.api.mvc.QueryStringBindable
 
+/** Provides support for map types in play routes. */
 object Binders {
 
   implicit def queryMapBinder(implicit stringBinder: QueryStringBindable[String]) = new QueryStringBindable[Map[String, String]] {

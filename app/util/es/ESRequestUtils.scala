@@ -17,19 +17,20 @@
 
 package util.es
 
+import com.google.inject.Inject
 import org.elasticsearch.action.search.{ SearchRequestBuilder, SearchResponse }
+import util.DateUtils
 // scalastyle:off
 import org.elasticsearch.index.query.QueryStringQueryBuilder._
 import org.elasticsearch.index.query._
 // scalastyle:on
 import org.joda.time.LocalDateTime
-import org.joda.time.format.DateTimeFormat
 
 import models.services.SearchClientService
 import models.{ EntityType, Facets }
 
 /** Common helper to create and parse elasticsearch queries. Further provides elasticsearch field mappings. */
-class ESRequestUtils {
+class ESRequestUtils @Inject() (dateUtils: DateUtils) {
 
   /** Elasticsearch field storing the document content. */
   val docContentField = "Content"
@@ -51,20 +52,6 @@ class ESRequestUtils {
     EntityType.Location -> "Entitiesloc.EntId",
     EntityType.Misc -> "Entitiesmisc.EntId"
   )
-
-  /** Date format representation consisting of a year, month and a day e.g. 2014-12-01. */
-  val yearMonthDayPattern = "yyyy-MM-dd"
-  /** Date format representation consisting of a year and a month e.g. 2014-12. */
-  val yearMonthPattern = "yyyy-MM"
-  /** Date format representation consisting of a year only e.g. 2014. */
-  val yearPattern = "yyyy"
-
-  /** Date format parser according to the following pattern ''yyyy-MM-dd''. */
-  val yearMonthDayFormat = DateTimeFormat.forPattern(yearMonthDayPattern)
-  /** Date format parser according to the following pattern ''yyyy-MM''. */
-  val yearMonthFormat = DateTimeFormat.forPattern(yearMonthPattern)
-  /** Date format parser according to the following pattern ''yyyy''. */
-  val yearFormat = DateTimeFormat.forPattern(yearPattern)
 
   /** Executes the given search request. */
   def executeRequest(request: SearchRequestBuilder, cache: Boolean = true): SearchResponse = request.setRequestCache(cache).execute().actionGet()
@@ -138,7 +125,7 @@ class ESRequestUtils {
   }
 
   private def addDateFilter(facets: Facets): Option[BoolQueryBuilder] = {
-    addGenericDateFilter(docDateField, facets.fromDate, facets.toDate, yearMonthDayPattern)
+    addGenericDateFilter(docDateField, facets.fromDate, facets.toDate, dateUtils.yearMonthDayPattern)
   }
 
   private def addDateXFilter(facets: Facets): Option[BoolQueryBuilder] = {
@@ -146,7 +133,7 @@ class ESRequestUtils {
       docTimeExpressionField,
       facets.fromTimeExpression,
       facets.toTimeExpression,
-      s"$yearMonthDayPattern || $yearMonthPattern || $yearPattern"
+      s"${dateUtils.yearMonthDayPattern} || ${dateUtils.yearMonthPattern} || ${dateUtils.yearPattern}"
     )
   }
 
@@ -157,8 +144,8 @@ class ESRequestUtils {
         .rangeQuery(field)
         .format(dateFormat)
 
-      val gteFilter = from.map(d => dateFilter.gte(d.toString(yearMonthDayFormat))).getOrElse(dateFilter)
-      val lteFilter = to.map(d => dateFilter.lte(d.toString(yearMonthDayFormat))).getOrElse(gteFilter)
+      val gteFilter = from.map(d => dateFilter.gte(d.toString(dateUtils.yearMonthDayFormat))).getOrElse(dateFilter)
+      val lteFilter = to.map(d => dateFilter.lte(d.toString(dateUtils.yearMonthDayFormat))).getOrElse(gteFilter)
 
       Some(query.must(lteFilter))
     } else {

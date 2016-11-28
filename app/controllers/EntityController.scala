@@ -24,9 +24,13 @@ import models.services.{ AggregateService, EntityService }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller }
 import util.SessionUtils.currentDataset
-import util.TimeRangeParser
+import util.DateUtils
 
-class EntityController @Inject() (entityService: EntityService, aggregateService: AggregateService) extends Controller {
+class EntityController @Inject() (
+  entityService: EntityService,
+    aggregateService: AggregateService,
+    dateUtils: DateUtils
+) extends Controller {
 
   private val defaultFetchSize = 50
 
@@ -75,12 +79,13 @@ class EntityController @Inject() (entityService: EntityService, aggregateService
   // scalastyle:off
   /**
    * Gets document counts for entities corresponding to their id's matching the query
-   * @param fullText Full text search term
+   *
+   * @param fullText  Full text search term
    * @param generic   mapping of metadata key and a list of corresponding tags
-   * @param entities list of entity ids to filter
-   * @param timeRange string of a time range readable for [[TimeRangeParser]]
-   * @param size amount of entities to fetch
-   * @param filter provide a list of entities you want to aggregate
+   * @param entities  list of entity ids to filter
+   * @param timeRange string of a time range readable for [[DateUtils]]
+   * @param size      amount of entities to fetch
+   * @param filter    provide a list of entities you want to aggregate
    * @return list of matching entity id's and their overall frequency as well as document count for the applied filters
    */
   def getEntities(
@@ -93,9 +98,9 @@ class EntityController @Inject() (entityService: EntityService, aggregateService
     entityType: String,
     filter: List[Long]
   ) = Action { implicit request =>
-    val times = TimeRangeParser.parseTimeRange(timeRange)
-    val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
-    val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
+    val (from, to) = dateUtils.parseTimeRange(timeRange)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
     var newSize = size
 
     val blacklistedIds = entityService.getBlacklisted()(currentDataset).map(_.id)

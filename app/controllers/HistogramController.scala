@@ -24,19 +24,20 @@ import models.{ Facets, LoD, MetaDataBucket }
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller, Results }
 import util.SessionUtils.currentDataset
-import util.TimeRangeParser
+import util.DateUtils
 
 // TODO: rename Histogram to Timeline and refactor code duplication
 // TODO: rename histogramX to TimeExpression ...
-class HistogramController @Inject() (timelineService: TimelineService) extends Controller {
+class HistogramController @Inject() (timelineService: TimelineService, dateUtils: DateUtils) extends Controller {
 
   /**
    * Gets document counts for entities corresponding to their id's matching the query
-   * @param fullText Full text search term
+   *
+   * @param fullText  Full text search term
    * @param generic   mapping of metadata key and a list of corresponding tags
-   * @param entities list of entity ids to filter
-   * @param timeRange string of a time range readable for [[TimeRangeParser]]
-   * @param lod Level of detail, value of[[models.LoD]]
+   * @param entities  list of entity ids to filter
+   * @param timeRange string of a time range readable for [[DateUtils]]
+   * @param lod       Level of detail, value of[[models.LoD]]
    * @return list of matching entity id's and their overall frequency as well as document count for the applied filters
    */
   def getHistogram(
@@ -47,9 +48,9 @@ class HistogramController @Inject() (timelineService: TimelineService) extends C
     timeRangeX: String,
     lod: String
   ) = Action { implicit request =>
-    val times = TimeRangeParser.parseTimeRange(timeRange)
-    val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
-    val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
+    val (from, to) = dateUtils.parseTimeRange(timeRange)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
     val res = timelineService.createTimeline(facets, LoD.withName(lod))(currentDataset).buckets.map {
       case MetaDataBucket(key, count) => Json.obj("range" -> key, "count" -> count)
       case _ => Json.obj("" -> 0)
@@ -59,11 +60,12 @@ class HistogramController @Inject() (timelineService: TimelineService) extends C
 
   /**
    * Gets document counts for entities corresponding to their id's matching the query
-   * @param fullText Full text search term
+   *
+   * @param fullText  Full text search term
    * @param generic   mapping of metadata key and a list of corresponding tags
-   * @param entities list of entity ids to filter
-   * @param timeRange string of a time range readable for [[TimeRangeParser]]
-   * @param lod Level of detail, value of[[LoD]]
+   * @param entities  list of entity ids to filter
+   * @param timeRange string of a time range readable for [[DateUtils]]
+   * @param lod       Level of detail, value of[[LoD]]
    * @return list of matching entity id's and their overall frequency as well as document count for the applied filters
    */
   def getXHistogram(
@@ -74,9 +76,9 @@ class HistogramController @Inject() (timelineService: TimelineService) extends C
     timeRangeX: String,
     lod: String
   ) = Action { implicit request =>
-    val times = TimeRangeParser.parseTimeRange(timeRange)
-    val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
-    val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
+    val (from, to) = dateUtils.parseTimeRange(timeRange)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
     val res = timelineService.createTimeExpressionTimeline(facets, LoD.withName(lod))(currentDataset).buckets.map {
       case MetaDataBucket(key, count) => Json.obj("range" -> key, "count" -> count)
       case _ => Json.obj("" -> 0)

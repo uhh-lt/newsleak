@@ -15,23 +15,5 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package util
-
-import scala.util.control.Exception.catching
-
-/**
- * Implements additional methods for ''String''.
- *
- * @param underlying the wrapped string.
- */
-class RichString(underlying: String) {
-
-  def toLongOpt(): Option[Long] = catching(classOf[NumberFormatException]) opt underlying.toInt
-}
-
-/** Companion object for [[util.RichString]] that provides a convenient method to wrap an instance of ''String''. */
-object RichString {
-
-  /** Wraps a ''String'' to a [[util.RichString]]. */
-  implicit def richString(string: String): RichString = new RichString(string)
-}
+/** Provides utility classes. */
+package object util

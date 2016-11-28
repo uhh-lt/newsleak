@@ -19,8 +19,12 @@ package util
 
 import play.api.mvc.{ AnyContent, Request }
 
+/** Provides information from the current user session. */
 object SessionUtils {
 
+  /** Session key for the name of the current user selected dataset. */
   val datasetSessionKey = "dataset"
+
+  /** Provides the name for the current selected dataset. Only works in an environment where a user request is available. */
   def currentDataset(implicit request: Request[AnyContent]): String = request.session.get(datasetSessionKey).get
 }

@@ -24,9 +24,13 @@ import models.{ Facets, MetaDataBucket }
 import play.api.libs.json.Json
 import play.api.mvc.{ Action, Controller, Results }
 import util.SessionUtils.currentDataset
-import util.{ NewsleakConfigReader, TimeRangeParser }
+import util.{ NewsleakConfigReader, DateUtils }
 
-class MetadataController @Inject() (documentService: DocumentService, aggregateService: AggregateService) extends Controller {
+class MetadataController @Inject() (
+    documentService: DocumentService,
+    aggregateService: AggregateService,
+    dateUtils: DateUtils
+) extends Controller {
 
   private lazy val defaultExcludeTypes = NewsleakConfigReader.excludedMetadataTypes
 
@@ -44,10 +48,11 @@ class MetadataController @Inject() (documentService: DocumentService, aggregateS
 
   /**
    * Gets document counts for all metadata types corresponding to their keys
-   * @param fullText Full text search term
-   * @param generic mapping of metadata key and a list of corresponding tags
-   * @param entities list of entity ids to filter
-   * @param timeRange string of a time range readable for [[TimeRangeParser]]
+   *
+   * @param fullText  Full text search term
+   * @param generic   mapping of metadata key and a list of corresponding tags
+   * @param entities  list of entity ids to filter
+   * @param timeRange string of a time range readable for [[DateUtils]]
    * @return list of matching metadata keys and document count
    */
   def getMetadata(
@@ -57,9 +62,9 @@ class MetadataController @Inject() (documentService: DocumentService, aggregateS
     timeRange: String,
     timeRangeX: String
   ) = Action { implicit request =>
-    val times = TimeRangeParser.parseTimeRange(timeRange)
-    val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
-    val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
+    val (from, to) = dateUtils.parseTimeRange(timeRange)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
     val res = aggregateService.aggregateAll(facets, defaultFetchSize, defaultExcludeTypes(currentDataset))(currentDataset)
       .map(agg => Json.obj(agg.key -> agg.buckets.map {
         case MetaDataBucket(key, count) => Json.obj("key" -> key, "count" -> count)
@@ -70,12 +75,13 @@ class MetadataController @Inject() (documentService: DocumentService, aggregateS
 
   /**
    * Gets document counts for one metadata types corresponding to their keys for given list of instances
-   * @param fullText Full text search term
-   * @param key metadata type key to aggregate on
-   * @param generic mapping of metadata key and a list of corresponding tags
-   * @param entities list of entity ids to filter
+   *
+   * @param fullText  Full text search term
+   * @param key       metadata type key to aggregate on
+   * @param generic   mapping of metadata key and a list of corresponding tags
+   * @param entities  list of entity ids to filter
    * @param instances list of metadata instaces to buckets for
-   * @param timeRange string of a time range readable for [[TimeRangeParser]]
+   * @param timeRange string of a time range readable for [[DateUtils]]
    * @return list of matching metadata keys and document count
    */
   def getSpecificMetadata(
@@ -87,9 +93,9 @@ class MetadataController @Inject() (documentService: DocumentService, aggregateS
     timeRange: String,
     timeRangeX: String
   ) = Action { implicit request =>
-    val times = TimeRangeParser.parseTimeRange(timeRange)
-    val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
-    val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
+    val (from, to) = dateUtils.parseTimeRange(timeRange)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
 
     val agg = aggregateService.aggregate(facets, key, defaultFetchSize, instances, Nil)(currentDataset)
 

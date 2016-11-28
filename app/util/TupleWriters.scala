@@ -19,13 +19,19 @@ package util
 
 import play.api.libs.json.{ JsArray, Writes }
 
+/**
+ * Definitions to convert tuple, triple and 4-tuple to [[JsArray]].
+ *
+ * @see taken from [[http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple]].
+ */
 object TupleWriters {
-  // http://stackoverflow.com/questions/30921821/play-scala-json-writer-for-seq-of-tuple
 
+  /** Converts tuple to [[JsArray]] instances. */
   implicit def tuple2Writes[A, B](implicit a: Writes[A], b: Writes[B]): Writes[(A, B)] = new Writes[(A, B)] {
     def writes(tuple: (A, B)) = JsArray(Seq(a.writes(tuple._1), b.writes(tuple._2)))
   }
 
+  /** Converts triple to [[JsArray]] instances. */
   implicit def tuple3Writes[A, B, C](implicit a: Writes[A], b: Writes[B], c: Writes[C]): Writes[(A, B, C)] = new Writes[(A, B, C)] {
     def writes(tuple: (A, B, C)) = JsArray(Seq(
       a.writes(tuple._1),
@@ -34,6 +40,7 @@ object TupleWriters {
     ))
   }
 
+  /** Converts 4-tuple to [[JsArray]] instances. */
   implicit def tuple4Writes[A, B, C, D](implicit a: Writes[A], b: Writes[B], c: Writes[C], d: Writes[D]): Writes[(A, B, C, D)] = new Writes[(A, B, C, D)] {
     def writes(tuple: (A, B, C, D)) = JsArray(Seq(
       a.writes(tuple._1),

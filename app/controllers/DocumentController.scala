@@ -27,12 +27,16 @@ import scala.collection.mutable.ListBuffer
 import models.{ Document, Facets, IteratorSession, KeyTerm, Tag }
 import models.services.DocumentService
 import util.SessionUtils.currentDataset
-import util.TimeRangeParser
+import util.DateUtils
 
 /*
     This class provides operations pertaining documents.
 */
-class DocumentController @Inject() (cache: CacheApi, documentService: DocumentService) extends Controller {
+class DocumentController @Inject() (
+  cache: CacheApi,
+    documentService: DocumentService,
+    dateUtils: DateUtils
+) extends Controller {
 
   private val defaultPageSize = 50
 
@@ -77,7 +81,7 @@ class DocumentController @Inject() (cache: CacheApi, documentService: DocumentSe
    * @param fullText full-text search term
    * @param generic   mapping of metadata key and a list of corresponding tags
    * @param entities list of entity ids to filter
-   * @param timeRange string of a time range readable for [[TimeRangeParser]]
+   * @param timeRange string of a time range readable for [[DateUtils]]
    * @return list of matching document id's
    */
   def getDocs(
@@ -88,9 +92,9 @@ class DocumentController @Inject() (cache: CacheApi, documentService: DocumentSe
     timeRangeX: String
   ) = Action { implicit request =>
     val uid = request.session.get("uid").getOrElse("0")
-    val times = TimeRangeParser.parseTimeRange(timeRange)
-    val timesX = TimeRangeParser.parseTimeRange(timeRangeX)
-    val facets = Facets(fullText, generic, entities, times.from, times.to, timesX.from, timesX.to)
+    val (from, to) = dateUtils.parseTimeRange(timeRange)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeRangeX)
+    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
     var pageCounter = 0
 
     val cachedIterator = cache.get[IteratorSession](uid)
