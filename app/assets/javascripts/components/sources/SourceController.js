@@ -89,6 +89,10 @@ define([
                     $scope.observer.subscribeItems($scope.observer_subscribe_metadata, "metadata");
                     $scope.observer.subscribeItems($scope.observer_subscribe_fulltext, "fulltext");
 
+                    $scope.observer.subscribeReset(function() {
+                        $scope.sourceShared.documentsInDB = -1;
+                    });
+
 
                     /**
                      * load document list for current filtering

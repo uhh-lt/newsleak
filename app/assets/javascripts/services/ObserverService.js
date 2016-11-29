@@ -194,6 +194,10 @@ define([
                             item.active = false;
                             items[item.type].push(item);
                             break;
+                        case types[12]:
+                            item.active = false;
+                            items[item.type].push(item);
+                            break;
                         default:
                             items[item.type].push(item);
                             break;

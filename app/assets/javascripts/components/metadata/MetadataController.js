@@ -311,7 +311,7 @@ define([
                                 var instances = [];
 
                                 if($scope.reorder) {
-                                    playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, timeRange ,timeRangeX, 50, type).get().then(
+                                    playRoutes.controllers.EntityController.getEntitiesByType(fulltext, facets, entities, timeRange ,timeRangeX, 50, type).get().then(
                                         function (result) {
                                             var data = [];
                                             angular.forEach(result.data, function (x) {
@@ -347,7 +347,7 @@ define([
                                     defReorder.resolve("reorder");
                                 }
                                 defReorder.promise.then(function() {
-                                playRoutes.controllers.EntityController.getEntities(fulltext, facets, entities, timeRange ,timeRangeX, 50, type, instances).get().then(
+                                playRoutes.controllers.EntityController.getEntitiesByType(fulltext, facets, entities, timeRange ,timeRangeX, 50, type, instances).get().then(
                                     function (result) {
                                         var data = [];
                                         angular.forEach(result.data, function (x) {
