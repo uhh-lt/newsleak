@@ -17,13 +17,13 @@
 
 package models
 
-/** Abstract representation for the bucketing aggregation */
+/** Abstract representation for the bucketing aggregation. */
 sealed abstract class Bucket
 
 /**
  * Aggregated result representation for generic metadata such as "Sender_name" or "Classification_level".
  *
- * @param key the name of the aggregated value
+ * @param key the name of the aggregated value.
  * @param occurrence the number of times this instance occurs in the background collection.
  */
 case class MetaDataBucket(key: String, occurrence: Long) extends Bucket
@@ -39,7 +39,7 @@ case class NodeBucket(id: Long, occurrence: Long) extends Bucket
 /**
  * Top-level aggregation representation.
  *
- * @param key the name of the aggregation
+ * @param key the name of the aggregation.
  * @param buckets a list of [[models.Bucket]] representing the distinct aggregated result values.
  */
 case class Aggregation(key: String, buckets: List[Bucket])

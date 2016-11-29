@@ -33,7 +33,12 @@ webpackBuild := {
 (packageBin in Universal) <<= (packageBin in Universal) dependsOn webpackBuild
 
 // Disable documentation to speed up compilation
-sources in (Compile, doc) := Seq.empty
+// sources in (Compile, doc) := Seq.empty
+
+scalacOptions in (Compile, doc) := List(
+	"-skip-packages",  Seq("router", "scalikejdbc").mkString(":"),
+	"-doc-title", "Newsleak ScalaDoc"
+)
 
 publishArtifact in (Compile, packageDoc) := false
 
