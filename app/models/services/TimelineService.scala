@@ -80,7 +80,7 @@ trait TimelineService {
  * @param utils common helper to issue elasticsearch queries.
  */
 class ESTimelineService @Inject() (
-  clientService: SearchClientService,
+    clientService: SearchClientService,
     dateUtils: DateUtils,
     utils: ESRequestUtils
 ) extends TimelineService {

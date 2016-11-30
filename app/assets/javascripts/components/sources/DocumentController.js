@@ -61,25 +61,49 @@ define([
                             });
 
                             var highlightElement = undefined;
+                            console.log(e);
                             if(_.has(e, 'nested')) {
+                                // Two overlapping cases exist. In the first case, we need to append the inner element before the outer one.
+                                // In the second case, we need to append it after the outer element.
+                                // Case 1
+                                // Angela Merkel
+                                // Angela
+                                // => <span> <span> Angela </span> Merkel </span>
+                                // Case 2
+                                // Angela Merkel
+                                // ...... Merkel
+                                // => <span> Angela <span> Merkel </span> </span>
                                 if(e.type == 'full-text') {
                                     //Expectation: Nested is always the inner or same element e.g. [[Angela] Merkel]
-                                    var innerElement = createNeHighlight(e.nested.id, e.nested.type, e.nested.name, undefined);
-                                    highlightElement = createFulltextHighlight(e.name.substring(e.nested.end - e.start), innerElement);
+                                    var innerElement = createNeHighlight(e.nested.id, e.nested.type, e.nested.name);
+                                    if(e.nested.start == e.start) {
+                                        highlightElement = createFulltextHighlight(e.name.substring(e.nested.end - e.start));
+                                        highlightElement.prepend(innerElement);
+                                    } else {
+                                        highlightElement = createFulltextHighlight(e.name.substring(0, e.nested.start - e.start));
+                                        highlightElement.append(innerElement)
+                                    }
                                 } else {
-                                    var innerElement = createFulltextHighlight(e.nested.name, undefined);
-                                    highlightElement = createNeHighlight(e.id, e.type, e.name.substring(e.nested.end - e.start), innerElement);
+                                    var innerElement = createFulltextHighlight(e.nested.name);
+                                    if(e.nested.start == e.start) {
+                                        highlightElement = createNeHighlight(e.id, e.type, e.name.substring(e.nested.end - e.start));
+                                        highlightElement.prepend(innerElement);
+
+                                    } else {
+                                        highlightElement = createNeHighlight(e.id, e.type, e.name.substring(0, e.nested.start - e.start));
+                                        highlightElement.append(innerElement);
+                                    }
                                 }
                             } else if(e.type == 'full-text')  {
-                                highlightElement = createFulltextHighlight(e.name, undefined);
+                                highlightElement = createFulltextHighlight(e.name);
                             } else {
                                 highlightElement = createNeHighlight(e.id, e.type, e.name);
                             }
                             // Append marked element to DOM
                             var compiledElement = $compile(highlightElement)(scope);
                             container.append(compiledElement);
-
-                            offset = e.end;
+                            // Move the cursor
+                            offset = _.has(e, 'nested') && e.nested.end > e.end ? e.nested.end : e.end;
                         });
                         container.append(document.createTextNode(content.slice(offset, content.length)));
                     };
@@ -132,8 +156,9 @@ define([
                     function identifyOverlappingHighlights(entities, fulltextElements) {
                         var sortedSpans = entities.concat(fulltextElements).sort(function(a, b) { return a.start - b.start; });
                         var res = sortedSpans.reduce(function(acc, e, i) {
-                            // If it's not the last element and full-text match overlaps NE match
-                            if(!_.isUndefined(sortedSpans[i+1]) && sortedSpans[i+1].start == e.start) {
+                            // If it's not the last element and full-text match overlaps NE match (subsequent element is always the overlapping one)
+                            //if(!_.isUndefined(sortedSpans[i+1]) && (sortedSpans[i+1].start == e.start || sortedSpans[i+1].end == e.end)) {
+                            if(!_.isUndefined(sortedSpans[i+1]) && sortedSpans[i+1].start >= e.start && sortedSpans[i+1].start <= e.end) {
                                 // Make sure the longest span is the parent
                                 if (e.name.length > sortedSpans[i + 1].name.length) {
                                     e.nested = sortedSpans[i + 1];
@@ -152,26 +177,19 @@ define([
                         return res;
                     }
 
-                    function createNeHighlight(id, type, name, nested) {
+                    function createNeHighlight(id, type, name) {
                         var innerElement = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none, \'border-bottom\': \'3px solid ' + categoryColors[type] + '\'}"></span>');
                         innerElement.className = 'highlight-general';
                         var addFilter = angular.element('<a ng-click="addEntityFilter(' + id +')" style="text-decoration: none;"></a>');
 
                         addFilter.append(document.createTextNode(name));
-                        if(!_.isUndefined(nested)) {
-                            innerElement.append(nested);
-                        }
                         innerElement.append(addFilter);
                         return innerElement;
                     }
 
-                    function createFulltextHighlight(name, nested) {
+                    function createFulltextHighlight(name) {
                         var outerElement = angular.element('<span style="padding: 0; margin: 0; background-color: #FFFF00"></span>');
                         outerElement.className = 'highlight-general';
-
-                        if(!_.isUndefined(nested)) {
-                            outerElement.append(nested);
-                        }
                         outerElement.append(document.createTextNode(name));
                         return outerElement;
                     }
