@@ -17,7 +17,6 @@
 
 define([
     'angular',
-    'angularMoment',
     './factory/metadata/MetaFactory',
     './factory/source/SourceFactory',
     './components/sources/SourceController',
@@ -47,7 +46,7 @@ define([
 
     var app = angular.module('myApp', [
             'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial',
-            'angularMoment', 'underscore', 'myApp.observer', 'myApp.history', 'myApp.graphConfig', 'angularScreenfull',
+            'underscore', 'myApp.observer', 'myApp.history', 'myApp.graphConfig', 'angularScreenfull',
             'myApp.network', 'myApp.search', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.metafactory',
             'myApp.document', 'myApp.histogram', 'myApp.histogramX', 'ngVis', 'myApp.entityservice']
     );
@@ -115,8 +114,8 @@ define([
         return uiProperties;
     });
 
-    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', '$mdDialog', 'moment', 'uiShareService', 'ObserverService', 'playRoutes',
-        function ($scope, $state, $timeout, $window, $mdDialog, moment, uiShareService, ObserverService, playRoutes) {
+    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', '$mdDialog', 'uiShareService', 'ObserverService', 'playRoutes',
+        function ($scope, $state, $timeout, $window, $mdDialog, uiShareService, ObserverService, playRoutes) {
 
             // Select graph tab on startup. In order to update the value from the child scope we need an object here.
             $scope.selectedTab = { index: 0 };

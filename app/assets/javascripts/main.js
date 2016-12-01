@@ -27,17 +27,14 @@
 			'angular': 'libs/angular/angular.min',
 			'jquery': 'libs/jquery/dist/jquery.min',
 			'jquery-json': 'libs/jquery-json/dist/jquery.json.min',
-			'awesome-slider': 'libs/angular-awesome-slider/dist/angular-awesome-slider.min',
 			'ngAnimate': 'libs/angular-animate/angular-animate',
 			'ngAria': 'libs/angular-aria/angular-aria',
 			'ngMaterial': 'libs/angular-material/angular-material.min',
 			'bootstrap': 'libs/bootstrap/dist/js/bootstrap.min',
 			'ui-bootstrap': 'libs/angular-bootstrap/ui-bootstrap-tpls.min',
 			'ngSanitize': 'libs/angular-sanitize/angular-sanitize.min',
-			'moment': 'libs/moment/min/moment.min',
 			'ui-layout': 'libs/angular-ui-layout/src/ui-layout',
 			'ui-router': 'libs/angular-ui-router/release/angular-ui-router.min',
-			'angularMoment': 'libs/angular-moment/angular-moment.min',
 			'screenfull': 'libs/screenfull/dist/screenfull',
 			'angularScreenfull': 'libs/angular-screenfull/dist/angular-screenfull.min',
 			'highcharts': 'libs/highcharts-release/highcharts',
@@ -60,9 +57,6 @@
 				exports: 'angular',
 				deps: ['angular', 'ngAnimate']
 			},
-			'angularMoment': {
-				deps: ['angular', 'moment']
-			},
 			'angularScreenfull': {
 				deps: ['angular', 'screenfull']
 			},
@@ -70,10 +64,6 @@
 				exports: 'angular',
 				// Force angular to use jquery instead of jqLite library, which provides only a small subset of features
 				deps: ['jquery']
-			},
-			'awesome-slider': {
-				exports: 'angular',
-				deps: ['angular']
 			},
 			'ngAnimate': {
 				exports: 'angular',

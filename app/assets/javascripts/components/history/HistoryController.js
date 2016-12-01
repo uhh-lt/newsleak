@@ -17,7 +17,6 @@
 
 define([
     'angular',
-    'angularMoment',
     'jquery-json',
     'ui-bootstrap',
     'ngAnimate',

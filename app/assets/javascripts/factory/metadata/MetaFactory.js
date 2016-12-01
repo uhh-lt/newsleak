@@ -15,10 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-define([
-     'angular',
-     'angularMoment'
-],
+define(['angular'],
     function (angular)
     {
         'use strict';

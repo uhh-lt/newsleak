@@ -18,12 +18,11 @@
 define([
     'angular',
     'ngMaterial',
-    'ngVis',
-    'angularMoment'
+    'ngVis'
 ], function(angular) {
     'use strict';
 
-    angular.module('myApp.network', ['ngMaterial', 'ngVis', 'play.routing', 'angularMoment']);
+    angular.module('myApp.network', ['ngMaterial', 'ngVis', 'play.routing']);
     angular.module('myApp.network')
         // Network Legend Controller
         .controller('LegendController', ['$scope', '$timeout', 'VisDataSet', 'graphProperties', function ($scope, $timeout, VisDataSet, graphProperties) {

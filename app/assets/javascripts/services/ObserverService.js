@@ -21,7 +21,7 @@ define([
 ], function (angular) {
     'use strict';
 
-    angular.module("myApp.observer", ['play.routing', 'angularMoment'])
+    angular.module("myApp.observer", ['play.routing'])
         .factory('ObserverService', ['playRoutes', '$q', '$timeout', function(playRoutes, $q, $timeout) {
             // Stores callback instances consisting of a callback method and a priority number
             var observerCallbacks = [];

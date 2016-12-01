@@ -17,14 +17,13 @@
 
 define([
     'angular',
-    'angularMoment',
     'jquery-json',
     'ngFileSaver',
     'ngMaterial'
 ], function (angular) {
     'use strict';
 
-    angular.module("myApp.metadata", ['play.routing', 'angularMoment', 'ngMaterial']);
+    angular.module("myApp.metadata", ['play.routing', 'ngMaterial']);
     angular.module("myApp.metadata")
         .controller('MetadataController',
             [
@@ -35,7 +34,8 @@ define([
                 'metaShareService',
                 'sourceShareService',
                 'ObserverService',
-                function ($scope, $timeout, $q, playRoutes, metaShareService, sourceShareService, ObserverService) {
+                '_',
+                function ($scope, $timeout, $q, playRoutes, metaShareService, sourceShareService, ObserverService, _) {
 
                     /*(function (H, $) {
                         var fireEvent = H.fireEvent;
@@ -481,7 +481,6 @@ define([
                                 proms.push(deferred[t.name].promise);
                                 $scope.chartConfigs[t.name] = angular.copy($scope.chartConfig);
                                 playRoutes.controllers.EntityController.getEntitiesByType(fulltext, facets, entities, timeRange, timeRange, 50, t.name).get().then(function (result) {
-
                                     $scope.entityData[t.name] = [];
                                     result.data.forEach(function (entity) {
                                         $scope.entityData[t.name].push({
@@ -490,6 +489,8 @@ define([
                                             id: entity.id
                                         });
                                     });
+
+                                    $scope.chartConfigs[t.name]["xAxis"]["categories"] = _.pluck($scope.entityData[t.name], 'name');
                                     $scope.chartConfigs[t.name]["series"] = [{
                                         name: 'Total',
                                         data: $scope.entityData[t.name],
@@ -565,6 +566,8 @@ define([
                                                             name: metadata.key
                                                         });
                                                     });
+
+                                                    $scope.chartConfigs[key]["xAxis"]["categories"] = _.pluck($scope.metaData[key], 'name');
                                                     $scope.chartConfigs[key]["series"] = [{
                                                         name: 'Total',
                                                         data: $scope.metaData[key],
