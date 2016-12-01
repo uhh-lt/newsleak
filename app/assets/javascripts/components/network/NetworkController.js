@@ -33,20 +33,22 @@ define([
             this.legendData = { nodes: $scope.legendNodes, edges: [] };
             this.legendEvents = { "onload": function(network) { $scope.legendNetwork = network; } };
 
-            $scope.addLegend = function() {
+            // See style.css 'legend' for width and height of the render area
+            $scope.addLegend = function(types) {
                 var x = 0; var y = 0; var distance = 100;
-                $scope.legendNodes.add([
-                    { id: -1, x: x, y: y, label: 'Per', group: 0, value: 1, fixed: true, physics: false },
-                    { id: -2, x: x + distance, y: y, label: 'Org', group: 1, value: 1, fixed: true, physics: false },
-                    { id: -3, x: x + 2*distance, y: y, label: 'Loc', group: 2, value: 1, fixed: true, physics: false },
-                    { id: -4, x: x + 3*distance, y: y, label: 'Misc', group: 3, value: 1, fixed: true, physics: false }
-                ]);
+
+                var nodes = types.map(function(t, i) {
+                    return { id: -(i+1), x: x + i * distance, y: y, label: t.name, group: t.id, value: 1, fixed: true, physics: false };
+                });
+                $scope.legendNodes.add(nodes);
                 $scope.legendNetwork.fit();
             };
 
             // Add nodes after the legend div is added to the dom
             $timeout(function(){
-                $scope.addLegend();
+                $scope.observerService.getEntityTypes().then(function (types) {
+                    $scope.addLegend(types);
+                });
             });
         }])
         // Network Controller
