@@ -22,7 +22,7 @@ define([
     './factory/source/SourceFactory',
     './components/sources/SourceController',
     './components/sources/DocumentController',
-    './components/network/FancyNetworkController',
+    './components/network/NetworkController',
     './components/network/GraphConfig',
     './components/metadata/MetadataController',
     './components/sources/SearchController',
@@ -78,7 +78,7 @@ define([
                 },
                 'network': {
                     templateUrl: 'assets/partials/network.html',
-                    controller: 'FancyNetworkController'
+                    controller: 'NetworkController'
                 },
                 'histogram': {
                     templateUrl: 'assets/partials/histogram.html',
@@ -118,8 +118,7 @@ define([
     app.controller('AppController', ['$scope', '$state', '$timeout', '$window', '$mdDialog', 'moment', 'uiShareService', 'ObserverService', 'playRoutes',
         function ($scope, $state, $timeout, $window, $mdDialog, moment, uiShareService, ObserverService, playRoutes) {
 
-            /* Select graph tab on startup. In order to update the value from the child scope we need
-             * an object here. */
+            // Select graph tab on startup. In order to update the value from the child scope we need an object here.
             $scope.selectedTab = { index: 0 };
             $scope.selectedDataset = '';
             $scope.datasets = [];

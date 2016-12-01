@@ -132,8 +132,8 @@ trait EntityService {
    */
   def getEntityFragments(docId: Long)(index: String): List[(Entity, Fragment)]
 
-  /** Returns a list of distinct entity types in the underlying collection. */
-  def getTypes()(index: String): List[String]
+  /** Returns a map of distinct entity types linking to a unique id for the underlying collection. */
+  def getTypes()(index: String): Map[String, Int]
 }
 
 /** Implementation of [[models.services.EntityService]] using a relational database. */
@@ -237,7 +237,8 @@ class DBEntityService extends EntityService {
   }
 
   /** @inheritdoc */
-  override def getTypes()(index: String): List[String] = db(index).readOnly { implicit session =>
-    sql"SELECT DISTINCT type FROM entity WHERE NOT isblacklisted".map(rs => rs.string("type")).list.apply()
+  override def getTypes()(index: String): Map[String, Int] = db(index).readOnly { implicit session =>
+    val names = sql"SELECT DISTINCT type FROM entity WHERE NOT isblacklisted".map(rs => rs.string("type")).list.apply()
+    names.zipWithIndex.toMap
   }
 }

@@ -66,7 +66,7 @@ define([
                 });
                 return deferred.promise;
             }
-            //fetch entity Types dynamically
+            // fetch entity types dynamically
             function updateEntityTypes() {
                 var deferred = $q.defer();
                 entityTypes = [];
@@ -76,7 +76,7 @@ define([
                 });
                 return deferred.promise;
             }
-            //fetch levels of detail for histogram
+            // fetch levels of detail for histogram
             function updateLoD() {
                 var deferred = $q.defer();
                 playRoutes.controllers.HistogramController.getTimelineLOD().get().then(function (response) {

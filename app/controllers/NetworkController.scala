@@ -40,6 +40,8 @@ class NetworkController @Inject() (
     dateUtils: DateUtils
 ) extends Controller {
 
+  private val numberOfNeighbors = 200
+
   /**
    * Accumulates the number of entities that fall in a certain entity type and co-occur with the given entity.
    *
@@ -134,8 +136,7 @@ class NetworkController @Inject() (
       // Ignore relations that connect blacklisted nodes
       val graphRelations = relations.filterNot { case Relationship(source, target, _) => blacklistedIds.contains(source) && blacklistedIds.contains(target) }
 
-      val types = entityService.getTypes()(currentDataset).zipWithIndex.map { case (t, id) => Json.obj(t -> id) }
-      Ok(Json.obj("entities" -> graphEntities, "relations" -> graphRelations, "types" -> types)).as("application/json")
+      Ok(Json.obj("entities" -> graphEntities, "relations" -> graphRelations)).as("application/json")
     }
   }
 
@@ -198,7 +199,7 @@ class NetworkController @Inject() (
 
     // TODO: we don't need to add the blacklist as exclude when we use getById.contains
     val blacklistedIds = entityService.getBlacklisted()(currentDataset).map(_.id)
-    val nodes = networkService.getNeighbors(facets, focalNode, 200, blacklistedIds ++ currentNetwork)(currentDataset)
+    val nodes = networkService.getNeighbors(facets, focalNode, numberOfNeighbors, blacklistedIds ++ currentNetwork)(currentDataset)
 
     val neighbors = nodesToJson(nodes)
     Ok(Json.toJson(neighbors)).as("application/json")
@@ -208,7 +209,7 @@ class NetworkController @Inject() (
     val ids = nodes.map(_.id)
     val nodeIdToEntity = entityService.getByIds(ids)(currentDataset).map(e => e.id -> e).toMap
 
-    val typesToId = entityService.getTypes()(currentDataset).zipWithIndex.toMap
+    val typesToId = entityService.getTypes()(currentDataset)
     nodes.collect {
       // Only add node if it is not blacklisted
       case NodeBucket(id, count) if nodeIdToEntity.contains(id) =>

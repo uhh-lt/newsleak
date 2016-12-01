@@ -50,12 +50,9 @@ define([
             });
         }])
         // Network Controller
-        .controller('FancyNetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService) {
+        .controller('NetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService) {
 
             var self = this;
-
-            /* Entity types to their id */
-            self.types = {};
 
             /* Background collection */
             self.nodes = new VisDataSet([]);
@@ -68,7 +65,7 @@ define([
             self.physicOptions = physicOptions;
 
             self.networkButtons = [
-                { name: 'Fullscreen', template: '<div class="vis-button vis-fullscreen-button" ng-click="FancyNetworkController.toggleFullscreen()"></div>' },
+                { name: 'Fullscreen', template: '<div class="vis-button vis-fullscreen-button" ng-click="NetworkController.toggleFullscreen()"></div>' },
                 { name: 'Legend', template: '<div class="vis-button vis-legend-button" ng-click="showLegend = !showLegend"></div>' }
             ];
 
@@ -117,17 +114,12 @@ define([
             $scope.observerService = ObserverService;
             $scope.entityService = EntityService;
 
-            // TODO: would be cool to have the event type as argument i.e. remove or add
-            $scope.observer_subscribe_fulltext = function(items) {
-                // TODO: check why map does not work here
-                $scope.fulltextFilters = items;//items.map(function(f) { return f.data.name; });
-            };
-            $scope.observer_subscribe_metadata = function(items) { $scope.metadataFilters = items};
-            $scope.observer_subscribe_entity = function(items) { $scope.entityFilters = items};
+            $scope.observer_subscribe_fulltext = function(items) { $scope.fulltextFilters = items; };
+            $scope.observer_subscribe_metadata = function(items) { $scope.metadataFilters = items; };
+            $scope.observer_subscribe_entity = function(items) { $scope.entityFilters = items; };
             $scope.observerService.subscribeItems($scope.observer_subscribe_fulltext, "fulltext");
             $scope.observerService.subscribeItems($scope.observer_subscribe_metadata, "metadata");
             $scope.observerService.subscribeItems($scope.observer_subscribe_entity, "entity");
-
 
             function currentFilter() {
                 var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.item; });
@@ -153,16 +145,12 @@ define([
                 "hoverNode": hoverNode
             };
 
+            /* Consists of objects with entity types and their id */
+            $scope.types = [];
             /* Current value of the edge significance slider */
             $scope.edgeImportance = 1;
             /* Maximum edge value of the current underlying graph collection. Updated in reload method */
             $scope.maxEdgeImportance = 80000;
-            /* */
-            $scope.numPer = 5;
-            $scope.numOrg = 5;
-            $scope.numLoc = 5;
-            $scope.numMisc = 5;
-
             /* Indicates whether the network is initialized or new data is being loaded */
             $scope.loading = true;
             /* Determines how many keywords should be shown in the edge tooltip */
@@ -176,13 +164,7 @@ define([
                 var promise = $q.defer();
 
                 var filters = currentFilter();
-
-                 var fraction = [
-                    {"key": "PER", "data": $scope.numPer },
-                    {"key": "ORG", "data": $scope.numOrg },
-                    {"key": "LOC", "data": $scope.numLoc },
-                    {"key": "MISC", "data": $scope.numMisc }
-                ];
+                var fraction = $scope.types.map(function(t) { return { "key": t.name, "data": t.sliderModel }; });
 
                 playRoutes.controllers.NetworkController.induceSubgraph(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, fraction).get().then(function(response) {
                         // Enable physics for new graph data when network is initialized
@@ -191,20 +173,9 @@ define([
                         }
                         $scope.loading = true;
 
-                        // Assignment from entity types to their id for coloring
-                        self.types = response.data.types;
-
-                        //var originalMax = _.max(response.data.entities, function(n) { return n.count; }).count;
-                        //var originalMin = _.min(response.data.entities, function(n) { return n.count; }).count;
-
                         var nodes = response.data.entities.map(function(n) {
                             // See css property div.network-tooltip for custom tooltip styling
-                            // map counts to interval [1,2] for nodes mass
-                            /*var mass = ((n.count - originalMin) / (originalMax - originalMin)) * (2 - 1) + 1;
-                            // If all nodes have the same occurrence assign same mass. This also prevents errors
-                            // for wrong interval mappings e.g. [1,1] to [1,2] yields NaN for the mass.
-                            if(originalMin == originalMax) mass = 1;*/
-                            return { id: n.id, label: n.label, type: n.type,  value: n.count, group: n.group };
+                            return { id: n.id, label: n.label, type: n.type, value: n.count, group: n.group };
                         });
 
                         self.nodesDataset.clear();
@@ -242,8 +213,16 @@ define([
             };
 
 
-            // Initialize graph
-            $scope.reloadGraph();
+            function init() {
+                // Fetch the named entity types
+                $scope.observerService.getEntityTypes().then(function (types) {
+                    $scope.types = types.map(function(t) { return _.extend(t, { sliderModel: 5 }) });
+                    // Initialize graph
+                    $scope.reloadGraph();
+                });
+            }
+            // Init the network module
+            init();
 
             $scope.observerService.registerObserverCallback({
                 priority: 1,
@@ -258,7 +237,7 @@ define([
                 // Do not use data from previous filtering steps when collection is changed
                 self.nodes.clear();
                 self.edges.clear();
-                //return $q.defer().promise;
+
                 return $scope.reloadGraph();
             });
 
@@ -369,11 +348,11 @@ define([
                         }],
                     locals: { e: entity },
                     autoWrap: false,
-                    parent: $scope.FancyNetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
+                    parent: $scope.NetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
                 }).then(function(response) {
                     // Adapt tooltip and node color
                     var modified = _.extend(response, {
-                        group: self.types[response.type],
+                        group: $scope.types[response.group].id,
                         // TODO Adapt to new tooltip
                         title: 'Co-occurrence: ' + response.value + '<br>Typ: ' + response.type
                     });
@@ -440,18 +419,14 @@ define([
                         }],
                     locals: { e: entity, networkIds: ids },
                     autoWrap: false,
-                    parent: $scope.FancyNetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
+                    parent: $scope.NetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
                 }).then(function(response) {
                     var filters = currentFilter();
                     var networkNodes = self.nodesDataset.getIds();
 
                     var n = response.map(function(n) { return n.id; });
                     playRoutes.controllers.NetworkController.addNodes(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, networkNodes, n).get().then(function(response) {
-
                         // Remove highlight from previous nodes including background collection
-                        //var cleanNodes = self.nodes.map(function(n) { return _.extend(n, { 'shapeProperties': { borderDashes: false }, color: undefined, borderWidth: 1 })});
-                        //self.nodes.update(cleanNodes);
-
                         removeNodeHighlight(self.nodes, self.nodes);
                         removeNodeHighlight(self.nodesDataset, self.nodesDataset);
 
@@ -501,7 +476,7 @@ define([
                         }],
                     locals: { entities: nodes },
                     autoWrap: false,
-                    parent: $scope.FancyNetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
+                    parent: $scope.NetworkController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
                 }).then(function(response) {
                     var duplicates = _.without(nodeIds, response);
                     // Remove duplicates from the current network view

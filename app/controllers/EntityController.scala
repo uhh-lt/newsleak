@@ -22,6 +22,7 @@ import javax.inject.Inject
 import models.{ Entity, Facets, NodeBucket }
 import models.Entity.entityFormat
 import models.services.{ AggregateService, EntityService }
+import play.api.libs.json.Json.toJson
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, Controller }
 import util.SessionUtils.currentDataset
@@ -42,24 +43,25 @@ class EntityController @Inject() (
 
   private val defaultFetchSize = 50
 
-  /** Returns a list of distinct entity types in the underlying collection. */
+  /** Returns a ordered list of distinct entity types in the underlying collection. */
   def getEntityTypes = Action { implicit request =>
-    Ok(Json.toJson(entityService.getTypes()(currentDataset))).as("application/json")
+    val types = entityService.getTypes()(currentDataset).map { case (t, id) => Json.obj("name" -> t, "id" -> id) }
+    Ok(toJson(types)).as("application/json")
   }
 
   /** Returns all blacklisted entities for the underlying collection. */
   def getBlacklistedEntities = Action { implicit request =>
     val entities = entityService.getBlacklisted()(currentDataset)
-    Ok(Json.toJson(entities)).as("application/json")
+    Ok(toJson(entities)).as("application/json")
   }
 
   /** Returns all merged entities for the underlying collection. */
   def getMergedEntities = Action { implicit request =>
     val entities = entityService.getMerged()(currentDataset).map {
       case (focalNode, duplicates) =>
-        Json.obj("id" -> focalNode.id, "origin" -> focalNode, "duplicates" -> Json.toJson(duplicates))
+        Json.obj("id" -> focalNode.id, "origin" -> focalNode, "duplicates" -> duplicates)
     }
-    Ok(Json.toJson(entities)).as("application/json")
+    Ok(toJson(entities)).as("application/json")
   }
 
   /**
@@ -76,7 +78,7 @@ class EntityController @Inject() (
             Json.obj("id" -> id, "name" -> name, "type" -> t, "start" -> fragment.start, "end" -> fragment.end)
         }
     }
-    Ok(Json.toJson(res)).as("application/json")
+    Ok(toJson(res)).as("application/json")
   }
 
   /**
@@ -152,7 +154,7 @@ class EntityController @Inject() (
             "freq" -> x._2.freq,
             "docCount" -> entitiesRes.find(_._1 == x._2.id).get._2.asInstanceOf[Number].longValue
           ))
-        Ok(Json.toJson(res)).as("application/json")
+        Ok(toJson(res)).as("application/json")
       } else {
         val res = sqlResult.map(x => Json.obj(
           "id" -> x._2.id,
@@ -161,10 +163,10 @@ class EntityController @Inject() (
           "freq" -> x._2.freq,
           "docCount" -> entitiesRes.find(_._1 == x._2.id).get._2.asInstanceOf[Number].longValue
         ))
-        Ok(Json.toJson(res.sortBy(-_.value("docCount").as[Long]))).as("application/json")
+        Ok(toJson(res.sortBy(-_.value("docCount").as[Long]))).as("application/json")
       }
     } else {
-      Ok(Json.toJson(List[JsObject]())).as("application/json")
+      Ok(toJson(List[JsObject]())).as("application/json")
     }
   }
   // scalastyle:on
