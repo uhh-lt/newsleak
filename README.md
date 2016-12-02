@@ -1,53 +1,51 @@
-new/s/leak
-==========
+# NEW/S/LEAK
+[![Project status](https://img.shields.io/badge/status-active-brightgreen.svg)](#status)
+[![Project Licence](https://img.shields.io/badge/licence-AGPL-blue.svg)](#license)
 
-**new/s/leak** represents the front-end layer application of the distributed software package newsleak ("Network of searchable Leaks").
+![newsleak](http://newsleak.io/wp-content/uploads/2016/03/cropped-logo-draft.png)
 
-* Website: [http://newsleak.io](http://newsleak.io)
-
-
-## 1. Build Instructions
+Science and Data-Driven Journalism: Data Extraction and Interactive Visualization of Unexplored Textual Datasets for Investigative Data-Driven Journalism (DIVID-DJ)
 
 
-Make sure you have the build tool `sbt` installed. It can be downloaded [here](http://www.scala-sbt.org/). As a minimum requirement sbt 0.13.11 and scala 2.11 are required.
 
-The Application uses the Play Framework 2.5.
+* [Project Description](https://www.inf.uni-hamburg.de/en/inst/ab/lt/research/divid-dj.html)
+* [Blog](http://newsleak.io)
+* [Documentation](https://tudarmstadt-lt.github.io/newsleak-frontend/scaladoc/index.html)
 
-Furthermore, [nodeJS](https://nodejs.org/) and npm (served with nodejs or the linux package manager) needs to be installed.
+## Project Setup
 
-* Execute the script `init-repo.sh`. This will install the package manager `bower` using `npm` and further resolves all Javascript dependencies. Both applications are dependency management tools, whereas `bower` can be used managing front-end components like html, css, js, etc.  and `npm` is used for installing Node.JS modules.
+#### Resolve external Javascript dependencies
 
-  **Note**: During the installation process you will be asked to resolve various version problems.
-  
-* Add newsleak [backend API](https://github.com/tudarmstadt-lt/newsleak) to your local ivy repository by executing `sbt publishLocal` in the newsleak backend API folder.
+The external Javascript dependencies of the project are resolved with [bower](https://bower.io/), whereas `bower` is fetched via [npm](https://www.npmjs.com/). To install the package manager `npm` for an Ubuntu based system execute the following commands. This will install the package manager using the local software repository.
 
-* Run `sbt compile run` and open the application in the browser: `localhost:9000`.
+```
+ sudo apt-get update
+ sudo apt-get install nodejs npm
 
-* Run `sbt dist` to package all required files to a zip file, which will be stored in `target/universal/`. See the [Play documentation](https://www.playframework.com/documentation/2.5.x/Production) for more information.
+```
+Once `npm` is installed, execute the shell script `init-repo.sh`, which will download `bower` and resolve the Javascript dependencies to `app/assets/javascripts/libs/`. The list of Javascript dependencies is defined in `bower.json`.
 
+#### Enter database and elasticsearch credentials
 
-## 2. Deployment
+The application uses the file `conf/application.conf` for configuration. Fill in your database and elasticsearch credentials next to the section `Database configuration` obtained during the newsleak pipeline setup.
 
-Before deploying the application, make sure, you have a postgresql server with a valid database schema running.
+See the [Play database documentation](https://www.playframework.com/documentation/2.5.x/ScalaDatabase) for more information.
 
-To install the application, unpack the packaged zip file (`target/universal/`) to a directory of your choice. For example, `unzip new-s-leak-1.0.2.zip -d /path/` unpacks the zip file to `/path/`. Next you need to modify the `conf/application.conf` file to provide the database settings to the application. See the [Play database documentation](https://www.playframework.com/documentation/2.5.x/ScalaDatabase) for more information.
+## Build Instructions
 
-* The option `db.default.url` modifies the current URL to connect to the database.
+The application uses the build tool `sbt`, which is similar to Java's Maven or Ant and provides native support for compiling Scala code. Download the tool [here](http://www.scala-sbt.org/). Installation instructions for Linux are provided [here](http://www.scala-sbt.org/release/docs/Manual-Installation.html).
 
-* The options `db.default.username` and `db.default.password` modify the login data for the database.
+In order to compile the code run `sbt compile` in the root directory of the application. This will fetch all external Scala dependencies and further resolves the Scala compiler interface. To run the application in development mode execute `sbt run` and open the application in the browser via `localhost:9000`. In this mode, Play will check your your project and recompile required sources for each request. **The development mode is not intended for a productive environment!**
 
-* The backend API utilizes a postgre database. Other databases can be used by implementing the backend API interfaces for other database technologies. 
+## Deployment
 
-Finally, run `bin/new-s-leak -Dconfig.file=conf/application.conf` from the root folder of your application. Subsequently, the application is reachable via port `9000`.
+The following explains how to deploy the application in productive mode using the sbt `dist` task. This dist task creates a binary version of the application, which can be deployed to a server. To run the binary on a server a [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/index-jsp-138363.html) installation is required.
 
-Alternatively, use the provided upstart script on the nwdt server. The script is stored in the `bin` folder in the home directory of the nwdt server. The script works as following:
+In order to create the binary, run `sbt dist` in the root directory of the application. This will package all required files to a zip archive, which will be stored in `target/universal`. For more information see the [Play documentation](https://www.playframework.com/documentation/2.5.x/Production).
 
-* The execution of `upstart-nwdt.sh start` starts all services required to run newsleak and also starts the application.
+To deploy the binary on the server, unpack the packaged zip archive (`target/universal/`) to a directory of your choice e.g. `unzip new-s-leak-1.0.2.zip -d /path/` unpacks the archive to `/path/`. Next modify the `conf/application.conf` file to provide the database and elasticsearch credentials.
 
-* The execution of `upstart-nwdt.sh restart` restarts all services and the application itself.
-
-* The execution of `upstart-nwdt.sh stop` stops all services and newsleak as well.
-
+Finally, execute `bin/new-s-leak -Dconfig.file=conf/application.conf` from the root folder of your application. The application is then reachable via port `9000`. Also make sure this port is reachable from the outside.
 
 ## Want to help?
 
@@ -71,7 +69,3 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 ```
-
-See also
---------
-[Newsleak Backend API](https://github.com/tudarmstadt-lt/newsleak)
