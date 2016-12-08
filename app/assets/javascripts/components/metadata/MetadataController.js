@@ -197,12 +197,13 @@ define([
                     };
 
                     $scope.emptyFacets = [{'key':'dummy','data': []}];
+                    $scope.reorder = true;
 
                     $scope.initMetadataView = function () {
                         $scope.initializedMeta = false;
                         $scope.initializedEntity = false;
                         //TODO: to order by black bars set true
-                        $scope.reorder = true;
+
                         $scope.promiseMetaCharts = undefined;
                         $scope.promiseEntityCharts = undefined;
 
