@@ -48,7 +48,7 @@ To deploy the binary on the server, unpack the packaged zip archive (`target/uni
 Finally, execute `bin/new-s-leak -Dconfig.file=conf/application.conf` from the root folder of your application. The application is then reachable via port `9000`. Also make sure this port is reachable from the outside.
 
 ## The new/s/leak Pipeline
-We have compiled everything required to start the new/s/leak application. You can download the required resources from [here](). Unzip the zip file and we call this **NEWSLEAKHOME**
+We have compiled everything required to start the new/s/leak application. You can download the required resources from [here](https://github.com/tudarmstadt-lt/newsleak-frontend/releases/download/V1.0-beta-1/newsleak.7z). Unzip the zip file and we call this **NEWSLEAKHOME**
 
 ### System requirements and Configurations
 1. Java 8 and above
