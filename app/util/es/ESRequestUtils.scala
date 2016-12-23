@@ -44,14 +44,8 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
   /** Elasticsearch field for running aggregation queries using document keywords. */
   val keywordsField = "Keywords" -> "Keywords.Keyword.raw"
 
-  // TODO: in course of making other entity types available, we need to adapt these hardcoded labels
   /** Elasticsearch fields for running aggregation queries using entity ids from separate entity types. */
-  val entityTypeToField = Map(
-    "PER" -> "Entitiesper.EntId",
-    "ORG" -> "Entitiesorg.EntId",
-    "LOC" -> "Entitiesloc.EntId",
-    "MISC" -> "Entitiesmisc.EntId"
-  )
+  def convertEntityTypeToField = (t: String) => s"Entities${t.toLowerCase}.EntId"
 
   /** Executes the given search request. */
   def executeRequest(request: SearchRequestBuilder, cache: Boolean = true): SearchResponse = request.setRequestCache(cache).execute().actionGet()

@@ -106,9 +106,15 @@ trait NetworkService {
  *
  * @param clientService the elasticsearch client.
  * @param aggregateService the aggregation service.
+ * @param entityService the entity service.
  * @param utils common helper to issue elasticsearch queries.
  */
-class ESNetworkService @Inject() (clientService: SearchClientService, aggregateService: AggregateService, utils: ESRequestUtils) extends NetworkService {
+class ESNetworkService @Inject() (
+    clientService: SearchClientService,
+    aggregateService: AggregateService,
+    entityService: EntityService,
+    utils: ESRequestUtils
+) extends NetworkService {
 
   /** @inheritdoc */
   override def createNetwork(
@@ -181,20 +187,19 @@ class ESNetworkService @Inject() (clientService: SearchClientService, aggregateS
   private def cardinalityAggregate(facets: Facets, documentSize: Int, index: String): Aggregation = {
     val requestBuilder = utils.createSearchRequest(facets, documentSize, index, clientService)
     // Add neighbor aggregation for each NE type
-    utils.entityTypeToField.foreach {
-      case (eType, f) =>
-        val aggregation = AggregationBuilders
-          .cardinality(eType.toString)
-          .field(f)
+    val types = entityService.getTypes()(index).keys
+    types.foreach { t =>
+      val aggregation = AggregationBuilders
+        .cardinality(t)
+        .field(utils.convertEntityTypeToField(t))
 
-        requestBuilder.addAggregation(aggregation)
+      requestBuilder.addAggregation(aggregation)
     }
     val response = utils.executeRequest(requestBuilder)
     // Parse result
-    val buckets = utils.entityTypeToField.map {
-      case (eType, _) =>
-        val agg: Cardinality = response.getAggregations.get(eType.toString)
-        MetaDataBucket(eType.toString, agg.getValue)
+    val buckets = types.map { t =>
+      val agg: Cardinality = response.getAggregations.get(t)
+      MetaDataBucket(t, agg.getValue)
     }.toList
 
     Aggregation("neighbors", buckets)

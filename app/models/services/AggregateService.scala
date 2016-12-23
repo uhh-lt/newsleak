@@ -163,7 +163,7 @@ class ESAggregateService @Inject() (clientService: SearchClientService, utils: E
 
   /** @inheritdoc */
   override def aggregateEntitiesByType(facets: Facets, etype: String, size: Int, include: List[Long], exclude: List[Long])(index: String): Aggregation = {
-    val agg = Map(utils.entityIdsField._1 -> (utils.entityTypeToField(etype), size))
+    val agg = Map(utils.entityIdsField._1 -> (utils.convertEntityTypeToField(etype), size))
     termAggregate(facets, agg, include.map(_.toString), exclude.map(_.toString), 1, index).head
   }
 
