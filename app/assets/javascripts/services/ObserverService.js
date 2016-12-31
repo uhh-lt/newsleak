@@ -402,6 +402,7 @@ define([
                 },
 
                 loadState: function(input) {
+                    console.log(input);
                     var rootThis = this;
                     history = [];
                     items =  {};

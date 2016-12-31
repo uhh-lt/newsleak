@@ -564,6 +564,9 @@ footer > div #histogram {
 #history .md-virtual-repeat-container .md-virtual-repeat-scroller {
     overflow-x: scroll !important;
 }
+#history .md-button.md-icon-button {
+    margin: 0;
+}
 
 /*#history {
     margin-left: 10px;
