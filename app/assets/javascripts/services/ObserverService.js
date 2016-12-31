@@ -404,7 +404,7 @@ define([
                 loadState: function(input) {
                     console.log(input);
                     var rootThis = this;
-                    history = [];
+                    history.splice(0);
                     items =  {};
                     types.forEach(function(type) {
                         if(type != types[1])
@@ -412,14 +412,16 @@ define([
                         else
                             items[type] = {};
                     });
-                    //this.initTypes();
+                    this.initTypes();
 
+                    //history = angular.copy(input.history);
+                    console.log(history);
                     $q.all([
                         promiseEntities, promiseLoD, promiseMetadata
                     ]).then(function() {
-                            angular.forEach(input.history, function (item) {
-                                history.push(item);
-                            });
+                        angular.forEach(input.history, function (item) {
+                            history.push(angular.copy(item));
+                        });
                             types.forEach(function (type) {
                                 $.each(input.items[type], function (index, item) {
                                     if (type != types[1])

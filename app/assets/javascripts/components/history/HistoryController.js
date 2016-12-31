@@ -88,7 +88,7 @@ define([
                     $scope.observer.subscribeAllItems($scope.observer_subscribe_items);
 
                     $scope.observer.subscribeReset(function() {
-                        $scope.history.length = 0;
+                        //$scope.history.length = 0;
                     });
 
                     $scope.removeItem = function(item) {
