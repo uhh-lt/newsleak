@@ -126,11 +126,12 @@ define([
 
             function init() {
                 // Fetch datasets for dropdown list
+                /*
                 playRoutes.controllers.Application.getDatasets().get().then(function(response) {
                     $scope.datasets = response.data.available;
                     $scope.selectedDataset = response.data.current;
                 });
-
+                */
                 $state.go('layout');
                 // TODO Don't know what the resizing is about
                 // $timeout in order to have the right values right from the beginning on
@@ -186,12 +187,14 @@ define([
 
             $scope.changeDataset = function() {
                 console.log('Changed ' + $scope.selectedDataset);
+                /*
                 playRoutes.controllers.Application.changeDataset($scope.selectedDataset).get().then(function(response) {
                     // Update views with new data from the changed data collection
                     if(response.data.oldDataset != response.data.newDataset) {
                         ObserverService.reset();
                     }
                 });
+                */
             };
         }]);
 
