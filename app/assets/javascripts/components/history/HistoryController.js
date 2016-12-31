@@ -147,7 +147,6 @@ define([
                             $scope.uploadFile = undefined;
                         };
                         $scope.waitForFile = setInterval(function() {
-                            console.log($scope.uploadFile);
                             if($scope.uploadFile) {
                                 clearInterval($scope.waitForFile);
                                 $scope.reader.readAsText($scope.uploadFile);
