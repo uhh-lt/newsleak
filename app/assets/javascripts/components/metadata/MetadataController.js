@@ -618,6 +618,12 @@ define([
                         return defer.promise;
                     };
 
+                    $scope.resetMetadataView = function() {
+                        $scope.initMetadataView().then(function() {
+                            $scope.updateMetadataView();
+
+                        });
+                    };
                     $scope.updateMetadataView = function () {
                         $scope.updateEntityCharts();
                         $scope.updateMetadataCharts();
