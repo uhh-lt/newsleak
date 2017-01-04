@@ -70,12 +70,13 @@ class EntityController @Inject() (
    * @param docId the document id.
    */
   def getEntitiesByDoc(docId: Long) = Action { implicit request =>
+    val typesToId = entityService.getTypes()(currentDataset)
     val entityToOccurrences = entityService.getEntityFragments(docId)(currentDataset).groupBy(_._1)
     val res = entityToOccurrences.flatMap {
       case (Entity(id, name, t, _), occ) =>
         occ.map {
           case (_, fragment) =>
-            Json.obj("id" -> id, "name" -> name, "type" -> t, "start" -> fragment.start, "end" -> fragment.end)
+            Json.obj("id" -> id, "name" -> name, "type" -> t, "typeId" -> typesToId(t), "start" -> fragment.start, "end" -> fragment.end)
         }
     }
     Ok(toJson(res)).as("application/json")

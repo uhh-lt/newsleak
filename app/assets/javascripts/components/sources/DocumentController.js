@@ -23,7 +23,7 @@ define([
     'use strict';
 
     angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial'])
-        .directive('docContent', ['$compile', 'ObserverService', '_', function($compile, ObserverService, _) {
+        .directive('docContent', ['$compile', 'ObserverService', 'graphProperties',  '_', function($compile, ObserverService, graphProperties, _) {
             return {
                 restrict: 'E',
                 transclude: true,
@@ -35,9 +35,7 @@ define([
                 link: function(scope, element, attrs) {
                     var content = scope.document.content;
                     var entities = scope.document.entities;
-
-                    var categoryColors = { 'PER': '#d73027', 'ORG': '#fee090', 'LOC': '#abd9e9', 'MISC': '#4575b4'};
-
+                    
                     scope.addEntityFilter = function(id) {
                         var el = _.find(entities, function(e) { return e.id == id });
                         ObserverService.addItem({ type: 'entity', data: { id: id, description: el.name, item: el.name, type: el.type }});
@@ -74,7 +72,7 @@ define([
                                 // => <span> Angela <span> Merkel </span> </span>
                                 if(e.type == 'full-text') {
                                     //Expectation: Nested is always the inner or same element e.g. [[Angela] Merkel]
-                                    var innerElement = createNeHighlight(e.nested.id, e.nested.type, e.nested.name);
+                                    var innerElement = createNeHighlight(e.nested.id, e.nested.typeId, e.nested.name);
                                     if(e.nested.start == e.start) {
                                         highlightElement = createFulltextHighlight(e.name.substring(e.nested.end - e.start));
                                         highlightElement.prepend(innerElement);
@@ -85,18 +83,18 @@ define([
                                 } else {
                                     var innerElement = createFulltextHighlight(e.nested.name);
                                     if(e.nested.start == e.start) {
-                                        highlightElement = createNeHighlight(e.id, e.type, e.name.substring(e.nested.end - e.start));
+                                        highlightElement = createNeHighlight(e.id, e.typeId, e.name.substring(e.nested.end - e.start));
                                         highlightElement.prepend(innerElement);
 
                                     } else {
-                                        highlightElement = createNeHighlight(e.id, e.type, e.name.substring(0, e.nested.start - e.start));
+                                        highlightElement = createNeHighlight(e.id, e.typeId, e.name.substring(0, e.nested.start - e.start));
                                         highlightElement.append(innerElement);
                                     }
                                 }
                             } else if(e.type == 'full-text')  {
                                 highlightElement = createFulltextHighlight(e.name);
                             } else {
-                                highlightElement = createNeHighlight(e.id, e.type, e.name);
+                                highlightElement = createNeHighlight(e.id, e.typeId, e.name);
                             }
                             // Append marked element to DOM
                             var compiledElement = $compile(highlightElement)(scope);
@@ -176,8 +174,9 @@ define([
                         return res;
                     }
 
-                    function createNeHighlight(id, type, name) {
-                        var innerElement = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none, \'border-bottom\': \'3px solid ' + categoryColors[type] + '\'}"></span>');
+                    function createNeHighlight(id, typeId, name) {
+                        var color = graphProperties.options['groups'][typeId]['color']['background'];
+                        var innerElement = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none, \'border-bottom\': \'3px solid ' + color + '\'}"></span>');
                         innerElement.className = 'highlight-general';
                         var addFilter = angular.element('<a ng-click="addEntityFilter(' + id +')" style="text-decoration: none;"></a>');
 
