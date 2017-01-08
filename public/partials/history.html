@@ -76,7 +76,7 @@
 
 				<md-icon class="material-icons">{{ factory.getIcon(obj.type) }}</md-icon>
 				<md-icon class="material-icons">{{ factory.getActionIcon(obj.action) }}</md-icon>
-				{{ obj.data.description }}
+				<span class="md-caption">{{ obj.data.type.concat(': ', obj.data.description) | limitTo: 25 }}{{ obj.data.type.concat(obj.data.description).length > 25 ? '...' : ''}}</span>
 
 				<i ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" ng-click="removeItem(obj)" class="glyphicon action-icon glyphicon-remove-circle" ng-class="" ></i>
 			</div>
