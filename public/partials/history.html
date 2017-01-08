@@ -25,10 +25,6 @@
 				<li class="list-group-item"><span>Tracker-Type:</span> {{ obj.type }}</li>
 				<li class="list-group-item"><span>Active:</span> {{ obj.active }}</li>
 			</ul>
-
-			<button ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" type="button" class="btn btn-primary" ng-click="removeItem(obj)">
-				<i class="glyphicon type-icon glyphicon-trash" ng-class=""></i> Remove
-			</button>
 		</div>
 	</script>
 
@@ -79,18 +75,12 @@
 				 popover-append-to-body='true'
 				 popover-is-open="factory.popover.isOpen[{{ obj.id }}]">
 
-				<i class="glyphicon type-icon glyphicon-{{ getIcon(obj.type) }}" ng-class=""></i>
-				<i class="glyphicon action-icon glyphicon-{{ getActionIcon(obj.action) }}" ng-class=""></i>
+				<md-icon class="material-icons">{{ getIcon(obj.type) }}</md-icon>
+				<md-icon class="material-icons">{{ getActionIcon(obj.action) }}</md-icon>
 				{{ obj.data.description }}
 
 				<i ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" ng-click="removeItem(obj)" class="glyphicon action-icon glyphicon-remove-circle" ng-class="" ></i>
 			</div>
 		</md-virtual-repeat-container>
 	</md-content>
-
-	<!--<div class="checkbox">-->
-		<!--<md-button class="md-primary md-raised" type="button" id="reset-history" ng-click="observer.reset()">Reset filters</md-button>-->
-		<!--<md-button class="md-primary md-raised" type="button" id="save-history" ng-click="saveHistory()"><md-icon class="material-icons md-light">archive</md-icon> Save State</md-button>
-		<file-field class="md-button md-primary md-raised" ng-model="uploadFile" ng-click="loadHistory()"><md-icon class="material-icons md-light">unarchive</md-icon> Load State</file-field>-->
-	<!--</div>-->
 </div>

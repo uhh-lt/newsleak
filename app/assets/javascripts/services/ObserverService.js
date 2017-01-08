@@ -22,7 +22,7 @@ define([
     'use strict';
 
     angular.module("myApp.observer", ['play.routing'])
-        .factory('ObserverService', ['playRoutes', '$q', '$timeout', function(playRoutes, $q, $timeout) {
+        .factory('ObserverService', ['playRoutes', '$q', function(playRoutes, $q) {
             // Stores callback instances consisting of a callback method and a priority number
             var observerCallbacks = [];
             //holds subscriber functions
@@ -32,6 +32,7 @@ define([
             //all item structured by type
             var items = {};
             //types of tracked items
+            // TODO: expandNode, egoNetwork not used. Remove them. Make sure index of types still fits! Better don't access via index ...
             var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset", "delete", "openDoc", "timeX"];
             var notfiyTypes = ["entity", "metadata", "time", "timeX", "fulltext", "reset"];
             var metadataTypes = [];

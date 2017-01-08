@@ -25,26 +25,26 @@ define([
 ], function(angular) {
     'use strict';
 
-    angular.module("myApp.history", ['ngFileSaver', 'ui.bootstrap','ngAnimate', 'bootstrap.fileField'])
+    angular.module("myApp.history", ['ngFileSaver', 'ui.bootstrap', 'ngAnimate', 'bootstrap.fileField'])
         .config(function($uibTooltipProvider) {
         })
         .factory('historyFactory', [
             function() {
                 return {
+                    // See https://material.io/icons/
                     icons: {
                         'entity' : 'filter',
                         'metadata': 'filter',
-                        'time': 'time',
-                        'timeX': 'calendar',
-                        "expandNode": 'plus',
-                        "collapseNode": 'plus',
-                        "egoNetwork": 'asterisk',
-                        "merge": 'resize-small',
-                        "hide": 'eye-close',
-                        "edit": 'pencil',
+                        'time': 'schedule',
+                        // TODO: Rename to timeExpression
+                        'timeX': 'timeline',
+                        // TODO: Merge and hide are not tracked as filter atm
+                        "merge": 'supervisor_account',
+                        "hide": 'visibility_off',
+                        "edit": 'create',
                         "annotate": 'comment',
                         "fulltext": 'search',
-                        "delete": 'remove',
+                        "delete": 'not_interested',
                         "openDoc": 'book'
                     },
                     typeDescriptions: {
@@ -57,9 +57,9 @@ define([
                       'edit': "Entity edited"
                     },
                     actions: {
-                        'added': 'plus',
-                        'removed': 'minus',
-                        'replaced': 'refresh'
+                        'added': 'add',
+                        'removed': 'remove',
+                        'replaced': 'loop'
                     },
                     popover: {
                         template: 'tooltip_tmpl',
