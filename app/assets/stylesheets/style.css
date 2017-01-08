@@ -55,7 +55,7 @@ html, body {
     margin: 0
 }
 
-    /* Format the title that is on the left hand side of the header */
+/* Format the title that is on the left hand side of the header */
 .title {
     font-size: 300%;
     font-family: "American Typeriter"
@@ -327,14 +327,14 @@ footer > div #histogram {
     font-weight: bold;
 }
 
-.entity-menu {
+/* .entity-menu {
     margin-left: 0 !important;
     margin-right: 0 !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
     width: 20px !important;
     font-size: 16px !important;
-}
+}*/
 
 /*
     ======================================
@@ -376,21 +376,11 @@ footer > div #histogram {
     text-decoration: none;
 }
 
-/* Vertically scrollable containers */
-#document-list, .tab-content > .tab-pane > .document-source-content {
-    overflow-y: auto;
-}
-
-.load-more-button {
-    width: 100%;
-}
-#documents-view .md-body-2 {
-    padding-right: 100px;
-}
 #documents-view .metadata-button {
-    position: absolute !important;
-    right: 10px;
-    top: 10px;
+    margin-right: 8px;
+    padding-right: 16px;
+    margin-left: 0px;
+    padding-left: 0px;
 }
 
 .docs-loading {
