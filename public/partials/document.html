@@ -28,21 +28,27 @@
     <md-tab-body>
         <md-content flex layout-padding ng-init="keywords = retrieveKeywords(doc)">
             <md-card>
-                <md-card-title>
-                    <md-card-title-text>
-                        <span class="md-headline">{{ doc.meta.Subject.join(', ') }}</span>
+                <md-card-header>
+                    <md-button class="md-icon-button" aria-label="Show-meta">
+                        <md-tooltip>
+                            Show Metadata
+                        </md-tooltip>
+                        <md-icon ng-click="sourceShared.showMetaDialog($event, doc.meta)" class="material-icons md-secondary">info</md-icon>
+                    </md-button>
+                    <md-card-header-text>
+                        <span class="md-title">{{ doc.meta.Subject.join(', ') }}</span>
                         <md-chips
                                 ng-init="initTags(doc)"
                                 ng-model="tags[doc.id]"
                                 md-transform-chip="transformTag($chip, doc)"
                                 md-autocomplete-snap
-                                delete-button-label="Remove Tag"
-                                delete-hint="Press delete to remove tag"
+                                delete-button-label="Remove tag"
+                                delete-hint="Press delete to remove the tag"
                                 secondary-placeholder="+Tag"
                                 md-on-add="addTag($chip, doc)"
                                 md-on-remove="removeTag($chip)">
                             <md-autocomplete
-                                    placeholder="Enter a tag"
+                                    placeholder="Add a tag to remember the document"
                                     md-search-text="searchText"
                                     md-items="label in querySearch(doc, searchText)"
                                     md-item-text="label"
@@ -58,9 +64,17 @@
                             <b>Keywords: </b>
                             <span>{{ keywords.join(', ') }}</span>
                         </span>
+                        <span class="md-subhead">No Link</span>
+                    </md-card-header-text>
+                </md-card-header>
+                <md-card-title>
+                    <md-card-title-text>
+                        <span class="md-headline">Document Content</span>
                     </md-card-title-text>
                 </md-card-title>
-                <doc-content layout-padding document="doc"></doc-content>
+                <md-card-content>
+                    <doc-content layout-padding document="doc"></doc-content>
+                </md-card-content>
             </md-card>
         </md-content>
     </md-tab-body>

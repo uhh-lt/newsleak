@@ -54,7 +54,7 @@
                         class="repeated-item md-3-line md-long-text"
                         ng-click="loadFullDocument(item)">
                     <div class="md-body-2">{{ item.metadata.Subject.join(", ") }} #{{item.id}}</div>
-                    <md-button class="md-primary md-raised metadata-button" ng-click="showMetaDialog($event, item.metadata)">Metadata</md-button>
+                    <md-button class="md-primary md-raised metadata-button" ng-click="sourceShared.showMetaDialog($event, item.metadata)">Metadata</md-button>
 
                     <md-divider ng-if="!$last"></md-divider>
 
