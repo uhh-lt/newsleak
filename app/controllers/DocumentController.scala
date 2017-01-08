@@ -162,7 +162,7 @@ class DocumentController @Inject() (
       val docToMetadata = documentService
         .getMetadata(docList.map(_.id), keys)(currentDataset)
         .groupBy(_._1)
-        .map { case (id, l) => id -> l.collect { case (_, k, v) if !v.isEmpty => Json.obj("key" -> k, "val" -> v) } }
+        .map { case (id, l) => id -> l.collect { case (_, k, v, t) if !v.isEmpty => Json.obj("key" -> k, "val" -> v, "type" -> t) } }
 
       val response = docList.map { d =>
         Json.obj(

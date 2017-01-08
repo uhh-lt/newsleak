@@ -61,7 +61,7 @@
                         <md-icon ng-click="sourceShared.showMetaDialog($event, item.metadata)" class="material-icons">info</md-icon>
                     </md-button>
                     <div class="md-list-item-text" layout="column">
-                        <h3>{{ item.metadata.Subject.join(", ") }} #{{item.id}}</h3>
+                        <h3>{{ sourceShared.pluckMetaValues(item.metadata.Subject).join(", ") }} #{{item.id}}</h3>
                         <p>Keywords</p>
                     </div>
                     <md-divider ng-if="!$last"></md-divider>

@@ -263,6 +263,13 @@ define([
                         return terms;
                     };
 
+                    $scope.retrieveLinks = function(doc) {
+                        var links = _.pick(doc.meta, function(value, key, obj) {
+                            return _.every(_.pluck(value, 'type'), function(t) { return t == 'Link'; })
+                        });
+                        return links;
+                    };
+
                     $scope.transformTag = function(tag, doc) {
                         // If it is an object, it's already a known tag
                         if (angular.isObject(tag)) {

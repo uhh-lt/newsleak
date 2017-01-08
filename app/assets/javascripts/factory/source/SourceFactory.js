@@ -21,7 +21,7 @@ define([
 ], function (angular) {
     'use strict';
     angular.module('myApp.sourcefactory', ['ngMaterial'])
-        .factory('sourceShareService', ['$mdDialog', function($mdDialog) {
+        .factory('sourceShareService', ['$mdDialog', '_', function($mdDialog, _) {
             var sourceShareService = {
                 documentList: [],
                 documentsInDB: -1,
@@ -49,11 +49,14 @@ define([
                             if(!currentDoc.metadata.hasOwnProperty(metadata.key)) {
                                 currentDoc.metadata[metadata.key] = [];
                             }
-                            currentDoc.metadata[metadata.key].push(metadata.val);
+                            currentDoc.metadata[metadata.key].push({'val': metadata.val, 'type': metadata.type });
                         });
                         sourceShareService.documentList.push(currentDoc);
                     });
                     }
+                },
+                pluckMetaValues: function(metalist) {
+                    return _.pluck(metalist, 'val');
                 },
                 showMetaDialog: function($event, metadata) {
                     var parentEl = angular.element(document.body);
@@ -66,7 +69,7 @@ define([
                         '<md-subheader class="md-no-sticky">Metadata</md-subheader>'+
                         '    <md-list class="md-dense">'+
                         '      <md-list-item ng-repeat="(key, value) in items">'+
-                        '       <p class="md-body-2"><b>{{ key }}</b>: {{ value.join(", ") }}</p>' +
+                        '       <p class="md-body-2"><b>{{ key }}</b>: {{ pluckMetaValues(value).join(", ") }}</p>' +
                         '      '+
                         '    </md-list-item></md-list>'+
                         '  </md-dialog-content>' +
@@ -85,7 +88,8 @@ define([
                         $scope.items = items;
                         $scope.closeDialog = function() {
                             $mdDialog.hide();
-                        }
+                        };
+                        $scope.pluckMetaValues = function(metadatalist) { return sourceShareService.pluckMetaValues(metadatalist); }
                     }
                 }
             };

@@ -130,9 +130,9 @@ trait DocumentService {
    * @param docIds a list of document ids.
    * @param fields a filter for metadata keys.
    * @param index the data source index or database name to query.
-   * @return a list of triple consisting of the document id, the metadata key and metadata value.
+   * @return a list of triple consisting of the document id, the metadata key, value and type.
    */
-  def getMetadata(docIds: List[Long], fields: List[String])(index: String): List[(Long, String, String)]
+  def getMetadata(docIds: List[Long], fields: List[String])(index: String): List[(Long, String, String, String)]
 
   /** Returns all unique metadata keys for the underlying collection. */
   def getMetadataKeys()(index: String): List[String]
@@ -245,14 +245,17 @@ trait DBDocumentService extends DocumentService {
   }
 
   /** @inheritdoc */
-  override def getMetadata(docIds: List[Long], fields: List[String])(index: String): List[(Long, String, String)] = db(index).readOnly { implicit session =>
+  override def getMetadata(
+    docIds: List[Long],
+    fields: List[String]
+  )(index: String): List[(Long, String, String, String)] = db(index).readOnly { implicit session =>
     if (fields.nonEmpty && docIds.nonEmpty) {
-      val generic = sql"""SELECT m.docid id, m.value, m.key
+      val generic = sql"""SELECT m.docid id, m.value, m.key, m.type
                           FROM metadata m
                           WHERE m.key IN (${fields}) AND m.docid IN (${docIds})
-                      """.map(rs => (rs.long("id"), rs.string("key"), rs.string("value"))).list().apply()
+                      """.map(rs => (rs.long("id"), rs.string("key"), rs.string("value"), rs.string("type"))).list().apply()
       // Add creates fields for documents that are not explicit added as metadata
-      val dates = sql"SELECT id, created FROM document WHERE id IN (${docIds})".map(rs => (rs.long("id"), "Created", rs.string("created"))).list().apply()
+      val dates = sql"SELECT id, created FROM document WHERE id IN (${docIds})".map(rs => (rs.long("id"), "Created", rs.string("created"), "Date")).list().apply()
       dates ++ generic
     } else {
       List()
