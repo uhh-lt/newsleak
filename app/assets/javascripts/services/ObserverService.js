@@ -280,12 +280,12 @@ define([
                     });
                 },
 
-                refreshSubscribers: function() {
+                refreshSubscribers: function(reset = true) {
                     var proms = [];
                   angular.forEach(subscriber, function(_subscriber) {
                       switch(_subscriber.type) {
                           case 'reset':
-                              proms.push(_subscriber.func());
+                              if(reset) proms.push(_subscriber.func());
                               break;
                           case 'all':
                               _subscriber.func(items);
@@ -434,9 +434,11 @@ define([
                                     }
                                 });
                             });
+                        console.log(items);
+
                         lastAdded = history[history.length-1].id;
                         lastRemoved = -1;
-                        rootThis.refreshSubscribers().then(function(val) {
+                        rootThis.refreshSubscribers(false).then(function(val) {
                             rootThis.notifyObservers();
                         });
                         }
