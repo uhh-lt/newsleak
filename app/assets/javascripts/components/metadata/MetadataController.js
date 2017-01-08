@@ -32,11 +32,12 @@ define([
                 '$q',
                 'playRoutes',
                 'historyFactory',
+                'graphProperties',
                 'metaShareService',
                 'sourceShareService',
                 'ObserverService',
                 '_',
-                function ($scope, $timeout, $q, playRoutes, historyFactory, metaShareService, sourceShareService, ObserverService, _) {
+                function ($scope, $timeout, $q, playRoutes, historyFactory, graphProperties, metaShareService, sourceShareService, ObserverService, _) {
 
                     /*(function (H, $) {
                         var fireEvent = H.fireEvent;
@@ -535,6 +536,9 @@ define([
                                         }
                                     }];
                                     $scope.chartConfigs[t.name].chart.renderTo = "chart_" + t.name.toLowerCase();
+                                    // Set background color according to the represented entity type
+                                    var color = graphProperties.options['groups'][t.id]['color']['background'];
+                                    $scope.chartConfigs[t.name].chart.backgroundColor = color;
                                     $("#chart_" + t.name.toLowerCase()).css("height", $scope.entityData[t.name].length * 35);
                                     $scope.metaCharts[t.name] = new Highcharts.Chart($scope.chartConfigs[t.name]);
                                     deferred[t.name].resolve(t.name);
