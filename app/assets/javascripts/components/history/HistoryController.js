@@ -34,7 +34,7 @@ define([
                     // See https://material.io/icons/
                     icons: {
                         'entity' : 'filter',
-                        'metadata': 'filter',
+                        'metadata': 'description',
                         'time': 'schedule',
                         // TODO: Rename to timeExpression
                         'timeX': 'timeline',

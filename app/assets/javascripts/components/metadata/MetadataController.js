@@ -31,11 +31,12 @@ define([
                 '$timeout',
                 '$q',
                 'playRoutes',
+                'historyFactory',
                 'metaShareService',
                 'sourceShareService',
                 'ObserverService',
                 '_',
-                function ($scope, $timeout, $q, playRoutes, metaShareService, sourceShareService, ObserverService, _) {
+                function ($scope, $timeout, $q, playRoutes, historyFactory, metaShareService, sourceShareService, ObserverService, _) {
 
                     /*(function (H, $) {
                         var fireEvent = H.fireEvent;
@@ -173,6 +174,7 @@ define([
 
 
                     $scope.chartConfig = metaShareService.chartConfig;
+                    $scope.historyFactory = historyFactory;
                     $scope.observer = ObserverService;
 
 
