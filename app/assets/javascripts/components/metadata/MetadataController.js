@@ -538,7 +538,8 @@ define([
                                     $scope.chartConfigs[t.name].chart.renderTo = "chart_" + t.name.toLowerCase();
                                     // Set background color according to the represented entity type
                                     var color = graphProperties.options['groups'][t.id]['color']['background'];
-                                    $scope.chartConfigs[t.name].chart.backgroundColor = color;
+                                    $scope.chartConfigs[t.name].chart.backgroundColor = graphProperties.convertHex(color, 55);
+
                                     $("#chart_" + t.name.toLowerCase()).css("height", $scope.entityData[t.name].length * 35);
                                     $scope.metaCharts[t.name] = new Highcharts.Chart($scope.chartConfigs[t.name]);
                                     deferred[t.name].resolve(t.name);
