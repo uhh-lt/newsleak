@@ -18,8 +18,7 @@
 define([
     'angular',
     'highcharts',
-    'drilldown',
-    'bootstrap'
+    'drilldown'
 ], function (angular) {
     'use strict';
 

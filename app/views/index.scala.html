@@ -78,22 +78,32 @@
             </div>
             <footer id="footer" flex="" r-flex="true">
                 <md-tabs>
-                    <md-tab label="Time" md-on-select="">
-                        <div  ui-view="histogram"></div>
+                    <md-tab md-on-select="">
+                        <md-tab-label>
+                            <md-icon class-="material-icons">{{ historyFactory.getIcon('time') }}</md-icon> Document Date
+                        </md-tab-label>
+                        <md-tab-body>
+                            <div ui-view="histogram"></div>
+                        </md-tab-body>
                     </md-tab>
-                    <md-tab label="TimeX" md-on-select="">
-                        <div ui-view="histogramX"></div>
+                    <md-tab md-on-select="">
+                        <md-tab-label>
+                            <md-icon class-="material-icons">{{ historyFactory.getIcon('timeX') }}</md-icon> Date Expression
+                        </md-tab-label>
+                        <md-tab-body>
+                            <div ui-view="histogramX"></div>
+                        </md-tab-body>
                     </md-tab>
                 </md-tabs>
             </footer>
         </div>
-        <div id="constext-menu-div" class="popupMenu" style="display: none;">
+        <!--<div id="constext-menu-div" class="popupMenu" style="display: none;">
             <ul>
                 <li action="edit">Edit Entity</li>
                 <li action="filter">Add as filter</li>
                 <li action="hide">Hide</li>
                 <li action="blacklist">Blacklist</li>
             </ul>
-        </div>
+        </div>-->
     </body>
 </html>

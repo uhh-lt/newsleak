@@ -67,6 +67,12 @@ define([
                         trigger: 'None',
                         isOpen: [],
                         promises: []
+                    },
+                    getIcon: function(type) {
+                        return this.icons[type];
+                    },
+                    getActionIcon: function(type) {
+                        return this.actions[type];
                     }
                 }
             }
@@ -93,14 +99,6 @@ define([
 
                     $scope.removeItem = function(item) {
                         $scope.observer.removeItem(item.id, item.type);
-                    };
-
-                    $scope.getIcon = function(type) {
-                        return $scope.factory.icons[type];
-                    };
-
-                    $scope.getActionIcon = function(type) {
-                        return $scope.factory.actions[type];
                     };
 
                     $scope.removeItem = function(filter) {

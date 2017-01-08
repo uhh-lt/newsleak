@@ -114,13 +114,15 @@ define([
         return uiProperties;
     });
 
-    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', '$mdDialog', 'uiShareService', 'ObserverService', 'playRoutes',
-        function ($scope, $state, $timeout, $window, $mdDialog, uiShareService, ObserverService, playRoutes) {
+    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', '$mdDialog', 'uiShareService', 'ObserverService', 'playRoutes', 'historyFactory',
+        function ($scope, $state, $timeout, $window, $mdDialog, uiShareService, ObserverService, playRoutes, historyFactory) {
 
             // Select graph tab on startup. In order to update the value from the child scope we need an object here.
             $scope.selectedTab = { index: 0 };
             $scope.selectedDataset = '';
             $scope.datasets = [];
+
+            $scope.historyFactory = historyFactory;
 
             init();
 

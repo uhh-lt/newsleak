@@ -75,8 +75,8 @@
 				 popover-append-to-body='true'
 				 popover-is-open="factory.popover.isOpen[{{ obj.id }}]">
 
-				<md-icon class="material-icons">{{ getIcon(obj.type) }}</md-icon>
-				<md-icon class="material-icons">{{ getActionIcon(obj.action) }}</md-icon>
+				<md-icon class="material-icons">{{ factory.getIcon(obj.type) }}</md-icon>
+				<md-icon class="material-icons">{{ factory.getActionIcon(obj.action) }}</md-icon>
 				{{ obj.data.description }}
 
 				<i ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" ng-click="removeItem(obj)" class="glyphicon action-icon glyphicon-remove-circle" ng-class="" ></i>
