@@ -38,7 +38,6 @@ define([
                 'playRoutes',
                 '_',
                 'sourceShareService',
-                'uiShareService',
                 'ObserverService',
                 function ($scope,
                           $http,
@@ -49,14 +48,12 @@ define([
                           playRoutes,
                           _,
                           sourceShareService,
-                          uiShareService,
                           ObserverService) {
 
                     $scope.allDocumentsLoadedMsg = 'All matching Documents loaded';
                     $scope.noDocumentsMsg = 'No document found for current applied filters.';
 
                     $scope.sourceShared = sourceShareService;
-                    $scope.uiShareService = uiShareService;
                     $scope.docsLoading = false;
                     $scope.showLoading = false;
                     $scope.iteratorEmpty = false;

@@ -43,10 +43,11 @@ define([
                 }
             };
         })
-        .controller('SearchController', ['$scope', 'ObserverService',
-                function ($scope, ObserverService) {
+        .controller('SearchController', ['$scope', 'ObserverService', 'historyFactory',
+                function ($scope, ObserverService, historyFactory) {
 
                     $scope.observer = ObserverService;
+                    $scope.historyFactory = historyFactory;
 
                     $scope.addFulltext = function(input) {
                         if(input.length > 2) {

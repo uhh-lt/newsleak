@@ -207,7 +207,6 @@ define([
                 'playRoutes',
                 '_',
                 'sourceShareService',
-                'uiShareService',
                 'ObserverService',
                 function ($scope,
                           $http,
@@ -217,13 +216,11 @@ define([
                           playRoutes,
                           _,
                           sourceShareService,
-                          uiShareService,
                           ObserverService) {
 
                     var self = this;
 
                     $scope.sourceShared = sourceShareService;
-                    $scope.uiShareService = uiShareService;
 
                     $scope.tabs = $scope.sourceShared.tabs;
 
