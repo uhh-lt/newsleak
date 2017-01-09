@@ -74,11 +74,14 @@
 				 popover-append-to-body='true'
 				 popover-is-open="factory.popover.isOpen[{{ obj.id }}]">
 
-				<md-icon class="material-icons">{{ factory.getIcon(obj.type) }}</md-icon>
-				<md-icon class="material-icons">{{ factory.getActionIcon(obj.action) }}</md-icon>
-				<span class="md-caption">{{ obj.data.type.concat(': ', obj.data.description) | limitTo: 25 }}{{ obj.data.type.concat(obj.data.description).length > 25 ? '...' : ''}}</span>
-
-				<i ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" ng-click="removeItem(obj)" class="glyphicon action-icon glyphicon-remove-circle" ng-class="" ></i>
+				<!-- If there is no metadata type available e.g. "MISC", we take the tracker type e.g. "full-text" -->
+				<div ng-switch="!!obj.data.type">
+					<md-icon class="material-icons">{{ factory.getIcon(obj.type) }}</md-icon>
+					<md-icon class="material-icons">{{ factory.getActionIcon(obj.action) }}</md-icon>
+					<span class="md-caption" ng-switch-when="false">{{ obj.type.concat(': ', obj.data.description) | limitTo: 25 }}{{ obj.type.concat(obj.data.description).length > 25 ? '...' : ''}}</span>
+					<span class="md-caption" ng-switch-default>{{ obj.data.type.concat(': ', obj.data.description) | limitTo: 25 }}{{ obj.data.type.concat(obj.data.description).length > 25 ? '...' : ''}}</span>
+					<i ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" ng-click="removeItem(obj)" class="glyphicon action-icon glyphicon-remove-circle" ng-class="" ></i>
+				</div>
 			</div>
 		</md-virtual-repeat-container>
 	</md-content>
