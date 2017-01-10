@@ -51,7 +51,7 @@ Finally, execute `bin/new-s-leak -Dconfig.file=conf/application.conf` from the r
 If you have very big data and want to run each components of **new/s/leak** individually, follow the **pipeline** section below. In this section, we will show you how to run **new/s/leak** in a docker container.
 
 	 			
-* First install docker container in your invironment. This instruction is based on docker version of 1.12.5 for Client and Server. Get more [here](https://docs.docker.com/engine/installation/)
+* First install docker container in your environment. This instruction is based on docker version of 1.12.5 for Client and Server. Get more [here](https://docs.docker.com/engine/installation/)
 * Prepare the document.csv and metadata.csv files as it described below in the **pipeline** section.
 * Download the required resources from [here](https://github.com/tudarmstadt-lt/newsleak-frontend/releases/download/V1.0-beta-1/newsleakdocker.zip) and unzip the zip file.
 * Put the document.csv and metadata.csv files you prepare into the **docker/newsleakpipeline/** folder, and run the command ``` sh run.sh``` under **docker/** to start new/s/leak.
