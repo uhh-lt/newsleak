@@ -729,8 +729,10 @@ define([
 
                 self.popupMenu = document.createElement("div");
                 self.popupMenu.className = 'popupMenu';
-                self.popupMenu.style.left = params.x - offsetLeft + 'px';
-                self.popupMenu.style.top =  params.y - offsetTop +'px';
+                self.popupMenu.style.left = params.x + $("#documents-view").width() + 'px';
+                //self.popupMenu.style.left = params.x - offsetLeft + 'px';
+                self.popupMenu.style.top =  params.y + $("header").height() + $("#history").height()+'px';
+                //self.popupMenu.style.top =  params.y - offsetTop +'px';
 
                 var ul = document.createElement('ul');
                 self.popupMenu.appendChild(ul);
@@ -745,7 +747,8 @@ define([
                             action(value, id);
                         }, false);})(menuEntries[i].title, params.id, menuEntries[i].action);
                 }
-                container.appendChild(self.popupMenu);
+                document.body.appendChild(self.popupMenu);
+                //container.appendChild(self.popupMenu);
             }
 
             function closeContextMenu() {
