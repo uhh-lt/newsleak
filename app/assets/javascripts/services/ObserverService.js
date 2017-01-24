@@ -406,6 +406,7 @@ define([
                     console.log(input);
                     var rootThis = this;
                     history.splice(0);
+                    history.length = 0;
                     items =  {};
                     types.forEach(function(type) {
                         if(type != types[1])
