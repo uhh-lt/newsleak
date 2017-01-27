@@ -21,8 +21,16 @@ define([
     'drilldown'
 ], function (angular) {
     'use strict';
-
+    /**
+     * histogram module:
+     * time line bar charts for the actual document date
+     * interaction:
+     * - drill down/up level of detail on filtering at same time
+     */
     angular.module('myApp.histogram', ['play.routing'])
+    /**
+     * initial config for bar charts
+     */
         .factory('HistogramFactory', [
             function() {
                 var config = {
@@ -115,7 +123,9 @@ define([
             'ObserverService',
             function ($scope, $compile, $timeout, $q, playRoutes, HistogramFactory, ObserverService) {
 
+            // to know weather initial state is reached
                 $scope.initialized = false;
+                // to know weather actual drill is performed well and finished
                 $scope.drilldown = false;
                 $scope.drillup = false;
 
@@ -135,6 +145,7 @@ define([
                     $scope.currentLoD = "";
                     $scope.currentRange = "";
 
+                    // load levels of detail for current dataset
                     $scope.observer.getHistogramLod().then(function(lod) {
                         $scope.lod  = angular.copy(lod);
                         $scope.currentLoD = $scope.lod[0];
@@ -178,6 +189,7 @@ define([
                 // set language related options
                 Highcharts.setOptions($scope.factory.highchartsOptions);
 
+                // filter for actual drill time range at click
                 $scope.clickedItem = function (category) {
                     $scope.addTimeFilter(category);
                 };
@@ -350,6 +362,12 @@ define([
                     return $scope.initController();
                 });
 
+
+                /**
+                 * called on drill down click
+                 * @param e event from highcharts holding information of clicked item
+                 * @param chart highcharts object
+                 */
                 $scope.drillDown = function(e, chart) {
                     if (!e.seriesOptions && !$scope.drilldown) {
                         console.log("histogram drilldown");
@@ -416,6 +434,10 @@ define([
                     }
                 };
 
+                /**
+                 * called on drill up click
+                 * @param e click event object
+                 */
                 $scope.drillUp = function(e) {
                     if (!$scope.drillup) {
                         console.log("histogram drillup");

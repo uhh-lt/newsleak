@@ -19,7 +19,11 @@ define([
     'angular'
 ], function (angular) {
     'use strict';
-
+    /**
+     * search module:
+     * - full text search input
+     * - load a text file holding a search term list
+     */
     angular.module('myApp.search', [])
         .directive('onReadFile', function ($parse) {
             return {

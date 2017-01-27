@@ -25,9 +25,20 @@ define([
 ], function(angular) {
     'use strict';
 
+    /**
+     * history module:
+     * visualization of interactions done
+     * interactions with history:
+     * - remove filters
+     * - reset all filters
+     * - load/save state
+     */
     angular.module("myApp.history", ['ngFileSaver', 'ui.bootstrap', 'ngAnimate', 'bootstrap.fileField'])
         .config(function($uibTooltipProvider) {
         })
+        /**
+         * holds initial config for history
+         */
         .factory('historyFactory', [
             function() {
                 return {

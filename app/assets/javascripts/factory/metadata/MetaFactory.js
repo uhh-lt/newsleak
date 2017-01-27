@@ -19,7 +19,9 @@ define(['angular'],
     function (angular)
     {
         'use strict';
-
+        /**
+         * hold initial configuration for metadata/entity bar chart view
+         */
         angular.module('myApp.metafactory', [])
             .factory('metaShareService', function()
             {

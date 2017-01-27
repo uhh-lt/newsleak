@@ -21,7 +21,13 @@ define([
     'drilldown'
 ], function (angular) {
     'use strict';
-
+    /**
+     * histogramX module:
+     * time line bar charts for the occurring time expressions in documents
+     * interaction:
+     * - drill down/up level of detail on filtering at same time
+     * (details see HistogramController.js)
+     */
     angular.module('myApp.histogramX', ['play.routing'])
         .factory('HistogramXFactory', [
             function() {

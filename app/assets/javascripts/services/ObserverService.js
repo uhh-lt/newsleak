@@ -21,6 +21,10 @@ define([
 ], function (angular) {
     'use strict';
 
+    /**
+     * observer module:
+     * holds all done interaction information and current set filters
+     */
     angular.module("myApp.observer", ['play.routing'])
         .factory('ObserverService', ['playRoutes', '$q', function(playRoutes, $q) {
             // Stores callback instances consisting of a callback method and a priority number
@@ -118,7 +122,13 @@ define([
                     var promise = $q.all(callBackPromises);
                     return promise;
                 },
-                
+
+                /**
+                 * add item to history
+                 * @param item interaction to add to history
+                 * @param notify weather subscribers should be notified something changed
+                 * @returns {number} id of added item
+                 */
                 addItem: function (item, notify = true) {
 
 
@@ -210,6 +220,12 @@ define([
                     return (lastAdded);
                 },
 
+                /**
+                 * remove item from history and current filter state
+                 * @param id
+                 * @param type
+                 * @param notify
+                 */
                 removeItem: function (id, type, notify = true) {
                     var toBeRemoved = history[history.findIndex(function (item) {
                         return id == item.id;
@@ -327,6 +343,10 @@ define([
                     if(items["timeX"].length == 0) return ""; else return items["timeX"][items["timeX"].length-1].data.item;
                 },
 
+                /**
+                 *
+                 * @returns {Array} current Filters etc. as (key, val) json for backend request
+                 */
                 getFacets: function() {
                     var facets = [];
                     if(items.metadata) {
@@ -347,6 +367,9 @@ define([
                     return facets;
                 },
 
+                /**
+                 * called from timeLines on drillUp to drill up time filters as well
+                 */
                 drillUpTimeFilter: function() {
                     this.removeItem(items["time"][items["time"].length-1].id,'time');
                     while(items["time"][items["time"].length-1] && items["time"][items["time"].length-1].data.lod == "month")
@@ -402,6 +425,10 @@ define([
 
                 },
 
+                /**
+                 * load history/filter state from file
+                 * @param input json object holding items and history array
+                 */
                 loadState: function(input) {
                     console.log(input);
                     var rootThis = this;

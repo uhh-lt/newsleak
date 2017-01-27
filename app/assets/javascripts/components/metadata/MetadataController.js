@@ -23,6 +23,12 @@ define([
 ], function (angular) {
     'use strict';
 
+    /**
+     * metadata module:
+     * visualization of metadata and entity bar charts
+     * interaction:
+     * - add entity/metadata key as filter
+     */
     angular.module("myApp.metadata", ['play.routing', 'ngMaterial']);
     angular.module("myApp.metadata")
         .controller('MetadataController',
@@ -195,17 +201,19 @@ define([
                     $scope.observer.subscribeItems($scope.observer_subscribe_metadata, "metadata");
                     $scope.observer.subscribeItems($scope.observer_subscribe_fulltext, "fulltext");
 
+                    //resize height of visible bars in 'metadata' view
                     $scope.updateHeight = function() {
                         $(".scroll-chart").css("height",$("#metadata").height()-150);
                     };
 
                     $scope.emptyFacets = [{'key':'dummy','data': []}];
+
+                    // order by black bars (default = true)
                     $scope.reorder = true;
 
                     $scope.initMetadataView = function () {
                         $scope.initializedMeta = false;
                         $scope.initializedEntity = false;
-                        //TODO: to order by black bars set true
 
                         $scope.promiseMetaCharts = undefined;
                         $scope.promiseEntityCharts = undefined;
@@ -651,6 +659,7 @@ define([
 
                     $scope.initMetadataView();
 
+                    // TODO: reflow function were needed with bootstrap tabs. On tab switch highcharts bar charts had to reflowed.
                     $scope.reflow = function (type) {
                         $timeout(function () {
                             if ($("#chart_" + type.toLowerCase()).highcharts())

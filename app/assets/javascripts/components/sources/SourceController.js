@@ -21,7 +21,12 @@ define([
     'ngMaterial'
 ], function (angular) {
     'use strict';
-
+    /**
+     * source module:
+     * list of documents for current sub collection.
+     * - infinite scroll
+     * - open full document
+     */
     angular.module('myApp.source', ['play.routing', 'ngSanitize', 'ngMaterial'])
         .config(['$uibTooltipProvider', function($uibTooltipProvider) {
             //$uibTooltipProvider.setTriggers({'mouseenter': 'mouseleave'});

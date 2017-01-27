@@ -21,7 +21,11 @@ define([
     'ngMaterial'
 ], function (angular) {
     'use strict';
-
+    /**
+     * document module:
+     * - render document content
+     * - load additional metdata/keywords for loaded document
+     */
     angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial'])
         .directive('docContent', ['$compile', 'ObserverService', 'graphProperties',  '_', function($compile, ObserverService, graphProperties, _) {
             return {

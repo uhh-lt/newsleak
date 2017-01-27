@@ -20,6 +20,10 @@ define([
     'ngMaterial'
 ], function (angular) {
     'use strict';
+    /**
+     * sourceFactory:
+     * Holds all loaded Document information and current Document List
+     */
     angular.module('myApp.sourcefactory', ['ngMaterial'])
         .factory('sourceShareService', ['$mdDialog', '_', function($mdDialog, _) {
             var sourceShareService = {

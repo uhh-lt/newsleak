@@ -21,7 +21,10 @@ define([
     'ngVis'
 ], function(angular) {
     'use strict';
-
+    /**
+     * network module:
+     * visualization and interaction of network graph
+     */
     angular.module('myApp.network', ['ngMaterial', 'ngVis', 'play.routing']);
     angular.module('myApp.network')
         // Network Legend Controller
