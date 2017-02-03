@@ -156,6 +156,16 @@ class DocumentController @Inject() (
     Ok(createJsonResponse(docList.toList, iteratorSession.hits))
   }
 
+  /**
+    * query full document using a list of document ids
+    * @param ids List of Document Ids
+    * @return list of matching documents with their metadata.
+    */
+  def getDocsByIds(ids: List[Long]) = Action { implicit request =>
+    val docs = ids.flatMap(x => documentService.getById(x)(currentDataset))
+    Ok(createJsonResponse(docs, ids.size))
+  }
+
   private def createJsonResponse(docList: List[Document], hits: Long)(implicit request: Request[AnyContent]): JsValue = {
     if (docList.nonEmpty) {
       val keys = documentService.getMetadataKeys()(currentDataset)

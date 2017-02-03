@@ -16,6 +16,7 @@ GET    /removeTag           	controllers.DocumentController.removeTagById(tagId:
 GET    /getTagsByDocId          controllers.DocumentController.getTagsByDocId(id: Int)
 GET    /getKeywordsById         controllers.DocumentController.getKeywordsById(id: Int, size: Int)
 GET    /getDocs           		controllers.DocumentController.getDocs(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String)
+GET     /getDocsByIds           controllers.DocumentController.getDocsByIds(ids: List[Long])
 GET     /induceSubgraph         controllers.NetworkController.induceSubgraph(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, nodeFraction: Map[String, String])
 GET     /addNode                controllers.NetworkController.addNodes(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, currentNetwork: List[Long], nodes: List[Long])
 GET    /blacklistEntitiesById		controllers.NetworkController.blacklistEntitiesById(ids: List[Long])

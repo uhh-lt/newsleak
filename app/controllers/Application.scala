@@ -106,6 +106,7 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         controllers.routes.javascript.Application.changeDataset,
         controllers.routes.javascript.DocumentController.getKeywordsById,
         controllers.routes.javascript.DocumentController.getDocs,
+        controllers.routes.javascript.DocumentController.getDocsByIds,
         controllers.routes.javascript.DocumentController.addTag,
         controllers.routes.javascript.DocumentController.removeTagById,
         controllers.routes.javascript.DocumentController.getTagsByDocId,
