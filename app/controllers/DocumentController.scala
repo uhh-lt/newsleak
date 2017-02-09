@@ -157,10 +157,10 @@ class DocumentController @Inject() (
   }
 
   /**
-    * query full document using a list of document ids
-    * @param ids List of Document Ids
-    * @return list of matching documents with their metadata.
-    */
+   * query full document using a list of document ids
+   * @param ids List of Document Ids
+   * @return list of matching documents with their metadata.
+   */
   def getDocsByIds(ids: List[Long]) = Action { implicit request =>
     val docs = ids.flatMap(x => documentService.getById(x)(currentDataset))
     Ok(createJsonResponse(docs, ids.size))
