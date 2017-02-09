@@ -340,7 +340,7 @@ define([
                                                         id: x.id
                                                     });
                                             });
-
+                                            $scope.metaCharts[type].xAxis[0].setCategories(_.pluck(data, 'name'));
                                             $scope.metaCharts[type].series[1].setData(data);
                                             $scope.metaCharts[type].series[1].data.forEach(function(e) {
                                                 instances.push(e.id);
@@ -432,6 +432,7 @@ define([
                                                     });
                                             });
                                             $scope.metaCharts[type].series[1].setData(data);
+                                            $scope.metaCharts[type].xAxis[0].setCategories(_.pluck(data, 'name'));
                                             $scope.chartConfigs[type].series[1].data.forEach(function(m) {
                                                 instances.push(m.name);
                                             });
