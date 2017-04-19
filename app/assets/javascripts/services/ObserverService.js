@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
+ * Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universit�t Darmstadt, Germany
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -34,7 +34,7 @@ define([
             var items = {};
             //types of tracked items
             var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate",
-                "fulltext", "reset", "delete", "openDoc", "guidance", "addEdges", "undo", "redo"];
+                "fulltext", "reset", "delete", "openDoc", "guidance", "addEdges", "undo", "redo","prioChange"];
             var metadataTypes = [];
             var entityTypes = [];
             var histogramLoD = [];
@@ -111,7 +111,7 @@ define([
                         $timeout(callback,0);
                     });
                 },
-                
+
                 addItem: function (item) {
                     //looking for already existing items
                     var  isDup =false;
@@ -152,8 +152,8 @@ define([
                             action = "other";
                             history.forEach( function (item) {
                                 if (item.type ===  "addEdges"){
-                                item.active = false;
-                            }
+                                    item.active = false;
+                                }
                             });
                             break;
                         case types[14]://addEdges
@@ -165,6 +165,10 @@ define([
                         case types[16]://redo
                             action = "other";
                             break;
+                        case types[17]://prioChange
+                            action = "other";
+                            break;
+
                     }
 
                     if(isDup) return  -1;
@@ -272,23 +276,23 @@ define([
                 },
 
                 refreshSubscribers: function() {
-                  angular.forEach(subscriber, function(_subscriber) {
-                      switch(_subscriber.type) {
-                          case 'reset':
-                              _subscriber.func();
-                              break;
-                          case 'all':
-                              _subscriber.func(items);
-                              break;
-                          case 'history':
-                              _subscriber.func(history);
-                              break;
-                          default:
-                              _subscriber.func(items[_subscriber.type].filter(function (item) {
-                                  return item[active] !== false;
-                              }));
-                      }
-                  });
+                    angular.forEach(subscriber, function(_subscriber) {
+                        switch(_subscriber.type) {
+                            case 'reset':
+                                _subscriber.func();
+                                break;
+                            case 'all':
+                                _subscriber.func(items);
+                                break;
+                            case 'history':
+                                _subscriber.func(history);
+                                break;
+                            default:
+                                _subscriber.func(items[_subscriber.type].filter(function (item) {
+                                    return item[active] !== false;
+                                }));
+                        }
+                    });
                 },
 
                 getHistory: function () {
@@ -419,10 +423,10 @@ define([
                                     }
                                 });
                             });
-                        lastAdded = history[history.length-1].id;
-                        lastRemoved = -1;
-                        rootThis.refreshSubscribers();
-                        rootThis.notifyObservers();
+                            lastAdded = history[history.length-1].id;
+                            lastRemoved = -1;
+                            rootThis.refreshSubscribers();
+                            rootThis.notifyObservers();
                         }
                     );
                 }

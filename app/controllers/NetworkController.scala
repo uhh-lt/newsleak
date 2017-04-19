@@ -50,7 +50,7 @@ class NetworkController @Inject extends Controller {
 
   // TODO: fetch entity types from backend API
 
-  var GuindanceMap: mutable.HashMap[String, GuidanceControl] = new mutable.HashMap[String, GuidanceControl]()
+  var GuidanceMap: mutable.HashMap[String, GuidanceControl] = new mutable.HashMap[String, GuidanceControl]()
   var IterMap: mutable.HashMap[String, GuidanceControl] = new mutable.HashMap[String, GuidanceControl]()
 
   /**
@@ -372,11 +372,11 @@ class NetworkController @Inject extends Controller {
    * @param focusId anfokussierter Knoten
    * @param edgeAmount Gesamtanzahl der Kanten im Subgraph
    * @param epn maximale Anzahl der Kanten pro Knoten
-   * @param uiString User Interesse an verschiedenen Kantentypen (als String gespeicherte Matrix die mit , und ; getrennt ist=
+   * @param uiString User Interesse an verschiedenen Kantentypen (als String gespeicherte Matrix die mit , und ; getrennt ist)
    * @param useOldEdges true: alte DoI-Werte fliessen in Berechnung der neuen DoI-Werte ein
    * @param sessionId SessionId
    *
-   * @return sendet den gebildeten Supgraph in Form von Kanten+Knoten an den Benutzer
+   * @return sendet den gebildeten Subgraph in Form von Kanten+Knoten an den Benutzer
    */
   def getGuidanceNodes(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String,
     focusId: Long, edgeAmount: Int, epn: Int, uiString: String, useOldEdges: Boolean, sessionId: String) = Action {
@@ -385,7 +385,7 @@ class NetworkController @Inject extends Controller {
 
     val uiMatrix: Array[Array[Int]] = uiString.split(";").map(_.split(",").map(_.toInt))
     var undoAvailable = true
-    val gc = GuindanceMap.getOrElseUpdate(sessionId, { undoAvailable = false; new GuidanceControl })
+    val gc = GuidanceMap.getOrElseUpdate(sessionId, { undoAvailable = false; new GuidanceControl })
     implicit val gg = gc.getState.guidance
     val ggIter = gg.createIterator.init(facets, focusId, edgeAmount, epn, uiMatrix, useOldEdges)
     val (edges, nodes) = ggIter.take(edgeAmount).toList.unzip
@@ -408,12 +408,12 @@ class NetworkController @Inject extends Controller {
    * @return
    */
   def getContext(nodeId: Long, amount: Int, sessionId: String) = Action {
-    val gState = GuindanceMap(sessionId).getState
+    val gState = GuidanceMap(sessionId).getState
     val gg = gState.guidance
     val ggIter = gState.ggIter
     //val guidancePreviewList = ggIter.getGuidancePreview(nodeId, amount)
-    val guidancePreview = ggIter.getGuidancePreview(nodeId, amount)
-    val (edgeExpandList, nodeExpandList) = ggIter.getMoreEdges(nodeId, amount)
+    val guidancePreview = ggIter.getGuidancePreview(nodeId, 4)
+    val (edgeExpandList, nodeExpandList) = ggIter.getMoreEdges(nodeId, 4)
     ggIter.getConnectionsByType(nodeId)
     val result = new JsObject(Map(
       "guidance" -> Json.toJson(guidancePreview),
@@ -424,27 +424,27 @@ class NetworkController @Inject extends Controller {
           "count" -> JsNumber(count)
         ))
       }),
-      "undoAvailable" -> JsBoolean(GuindanceMap(sessionId).undoAvailable),
-      "redoAvailable" -> JsBoolean(GuindanceMap(sessionId).redoAvailable)
+      "undoAvailable" -> JsBoolean(GuidanceMap(sessionId).undoAvailable),
+      "redoAvailable" -> JsBoolean(GuidanceMap(sessionId).redoAvailable)
     ))
     //GuindanceMap(sessionId).addState(State(gg.copy, ggIter.copyState, result.toString()))
     Logger.debug("send context for " + nodeId)
     Logger.debug(result.toString())
-    GuindanceMap(sessionId).updateState(State(gg, ggIter.getState, gState.output))
+    GuidanceMap(sessionId).updateState(State(gg, ggIter.getState, gState.output))
     Ok(result).as("application/json")
   }
 
   def undo(sessionId: String) = Action {
-    Ok(GuindanceMap(sessionId).undo.output ++ new JsObject(Map(
-      "undoAvailable" -> JsBoolean(GuindanceMap(sessionId).undoAvailable),
-      "redoAvailable" -> JsBoolean(GuindanceMap(sessionId).redoAvailable)
+    Ok(GuidanceMap(sessionId).undo.output ++ new JsObject(Map(
+      "undoAvailable" -> JsBoolean(GuidanceMap(sessionId).undoAvailable),
+      "redoAvailable" -> JsBoolean(GuidanceMap(sessionId).redoAvailable)
     ))).as("application/json")
   }
 
   def redo(sessionId: String) = Action {
-    Ok(GuindanceMap(sessionId).redo.output ++ new JsObject(Map(
-      "undoAvailable" -> JsBoolean(GuindanceMap(sessionId).undoAvailable),
-      "redoAvailable" -> JsBoolean(GuindanceMap(sessionId).redoAvailable)
+    Ok(GuidanceMap(sessionId).redo.output ++ new JsObject(Map(
+      "undoAvailable" -> JsBoolean(GuidanceMap(sessionId).undoAvailable),
+      "redoAvailable" -> JsBoolean(GuidanceMap(sessionId).redoAvailable)
     ))).as("application/json")
   }
 

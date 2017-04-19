@@ -54,16 +54,17 @@ define([
                         "guidance": {icon: 'adjust', materialIcon: true},
                         "addEdges": {icon: 'add', materialIcon: true},
                         "undo": {icon: 'undo', materialIcon: true},
-                        "redo": {icon: 'redo', materialIcon: true}
+                        "redo": {icon: 'redo', materialIcon: true},
+                        "prioChange": {icon: 'build', materialIcon: true}
                     },
                     typeDescriptions: {
-                      'entity': 'Entity Filter',
-                      'metadata': 'Metadata Filter',
-                      'time': 'Time Range',
-                      'annotate': 'Entity Annotated',
-                      'fulltext': 'Fulltext Search',
-                      'openDoc': 'Document opened',
-                      'edit': "Entity edited"
+                        'entity': 'Entity Filter',
+                        'metadata': 'Metadata Filter',
+                        'time': 'Time Range',
+                        'annotate': 'Entity Annotated',
+                        'fulltext': 'Fulltext Search',
+                        'openDoc': 'Document opened',
+                        'edit': "Entity edited"
                     },
                     actions: {
                         'added': 'plus',
@@ -139,7 +140,7 @@ define([
                             items: $scope.historyItems
                         },null, 4);
                         var data = new Blob([json],
-                        { type: 'application/json;charset=utf-8' });
+                            { type: 'application/json;charset=utf-8' });
                         FileSaver.saveAs(data, "saver.json");
                     };
 
