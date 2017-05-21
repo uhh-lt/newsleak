@@ -18,7 +18,8 @@
 define([
     'angular',
     'ngSanitize',
-    'ngMaterial'
+    'ngMaterial',
+    'contextMenu'
 ], function (angular) {
     'use strict';
     /**
@@ -26,7 +27,7 @@ define([
      * - render document content
      * - load additional metdata/keywords for loaded document
      */
-    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial'])
+    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ui.bootstrap.contextMenu'])
         .directive('docContent', ['$compile', 'ObserverService', 'graphProperties',  '_', function($compile, ObserverService, graphProperties, _) {
             return {
                 restrict: 'E',
@@ -39,7 +40,7 @@ define([
                 link: function(scope, element, attrs) {
                     var content = scope.document.content;
                     var entities = scope.document.entities;
-                    
+
                     scope.addEntityFilter = function(id) {
                         var el = _.find(entities, function(e) { return e.id == id });
                         ObserverService.addItem({ type: 'entity', data: { id: id, description: el.name, item: el.name, type: el.type }});
@@ -182,7 +183,7 @@ define([
                         var color = graphProperties.options['groups'][typeId]['color']['background'];
                         var innerElement = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none, \'border-bottom\': \'3px solid ' + color + '\'}"></span>');
                         innerElement.className = 'highlight-general';
-                        var addFilter = angular.element('<a ng-click="addEntityFilter(' + id +')" style="text-decoration: none;"></a>');
+                        var addFilter = angular.element('<a ng-click="addEntityFilter(' + id +')" context-menu="contextMenu" style="text-decoration: none;"></a>');
 
                         addFilter.append(document.createTextNode(name));
                         innerElement.append(addFilter);
@@ -195,6 +196,9 @@ define([
                         outerElement.append(document.createTextNode(name));
                         return outerElement;
                     }
+
+                    // contextMenu for Blacklisting
+                    scope.contextMenu = [["Blacklist"], ["Whitelist?"]];
 
                     // Init component
                     scope.renderDoc();

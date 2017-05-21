@@ -44,7 +44,8 @@
 			'angularResizable': 'libs/angular-resizable/angular-resizable.min',
 			'bootstrapFileField': 'libs/angular-bootstrap-file-field/dist/angular-bootstrap-file-field.min',
 			'vis': 'libs/vis/dist/vis.min',
-			'ngVis': 'directives/angular-vis'
+			'ngVis': 'directives/angular-vis',
+      'contextMenu': 'libs/angular-bootstrap-contextmenu/contextMenu'
 		},
 		shim: {
 			'jsRoutes': {
@@ -117,7 +118,10 @@
 			},
 			'ngVis': {
 				deps: ['angular', 'vis']
-			}
+			},
+      'contextMenu': {
+        deps: ['angular', 'bootstrap']
+      }
 		},
 		priority: [
 			'jquery',
