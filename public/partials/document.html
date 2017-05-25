@@ -77,7 +77,12 @@
                     </md-card-title-text>
                 </md-card-title>
                 <md-card-content>
-                    <doc-content layout-padding document="doc"></doc-content>
+                    <doc-content layout-padding document="doc" ng-mouseup="showSelectedEntity()"></doc-content>
+                    <div>
+                      <br />
+                      <b>Selected Entity:</b>
+                      <span ng-bind="selectedEntity"></span>
+                    </div>
                 </md-card-content>
             </md-card>
         </md-content>
