@@ -28,7 +28,7 @@ define([
      * - load additional metdata/keywords for loaded document
      */
     angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ui.bootstrap.contextMenu'])
-        .directive('docContent', ['$compile', 'ObserverService', 'graphProperties',  '_', function($compile, ObserverService, graphProperties, _) {
+        .directive('docContent', ['$compile', 'ObserverService', 'EntityService', 'graphProperties',  '_', function($compile, ObserverService, EntityService, graphProperties, _) {
             return {
                 restrict: 'E',
                 transclude: true,
@@ -183,7 +183,7 @@ define([
                         var color = graphProperties.options['groups'][typeId]['color']['background'];
                         var innerElement = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none, \'border-bottom\': \'3px solid ' + color + '\'}"></span>');
                         innerElement.className = 'highlight-general';
-                        var addFilter = angular.element('<a ng-click="addEntityFilter(' + id +')" context-menu="contextMenu" style="text-decoration: none;"></a>');
+                        var addFilter = angular.element('<a id='+ id +' ng-click="addEntityFilter(' + id +')" context-menu="contextMenu" style="text-decoration: none;"></a>');
 
                         addFilter.append(document.createTextNode(name));
                         innerElement.append(addFilter);
@@ -196,9 +196,15 @@ define([
                         outerElement.append(document.createTextNode(name));
                         return outerElement;
                     }
-
                     // contextMenu for Blacklisting
-                    scope.contextMenu = [["Blacklist"], ["Whitelist?"]];
+                    scope.contextMenu = [
+                      ['Blacklist', function ($itemScope, event) {
+                        EntityService
+                          .blacklist([
+                            event.target.id
+                          ]);
+                      }],
+                    ];
 
                     // Init component
                     scope.renderDoc();
