@@ -58,16 +58,28 @@
                     <div ui-view="documentlist"></div>
                 </nav>
 
-                <main id="center-box" resizable r-directions="['right']" r-flex="true" flex="none">
+                <main id="center-box-entity" resizable r-directions="['right']" r-flex="true" flex="none">
                     <!-- selectedTab is defined in AppController -->
                     <md-tabs md-selected="selectedTab.index" md-border-bottom md-autoselect layout-fill ngsf-fullscreen="NetworkController">
 
-                        <md-tab flex label="Network">
+                        <md-tab flex label="Entity Network">
                             <div id="network" ui-view="network"></div>
                         </md-tab>
 
                         <div id="docii" ui-view="document"></div>
                    </md-tabs>
+                </main>
+
+                <main id="center-box-keyword" resizable r-directions="['right']" r-flex="true" flex="none">
+                        <!-- selectedTab is defined in AppController -->
+                    <md-tabs md-selected="selectedTab.index" md-border-bottom md-autoselect layout-fill ngsf-fullscreen="NetworkKeywordController">
+
+                        <md-tab flex label="Keyword Network">
+                            <div id="networkKeyword" ui-view="networkKeyword"></div>
+                        </md-tab>
+
+                        <div id="docii" ui-view="document"></div>
+                    </md-tabs>
                 </main>
 
                 <aside id="right-side" flex="" layout="column">
