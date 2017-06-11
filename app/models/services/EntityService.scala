@@ -169,7 +169,7 @@ class DBEntityService extends EntityService {
 
   /** @inheritdoc */
   override def whitelist(entity: String)(index: String): Boolean = db(index).localTx { implicit session =>
-    val entityCount = sql"INSERT INTO entity (id, name) VALUES (17, ${entity})".update().apply()
+    val entityCount = sql"INSERT INTO entity (id, name) VALUES ((SELECT coalesce(max(id),0)+1 FROM entity), ${entity})".update().apply()
     true
   }
 
