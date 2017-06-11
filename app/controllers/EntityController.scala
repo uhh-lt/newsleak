@@ -93,6 +93,16 @@ class EntityController @Inject() (
   }
 
   /**
+   * whitelist entity
+   *
+   * @param entity the entity to whitelist
+   */
+  def whitelistEntity(entity: String) = Action { implicit request =>
+    entityService.whitelist(entity)(currentDataset)
+    Ok("success").as("Text")
+  }
+
+  /**
    * Withdraws [[models.services.EntityService#merge]] for the given entity id.
    *
    * @param focalIds the central entity ids.

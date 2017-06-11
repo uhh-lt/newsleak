@@ -222,6 +222,7 @@ define([
                 '_',
                 'sourceShareService',
                 'ObserverService',
+                'EntityService',
                 function ($scope,
                           $http,
                           $templateRequest,
@@ -230,7 +231,8 @@ define([
                           playRoutes,
                           _,
                           sourceShareService,
-                          ObserverService) {
+                          ObserverService,
+                          EntityService) {
 
                     var self = this;
 
@@ -339,6 +341,10 @@ define([
                     // Enable to select Entity
                     $scope.showSelectedEntity = function() {
                         $scope.selectedEntity =  $scope.getSelectionEntity();
+                    };
+
+                    $scope.whitelist = function(entity){
+                      EntityService.whitelist(entity);
                     };
 
                     $scope.getSelectionEntity = function() {
