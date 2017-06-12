@@ -72,13 +72,12 @@
 
                 <main id="center-box-keyword" resizable r-directions="['right']" r-flex="true" flex="none">
                         <!-- selectedTab is defined in AppController -->
-                    <md-tabs md-selected="selectedTab.index" md-border-bottom md-autoselect layout-fill ngsf-fullscreen="NetworkKeywordController">
+                    <md-tabs md-selected="0" md-border-bottom md-autoselect layout-fill ngsf-fullscreen="KeywordNetworkController">
 
                         <md-tab flex label="Keyword Network">
-                            <div id="networkKeyword" ui-view="networkKeyword"></div>
+                            <div id="keywordNetwork" ui-view="keywordNetwork"></div>
                         </md-tab>
 
-                        <div id="docii" ui-view="document"></div>
                     </md-tabs>
                 </main>
 

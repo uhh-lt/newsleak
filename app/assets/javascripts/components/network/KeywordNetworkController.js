@@ -22,12 +22,12 @@ define([
 ], function(angular) {
     'use strict';
     /**
-     * network module:
-     * visualization and interaction of network graph
+     * network keyword module:
+     * visualization and interaction of keywords in network graph
      */
-    angular.module('myApp.networkKeyword', ['ngMaterial', 'ngVis', 'play.routing']);
-    angular.module('myApp.networkKeyword')
-        // Network Legend Controller
+    angular.module('myApp.keywordNetwork', ['ngMaterial', 'ngVis', 'play.routing']);
+    angular.module('myApp.keywordNetwork')
+        // Keyword Network Legend Controller
         .controller('LegendController', ['$scope', '$timeout', 'VisDataSet', 'graphProperties', function ($scope, $timeout, VisDataSet, graphProperties) {
 
             $scope.legendNodes = new VisDataSet([]);
@@ -53,8 +53,8 @@ define([
                 });
             });
         }])
-        // Network Controller
-        .controller('NetworkKeywordController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService) {
+        // Keyword Network Controller
+        .controller('KeywordNetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService) {
 
             var self = this;
 
@@ -69,7 +69,7 @@ define([
             self.physicOptions = physicOptions;
 
             self.networkButtons = [
-                { name: 'Fullscreen', template: '<div class="vis-button vis-fullscreen-button" ng-click="NetworkController.toggleFullscreen()"></div>' },
+                { name: 'Fullscreen', template: '<div class="vis-button vis-fullscreen-button" ng-click="KeywordNetworkController.toggleFullscreen()"></div>' },
                 { name: 'Legend', template: '<div class="vis-button vis-legend-button" ng-click="showLegend = !showLegend"></div>' }
             ];
 
@@ -171,7 +171,7 @@ define([
                 var filters = currentFilter();
                 var fraction = $scope.types.map(function(t) { return { "key": t.name, "data": t.sliderModel }; });
 
-                playRoutes.controllers.NetworkController.induceSubgraph(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, fraction).get().then(function(response) {
+                playRoutes.controllers.KeywordNetworkController.induceSubgraphKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, fraction).get().then(function(response) {
                         // Enable physics for new graph data when network is initialized
                         if(!_.isUndefined(self.network)) {
                             applyPhysicsOptions(self.physicOptions);
@@ -232,13 +232,13 @@ define([
             $scope.observerService.registerObserverCallback({
                 priority: 1,
                 callback: function () {
-                    console.log("Update network");
+                    console.log("Update Keyword Network");
                     return $scope.reloadGraph();
                 }
             });
 
             $scope.observerService.subscribeReset(function() {
-                console.log("Network reset");
+                console.log("Keyword Network reset");
                 // Do not use data from previous filtering steps when collection is changed
                 self.nodes.clear();
                 self.edges.clear();
@@ -353,7 +353,7 @@ define([
                         }],
                     locals: { e: entity },
                     autoWrap: false,
-                    parent: $scope.NetworkKeywordController.isFullscreen() ? angular.element(document.getElementById('networkKeyword')) : angular.element(document.body)
+                    parent: $scope.KeywordNetworkController.isFullscreen() ? angular.element(document.getElementById('networkKeyword')) : angular.element(document.body)
                 }).then(function(response) {
                     // Adapt tooltip and node color
                     var modified = _.extend(response, {
@@ -364,8 +364,8 @@ define([
                     self.nodesDataset.update(modified);
                     self.nodes.update(modified);
                     // Store changes
-                    playRoutes.controllers.NetworkKeywordController.changeEntityNameById(response.id, response.label).get().then(function(response) { /* Error handling */ });
-                    playRoutes.controllers.NetworkKeywordController.changeEntityTypeById(response.id, response.type).get().then(function(response) { /* Error handling */ });
+                    playRoutes.controllers.KeywordNetworkController.changeEntityNameByIdKeyword(response.id, response.label).get().then(function(response) { /* Error handling */ });
+                    playRoutes.controllers.KeywordNetworkController.changeEntityTypeByIdKeyword(response.id, response.type).get().then(function(response) { /* Error handling */ });
                 }, function() { /* cancel click */ });
             }
 
@@ -393,7 +393,7 @@ define([
                             function fetchNeighbors() {
                                 var filters = currentFilter();
                                 // Exclude current network nodes from the expansion list
-                                playRoutes.controllers.NetworkKeywordController.getNeighbors(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, networkIds, $scope.entity.id).get().then(function(response) {
+                                playRoutes.controllers.KeywordNetworkController.getNeighborsKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, networkIds, $scope.entity.id).get().then(function(response) {
                                     $scope.neighbors = response.data;
                                 });
                             }
@@ -424,13 +424,13 @@ define([
                         }],
                     locals: { e: entity, networkIds: ids },
                     autoWrap: false,
-                    parent: $scope.NetworkKeywordController.isFullscreen() ? angular.element(document.getElementById('networkKeyword')) : angular.element(document.body)
+                    parent: $scope.KeywordNetworkController.isFullscreen() ? angular.element(document.getElementById('keywordNetwork')) : angular.element(document.body)
                 }).then(function(response) {
                     var filters = currentFilter();
                     var networkNodes = self.nodesDataset.getIds();
 
                     var n = response.map(function(n) { return n.id; });
-                    playRoutes.controllers.NetworkKeywordController.addNodes(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, networkNodes, n).get().then(function(response) {
+                    playRoutes.controllers.KeywordNetworkController.addNodesKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, networkNodes, n).get().then(function(response) {
                         // Remove highlight from previous nodes including background collection
                         removeNodeHighlight(self.nodes, self.nodes);
                         removeNodeHighlight(self.nodesDataset, self.nodesDataset);
@@ -481,14 +481,14 @@ define([
                         }],
                     locals: { entities: nodes },
                     autoWrap: false,
-                    parent: $scope.NetworkKeywordController.isFullscreen() ? angular.element(document.getElementById('network')) : angular.element(document.body)
+                    parent: $scope.KeywordNetworkController.isFullscreen() ? angular.element(document.getElementById('keywordNetwork')) : angular.element(document.body)
                 }).then(function(response) {
                     var duplicates = _.without(nodeIds, response);
                     // Remove duplicates from the current network view
                     removeNodes(duplicates, self.nodesDataset, self.edgesDataset);
                     // Remove duplicates from the background collection
                     removeNodes(duplicates, self.nodes, self.edges);
-                    playRoutes.controllers.NetworkKeywordController.mergeEntitiesById(response, duplicates).get().then(function(response) {
+                    playRoutes.controllers.KeywordNetworkController.mergeEntitiesByIdKeyword(response, duplicates).get().then(function(response) {
                         // Fetch node replacements for the merged nodes
                         $scope.reloadGraph();
                     });
@@ -601,7 +601,7 @@ define([
                 }
 
                 var filters = currentFilter();
-                playRoutes.controllers.NetworkKeywordController.getEdgeKeywords(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, edge.from, edge.to, self.numEdgeKeywords).get().then(function(response) {
+                playRoutes.controllers.KeywordNetworkController.getEdgeKeywordsKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, edge.from, edge.to, self.numEdgeKeywords).get().then(function(response) {
                     var formattedTerms = response.data.map(function(t) { return '' +  t.term + ': ' + t.score; });
 
                     var docTip = '<p>Occurs in <b>' + edge.value + '</b> documents</p>';
@@ -624,7 +624,7 @@ define([
                 }
 
                 var filters = currentFilter();
-                playRoutes.controllers.NetworkKeywordController.getNeighborCounts(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, node.id).get().then(function(response) {
+                playRoutes.controllers.KeywordNetworkController.getNeighborCountsKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, node.id).get().then(function(response) {
                     var formattedTerms = response.data.map(function(t) { return '' +  t.type + ': ' + t.count; });
 
                     var docTip = '<p>Occurs in <b>' + node.value + ' </b>documents</p><p>Type: <b>' + node.type + '</b></p>';

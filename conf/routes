@@ -26,6 +26,15 @@ GET	   /getNeighborCounts		controllers.NetworkController.getNeighborCounts(fullT
 GET	   /getNeighbors		controllers.NetworkController.getNeighbors(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, currentNetwork: List[Long], focalNode: Long)
 GET    /changeEntityNameById	controllers.NetworkController.changeEntityNameById(id: Long, newName: String)
 GET    /changeEntityTypeById	controllers.NetworkController.changeEntityTypeById(id: Long, newType: String)
+GET     /induceSubgraphKeyword         controllers.KeywordNetworkController.induceSubgraphKeyword(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, nodeFraction: Map[String, String])
+GET     /addNodeKeyword                controllers.KeywordNetworkController.addNodesKeyword(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, currentNetwork: List[Long], nodes: List[Long])
+GET    /blacklistEntitiesByIdKeyword		controllers.KeywordNetworkController.blacklistEntitiesByIdKeyword(ids: List[Long])
+GET	   /mergeEntitiesByIdKeyword		controllers.KeywordNetworkController.mergeEntitiesByIdKeyword(focalId: Long, duplicates: List[Long])
+GET	   /getEdgeKeywordsKeyword		controllers.KeywordNetworkController.getEdgeKeywordsKeyword(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, first: Long, second: Long, numberOfTerms: Int)
+GET	   /getNeighborCountsKeyword		controllers.KeywordNetworkController.getNeighborCountsKeyword(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, nodeId: Long)
+GET	   /getNeighborsKeyword		controllers.KeywordNetworkController.getNeighborsKeyword(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, currentNetwork: List[Long], focalNode: Long)
+GET    /changeEntityNameByIdKeyword	controllers.KeywordNetworkController.changeEntityNameByIdKeyword(id: Long, newName: String)
+GET    /changeEntityTypeByIdKeyword	controllers.KeywordNetworkController.changeEntityTypeByIdKeyword(id: Long, newType: String)
 GET    /getEntities		controllers.EntityController.getEntitiesByType(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, size: Int, entityType: String, filter: List[Long])
 GET     /getEntityTypes controllers.EntityController.getEntityTypes
 GET     /getBlacklisted controllers.EntityController.getBlacklistedEntities
