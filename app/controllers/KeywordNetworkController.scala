@@ -70,6 +70,8 @@ class KeywordNetworkController @Inject() (
     Ok(Json.toJson(counts)).as("application/json")
   }
 
+  // added
+  /*
   /**
    * Returns important terms representing the relationship between both nodes based on the underlying document content.
    *
@@ -100,6 +102,7 @@ class KeywordNetworkController @Inject() (
     val terms = keywordNetworkService.getEdgeKeywordsKeyword(facets, first, second, numberOfTerms)(currentDataset)
     Ok(Json.toJson(terms)).as("application/json")
   }
+  */
 
   /**
    * Returns a co-occurrence network matching the given search query.
@@ -169,6 +172,7 @@ class KeywordNetworkController @Inject() (
     Ok(Json.obj("entities" -> nodesToJsonKeyword(buckets), "relations" -> relations)).as("application/json")
   }
 
+  /*
   // TODO: Use json writer and reader to minimize parameter in a case class Facets
   /**
    * Returns entities co-occurring with the given entity matching the search query.
@@ -203,6 +207,7 @@ class KeywordNetworkController @Inject() (
     val neighbors = nodesToJsonKeyword(nodes)
     Ok(Json.toJson(neighbors)).as("application/json")
   }
+  */
 
   private def nodesToJsonKeyword(nodes: List[NodeBucket])(implicit request: Request[AnyContent]): List[JsObject] = {
     val ids = nodes.map(_.id)

@@ -22,6 +22,8 @@ import com.google.inject.{ ImplementedBy, Inject }
 import models.{ KeyTerm, KeywordNetwork }
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
+// added
+import scalikejdbc.{ NamedDB, SQL }
 // scalastyle:off
 import scala.collection.JavaConversions._
 // scalastyle:on
@@ -88,17 +90,26 @@ trait KeywordNetworkService {
    */
   def getNeighborCountsPerTypeKeyword(facets: Facets, entityId: Long)(index: String): Map[String, Int]
 
+  // added
   /**
    * Returns important terms representing the relationship between both nodes based on the underlying document content.
    *
-   * @param facets the search query.
-   * @param source the first adjacent node of the edge.
-   * @param dest the second adjacent node of the edge.
-   * @param numTerms the number of keywords to fetch.
-   * @param index the data source index or database name to query.
-   * @return a list of [[models.KeyTerm]] representing important terms for the given relationship.
+   * // @param facets the search query.
+   * // @param source the first adjacent node of the edge.
+   * // @param dest the second adjacent node of the edge.
+   * // @param numTerms the number of keywords to fetch.
+   * // @param index the data source index or database name to query.
+   * // @return a list of [[models.KeyTerm]] representing important terms for the given relationship.
    */
-  def getEdgeKeywordsKeyword(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): List[KeyTerm]
+  // def getEdgeKeywordsKeyword(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): List[KeyTerm]
+
+  /**
+   *
+   * @param size the number of terms to fetch.
+   * @param index the data source index or database name to query.
+   * @return a list of [[models.KeyTerm]] representing all important terms
+   */
+  def getAllKeywords(size: Option[Int])(index: String): List[KeyTerm]
 }
 
 /**
@@ -116,6 +127,9 @@ class ESKeywordNetworkService @Inject() (
     utils: ESRequestUtils
 ) extends KeywordNetworkService {
 
+  // added
+  private val db = (index: String) => NamedDB(Symbol(index))
+
   /** @inheritdoc */
   override def createNetworkKeyword(
     facets: Facets,
@@ -127,8 +141,23 @@ class ESKeywordNetworkService @Inject() (
         aggregateService.aggregateEntitiesByType(facets, t, size, List(), exclude)(index).buckets
     }.toList
 
+    val intvalue: Int = 20
+    val keywords: Option[Int] = Option(intvalue)
+    val tmp = getAllKeywords(keywords)("newsleak")
+
+    /*
     val rels = induceRelationshipsKeyword(facets, buckets.collect { case NodeBucket(id, _) => id }, index)
     KeywordNetwork(buckets.collect { case a @ NodeBucket(_, _) => a }, rels)
+    */
+
+    val rels: List[Relationship] = List(Relationship(1, 2, 2), Relationship(2, 1, 4))
+    // val intvalue: Int = 20
+    // val keywords: Option[Int] = Option(intvalue)
+
+    // KeywordNetwork(getAllKeywords(keywords)("newsleak"), rels)
+    val terms: List[NodeBucket] = List(NodeBucket(4, 4), NodeBucket(2, 2), NodeBucket(3, 3))
+    KeywordNetwork(terms, rels)
+
   }
 
   /** @inheritdoc */
@@ -157,6 +186,7 @@ class ESKeywordNetworkService @Inject() (
     }
   }
 
+  // added
   /** @inheritdoc */
   override def induceNetworkKeyword(facets: Facets, currentNetwork: List[Long], nodes: List[Long])(index: String): KeywordNetwork = {
     val buckets = aggregateService.aggregateEntities(facets, nodes.length, nodes, Nil)(index).buckets.collect { case a @ NodeBucket(_, _) => a }
@@ -167,6 +197,12 @@ class ESKeywordNetworkService @Inject() (
       currentNetwork.flatMap { dest => getRelationshipKeyword(facets, source, dest, index) }
     }
     KeywordNetwork(buckets, inBetweenRels ++ connectingRels)
+
+    /*
+    val intvalue: Int = 20
+    val keywords: Option[Int] = Option(intvalue)
+    KeywordNetwork(getAllKeywords(keywords)("newsleak"), inBetweenRels ++ connectingRels)
+    */
   }
 
   /** @inheritdoc */
@@ -205,10 +241,23 @@ class ESKeywordNetworkService @Inject() (
     Aggregation("neighbors", buckets)
   }
 
+  // added
   /** @inheritdoc */
+  /*
   override def getEdgeKeywordsKeyword(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): List[KeyTerm] = {
     // Only consider documents where the two entities occur
     val res = aggregateService.aggregateKeywords(facets.withEntities(List(source, dest)), numTerms, Nil, Nil)(index)
     res.buckets.collect { case MetaDataBucket(term, count) => KeyTerm(term, count.toInt) }
+  }
+  */
+
+  /** @inheritdoc */
+  override def getAllKeywords(size: Option[Int])(index: String): List[KeyTerm] = db(index).readOnly { implicit session =>
+    SQL(
+      """SELECT term, frequency
+          FROM terms
+          %s
+        """.format(if (size.isDefined) "LIMIT " + size.get else "")
+    ).map(KeyTerm(_)).list.apply()
   }
 }
