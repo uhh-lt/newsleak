@@ -19,8 +19,7 @@ package controllers
 
 import javax.inject.Inject
 
-import models.{ Facets, KeywordNetwork, NodeBucket, Relationship }
-import models.KeyTerm.keyTermFormat
+import models.{ Facets, KeywordNetwork, Relationship, KeyTerm }
 import models.services.{ EntityService, KeywordNetworkService }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
@@ -69,40 +68,6 @@ class KeywordNetworkController @Inject() (
     val counts = res.map { case (t, c) => Json.obj("type" -> t, "count" -> c) }
     Ok(Json.toJson(counts)).as("application/json")
   }
-
-  // added
-  /*
-  /**
-   * Returns important terms representing the relationship between both nodes based on the underlying document content.
-   *
-   * @param fullText match documents that contain the given expression in the document body.
-   * @param generic a map linking from document metadata keys to a list of instances for this metadata.
-   * @param entities a list of entity ids that should occur in the document.
-   * @param timeRange a string representing a time range for the document creation date.
-   * @param timeExprRange a string representing a time range for the document time expression.
-   * @param first the first adjacent node of the edge.
-   * @param second the second adjacent node of the edge.
-   * @param numberOfTerms the number of keywords to fetch.
-   * @return a list of [[models.KeyTerm]] representing important terms for the given relationship.
-   */
-  def getEdgeKeywordsKeyword(
-    fullText: List[String],
-    generic: Map[String, List[String]],
-    entities: List[Long],
-    timeRange: String,
-    timeExprRange: String,
-    first: Long,
-    second: Long,
-    numberOfTerms: Int
-  ) = Action { implicit request =>
-    val (from, to) = dateUtils.parseTimeRange(timeRange)
-    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
-    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
-
-    val terms = keywordNetworkService.getEdgeKeywordsKeyword(facets, first, second, numberOfTerms)(currentDataset)
-    Ok(Json.toJson(terms)).as("application/json")
-  }
-  */
 
   /**
    * Returns a co-occurrence network matching the given search query.
@@ -172,60 +137,17 @@ class KeywordNetworkController @Inject() (
     Ok(Json.obj("entities" -> nodesToJsonKeyword(buckets), "relations" -> relations)).as("application/json")
   }
 
-  /*
-  // TODO: Use json writer and reader to minimize parameter in a case class Facets
-  /**
-   * Returns entities co-occurring with the given entity matching the search query.
-   *
-   * @param fullText match documents that contain the given expression in the document body.
-   * @param generic a map linking from document metadata keys to a list of instances for this metadata.
-   * @param entities a list of entity ids that should occur in the document.
-   * @param timeRange a string representing a time range for the document creation date.
-   * @param timeExprRange a string representing a time range for the document time expression.
-   * @param currentNetwork the entity ids of the current network.
-   * @param focalNode the entity id.
-   * @return co-occurring entities with the given entity.
-   */
-  def getNeighborsKeyword(
-    fullText: List[String],
-    generic: Map[String, List[String]],
-    entities: List[Long],
-    timeRange: String,
-    timeExprRange: String,
-    currentNetwork: List[Long],
-    focalNode: Long
-  ) = Action { implicit request =>
-    // TODO Duplicated code to parse facets
-    val (from, to) = dateUtils.parseTimeRange(timeRange)
-    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
-    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+  private def nodesToJsonKeyword(nodes: List[KeyTerm])(implicit request: Request[AnyContent]): List[JsObject] = {
+    val termsArray: Array[JsObject] = new Array[JsObject](nodes.length)
 
-    // TODO: we don't need to add the blacklist as exclude when we use getById.contains
-    val blacklistedIds = entityService.getBlacklisted()(currentDataset).map(_.id)
-    val nodes = keywordNetworkService.getNeighborsKeyword(facets, focalNode, numberOfNeighbors, blacklistedIds ++ currentNetwork)(currentDataset)
+    for (i <- 0 to nodes.length - 1) termsArray(i) = Json.obj(
+      "id" -> i,
+      "label" -> nodes(i).term,
+      "count" -> nodes(i).score
+    )
 
-    val neighbors = nodesToJsonKeyword(nodes)
-    Ok(Json.toJson(neighbors)).as("application/json")
-  }
-  */
-
-  private def nodesToJsonKeyword(nodes: List[NodeBucket])(implicit request: Request[AnyContent]): List[JsObject] = {
-    val ids = nodes.map(_.id)
-    val nodeIdToEntity = entityService.getByIds(ids)(currentDataset).map(e => e.id -> e).toMap
-
-    val typesToId = entityService.getTypes()(currentDataset)
-    nodes.collect {
-      // Only add node if it is not blacklisted
-      case NodeBucket(id, count) if nodeIdToEntity.contains(id) =>
-        val node = nodeIdToEntity(id)
-        Json.obj(
-          "id" -> id,
-          "label" -> node.name,
-          "count" -> count,
-          "type" -> node.entityType.toString,
-          "group" -> typesToId(node.entityType)
-        )
-    }
+    val terms: List[JsObject] = termsArray.toList
+    terms
   }
 
   /** Marks the entities associated with the given ids as blacklisted. */

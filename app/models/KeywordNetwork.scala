@@ -23,4 +23,4 @@ package models
  * @param nodes the vertices of the network.
  * @param relations the edges of the network.
  */
-case class KeywordNetwork(nodes: List[NodeBucket], relations: List[Relationship])
+case class KeywordNetwork(nodes: List[KeyTerm], relations: List[Relationship])

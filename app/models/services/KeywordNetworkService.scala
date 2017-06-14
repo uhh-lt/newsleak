@@ -90,19 +90,6 @@ trait KeywordNetworkService {
    */
   def getNeighborCountsPerTypeKeyword(facets: Facets, entityId: Long)(index: String): Map[String, Int]
 
-  // added
-  /**
-   * Returns important terms representing the relationship between both nodes based on the underlying document content.
-   *
-   * // @param facets the search query.
-   * // @param source the first adjacent node of the edge.
-   * // @param dest the second adjacent node of the edge.
-   * // @param numTerms the number of keywords to fetch.
-   * // @param index the data source index or database name to query.
-   * // @return a list of [[models.KeyTerm]] representing important terms for the given relationship.
-   */
-  // def getEdgeKeywordsKeyword(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): List[KeyTerm]
-
   /**
    *
    * @param size the number of terms to fetch.
@@ -127,37 +114,70 @@ class ESKeywordNetworkService @Inject() (
     utils: ESRequestUtils
 ) extends KeywordNetworkService {
 
-  // added
   private val db = (index: String) => NamedDB(Symbol(index))
 
   /** @inheritdoc */
+  //noinspection ScalaStyle
   override def createNetworkKeyword(
     facets: Facets,
     nodeFraction: Map[String, Int],
     exclude: List[Long]
   )(index: String): KeywordNetwork = {
-    val buckets = nodeFraction.flatMap {
-      case (t, size) =>
-        aggregateService.aggregateEntitiesByType(facets, t, size, List(), exclude)(index).buckets
-    }.toList
+
+    // MockUp Data for Keywords
+    val tmpindex: String = "newsleak"
+
+    deleteMockupKeywortsInDB(tmpindex)
+
+    insertMockupKeywordsInDB(tmpindex, 1, 1, 2)
+    insertMockupKeywordsInDB(tmpindex, 1, 2, 4)
+    insertMockupKeywordsInDB(tmpindex, 1, 3, 8)
+    insertMockupKeywordsInDB(tmpindex, 1, 4, 16)
+    insertMockupKeywordsInDB(tmpindex, 1, 5, 32)
+    insertMockupKeywordsInDB(tmpindex, 1, 6, 64)
+    insertMockupKeywordsInDB(tmpindex, 1, 7, 128)
+    insertMockupKeywordsInDB(tmpindex, 1, 8, 256)
+    insertMockupKeywordsInDB(tmpindex, 1, 9, 512)
 
     val intvalue: Int = 20
     val keywords: Option[Int] = Option(intvalue)
-    val tmp = getAllKeywords(keywords)("newsleak")
 
-    /*
-    val rels = induceRelationshipsKeyword(facets, buckets.collect { case NodeBucket(id, _) => id }, index)
-    KeywordNetwork(buckets.collect { case a @ NodeBucket(_, _) => a }, rels)
-    */
+    val rels: List[Relationship] = List(
+      Relationship(1, 2, 2),
+      Relationship(2, 3, 4),
+      Relationship(3, 4, 5),
+      Relationship(5, 6, 6),
+      Relationship(6, 7, 7),
+      Relationship(7, 8, 8),
+      Relationship(8, 9, 8),
+      Relationship(9, 1, 9),
+      Relationship(3, 2, 4),
+      Relationship(4, 2, 10),
+      Relationship(5, 2, 13),
+      Relationship(0, 4, 14),
+      Relationship(10, 3, 15),
+      Relationship(5, 7, 11),
+      Relationship(6, 2, 40)
+    )
 
-    val rels: List[Relationship] = List(Relationship(1, 2, 2), Relationship(2, 1, 4))
-    // val intvalue: Int = 20
-    // val keywords: Option[Int] = Option(intvalue)
+    KeywordNetwork(getAllKeywords(keywords)("newsleak"), rels)
+  }
 
-    // KeywordNetwork(getAllKeywords(keywords)("newsleak"), rels)
-    val terms: List[NodeBucket] = List(NodeBucket(4, 4), NodeBucket(2, 2), NodeBucket(3, 3))
-    KeywordNetwork(terms, rels)
+  private def deleteMockupKeywortsInDB(index: String): Boolean = db(index).localTx { implicit session =>
+    val deletestring: String = "DELETE FROM terms WHERE docid = 1"
 
+    SQL(deletestring).update().apply()
+
+    true
+  }
+
+  // TODO term should be String not Int (character varying in DB)
+  private def insertMockupKeywordsInDB(index: String, docid: Int, term: Int, frequency: Int): Boolean = db(index).localTx { implicit session =>
+    val insertstring: String = "INSERT INTO terms (docid, term, frequency) VALUES (" + docid + "," + term + "," + frequency + ")"
+
+    SQL(insertstring).update().apply()
+
+    true
   }
 
   /** @inheritdoc */
@@ -189,20 +209,17 @@ class ESKeywordNetworkService @Inject() (
   // added
   /** @inheritdoc */
   override def induceNetworkKeyword(facets: Facets, currentNetwork: List[Long], nodes: List[Long])(index: String): KeywordNetwork = {
-    val buckets = aggregateService.aggregateEntities(facets, nodes.length, nodes, Nil)(index).buckets.collect { case a @ NodeBucket(_, _) => a }
     // Fetch relationships between new nodes
     val inBetweenRels = induceRelationshipsKeyword(facets, nodes, index)
     // Fetch relationships between new nodes and current network
     val connectingRels = nodes.flatMap { source =>
       currentNetwork.flatMap { dest => getRelationshipKeyword(facets, source, dest, index) }
     }
-    KeywordNetwork(buckets, inBetweenRels ++ connectingRels)
 
-    /*
     val intvalue: Int = 20
     val keywords: Option[Int] = Option(intvalue)
     KeywordNetwork(getAllKeywords(keywords)("newsleak"), inBetweenRels ++ connectingRels)
-    */
+
   }
 
   /** @inheritdoc */
@@ -240,16 +257,6 @@ class ESKeywordNetworkService @Inject() (
 
     Aggregation("neighbors", buckets)
   }
-
-  // added
-  /** @inheritdoc */
-  /*
-  override def getEdgeKeywordsKeyword(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): List[KeyTerm] = {
-    // Only consider documents where the two entities occur
-    val res = aggregateService.aggregateKeywords(facets.withEntities(List(source, dest)), numTerms, Nil, Nil)(index)
-    res.buckets.collect { case MetaDataBucket(term, count) => KeyTerm(term, count.toInt) }
-  }
-  */
 
   /** @inheritdoc */
   override def getAllKeywords(size: Option[Int])(index: String): List[KeyTerm] = db(index).readOnly { implicit session =>
