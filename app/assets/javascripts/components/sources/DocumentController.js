@@ -40,13 +40,13 @@ define([
                 link: function(scope, element, attrs) {
                     var content = scope.document.content;
                     var entities = scope.document.entities;
-
                     scope.addEntityFilter = function(id) {
                         var el = _.find(entities, function(e) { return e.id == id });
                         ObserverService.addItem({ type: 'entity', data: { id: id, description: el.name, item: el.name, type: el.type }});
                     };
 
                     scope.renderDoc = function() {
+
                         var highlights = scope.document.highlighted !== null ? calcHighlightOffsets(scope.document.highlighted, '<em>', '</em>') : [];
                         // The plain highlighter with query_string search highlights phrases as multiple words
                         // i.e. "Angela Merkel" -> <em> Angela </em> <em> Merkel </em>. Thus, we need to group
@@ -111,6 +111,7 @@ define([
                     };
 
                     function calcHighlightOffsets(text, delimiterStart, delimiterEnd) {
+                      debugger;
                         var offset = 0;
                         var markerChars = delimiterStart.length;
                         var elements = [];
@@ -199,6 +200,8 @@ define([
                     // contextMenu for Blacklisting
                     scope.contextMenu = [
                       ['Blacklist', function ($itemScope, event) {
+                        debugger;
+                        // $route.reload();
                         EntityService
                           .blacklist([
                             event.target.id
@@ -343,18 +346,27 @@ define([
                         $scope.selectedEntity =  $scope.getSelectionEntity();
                     };
 
-                    $scope.whitelist = function(entity){
+                    $scope.whitelist = function(entity, event){
                       EntityService.whitelist(entity);
                     };
 
-                    $scope.getSelectionEntity = function() {
+                    $scope.getSelectionEntity = function(event) {
                       var text = "";
+                      var doc = document.getElementsByTagName("doc-content")[0].innerText;
+                      var start = 0;
+                      var end = 0;
                       if (window.getSelection) {
                          text = window.getSelection().toString();
+                         start = doc.match(text).index;
+                         end = start + text.length;
                       } else if (document.selection && document.selection.type != "Control") {
                          text = document.selection.createRange().text;
                       }
-                      return text;
+                      return {
+                        text,
+                        start,
+                        end
+                      };
                     };
 
                     function createFilterFor(query) {

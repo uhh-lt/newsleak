@@ -81,7 +81,7 @@
                     <div>
                       <br />
                       <b>Selected Entity:</b>
-                      <span ng-bind="selectedEntity"></span>
+                      <span ng-bind="selectedEntity.text"></span> {{selectedEntity}}
                       <button ng-model="selectedEntity" ng-click="whitelist(selectedEntity)"> Whitelist </button>
                     </div>
                 </md-card-content>
