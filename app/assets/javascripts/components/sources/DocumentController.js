@@ -111,7 +111,6 @@ define([
                     };
 
                     function calcHighlightOffsets(text, delimiterStart, delimiterEnd) {
-                      debugger;
                         var offset = 0;
                         var markerChars = delimiterStart.length;
                         var elements = [];
@@ -200,7 +199,6 @@ define([
                     // contextMenu for Blacklisting
                     scope.contextMenu = [
                       ['Blacklist', function ($itemScope, event) {
-                        debugger;
                         // $route.reload();
                         EntityService
                           .blacklist([
@@ -342,17 +340,27 @@ define([
                     };
 
                     // Enable to select Entity
-                    $scope.showSelectedEntity = function() {
-                        $scope.selectedEntity =  $scope.getSelectionEntity();
+                    $scope.showSelectedEntity = function(doc) {
+                        $scope.selectedEntity =  $scope.getSelectionEntity(doc);
                     };
 
-                    $scope.whitelist = function(entity, event){
-                      EntityService.whitelist(entity);
+                    $scope.whitelist = function(entity, type, docId){
+                      type = type.replace(/\s/g, '');
+                      EntityService.whitelist(entity, type, docId);
                     };
 
-                    $scope.getSelectionEntity = function(event) {
+                    $scope.entityTypes = [];
+                    $scope.observer.getEntityTypes().$$state.value.map(function(e){
+                      if (e.name !== null){
+                        $scope.entityTypes.push(e);
+                      }
+                    });
+
+                    $scope.selectedType = '';
+                    var doc = $scope.tabs;
+                    $scope.getSelectionEntity = function(doc) {
                       var text = "";
-                      var doc = document.getElementsByTagName("doc-content")[0].innerText;
+                      // var doc = document.getElementsByTagName("doc-content")[0].innerText;
                       var start = 0;
                       var end = 0;
                       if (window.getSelection) {
