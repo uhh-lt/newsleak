@@ -81,7 +81,7 @@ define([
                     controller: 'NetworkController'
                 },
                 'keywordNetwork': {
-                    templateUrl: 'assets/partials/network.html',
+                    templateUrl: 'assets/partials/keywordNetwork.html',
                     controller: 'KeywordNetworkController'
                 },
                 'histogram': {

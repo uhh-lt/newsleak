@@ -116,6 +116,8 @@ class ESKeywordNetworkService @Inject() (
 
   private val db = (index: String) => NamedDB(Symbol(index))
 
+  val esIndex = "newsleak"
+
   /** @inheritdoc */
   //noinspection ScalaStyle
   override def createNetworkKeyword(
@@ -125,19 +127,18 @@ class ESKeywordNetworkService @Inject() (
   )(index: String): KeywordNetwork = {
 
     // MockUp Data for Keywords
-    val tmpindex: String = "newsleak"
 
-    deleteMockupKeywortsInDB(tmpindex)
+    deleteMockupKeywortsInDB(esIndex)
 
-    insertMockupKeywordsInDB(tmpindex, 1, 1, 2)
-    insertMockupKeywordsInDB(tmpindex, 1, 2, 4)
-    insertMockupKeywordsInDB(tmpindex, 1, 3, 8)
-    insertMockupKeywordsInDB(tmpindex, 1, 4, 16)
-    insertMockupKeywordsInDB(tmpindex, 1, 5, 32)
-    insertMockupKeywordsInDB(tmpindex, 1, 6, 64)
-    insertMockupKeywordsInDB(tmpindex, 1, 7, 128)
-    insertMockupKeywordsInDB(tmpindex, 1, 8, 256)
-    insertMockupKeywordsInDB(tmpindex, 1, 9, 512)
+    insertMockupKeywordsInDB(esIndex, 1, 1, 2)
+    insertMockupKeywordsInDB(esIndex, 1, 2, 4)
+    insertMockupKeywordsInDB(esIndex, 1, 3, 8)
+    insertMockupKeywordsInDB(esIndex, 1, 4, 16)
+    insertMockupKeywordsInDB(esIndex, 1, 5, 32)
+    insertMockupKeywordsInDB(esIndex, 1, 6, 64)
+    insertMockupKeywordsInDB(esIndex, 1, 7, 128)
+    insertMockupKeywordsInDB(esIndex, 1, 8, 256)
+    insertMockupKeywordsInDB(esIndex, 1, 9, 512)
 
     val intvalue: Int = 20
     val keywords: Option[Int] = Option(intvalue)
@@ -160,7 +161,7 @@ class ESKeywordNetworkService @Inject() (
       Relationship(6, 2, 40)
     )
 
-    KeywordNetwork(getAllKeywords(keywords)("newsleak"), rels)
+    KeywordNetwork(getAllKeywords(keywords)(esIndex), rels)
   }
 
   private def deleteMockupKeywortsInDB(index: String): Boolean = db(index).localTx { implicit session =>
@@ -218,7 +219,7 @@ class ESKeywordNetworkService @Inject() (
 
     val intvalue: Int = 20
     val keywords: Option[Int] = Option(intvalue)
-    KeywordNetwork(getAllKeywords(keywords)("newsleak"), inBetweenRels ++ connectingRels)
+    KeywordNetwork(getAllKeywords(keywords)(esIndex), inBetweenRels ++ connectingRels)
 
   }
 

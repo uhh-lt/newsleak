@@ -601,6 +601,7 @@ define([
                 }
 
                 var filters = currentFilter();
+                /*
                 playRoutes.controllers.KeywordNetworkController.getEdgeKeywordsKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, edge.from, edge.to, self.numEdgeKeywords).get().then(function(response) {
                     var formattedTerms = response.data.map(function(t) { return '' +  t.term + ': ' + t.score; });
 
@@ -610,10 +611,11 @@ define([
 
                     self.edgesDataset.update({ id: edge.id, title: tooltip });
                     // Only update background collection after stabilization.
-                    /* if(!$scope.loading) {
-                        self.edges.update({ id: event.edge, title: keywords });
-                    } */
+                    // if(!$scope.loading) {
+                    //    self.edges.update({ id: event.edge, title: keywords });
+                    //}
                 });
+                */
             }
 
             function hoverNode(event) {
@@ -726,14 +728,14 @@ define([
             }
 
             function showContextMenu(params, menuEntries) {
-                var container = document.getElementById('mynetwork');
+                var container = document.getElementById('mykeywordnetwork');
 
                 var offsetLeft = container.offsetLeft;
                 var offsetTop = container.offsetTop;
 
                 self.popupMenu = document.createElement("div");
                 self.popupMenu.className = 'popupMenu';
-                self.popupMenu.style.left = params.x + $("#documents-view").width() + 'px';
+                self.popupMenu.style.left = params.x + $("#documents-view").width() + $("#mynetwork").width() + 'px';
                 //self.popupMenu.style.left = params.x - offsetLeft + 'px';
                 self.popupMenu.style.top =  params.y + $("header").height() + $("#history").height()+'px';
                 //self.popupMenu.style.top =  params.y - offsetTop +'px';

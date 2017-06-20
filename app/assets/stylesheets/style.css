@@ -107,6 +107,15 @@ html, body {
     background-color: #d1d1d1;
 }
 
+#mykeywordnetwork {
+    position: absolute;
+    overflow-y: hidden;
+    width: 100%;
+    top: 74px;
+    height: calc(100% - 74px);
+    background-color: #d1d1d1;
+}
+
 #legend {
     position: absolute;
     width: 200px;
