@@ -28,9 +28,12 @@ define([
                     scope.$on('$destroy', handler);
                 },
 
-                blacklist: function(ids) {
+                blacklist: function(ids, doc = false) {
                     // TODO: Move to EntityController
                     playRoutes.controllers.NetworkController.blacklistEntitiesById(ids).get().then(function(response) {
+                        if (doc === true) {
+                          location.reload();
+                        };
                         $rootScope.$emit('notifying-service-event', { parameter: ids, response: response });
                     });
                 },
@@ -43,6 +46,7 @@ define([
                       type,
                       docId
                     ).get().then(function(response) {
+                        location.reload();
                         $rootScope.$emit('notifying-service-event', { parameter: entity, response: response });
                     });
                 }

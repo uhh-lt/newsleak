@@ -203,7 +203,7 @@ define([
                         EntityService
                           .blacklist([
                             event.target.id
-                          ]);
+                          ], true);
                       }],
                     ];
 
