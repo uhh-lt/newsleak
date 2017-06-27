@@ -17,15 +17,16 @@
 
 package models.services
 
-import scala.collection.mutable.ListBuffer
-import com.google.inject.{ ImplementedBy, Inject }
+import com.google.inject.{ImplementedBy, Inject}
 import models.KeyTerm
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
+
+import scala.collection.mutable.ListBuffer
 // scalastyle:off
 import scala.collection.JavaConversions._
 // scalastyle:on
-import models.{ Facets, NodeBucket, MetaDataBucket, Aggregation, Relationship, Network }
+import models.{Aggregation, Facets, MetaDataBucket, Network, NodeBucket, Relationship}
 import util.es.ESRequestUtils
 
 /**
@@ -99,6 +100,13 @@ trait NetworkService {
    * @return a list of [[models.KeyTerm]] representing important terms for the given relationship.
    */
   def getEdgeKeywords(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): List[KeyTerm]
+
+  /**
+    * Function to get the entities of the Entity Graph
+    *
+    * @return a list of [[models.NodeBucket]]
+    */
+  def getGraphEntitites(): List[NodeBucket]
 }
 
 /**
@@ -116,13 +124,15 @@ class ESNetworkService @Inject() (
     utils: ESRequestUtils
 ) extends NetworkService {
 
+  var buckets = List[Any]()
+
   /** @inheritdoc */
   override def createNetwork(
     facets: Facets,
     nodeFraction: Map[String, Int],
     exclude: List[Long]
   )(index: String): Network = {
-    val buckets = nodeFraction.flatMap {
+    this.buckets = nodeFraction.flatMap {
       case (t, size) =>
         aggregateService.aggregateEntitiesByType(facets, t, size, List(), exclude)(index).buckets
     }.toList
@@ -140,6 +150,11 @@ class ESNetworkService @Inject() (
       rest.flatMap { dest => getRelationship(facets, source, dest, index) }
     }
     rels
+  }
+
+  /** @inheritdoc**/
+  override def getGraphEntitites(): List[NodeBucket] = {
+    this.buckets.collect { case a@NodeBucket(_, _) => a }
   }
 
   /** @inheritdoc */
@@ -210,5 +225,10 @@ class ESNetworkService @Inject() (
     // Only consider documents where the two entities occur
     val res = aggregateService.aggregateKeywords(facets.withEntities(List(source, dest)), numTerms, Nil, Nil)(index)
     res.buckets.collect { case MetaDataBucket(term, count) => KeyTerm(term, count.toInt) }
+  }
+
+  /** @inheritdoc*/
+  def getGraphEntities: List[NodeBucket] = {
+    buckets.collect { case a@NodeBucket(_, _) => a }
   }
 }

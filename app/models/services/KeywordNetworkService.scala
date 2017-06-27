@@ -17,17 +17,18 @@
 
 package models.services
 
-import scala.collection.mutable.ListBuffer
-import com.google.inject.{ ImplementedBy, Inject }
-import models.{ KeyTerm, KeywordNetwork }
+import com.google.inject.{ImplementedBy, Inject}
+import models.{KeyTerm, KeywordNetwork}
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
+
+import scala.collection.mutable.ListBuffer
 // added
-import scalikejdbc.{ NamedDB, SQL }
+import scalikejdbc.{NamedDB, SQL}
 // scalastyle:off
 import scala.collection.JavaConversions._
 // scalastyle:on
-import models.{ Facets, NodeBucket, MetaDataBucket, Aggregation, Relationship }
+import models.{Aggregation, Facets, MetaDataBucket, NodeBucket, Relationship}
 import util.es.ESRequestUtils
 
 /**
@@ -97,26 +98,42 @@ trait KeywordNetworkService {
    * @return a list of [[models.KeyTerm]] representing all important terms
    */
   def getAllKeywords(size: Option[Int])(index: String): List[KeyTerm]
+
+  /**
+    * @param nodes the entities
+    */
+  def setGraphNodes(nodes: List[NodeBucket]): Unit
+
+  /**
+    * @param facets   the search query.
+    * @param entities the entities that should occur in the document.
+    * @param numTerms the amount of keywords.
+    * @param index    the data source index to query.
+    * @return a list of [[models.KeyTerm]] representing all important terms
+    */
+  def getKeywordsForEntities(facets: Facets, entities: List[NodeBucket], numTerms: Int)(index: String): List[KeyTerm]
 }
 
 /**
  * Implementation of [[models.services.KeywordNetworkService]] using an elasticsearch index as backend.
  *
- * @param clientService the elasticsearch client.
+ * @param clientService    the elasticsearch client.
  * @param aggregateService the aggregation service.
- * @param entityService the entity service.
- * @param utils common helper to issue elasticsearch queries.
+ * @param entityService    the entity service.
+ * @param utils            common helper to issue elasticsearch queries.
+  * @param networkService  the network service
  */
 class ESKeywordNetworkService @Inject() (
-    clientService: SearchClientService,
-    aggregateService: AggregateService,
-    entityService: EntityService,
-    utils: ESRequestUtils
+                                          clientService: SearchClientService,
+                                          aggregateService: AggregateService,
+                                          entityService: EntityService,
+                                          utils: ESRequestUtils,
+                                          networkService: NetworkService
 ) extends KeywordNetworkService {
 
   private val db = (index: String) => NamedDB(Symbol(index))
 
-  val esIndex = "newsleak"
+  var graphNodes: List[NodeBucket] = List[NodeBucket]()
 
   /** @inheritdoc */
   //noinspection ScalaStyle
@@ -125,23 +142,6 @@ class ESKeywordNetworkService @Inject() (
     nodeFraction: Map[String, Int],
     exclude: List[Long]
   )(index: String): KeywordNetwork = {
-
-    // MockUp Data for Keywords
-
-    deleteMockupKeywortsInDB(esIndex)
-
-    insertMockupKeywordsInDB(esIndex, 1, 1, 2)
-    insertMockupKeywordsInDB(esIndex, 1, 2, 4)
-    insertMockupKeywordsInDB(esIndex, 1, 3, 8)
-    insertMockupKeywordsInDB(esIndex, 1, 4, 16)
-    insertMockupKeywordsInDB(esIndex, 1, 5, 32)
-    insertMockupKeywordsInDB(esIndex, 1, 6, 64)
-    insertMockupKeywordsInDB(esIndex, 1, 7, 128)
-    insertMockupKeywordsInDB(esIndex, 1, 8, 256)
-    insertMockupKeywordsInDB(esIndex, 1, 9, 512)
-
-    val intvalue: Int = 20
-    val keywords: Option[Int] = Option(intvalue)
 
     val rels: List[Relationship] = List(
       Relationship(1, 2, 2),
@@ -161,24 +161,11 @@ class ESKeywordNetworkService @Inject() (
       Relationship(6, 2, 40)
     )
 
-    KeywordNetwork(getAllKeywords(keywords)(esIndex), rels)
-  }
+    val keywords = getKeywordsForEntities(facets, networkService.getGraphEntitites(), 20)(index)
+    // TODO Relationships
+    // val rels = induceRelationshipsKeyword(facets, keywords, index)
 
-  private def deleteMockupKeywortsInDB(index: String): Boolean = db(index).localTx { implicit session =>
-    val deletestring: String = "DELETE FROM terms WHERE docid = 1"
-
-    SQL(deletestring).update().apply()
-
-    true
-  }
-
-  // TODO term should be String not Int (character varying in DB)
-  private def insertMockupKeywordsInDB(index: String, docid: Int, term: Int, frequency: Int): Boolean = db(index).localTx { implicit session =>
-    val insertstring: String = "INSERT INTO terms (docid, term, frequency) VALUES (" + docid + "," + term + "," + frequency + ")"
-
-    SQL(insertstring).update().apply()
-
-    true
+    KeywordNetwork(keywords, rels)
   }
 
   /** @inheritdoc */
@@ -207,7 +194,6 @@ class ESKeywordNetworkService @Inject() (
     }
   }
 
-  // added
   /** @inheritdoc */
   override def induceNetworkKeyword(facets: Facets, currentNetwork: List[Long], nodes: List[Long])(index: String): KeywordNetwork = {
     // Fetch relationships between new nodes
@@ -219,8 +205,12 @@ class ESKeywordNetworkService @Inject() (
 
     val intvalue: Int = 20
     val keywords: Option[Int] = Option(intvalue)
-    KeywordNetwork(getAllKeywords(keywords)(esIndex), inBetweenRels ++ connectingRels)
+    KeywordNetwork(getAllKeywords(keywords)(index), inBetweenRels ++ connectingRels)
 
+  }
+
+  override def setGraphNodes(nodes: List[NodeBucket]): Unit = {
+    this.graphNodes = nodes
   }
 
   /** @inheritdoc */
@@ -267,5 +257,12 @@ class ESKeywordNetworkService @Inject() (
           %s
         """.format(if (size.isDefined) "LIMIT " + size.get else "")
     ).map(KeyTerm(_)).list.apply()
+  }
+
+  /** @inheritdoc**/
+  def getKeywordsForEntities(facets: Facets, entities: List[NodeBucket], numTerms: Int)(index: String): List[KeyTerm] = {
+    // Only consider documents where the entities occur
+    val res = aggregateService.aggregateKeywords(facets.withEntities(for (entity <- entities) yield entity.id), numTerms, Nil, Nil)(index)
+    res.buckets.collect { case MetaDataBucket(term, count) => KeyTerm(term, count.toInt) }
   }
 }

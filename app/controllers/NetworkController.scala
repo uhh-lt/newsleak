@@ -19,13 +19,13 @@ package controllers
 
 import javax.inject.Inject
 
-import models.{ Facets, Network, NodeBucket, Relationship }
 import models.KeyTerm.keyTermFormat
-import models.services.{ EntityService, NetworkService }
-import play.api.libs.json.{ JsObject, Json }
-import play.api.mvc.{ Action, AnyContent, Controller, Request }
-import util.SessionUtils.currentDataset
+import models.services.{EntityService, KeywordNetworkService, NetworkService}
+import models.{Facets, Network, NodeBucket, Relationship}
+import play.api.libs.json.{JsObject, Json}
+import play.api.mvc.{Action, AnyContent, Controller, Request}
 import util.DateUtils
+import util.SessionUtils.currentDataset
 
 /**
  * Provides network related actions.
@@ -35,9 +35,10 @@ import util.DateUtils
  * @param dateUtils common helper for date and time operations.
  */
 class NetworkController @Inject() (
-    entityService: EntityService,
-    networkService: NetworkService,
-    dateUtils: DateUtils
+                                    entityService: EntityService,
+                                    networkService: NetworkService,
+                                    keywordNetworkService: KeywordNetworkService,
+                                    dateUtils: DateUtils
 ) extends Controller {
 
   private val numberOfNeighbors = 200
@@ -128,6 +129,7 @@ class NetworkController @Inject() (
 
     val blacklistedIds = entityService.getBlacklisted()(currentDataset).map(_.id)
     val Network(nodes, relations) = networkService.createNetwork(facets, sizes, blacklistedIds)(currentDataset)
+    keywordNetworkService.setGraphNodes(nodes)
 
     if (nodes.isEmpty) {
       Ok(Json.obj("entities" -> List[JsObject](), "relations" -> List[JsObject]())).as("application/json")
