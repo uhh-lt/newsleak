@@ -20,10 +20,10 @@ package controllers
 import javax.inject.Inject
 
 import models.KeyTerm.keyTermFormat
-import models.services.{EntityService, KeywordNetworkService, NetworkService}
-import models.{Facets, Network, NodeBucket, Relationship}
-import play.api.libs.json.{JsObject, Json}
-import play.api.mvc.{Action, AnyContent, Controller, Request}
+import models.services.{ EntityService, KeywordNetworkService, NetworkService }
+import models.{ Facets, Network, NodeBucket, Relationship }
+import play.api.libs.json.{ JsObject, Json }
+import play.api.mvc.{ Action, AnyContent, Controller, Request }
 import util.DateUtils
 import util.SessionUtils.currentDataset
 
@@ -35,10 +35,10 @@ import util.SessionUtils.currentDataset
  * @param dateUtils common helper for date and time operations.
  */
 class NetworkController @Inject() (
-                                    entityService: EntityService,
-                                    networkService: NetworkService,
-                                    keywordNetworkService: KeywordNetworkService,
-                                    dateUtils: DateUtils
+    entityService: EntityService,
+    networkService: NetworkService,
+    keywordNetworkService: KeywordNetworkService,
+    dateUtils: DateUtils
 ) extends Controller {
 
   private val numberOfNeighbors = 200

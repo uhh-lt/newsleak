@@ -76,7 +76,7 @@ define([
             // Context menu for single node selection
             self.singleNodeMenu = [
                 {
-                    title: 'Add as filter',
+                    title: 'Add as filter KEYWORD',
                     action: function(value, nodeId) { addNodeFilter(nodeId); }
 
                 }, {
@@ -98,7 +98,7 @@ define([
             // Context menu for multiple node selection
             self.multiNodeMenu = [
                 {
-                    title: 'Merge nodes',
+                    title: 'Merge nodes KEYWORD',
                     action: function(value, nodeIds) { mergeNodes(nodeIds); }
                 },
                 {
@@ -178,6 +178,8 @@ define([
                         }
                         $scope.loading = true;
 
+                    console.log(response);
+
                         var nodes = response.data.entities.map(function(n) {
                             // See css property div.network-tooltip for custom tooltip styling
                             return { id: n.id, label: n.label, type: n.type, value: n.count, group: n.group };
@@ -198,12 +200,16 @@ define([
                         self.edgesDataset.add(edges);
 
                         console.log("" + self.nodesDataset.length + " nodes loaded");
+                    console.log("" + self.edgesDataset.length + " edges loaded");
+                    console.log("" + self.edgesDataset + " edges");
 
                         // Initialize the graph
                         $scope.graphData = {
                             nodes: self.nodesDataset,
                             edges: self.edgesDataset
                         };
+                    console.log('SCOPE');
+                    console.log($scope.graphData);
                 });
                 return  promise.promise;
             };

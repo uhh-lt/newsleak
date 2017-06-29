@@ -17,10 +17,23 @@
 
 package models
 
+import play.api.libs.json.Json
+
+// scalastyle:off
+// scalastyle:on
+
 /**
- * Representation for a co-occurrence network.
- *
- * @param nodes the vertices of the network.
- * @param relations the edges of the network.
- */
-case class KeywordNetwork(nodes: List[KeyTerm], relations: List[KeywordRelationship])
+  * Representation for a relationship.
+  *
+  * @param source     the first adjacent node.
+  * @param dest       the second adjacent node.
+  * @param occurrence the document occurrence i.e. in how many documents does this relationship occur.
+  */
+case class KeywordRelationship(source: String, dest: String, occurrence: Long)
+
+/** Companion object for [[models.Relationship]] instances. */
+object KeywordRelationship {
+
+  /** Automatic mapping for [[models.Relationship]] to read and write from and to json. */
+  implicit val keywordRelationshipFormat = Json.format[KeywordRelationship]
+}

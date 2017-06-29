@@ -19,12 +19,13 @@ package controllers
 
 import javax.inject.Inject
 
-import models.{ Facets, KeywordNetwork, Relationship, KeyTerm }
 import models.services.{ EntityService, KeywordNetworkService }
+import models.{ Facets, KeyTerm, KeywordNetwork, KeywordRelationship }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
-import util.SessionUtils.currentDataset
+import scalikejdbc.{ NamedDB, SQL }
 import util.DateUtils
+import util.SessionUtils.currentDataset
 
 /**
  * Provides network related actions.
@@ -38,6 +39,7 @@ class KeywordNetworkController @Inject() (
     dateUtils: DateUtils
 ) extends Controller {
 
+  private val db = (index: String) => NamedDB(Symbol(index))
   private val numberOfNeighbors = 200
 
   /**
@@ -93,18 +95,23 @@ class KeywordNetworkController @Inject() (
     val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
     val sizes = nodeFraction.mapValues(_.toInt)
 
-    val blacklistedIds = entityService.getBlacklisted()(currentDataset).map(_.id)
-    val KeywordNetwork(nodes, relations) = keywordNetworkService.createNetworkKeyword(facets, sizes, blacklistedIds)(currentDataset)
+    val blacklistedKeywords = getBlacklistedKeywords()(currentDataset).map(_.term)
+    // val blacklistedKeywords = entityService.getBlacklisted()(currentDataset).map(_.id)
+    val KeywordNetwork(nodes, relations) = keywordNetworkService.createNetworkKeyword(facets, sizes, blacklistedKeywords)(currentDataset)
 
     if (nodes.isEmpty) {
       Ok(Json.obj("entities" -> List[JsObject](), "relations" -> List[JsObject]())).as("application/json")
     } else {
       val graphEntities = nodesToJsonKeyword(nodes)
       // Ignore relations that connect blacklisted nodes
-      val graphRelations = relations.filterNot { case Relationship(source, target, _) => blacklistedIds.contains(source) && blacklistedIds.contains(target) }
+      val graphRelations = relations.filterNot { case KeywordRelationship(source, target, _) => blacklistedKeywords.contains(source) && blacklistedKeywords.contains(target) }
 
       Ok(Json.obj("entities" -> graphEntities, "relations" -> graphRelations)).as("application/json")
     }
+  }
+
+  def getBlacklistedKeywords()(index: String): List[KeyTerm] = db(index).readOnly { implicit session =>
+    SQL("SELECT * FROM terms").map(KeyTerm(_)).list.apply()
   }
 
   /**
@@ -125,8 +132,8 @@ class KeywordNetworkController @Inject() (
     entities: List[Long],
     timeRange: String,
     timeExprRange: String,
-    currentNetwork: List[Long],
-    nodes: List[Long]
+    currentNetwork: List[String],
+    nodes: List[String]
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
     val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)

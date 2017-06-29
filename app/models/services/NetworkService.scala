@@ -17,7 +17,7 @@
 
 package models.services
 
-import com.google.inject.{ImplementedBy, Inject}
+import com.google.inject.{ ImplementedBy, Inject }
 import models.KeyTerm
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
@@ -26,7 +26,7 @@ import scala.collection.mutable.ListBuffer
 // scalastyle:off
 import scala.collection.JavaConversions._
 // scalastyle:on
-import models.{Aggregation, Facets, MetaDataBucket, Network, NodeBucket, Relationship}
+import models.{ Aggregation, Facets, MetaDataBucket, Network, NodeBucket, Relationship }
 import util.es.ESRequestUtils
 
 /**
@@ -102,10 +102,10 @@ trait NetworkService {
   def getEdgeKeywords(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): List[KeyTerm]
 
   /**
-    * Function to get the entities of the Entity Graph
-    *
-    * @return a list of [[models.NodeBucket]]
-    */
+   * Function to get the entities of the Entity Graph
+   *
+   * @return a list of [[models.NodeBucket]]
+   */
   def getGraphEntitites(): List[NodeBucket]
 }
 
@@ -154,7 +154,7 @@ class ESNetworkService @Inject() (
 
   /** @inheritdoc**/
   override def getGraphEntitites(): List[NodeBucket] = {
-    this.buckets.collect { case a@NodeBucket(_, _) => a }
+    this.buckets.collect { case a @ NodeBucket(_, _) => a }
   }
 
   /** @inheritdoc */
@@ -229,6 +229,6 @@ class ESNetworkService @Inject() (
 
   /** @inheritdoc*/
   def getGraphEntities: List[NodeBucket] = {
-    buckets.collect { case a@NodeBucket(_, _) => a }
+    buckets.collect { case a @ NodeBucket(_, _) => a }
   }
 }

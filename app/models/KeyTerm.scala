@@ -26,7 +26,7 @@ import scalikejdbc.WrappedResultSet
  * @param term the important term value.
  * @param score the score of the important term. Higher values represent more important terms.
  */
-case class KeyTerm(term: String, score: Int)
+case class KeyTerm(term: String, score: Long)
 
 /** Companion object for [[models.KeyTerm]] instances. */
 object KeyTerm {
