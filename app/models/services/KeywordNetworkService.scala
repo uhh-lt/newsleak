@@ -18,6 +18,7 @@
 package models.services
 
 import com.google.inject.{ ImplementedBy, Inject }
+import models.{KeywordAggregation, KeywordNetwork}
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
 
@@ -27,7 +28,7 @@ import scalikejdbc.NamedDB
 // scalastyle:off
 import scala.collection.JavaConversions._
 // scalastyle:on
-import models._
+import models.{Aggregation, Facets, MetaDataBucket, KeyTerm, NodeBucket, KeywordRelationship}
 import util.es.ESRequestUtils
 
 /**
@@ -57,10 +58,10 @@ trait KeywordNetworkService {
    * it induces relationships between the new nodes and the current network and between the new nodes. It does not
    * provide nodes for the current network nor relationships between those nodes.
    *
-   * @param facets the search query.
+    * @param facets        the search query.
    * @param currentNetwork the keyword terms of the current network.
-   * @param nodes new keywords to be added to the network.
-   * @param index the data source index or database name to query.
+    * @param nodes         new keywords to be added to the network.
+    * @param index         the data source index or database name to query.
    * @return a [[models.KeywordNetwork]] consisting of the nodes and relationships of the created co-occurrence network.
    */
   def induceNetworkKeyword(facets: Facets, currentNetwork: List[String], nodes: List[String])(index: String): KeywordNetwork
