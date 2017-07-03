@@ -30,10 +30,17 @@ define([
 
                 blacklist: function(ids) {
                     // TODO: Move to EntityController
+                    debugger;
                     playRoutes.controllers.NetworkController.blacklistEntitiesById(ids).get().then(function(response) {
                         $rootScope.$emit('notifying-service-event', { parameter: ids, response: response });
+                    });
+                },
+
+                whitelist: function(entity){
+                    playRoutes.controllers.EntityController.whitelistEntity(entity.text).get().then(function(response) {
+                        $rootScope.$emit('notifying-service-event', { parameter: entity, response: response });
                     });
                 }
             };
         }])
-});
+})

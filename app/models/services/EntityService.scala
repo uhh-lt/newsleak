@@ -68,6 +68,20 @@ trait EntityService {
   def blacklist(ids: List[Long])(index: String): Boolean
 
   /**
+   * Marks the entity to whitelist.
+   *
+   * Whitelist new entity
+   *
+   * @param text the entity text to whitelist.
+   * @param start the start of entity offset.
+   * @param end the end of entity offset.
+   * @param index the data source index or database name to query.
+   * @return ''true'', if all entities are successfully marked as blacklisted. ''False'' if at least one entity
+   * is not correct marked.
+   */
+  def whitelist(text: String, start: String, end: String)(index: String): Boolean
+
+  /**
    * Removes the blacklisted mark from the entities associated with the given ids.
    *
    * After executing this operation, the respective entities do appear in result sets again.
@@ -177,6 +191,13 @@ class DBEntityService extends EntityService {
   override def blacklist(ids: List[Long])(index: String): Boolean = db(index).localTx { implicit session =>
     val entityCount = sql"UPDATE entity SET isblacklisted = TRUE WHERE id IN (${ids})".update().apply()
     entityCount == ids.sum
+  }
+
+  /** @inheritdoc */
+  override def whitelist(text: String, start: String, end: String)(index: String): Boolean = db(index).localTx { implicit session =>
+    sql"INSERT INTO entity (id, name) VALUES ((SELECT coalesce(max(id),0)+1 FROM entity), ${text})".update().apply()
+    sql"INSERT INTO entityoffset (docid, entid, entitystart, entityend) VALUES (11, 232, 232, 232)".update().apply()
+    true
   }
 
   /** @inheritdoc */
