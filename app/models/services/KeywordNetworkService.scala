@@ -135,26 +135,6 @@ class ESKeywordNetworkService @Inject() (
     exclude: List[String]
   )(index: String): KeywordNetwork = {
 
-    /*
-    val rels: List[Relationship] = List(
-      Relationship(1, 2, 2),
-      Relationship(2, 3, 4),
-      Relationship(3, 4, 5),
-      Relationship(5, 6, 6),
-      Relationship(6, 7, 7),
-      Relationship(7, 8, 8),
-      Relationship(8, 9, 8),
-      Relationship(9, 1, 9),
-      Relationship(3, 2, 4),
-      Relationship(4, 2, 10),
-      Relationship(5, 2, 13),
-      Relationship(0, 4, 14),
-      Relationship(10, 3, 15),
-      Relationship(5, 7, 11),
-      Relationship(6, 2, 40)
-    )
-    */
-
     val keywords = getKeywordsForEntities(facets, networkService.getGraphEntitites(), 10)(index)
     // TODO Relationships
 

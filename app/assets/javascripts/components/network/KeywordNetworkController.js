@@ -47,11 +47,13 @@ define([
             };
 
             // Add nodes after the legend div is added to the dom
+            /*
             $timeout(function(){
                 $scope.observerService.getEntityTypes().then(function (types) {
                     $scope.addLegend(types);
                 });
             });
+             */
         }])
         // Keyword Network Controller
         .controller('KeywordNetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService) {
@@ -76,7 +78,7 @@ define([
             // Context menu for single node selection
             self.singleNodeMenu = [
                 {
-                    title: 'Add as filter KEYWORD',
+                    title: 'Add as filter',
                     action: function(value, nodeId) { addNodeFilter(nodeId); }
 
                 }, {
@@ -90,7 +92,7 @@ define([
                     title: 'Hide',
                     action: function(value, nodeId) { hideNodes([nodeId]); }
                 }, {
-                    title: 'Blacklist',
+                    title: 'Blacklist Keyword',
                     action: function(value, nodeId) { EntityService.blacklist([nodeId]); }
                 }
             ];
@@ -98,7 +100,7 @@ define([
             // Context menu for multiple node selection
             self.multiNodeMenu = [
                 {
-                    title: 'Merge nodes KEYWORD',
+                    title: 'Merge nodes',
                     action: function(value, nodeIds) { mergeNodes(nodeIds); }
                 },
                 {
@@ -106,7 +108,7 @@ define([
                     action: function(value, nodeIds) { hideNodes(nodeIds); }
                 },
                 {
-                    title: 'Blacklist nodes',
+                    title: 'Blacklist keywords',
                     action: function(value, nodeIds) { EntityService.blacklist(nodeIds); }
                 }
             ];
@@ -178,11 +180,10 @@ define([
                         }
                         $scope.loading = true;
 
-                    console.log(response);
 
                         var nodes = response.data.entities.map(function(n) {
                             // See css property div.network-tooltip for custom tooltip styling
-                            return { id: n.id, label: n.label, type: n.type, value: n.count, group: n.group };
+                            return {id: n.id, label: n.label, value: n.count};
                         });
 
                         self.nodesDataset.clear();
@@ -192,24 +193,22 @@ define([
                         self.nodes.clear();
 
                         var edges = response.data.relations.map(function(n) {
-                            return { from: n.source, to: n.dest, value: n.occurrence };
+                            return {
+                                from: getEdgeByLabel(n.source, response.data.entities),
+                                to: getEdgeByLabel(n.dest, response.data.entities),
+                                value: n.occurrence
+                            };
                         });
 
                         self.edges.clear();
                         self.edgesDataset.clear();
                         self.edgesDataset.add(edges);
 
-                        console.log("" + self.nodesDataset.length + " nodes loaded");
-                    console.log("" + self.edgesDataset.length + " edges loaded");
-                    console.log("" + self.edgesDataset + " edges");
-
                         // Initialize the graph
                         $scope.graphData = {
                             nodes: self.nodesDataset,
                             edges: self.edgesDataset
                         };
-                    console.log('SCOPE');
-                    console.log($scope.graphData);
                 });
                 return  promise.promise;
             };
@@ -326,12 +325,12 @@ define([
             function addNodeFilter(nodeId) {
                 var entity = self.nodes.get(nodeId);
                 $scope.observerService.addItem({
-                        type: 'entity',
+                    type: 'keyword',
                         data: {
-                            id: entity.id,
-                            description: entity.label,
-                            item: entity.label,
-                            type: entity.type
+                            id: keyword.id,
+                            description: keyword.label,
+                            item: keyword.label,
+                            type: keyword.type
                         }
                 });
             }
@@ -341,8 +340,14 @@ define([
                 var from = self.nodes.get(edge.from);
                 var to = self.nodes.get(edge.to);
                 // TODO This fires two events. Would be better to have a addItems method that fires once. For the time being this hacks solves the problem.
-                $scope.observerService.addItem({ type: 'entity', data: { id: from.id, description: from.label, item: from.label, type: from.type }}, false);
-                $scope.observerService.addItem({ type: 'entity', data: { id: to.id, description: to.label, item: to.label, type: to.type }});
+                $scope.observerService.addItem({
+                    type: 'keyword',
+                    data: {id: from.id, description: from.label, item: from.label, type: from.type}
+                }, false);
+                $scope.observerService.addItem({
+                    type: 'keyword',
+                    data: {id: to.id, description: to.label, item: to.label, type: to.type}
+                });
             }
 
             function editNode(nodeId) {
@@ -399,9 +404,9 @@ define([
                             function fetchNeighbors() {
                                 var filters = currentFilter();
                                 // Exclude current network nodes from the expansion list
-                                playRoutes.controllers.KeywordNetworkController.getNeighborsKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, networkIds, $scope.entity.id).get().then(function(response) {
-                                    $scope.neighbors = response.data;
-                                });
+                                // playRoutes.controllers.KeywordNetworkController.getNeighborsKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, networkIds, $scope.entity.id).get().then(function(response) {
+                                //    $scope.neighbors = response.data;
+                                //});
                             }
 
                             $scope.blacklist = function(id, list) {
@@ -633,11 +638,11 @@ define([
 
                 var filters = currentFilter();
                 playRoutes.controllers.KeywordNetworkController.getNeighborCountsKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, node.id).get().then(function(response) {
-                    var formattedTerms = response.data.map(function(t) { return '' +  t.type + ': ' + t.count; });
+                    // var formattedTerms = response.data.map(function(t) { return '' +  t.type + ': ' + t.count; });
 
-                    var docTip = '<p>Occurs in <b>' + node.value + ' </b>documents</p><p>Type: <b>' + node.type + '</b></p>';
-                    var neighborTip = '<p><b>Neighbors</b></p><ul><li>' + formattedTerms.join('</li><li>') + '</li></ul>';
-                    var tooltip = docTip + neighborTip;
+                    var docTip = '<p>Occurs in <b>' + node.value + ' </b>documents</p>'; // <p>Type: <b>' + node.type + '</b></p>';
+                    // var neighborTip = '<p><b>Neighbors</b></p><ul><li>' + formattedTerms.join('</li><li>') + '</li></ul>';
+                    var tooltip = docTip; // + neighborTip;
 
                     self.nodesDataset.update({ id: node.id, title: tooltip });
                 });
@@ -767,6 +772,14 @@ define([
                 if (self.popupMenu !== undefined) {
                     self.popupMenu.parentNode.removeChild(self.popupMenu);
                     self.popupMenu = undefined;
+                }
+            }
+
+            function getEdgeByLabel(label, dataset) {
+                for (var i = 0; i < dataset.length; i++) {
+                    if (dataset[i].label == label) {
+                        return dataset[i].id
+                    }
                 }
             }
         }]);
