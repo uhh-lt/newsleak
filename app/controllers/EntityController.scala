@@ -97,12 +97,12 @@ class EntityController @Inject() (
    *
    * @param text the entity to whitelist.
    * @param start start the offset position.
-   *
    * @param end end the offset position.
+   * @param enType type of entity
    *
    */
-  def whitelistEntity(text: String, start: String, end: String) = Action { implicit request =>
-    entityService.whitelist(text, start, end)(currentDataset)
+  def whitelistEntity(text: String, start: String, end: String, enType: String, docId: String) = Action { implicit request =>
+    entityService.whitelist(text, start.toInt, end.toInt, enType, BigInt(docId))(currentDataset)
     Ok("success").as("Text")
   }
 

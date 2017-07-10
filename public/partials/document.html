@@ -77,12 +77,17 @@
                     </md-card-title-text>
                 </md-card-title>
                 <md-card-content>
-                    <doc-content layout-padding document="doc" ng-mouseup="showSelectedEntity()"></doc-content>
+                    <doc-content layout-padding document="doc" ng-mouseup="showSelectedEntity(doc.content)"></doc-content>
                     <div>
                       <br />
                       <b>Selected Entity:</b>
                       <span ng-bind="selectedEntity.text"></span> {{selectedEntity}}
-                      <button ng-model="selectedEntity" ng-click="whitelist(selectedEntity)"> Whitelist </button>
+                      <select name="selectEntityType" id="selectEntityType" ng-model="selectedType">
+                        <option ng-repeat="entityType in entityTypes">
+                          {{ entityType.name }}
+                        </option>
+                      </select>
+                      <button ng-model="selectedEntity" ng-click="whitelist(selectedEntity, selectedType, doc.id)"> Whitelist </button>
                     </div>
                 </md-card-content>
             </md-card>

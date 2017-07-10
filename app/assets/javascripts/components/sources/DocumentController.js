@@ -19,7 +19,8 @@ define([
     'angular',
     'ngSanitize',
     'ngMaterial',
-    'contextMenu'
+    'contextMenu',
+    'elasticsearch'
 ], function (angular) {
     'use strict';
     /**
@@ -27,7 +28,14 @@ define([
      * - render document content
      * - load additional metdata/keywords for loaded document
      */
-    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ui.bootstrap.contextMenu'])
+    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ui.bootstrap.contextMenu', 'elasticsearch'])
+        .service('client', function (esFactory) {
+            return esFactory({
+              host: 'localhost:9500',
+              apiVersion: '5.5',
+              log: 'trace'
+            });
+          })
         .directive('docContent', ['$compile', 'ObserverService', 'EntityService', 'graphProperties',  '_', function($compile, ObserverService, EntityService, graphProperties, _) {
             return {
                 restrict: 'E',
@@ -111,7 +119,6 @@ define([
                     };
 
                     function calcHighlightOffsets(text, delimiterStart, delimiterEnd) {
-                      debugger;
                         var offset = 0;
                         var markerChars = delimiterStart.length;
                         var elements = [];
@@ -200,12 +207,11 @@ define([
                     // contextMenu for Blacklisting
                     scope.contextMenu = [
                       ['Blacklist', function ($itemScope, event) {
-                        debugger;
                         // $route.reload();
                         EntityService
                           .blacklist([
                             event.target.id
-                          ]);
+                          ], true);
                       }],
                     ];
 
@@ -226,6 +232,8 @@ define([
                 'sourceShareService',
                 'ObserverService',
                 'EntityService',
+                'client',
+                'esFactory',
                 function ($scope,
                           $http,
                           $templateRequest,
@@ -235,7 +243,9 @@ define([
                           _,
                           sourceShareService,
                           ObserverService,
-                          EntityService) {
+                          EntityService,
+                          client,
+                          esFactory) {
 
                     var self = this;
 
@@ -342,17 +352,28 @@ define([
                     };
 
                     // Enable to select Entity
-                    $scope.showSelectedEntity = function() {
-                        $scope.selectedEntity =  $scope.getSelectionEntity();
+                    $scope.showSelectedEntity = function(doc) {
+                        $scope.selectedEntity =  $scope.getSelectionEntity(doc);
                     };
 
-                    $scope.whitelist = function(entity, event){
-                      EntityService.whitelist(entity);
+                    $scope.whitelist = function(entity, type, docId){
+                      type = type.replace(/\s/g, '');
+                      $scope.esWhitelist(entity, type, docId);
+                      EntityService.whitelist(entity, type, docId);
                     };
 
-                    $scope.getSelectionEntity = function(event) {
+                    $scope.entityTypes = [];
+                    $scope.observer.getEntityTypes().$$state.value.map(function(e){
+                      if (e.name !== null){
+                        $scope.entityTypes.push(e);
+                      }
+                    });
+
+                    $scope.selectedType = '';
+                    var doc = $scope.tabs;
+                    $scope.getSelectionEntity = function(doc) {
                       var text = "";
-                      var doc = document.getElementsByTagName("doc-content")[0].innerText;
+                      // var doc = document.getElementsByTagName("doc-content")[0].innerText;
                       var start = 0;
                       var end = 0;
                       if (window.getSelection) {
@@ -368,6 +389,80 @@ define([
                         end
                       };
                     };
+
+                    $scope.esWhitelist = function(entity, typeEnt, docId) {
+                      client.search({
+                        index: 'newsleak',
+                        type: 'document',
+                        size: 0,
+                        body: {
+                          aggs: {
+                            max_id: {
+                              max: {
+                                field: "Entities.EntId"
+                              }
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                        $scope.esNewId = (resp.aggregations.max_id.value) + 1;
+                        $scope.createNewEntity(entity, typeEnt, docId);
+                      }, function (error, response) {
+                        $scope.esNewId = null;
+                        console.trace(err.message);
+                      });
+                    }
+
+                    $scope.createNewEntity = function(entity, typeEnt, docId) {
+                      client.update({
+                        index: 'newsleak',
+                        type: 'document',
+                        id: docId,
+                        body: {
+                          script: "ctx._source.Entities.add(Entities)",
+                          params: {
+                            Entities:  {
+                              EntId: $scope.esNewId,
+                              Entname: entity.text,
+                              EntType: typeEnt,
+                              EntFrequency: 1
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                          $scope.esNewEntity = resp;
+                          $scope.insertNewEntityType(entity, typeEnt, docId);
+                      }, function (err) {
+                          $scope.esNewEntity = null;
+                          console.trace(err.message);
+                      });
+                    }
+
+                    $scope.insertNewEntityType = function(entity, typeEnt, docId) {
+                      var suffixType = typeEnt.toLowerCase();
+                      client.update({
+                        index: 'newsleak',
+                        type: 'document',
+                        id: docId,
+                        body: {
+                          script: "ctx._source.Entities" + suffixType + ".add(Entities)",
+                          params: {
+                            Entities:  {
+                              EntId: $scope.esNewId,
+                              Entname: entity.text,
+                              EntFrequency: 1
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                          $scope.esNewEntityType = resp;
+                          location.reload();
+                      }, function (err) {
+                          $scope.esNewEntityType = null;
+                          console.trace(err.message);
+                      });
+                    }
+
 
                     function createFilterFor(query) {
                         var lowercaseQuery = angular.lowercase(query);

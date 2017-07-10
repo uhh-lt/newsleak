@@ -79,7 +79,7 @@ trait EntityService {
    * @return ''true'', if all entities are successfully marked as blacklisted. ''False'' if at least one entity
    * is not correct marked.
    */
-  def whitelist(text: String, start: String, end: String)(index: String): Boolean
+  def whitelist(text: String, start: Int, end: Int, enType: String, docId: BigInt)(index: String): Boolean
 
   /**
    * Removes the blacklisted mark from the entities associated with the given ids.
@@ -194,9 +194,9 @@ class DBEntityService extends EntityService {
   }
 
   /** @inheritdoc */
-  override def whitelist(text: String, start: String, end: String)(index: String): Boolean = db(index).localTx { implicit session =>
-    sql"INSERT INTO entity (id, name) VALUES ((SELECT coalesce(max(id),0)+1 FROM entity), ${text})".update().apply()
-    sql"INSERT INTO entityoffset (docid, entid, entitystart, entityend) VALUES (11, 232, 232, 232)".update().apply()
+  override def whitelist(text: String, start: Int, end: Int, enType: String, docId: BigInt)(index: String): Boolean = db(index).localTx { implicit session =>
+    sql"INSERT INTO entity (id, name, type, frequency) VALUES ((SELECT coalesce(max(id),0)+1 FROM entity), ${text}, ${enType}, 1)".update().apply()
+    sql"INSERT INTO entityoffset (docid, entid, entitystart, entityend) VALUES (${docId}, (SELECT coalesce(max(id),0) FROM entity), ${start}, ${end})".update().apply()
     true
   }
 
