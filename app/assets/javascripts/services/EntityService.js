@@ -46,7 +46,6 @@ define([
                       type,
                       docId
                     ).get().then(function(response) {
-                        location.reload();
                         $rootScope.$emit('notifying-service-event', { parameter: entity, response: response });
                     });
                 }

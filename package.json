@@ -11,5 +11,8 @@
   "scripts": {
     "postinstall": "./node_modules/bower/bin/bower install",
     "prestart": "npm update"
+  },
+  "dependencies": {
+    "elasticsearch": "^13.2.0"
   }
 }
