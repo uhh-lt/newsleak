@@ -18,6 +18,7 @@
 package models.services
 
 import com.google.inject.ImplementedBy
+import models.KeyTerm
 // scalastyle:off
 import scalikejdbc._
 // scalastyle:on
@@ -40,6 +41,19 @@ trait EntityService {
    * matching entity is found.
    */
   def getByIds(ids: List[Long])(index: String): List[Entity]
+
+  // added
+  /*
+  /**
+   * Returns a list of [[models.KeyTerm]] matching the given keyword ids.
+   *
+   * @param ids a list of entity ids.
+   * @param index the data source index or database name to query.
+   * @return a list of [[models.KeyTerm]] corresponding to the given ids or [[scala.Nil]] if no
+   * matching keyword is found.
+   */
+  def getKeywordByIds(ids: List[Long])(index: String): List[Entity]
+  */
 
   /**
    * Marks the entities associated with the given ids as blacklisted.
@@ -162,6 +176,16 @@ class DBEntityService extends EntityService {
                 AND NOT isblacklisted
           ORDER BY frequency DESC""".map(Entity(_)).list.apply()
   }
+
+  // added
+  /*
+  /** @inheritdoc */
+  override def getKeywordByIds(ids: List[Long])(index: String): List[KeyTerm] = db(index).readOnly { implicit session =>
+    sql"""SELECT * FROM terms
+          WHERE id IN (${ids}
+          ORDER BY frequency DESC""".map(KeyTerm(_)).list.apply()
+  }
+  */
 
   /** @inheritdoc */
   override def blacklist(ids: List[Long])(index: String): Boolean = db(index).localTx { implicit session =>
