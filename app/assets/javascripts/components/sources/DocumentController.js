@@ -48,6 +48,7 @@ define([
                 link: function(scope, element, attrs) {
                     var content = scope.document.content;
                     var entities = scope.document.entities;
+                    console.log(scope.document);
                     scope.addEntityFilter = function(id) {
                         var el = _.find(entities, function(e) { return e.id == id });
                         ObserverService.addItem({ type: 'entity', data: { id: id, description: el.name, item: el.name, type: el.type }});

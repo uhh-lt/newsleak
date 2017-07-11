@@ -218,6 +218,7 @@ define([
             $scope.reloadGraphWithEdgeImportance = function() {
                 self.preserveEdgeImportance = true;
                 $scope.reloadGraph();
+                // $scope.reloadKeywordGraphWithEdgeImportance();
             };
 
 

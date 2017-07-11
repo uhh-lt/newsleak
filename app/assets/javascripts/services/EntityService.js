@@ -38,6 +38,12 @@ define([
                     });
                 },
 
+                blacklistKeyword: function (ids) {
+                    playRoutes.controllers.KeywordNetworkController.blacklistKeywordsById(ids).get().then(function (response) {
+                        $rootScope.$emit('notifying-service-event', {parameter: ids, response: response});
+                    });
+                },
+
                 whitelist: function(entity, type, docId){
                     playRoutes.controllers.EntityController.whitelistEntity(
                       entity.text,

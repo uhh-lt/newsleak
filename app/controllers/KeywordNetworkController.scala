@@ -162,6 +162,11 @@ class KeywordNetworkController @Inject() (
     Ok(Json.obj("result" -> entityService.blacklist(ids)(currentDataset))).as("application/json")
   }
 
+  /** Marks the keywords associated with the given ids as blacklisted. */
+  def blacklistKeywordsByIdKeyword(ids: List[Long]) = Action { implicit request =>
+    Ok(Json.obj("result" -> entityService.blacklist(ids)(currentDataset))).as("application/json")
+  }
+
   /**
    * Merges multiple nodes in a given focal node.
    *

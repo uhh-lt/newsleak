@@ -40,7 +40,17 @@ define([
                 var x = 0; var y = 0; var distance = 100;
 
                 var nodes = types.map(function(t, i) {
-                    return { id: -(i+1), x: x + i * distance, y: y, label: t.name, group: t.id, value: 1, fixed: true, physics: false };
+                    return {
+                        id: -(i + 1),
+                        x: x + i * distance,
+                        y: y,
+                        label: t.name,
+                        group: t.id,
+                        type: 'KEYWORD',
+                        value: 1,
+                        fixed: true,
+                        physics: false
+                    };
                 });
                 $scope.legendNodes.add(nodes);
                 $scope.legendNetwork.fit();
@@ -93,7 +103,9 @@ define([
                     action: function(value, nodeId) { hideNodes([nodeId]); }
                 }, {
                     title: 'Blacklist Keyword',
-                    action: function(value, nodeId) { EntityService.blacklist([nodeId]); }
+                    action: function (value, nodeId) {
+                        EntityService.blacklistKeyword([nodeId]);
+                    }
                 }
             ];
 
@@ -183,7 +195,7 @@ define([
 
                         var nodes = response.data.entities.map(function(n) {
                             // See css property div.network-tooltip for custom tooltip styling
-                            return {id: n.id, label: n.label, value: n.count};
+                            return {id: n.id, label: n.label, type: n.type, value: n.count};
                         });
 
                         self.nodesDataset.clear();
@@ -217,7 +229,7 @@ define([
              * Reloads the graph and preserves the applied edge importance value. In case the new maximum is lower than
              * the current applied edgeImportance, the value is set to the maximum value.
              * **/
-            $scope.reloadGraphWithEdgeImportance = function() {
+            $scope.reloadKeywordGraphWithEdgeImportance = function () {
                 self.preserveEdgeImportance = true;
                 $scope.reloadGraph();
             };
@@ -319,7 +331,7 @@ define([
                 // Remove node from the visual interface
                 hideNodes(arg.parameter);
                 // Fetch node replacements for the merged nodes and preserve the current applied edge importance
-                $scope.reloadGraphWithEdgeImportance();
+                $scope.reloadKeywordGraphWithEdgeImportance();
             });
 
             function addNodeFilter(nodeId) {

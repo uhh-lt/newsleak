@@ -226,9 +226,4 @@ class ESNetworkService @Inject() (
     val res = aggregateService.aggregateKeywords(facets.withEntities(List(source, dest)), numTerms, Nil, Nil)(index)
     res.buckets.collect { case MetaDataBucket(term, count) => KeyTerm(term, count.toInt) }
   }
-
-  /** @inheritdoc*/
-  def getGraphEntities: List[NodeBucket] = {
-    buckets.collect { case a @ NodeBucket(_, _) => a }
-  }
 }

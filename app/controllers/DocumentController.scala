@@ -45,6 +45,7 @@ class DocumentController @Inject() (
 ) extends Controller {
 
   private val defaultPageSize = 50
+  val docList = ListBuffer[Document]()
 
   /**
    * Returns a list of documents associated with the given tag label.
@@ -142,7 +143,7 @@ class DocumentController @Inject() (
       cachedIterator.get
     }
 
-    val docList = ListBuffer[Document]()
+    // val docList = ListBuffer[Document]()
     while (iteratorSession.hitIterator.hasNext && pageCounter <= defaultPageSize) {
       docList += iteratorSession.hitIterator.next()
       pageCounter += 1

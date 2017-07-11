@@ -68,6 +68,16 @@ trait EntityService {
   def blacklist(ids: List[Long])(index: String): Boolean
 
   /**
+    * Marks the keywords associated with the given ids as blacklisted.
+    *
+    * Blacklisted keywords don't appear in any result set.
+    *
+    * @param ids   the keyword ids to blacklist.
+    * @param index the data source index or database name to query.
+    */
+  def blacklistKeyword(ids: List[Long])(index: String): Unit
+
+  /**
    * Marks the entity to whitelist.
    *
    * Whitelist new entity
@@ -177,20 +187,16 @@ class DBEntityService extends EntityService {
           ORDER BY frequency DESC""".map(Entity(_)).list.apply()
   }
 
-  // added
-  /*
-  /** @inheritdoc */
-  override def getKeywordByIds(ids: List[Long])(index: String): List[KeyTerm] = db(index).readOnly { implicit session =>
-    sql"""SELECT * FROM terms
-          WHERE id IN (${ids}
-          ORDER BY frequency DESC""".map(KeyTerm(_)).list.apply()
-  }
-  */
-
   /** @inheritdoc */
   override def blacklist(ids: List[Long])(index: String): Boolean = db(index).localTx { implicit session =>
     val entityCount = sql"UPDATE entity SET isblacklisted = TRUE WHERE id IN (${ids})".update().apply()
     entityCount == ids.sum
+  }
+
+  /** @inheritdoc*/
+  def blacklistKeyword(ids: List[Long])(index: String): Unit = {
+    // TODO whitelist()
+    blacklist(ids)
   }
 
   /** @inheritdoc */

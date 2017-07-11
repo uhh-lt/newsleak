@@ -129,7 +129,6 @@ class NetworkController @Inject() (
 
     val blacklistedIds = entityService.getBlacklisted()(currentDataset).map(_.id)
     val Network(nodes, relations) = networkService.createNetwork(facets, sizes, blacklistedIds)(currentDataset)
-    keywordNetworkService.setGraphNodes(nodes)
 
     if (nodes.isEmpty) {
       Ok(Json.obj("entities" -> List[JsObject](), "relations" -> List[JsObject]())).as("application/json")
