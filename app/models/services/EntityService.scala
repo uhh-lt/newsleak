@@ -68,15 +68,15 @@ trait EntityService {
   def blacklist(ids: List[Long])(index: String): Boolean
 
   /**
-    * Marks the keywords associated with the given ids as blacklisted.
-    *
-    * Blacklisted keywords don't appear in any result set.
-    *
-    * @param keyword the keyword to blacklist.
-    * @param index   the data source index or database name to query.
-    * @return ''true'', if all keywords are successfully marked as blacklisted. ''False'' if at least one keyword
-    *         is not correct marked.
-    */
+   * Marks the keywords associated with the given ids as blacklisted.
+   *
+   * Blacklisted keywords don't appear in any result set.
+   *
+   * @param keyword the keyword to blacklist.
+   * @param index   the data source index or database name to query.
+   * @return ''true'', if all keywords are successfully marked as blacklisted. ''False'' if at least one keyword
+   *         is not correct marked.
+   */
   def blacklistKeyword(ids: List[Long])(index: String): Boolean
 
   /**

@@ -23,12 +23,12 @@ import play.api.libs.json.Json
 // scalastyle:on
 
 /**
-  * Representation for a relationship.
-  *
-  * @param source     the first adjacent node.
-  * @param dest       the second adjacent node.
-  * @param occurrence the document occurrence i.e. in how many documents does this relationship occur.
-  */
+ * Representation for a relationship.
+ *
+ * @param source     the first adjacent node.
+ * @param dest       the second adjacent node.
+ * @param occurrence the document occurrence i.e. in how many documents does this relationship occur.
+ */
 case class KeywordRelationship(source: String, dest: String, occurrence: Long)
 
 /** Companion object for [[models.Relationship]] instances. */

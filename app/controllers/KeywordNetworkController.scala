@@ -40,6 +40,36 @@ class KeywordNetworkController @Inject() (
 ) extends Controller {
 
   private val db = (index: String) => NamedDB(Symbol(index))
+  private val numberOfNeighbors = 200
+
+  /**
+   * Accumulates the number of entities that fall in a certain entity type and co-occur with the given entity.
+   *
+   * @param fullText match documents that contain the given expression in the document body.
+   * @param generic a map linking from document metadata keys to a list of instances for this metadata.
+   * @param entities a list of entity ids that should occur in the document.
+   * @param timeRange a string representing a time range for the document creation date.
+   * @param timeExprRange a string representing a time range for the document time expression.
+   * @param nodeId the entity id.
+   * @return mapping from unique entity types to the number of neighbors of that type.
+   */
+  def getNeighborCountsKeyword(
+    fullText: List[String],
+    generic: Map[String, List[String]],
+    entities: List[Long],
+    timeRange: String,
+    timeExprRange: String,
+    nodeId: Long
+  ) = Action { implicit request =>
+
+    val (from, to) = dateUtils.parseTimeRange(timeRange)
+    val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
+    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+
+    val res = keywordNetworkService.getNeighborCountsPerTypeKeyword(facets, nodeId)(currentDataset)
+    val counts = res.map { case (t, c) => Json.obj("type" -> t, "count" -> c) }
+    Ok(Json.toJson(counts)).as("application/json")
+  }
 
   /**
    * Returns a co-occurrence network matching the given search query.

@@ -45,9 +45,9 @@ case class NodeBucket(id: Long, occurrence: Long) extends Bucket
 case class Aggregation(key: String, buckets: List[Bucket])
 
 /**
-  * Top-level aggregation representation.
-  *
-  * @param key      the name of the aggregation.
-  * @param keywords a list of [[models.KeyTerm]] representing the distinct aggregated result values.
-  */
+ * Top-level aggregation representation.
+ *
+ * @param key      the name of the aggregation.
+ * @param keywords a list of [[models.KeyTerm]] representing the distinct aggregated result values.
+ */
 case class KeywordAggregation(key: String, keywords: List[KeyTerm])

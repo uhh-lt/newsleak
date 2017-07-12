@@ -17,15 +17,17 @@
 
 package models.services
 
-import com.google.inject.{ImplementedBy, Inject}
-import models.{Bucket, KeywordAggregation, KeywordNetwork}
+import com.google.inject.{ ImplementedBy, Inject }
+import models.{ Bucket, Document, KeywordAggregation, KeywordNetwork }
+import org.elasticsearch.search.aggregations.AggregationBuilders
+import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
 
 import scala.collection.mutable.ListBuffer
 import scalikejdbc.NamedDB
 // scalastyle:off
 import scala.collection.JavaConversions._
 // scalastyle:on
-import models.{Facets, MetaDataBucket, KeyTerm, KeywordRelationship}
+import models.{ Aggregation, Facets, MetaDataBucket, KeyTerm, NodeBucket, KeywordRelationship }
 import util.es.ESRequestUtils
 
 /**
@@ -55,13 +57,38 @@ trait KeywordNetworkService {
    * it induces relationships between the new nodes and the current network and between the new nodes. It does not
    * provide nodes for the current network nor relationships between those nodes.
    *
-    * @param facets        the search query.
+   * @param facets        the search query.
    * @param currentNetwork the keyword terms of the current network.
-    * @param nodes         new keywords to be added to the network.
-    * @param index         the data source index or database name to query.
+   * @param nodes         new keywords to be added to the network.
+   * @param index         the data source index or database name to query.
    * @return a [[models.KeywordNetwork]] consisting of the nodes and relationships of the created co-occurrence network.
    */
   def induceNetworkKeyword(facets: Facets, currentNetwork: List[String], nodes: List[String])(index: String): KeywordNetwork
+
+  /**
+   * Returns entities co-occurring with the given entity matching the search query.
+   *
+   * @param facets the search query.
+   * @param entityId the entity id.
+   * @param size the number of neighbors to fetch.
+   * @param exclude a list of entity ids that should be excluded from the result. The result will contain no [[models.NodeBucket]]
+   * associated with one of the ids given in this list.
+   * @param index the data source index or database name to query.
+   * @return a list of [[models.NodeBucket]] co-occurring with the given entity.
+   */
+  def getNeighborsKeyword(facets: Facets, entityId: Long, size: Int, exclude: List[Long])(index: String): List[NodeBucket]
+
+  /**
+   * Accumulates the number of entities that fall in a certain entity type and co-occur with the given entity.
+   *
+   * The result will contain ''n'' different buckets with ''n'' representing the distinct entity types for the underlying collection.
+   *
+   * @param facets the search query.
+   * @param entityId the entity id.
+   * @param index the data source index or database name to query.
+   * @return a map linking from the unique entity type to the number of neighbors of that type.
+   */
+  def getNeighborCountsPerTypeKeyword(facets: Facets, entityId: Long)(index: String): Map[String, Int]
 }
 
 /**
@@ -74,11 +101,11 @@ trait KeywordNetworkService {
  * @param networkService  the network service
  */
 class ESKeywordNetworkService @Inject() (
-                                          clientService: SearchClientService,
-                                          aggregateService: AggregateService,
-                                          entityService: EntityService,
-                                          utils: ESRequestUtils,
-                                          networkService: NetworkService
+    clientService: SearchClientService,
+    aggregateService: AggregateService,
+    entityService: EntityService,
+    utils: ESRequestUtils,
+    networkService: NetworkService
 ) extends KeywordNetworkService {
 
   private val db = (index: String) => NamedDB(Symbol(index))
@@ -115,7 +142,7 @@ class ESKeywordNetworkService @Inject() (
   /** @inheritdoc */
   private def getRelationshipKeyword(facets: Facets, source: String, dest: String, index: String): Option[KeywordRelationship] = {
     val t = List(source, dest)
-
+    // val agg = aggregateService.aggregateEntities(facets.withEntities(t), 2, t, Nil)(index)
     val agg = aggregateService.keywordAggregate(facets, utils.keywordsField._1, 2, t, Nil)(index)
     agg match {
       // No edge between both since their frequency is zero
@@ -141,5 +168,41 @@ class ESKeywordNetworkService @Inject() (
 
     KeywordNetwork(buckets, inBetweenRels ++ connectingRels)
 
+  }
+
+  /** @inheritdoc */
+  override def getNeighborsKeyword(facets: Facets, entityId: Long, size: Int, exclude: List[Long])(index: String): List[NodeBucket] = {
+    val res = aggregateService.aggregateEntities(facets.withEntities(List(entityId)), size, List(), exclude)(index)
+    res.buckets.collect { case a @ NodeBucket(_, _) => a }
+  }
+
+  /** @inheritdoc */
+  override def getNeighborCountsPerTypeKeyword(facets: Facets, entityId: Long)(index: String): Map[String, Int] = {
+    // Add entity id as entities filter in order to receive documents where both co-occur
+    val neighborFacets = facets.withEntities(List(entityId))
+    val res = cardinalityAggregateKeyword(neighborFacets, 0, index)
+    res.buckets.collect { case MetaDataBucket(term, count) => (term, count.toInt) }.toMap
+  }
+
+  // TODO: Maybe move to aggregateService
+  private def cardinalityAggregateKeyword(facets: Facets, documentSize: Int, index: String): Aggregation = {
+    val requestBuilder = utils.createSearchRequest(facets, documentSize, index, clientService)
+    // Add neighbor aggregation for each NE type
+    val types = entityService.getTypes()(index).keys
+    types.foreach { t =>
+      val aggregation = AggregationBuilders
+        .cardinality(t)
+        .field(utils.convertEntityTypeToField(t))
+
+      requestBuilder.addAggregation(aggregation)
+    }
+    val response = utils.executeRequest(requestBuilder)
+    // Parse result
+    val buckets = types.map { t =>
+      val agg: Cardinality = response.getAggregations.get(t)
+      MetaDataBucket(t, agg.getValue)
+    }.toList
+
+    Aggregation("neighbors", buckets)
   }
 }
