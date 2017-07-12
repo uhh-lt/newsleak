@@ -364,11 +364,24 @@ define([
                     };
 
                     $scope.entityTypes = [];
-                    $scope.observer.getEntityTypes().$$state.value.map(function(e){
-                      if (e.name !== null){
-                        $scope.entityTypes.push(e);
-                      }
+
+                    $scope.observer.getEntityTypes().then(function (types) {
+                        console.log(types);
+                        types.map(function (e) {
+                            if (e.name !== null) {
+                                $scope.entityTypes.push(e);
+                            }
+                        });
                     });
+                    /*
+                     if($scope.observer.getEntityTypes().$$state.value) {
+                     $scope.observer.getEntityTypes().$$state.value.map(function (e) {
+                     if (e.name !== null) {
+                     $scope.entityTypes.push(e);
+                     }
+                     });
+                     }
+                     */
 
                     $scope.selectedType = '';
                     var doc = $scope.tabs;
@@ -393,7 +406,7 @@ define([
 
                     $scope.esWhitelist = function(entity, typeEnt, docId) {
                       client.search({
-                        index: 'newsleak',
+                          index: 'enron',
                         type: 'document',
                         size: 0,
                         body: {
@@ -416,7 +429,7 @@ define([
 
                     $scope.createNewEntity = function(entity, typeEnt, docId) {
                       client.update({
-                        index: 'newsleak',
+                          index: 'enron',
                         type: 'document',
                         id: docId,
                         body: {
@@ -442,7 +455,7 @@ define([
                     $scope.insertNewEntityType = function(entity, typeEnt, docId) {
                       var suffixType = typeEnt.toLowerCase();
                       client.update({
-                        index: 'newsleak',
+                          index: 'enron',
                         type: 'document',
                         id: docId,
                         body: {
