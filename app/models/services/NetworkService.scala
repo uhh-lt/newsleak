@@ -138,7 +138,8 @@ class ESNetworkService @Inject() (
     }.toList
 
     val rels = induceRelationships(facets, buckets.collect { case NodeBucket(id, _) => id }, index)
-    Network(buckets.collect { case a @ NodeBucket(_, _) => a }, rels)
+    val nodes = buckets.collect { case a@NodeBucket(_, _) => a }
+    Network(nodes, rels)
   }
 
   /** @inheritdoc */

@@ -115,6 +115,11 @@ define([
                         });
 
                         playRoutes.controllers.DocumentController.getDocs(fulltext, facets, entities, $scope.observer.getTimeRange(),$scope.observer.getXTimeRange()).get().then(function (x) {
+                            console.log(fulltext);
+                            console.log(facets);
+                            console.log(entities);
+                            console.log($scope.observer.getTimeRange());
+                            console.log($scope.observer.getXTimeRange());
                             // console.log(x.data);
                             $scope.sourceShared.reset();
                             $scope.sourceShared.addDocs(x.data.docs);

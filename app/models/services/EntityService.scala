@@ -72,10 +72,12 @@ trait EntityService {
     *
     * Blacklisted keywords don't appear in any result set.
     *
-    * @param ids   the keyword ids to blacklist.
-    * @param index the data source index or database name to query.
+    * @param keyword the keyword to blacklist.
+    * @param index   the data source index or database name to query.
+    * @return ''true'', if all keywords are successfully marked as blacklisted. ''False'' if at least one keyword
+    *         is not correct marked.
     */
-  def blacklistKeyword(ids: List[Long])(index: String): Unit
+  def blacklistKeyword(ids: List[Long])(index: String): Boolean
 
   /**
    * Marks the entity to whitelist.
@@ -194,15 +196,19 @@ class DBEntityService extends EntityService {
   }
 
   /** @inheritdoc*/
-  def blacklistKeyword(ids: List[Long])(index: String): Unit = {
-    // TODO whitelist()
-    blacklist(ids)
+  override def blacklistKeyword(ids: List[Long])(index: String): Boolean = db(index).localTx { implicit session =>
+    // TODO whitelist() first
+    val id = SQL("(SELECT coalesce(max(id),0)+1 FROM entity)").update().apply()
+    SQL("INSERT INTO entity (id, name, type, frequency) VALUES (${id}, ${keyword.name}, KEYWORD, ${keyword.score})").update().apply()
+    val entityCount = blacklist(List(id.toLong))(index)
+    entityCount == 1
   }
 
   /** @inheritdoc */
   override def whitelist(text: String, start: Int, end: Int, enType: String, docId: BigInt)(index: String): Boolean = db(index).localTx { implicit session =>
-    sql"INSERT INTO entity (id, name, type, frequency) VALUES ((SELECT coalesce(max(id),0)+1 FROM entity), ${text}, ${enType}, 1)".update().apply()
-    sql"INSERT INTO entityoffset (docid, entid, entitystart, entityend) VALUES (${docId}, (SELECT coalesce(max(id),0) FROM entity), ${start}, ${end})".update().apply()
+    SQL("INSERT INTO entity (id, name, type, frequency) VALUES ((SELECT coalesce(max(id),0)+1 FROM entity), ${text}, ${enType}, 1)").update().apply()
+    SQL("INSERT INTO entityoffset (docid, entid, entitystart, entityend) " +
+      "VALUES (${docId}, (SELECT coalesce(max(id),0) FROM entity), ${start}, ${end})").update().apply()
     true
   }
 
