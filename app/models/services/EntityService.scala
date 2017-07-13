@@ -198,17 +198,17 @@ class DBEntityService extends EntityService {
   /** @inheritdoc*/
   override def blacklistKeyword(ids: List[Long])(index: String): Boolean = db(index).localTx { implicit session =>
     // TODO whitelist() first
-    val id = SQL("(SELECT coalesce(max(id),0)+1 FROM entity)").update().apply()
-    SQL("INSERT INTO entity (id, name, type, frequency) VALUES (${id}, ${keyword.name}, KEYWORD, ${keyword.score})").update().apply()
+    val id = sql"(SELECT coalesce(max(id),0)+1 FROM entity)".update().apply()
+    // sql"INSERT INTO entity (id, name, type, frequency) VALUES (${id}, ${keyword.name}, KEYWORD, ${keyword.score})".update().apply()
     val entityCount = blacklist(List(id.toLong))(index)
     entityCount == 1
   }
 
   /** @inheritdoc */
   override def whitelist(text: String, start: Int, end: Int, enType: String, docId: BigInt)(index: String): Boolean = db(index).localTx { implicit session =>
-    SQL("INSERT INTO entity (id, name, type, frequency) VALUES ((SELECT coalesce(max(id),0)+1 FROM entity), ${text}, ${enType}, 1)").update().apply()
-    SQL("INSERT INTO entityoffset (docid, entid, entitystart, entityend) " +
-      "VALUES (${docId}, (SELECT coalesce(max(id),0) FROM entity), ${start}, ${end})").update().apply()
+    sql"INSERT INTO entity (id, name, type, frequency) VALUES ((SELECT coalesce(max(id),0)+1 FROM entity), ${text}, ${enType}, 1)".update().apply()
+    sql"""INSERT INTO entityoffset (docid, entid, entitystart, entityend)
+         VALUES ($docId, (SELECT coalesce(max(id),0) FROM entity), $start, $end)""".update().apply()
     true
   }
 

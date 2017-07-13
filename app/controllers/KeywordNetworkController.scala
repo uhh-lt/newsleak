@@ -96,7 +96,8 @@ class KeywordNetworkController @Inject() (
     val sizes = nodeFraction.mapValues(_.toInt)
 
     // val blacklistedKeywords = getBlacklistedKeywords()(currentDataset).map(_.term)
-    val blacklistedKeywords = entityService.getBlacklisted()(currentDataset).map(_.name)
+    // val blacklistedKeywords = entityService.getBlacklisted()(currentDataset).map(_.name)
+    val blacklistedKeywords = List()
     val KeywordNetwork(nodes, relations) = keywordNetworkService.createNetworkKeyword(facets, sizes, blacklistedKeywords)(currentDataset)
 
     if (nodes.isEmpty) {
@@ -112,7 +113,7 @@ class KeywordNetworkController @Inject() (
 
   /*
   def getBlacklistedKeywords()(index: String): List[KeyTerm] = db(index).readOnly { implicit session =>
-    SQL("SELECT * FROM terms").map(KeyTerm(_)).list.apply()
+    sql"SELECT * FROM terms").map(KeyTerm(_).list.apply()
   }
   */
 

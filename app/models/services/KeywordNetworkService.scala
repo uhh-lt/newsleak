@@ -118,14 +118,11 @@ class ESKeywordNetworkService @Inject() (
     exclude: List[String]
   )(index: String): KeywordNetwork = {
 
-    var buckets: List[Bucket] = nodeFraction.flatMap {
-      case (t, size) =>
-        aggregateService.aggregateKeywords(facets, 12, List(), exclude)(index).buckets
-    }.toList.distinct
+    val keywords = aggregateService.keywordAggregate(facets, utils.keywordsField._1, 12, List(), exclude)(index).keywords.distinct
 
-    val rels = induceRelationshipsKeyword(facets, buckets.collect { case MetaDataBucket(key, occurance) => key }, index)
+    val rels = induceRelationshipsKeyword(facets, keywords.collect { case KeyTerm(key, occurance) => key }, index)
 
-    KeywordNetwork(buckets.collect { case MetaDataBucket(key, occurance) => KeyTerm(key, occurance) }, rels)
+    KeywordNetwork(keywords, rels)
   }
 
   /** @inheritdoc */
