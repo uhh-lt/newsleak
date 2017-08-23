@@ -22,6 +22,7 @@ define([
     './components/sources/SourceController',
     './components/sources/DocumentController',
     './components/network/NetworkController',
+    './components/network/KeywordNetworkController',
     './components/network/GraphConfig',
     './components/metadata/MetadataController',
     './components/sources/SearchController',
@@ -47,7 +48,7 @@ define([
     var app = angular.module('myApp', [
             'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial',
             'underscore', 'myApp.observer', 'myApp.history', 'myApp.graphConfig', 'angularScreenfull',
-            'myApp.network', 'myApp.search', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.metafactory',
+            'myApp.network', 'myApp.keywordNetwork', 'myApp.search', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.metafactory',
             'myApp.document', 'myApp.histogram', 'myApp.histogramX', 'ngVis', 'myApp.entityservice']
     );
 
@@ -78,6 +79,10 @@ define([
                 'network': {
                     templateUrl: 'assets/partials/network.html',
                     controller: 'NetworkController'
+                },
+                'keywordNetwork': {
+                    templateUrl: 'assets/partials/keywordNetwork.html',
+                    controller: 'KeywordNetworkController'
                 },
                 'histogram': {
                     templateUrl: 'assets/partials/histogram.html',

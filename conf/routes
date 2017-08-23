@@ -44,6 +44,6 @@ GET        /getTimelineLOD                        controllers.HistogramControlle
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # JS ROUTING AND RESOURCES                                                                      #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-GET     	  /assets/javascripts/jsroutes.js  		     controllers.Application.jsRoutes()
-GET         /vassets/*file          				         controllers.Assets.versioned(path="/public", file: Asset)
-GET         /assets/*file                            controllers.Assets.at(path="/public", file)
+GET        /assets/javascripts/jsroutes.js        controllers.Application.jsRoutes()
+GET        /vassets/*file                         controllers.Assets.versioned(path="/public", file: Asset)
+GET        /assets/*file                          controllers.Assets.at(path="/public", file)

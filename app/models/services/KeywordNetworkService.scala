@@ -18,24 +18,26 @@
 package models.services
 
 import com.google.inject.{ ImplementedBy, Inject }
-import models.KeyTerm
+import models.{KeywordAggregation, KeywordNetwork}
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
 
 import scala.collection.mutable.ListBuffer
+// added
+import scalikejdbc.NamedDB
 // scalastyle:off
 import scala.collection.JavaConversions._
 // scalastyle:on
-import models.{ Aggregation, Facets, MetaDataBucket, Network, NodeBucket, Relationship }
+import models.{Aggregation, Facets, MetaDataBucket, KeyTerm, NodeBucket, KeywordRelationship}
 import util.es.ESRequestUtils
 
 /**
  * Defines common method for creating and extending co-occurrence networks given a search query.
  *
- * The trait is implemented by [[models.services.ESNetworkService]].
+ * The trait is implemented by [[models.services.ESKeywordNetworkService]].
  */
-@ImplementedBy(classOf[ESNetworkService])
-trait NetworkService {
+@ImplementedBy(classOf[ESKeywordNetworkService])
+trait KeywordNetworkService {
 
   /**
    * Returns a co-occurrence network matching the given search query.
@@ -45,9 +47,9 @@ trait NetworkService {
    * @param exclude a list of entity ids that should be excluded from the result. The result will contain no [[models.NodeBucket]]
    * associated with one of the ids given in this list.
    * @param index the data source index or database name to query.
-   * @return a [[models.Network]] consisting of the nodes and relationships of the created co-occurrence network.
+   * @return a [[models.KeywordNetwork]] consisting of the nodes and relationships of the created co-occurrence network.
    */
-  def createNetwork(facets: Facets, nodeFraction: Map[String, Int], exclude: List[Long])(index: String): Network
+  def createNetworkKeyword(facets: Facets, nodeFraction: Map[String, Int], exclude: List[String])(index: String): KeywordNetwork
 
   /**
    * Adds new nodes to the current network matching the given search query.
@@ -56,13 +58,13 @@ trait NetworkService {
    * it induces relationships between the new nodes and the current network and between the new nodes. It does not
    * provide nodes for the current network nor relationships between those nodes.
    *
-   * @param facets the search query.
-   * @param currentNetwork the entity ids of the current network.
-   * @param entitiesToAdd new entities to be added to the network.
-   * @param index the data source index or database name to query.
-   * @return a [[models.Network]] consisting of the nodes and relationships of the created co-occurrence network.
+    * @param facets        the search query.
+   * @param currentNetwork the keyword terms of the current network.
+    * @param nodes         new keywords to be added to the network.
+    * @param index         the data source index or database name to query.
+   * @return a [[models.KeywordNetwork]] consisting of the nodes and relationships of the created co-occurrence network.
    */
-  def induceNetwork(facets: Facets, currentNetwork: List[Long], entitiesToAdd: List[Long])(index: String): Network
+  def induceNetworkKeyword(facets: Facets, currentNetwork: List[String], nodes: List[String])(index: String): KeywordNetwork
 
   /**
    * Returns entities co-occurring with the given entity matching the search query.
@@ -75,7 +77,7 @@ trait NetworkService {
    * @param index the data source index or database name to query.
    * @return a list of [[models.NodeBucket]] co-occurring with the given entity.
    */
-  def getNeighbors(facets: Facets, entityId: Long, size: Int, exclude: List[Long])(index: String): List[NodeBucket]
+  def getNeighborsKeyword(facets: Facets, entityId: Long, size: Int, exclude: List[Long])(index: String): List[NodeBucket]
 
   /**
    * Accumulates the number of entities that fall in a certain entity type and co-occur with the given entity.
@@ -87,119 +89,121 @@ trait NetworkService {
    * @param index the data source index or database name to query.
    * @return a map linking from the unique entity type to the number of neighbors of that type.
    */
-  def getNeighborCountsPerType(facets: Facets, entityId: Long)(index: String): Map[String, Int]
+  def getNeighborCountsPerTypeKeyword(facets: Facets, entityId: Long)(index: String): Map[String, Int]
 
   /**
-   * Returns important terms representing the relationship between both nodes based on the underlying document content.
-   *
-   * @param facets the search query.
-   * @param source the first adjacent node of the edge.
-   * @param dest the second adjacent node of the edge.
-   * @param numTerms the number of keywords to fetch.
-   * @param index the data source index or database name to query.
-   * @return a list of [[models.KeyTerm]] representing important terms for the given relationship.
+   * @param nodes the entities
    */
-  def getEdgeKeywords(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): List[KeyTerm]
+  def setGraphNodes(nodes: List[NodeBucket]): Unit
 
   /**
-   * Function to get the entities of the Entity Graph
-   *
-   * @return a list of [[models.NodeBucket]]
+   * @param facets   the search query.
+   * @param entities the entities that should occur in the document.
+   * @param numTerms the amount of keywords.
+   * @param index    the data source index to query.
+   * @return a list of [[models.KeyTerm]] representing all important terms
    */
-  def getGraphEntitites(): List[NodeBucket]
+  def getKeywordsForEntities(facets: Facets, entities: List[NodeBucket], numTerms: Int)(index: String): List[KeyTerm]
 }
 
 /**
- * Implementation of [[models.services.NetworkService]] using an elasticsearch index as backend.
+ * Implementation of [[models.services.KeywordNetworkService]] using an elasticsearch index as backend.
  *
- * @param clientService the elasticsearch client.
+ * @param clientService    the elasticsearch client.
  * @param aggregateService the aggregation service.
- * @param entityService the entity service.
- * @param utils common helper to issue elasticsearch queries.
+ * @param entityService    the entity service.
+ * @param utils            common helper to issue elasticsearch queries.
+ * @param networkService  the network service
  */
-class ESNetworkService @Inject() (
+class ESKeywordNetworkService @Inject() (
     clientService: SearchClientService,
     aggregateService: AggregateService,
     entityService: EntityService,
-    utils: ESRequestUtils
-) extends NetworkService {
+    utils: ESRequestUtils,
+    networkService: NetworkService
+) extends KeywordNetworkService {
 
-  var buckets = List[Any]()
+  private val db = (index: String) => NamedDB(Symbol(index))
+
+  var graphNodes: List[NodeBucket] = List[NodeBucket]()
 
   /** @inheritdoc */
-  override def createNetwork(
+  //noinspection ScalaStyle
+  override def createNetworkKeyword(
     facets: Facets,
     nodeFraction: Map[String, Int],
-    exclude: List[Long]
-  )(index: String): Network = {
-    this.buckets = nodeFraction.flatMap {
-      case (t, size) =>
-        aggregateService.aggregateEntitiesByType(facets, t, size, List(), exclude)(index).buckets
-    }.toList
+    exclude: List[String]
+  )(index: String): KeywordNetwork = {
 
-    val rels = induceRelationships(facets, buckets.collect { case NodeBucket(id, _) => id }, index)
-    Network(buckets.collect { case a @ NodeBucket(_, _) => a }, rels)
+    val keywords = getKeywordsForEntities(facets, networkService.getGraphEntitites(), 10)(index)
+    // TODO Relationships
+
+    KeywordNetwork(keywords, induceRelationshipsKeyword(facets, for (keyword <- keywords) yield keyword.term, index))
   }
 
   /** @inheritdoc */
-  private def induceRelationships(facets: Facets, nodes: List[Long], index: String): List[Relationship] = {
-    val visitedList = ListBuffer[Long]()
+  private def induceRelationshipsKeyword(facets: Facets, nodes: List[String], index: String): List[KeywordRelationship] = {
+    val visitedList = ListBuffer[String]()
     val rels = nodes.flatMap { source =>
       visitedList.add(source)
       val rest = nodes.filter(!visitedList.contains(_))
-      rest.flatMap { dest => getRelationship(facets, source, dest, index) }
+      rest.flatMap { dest => getRelationshipKeyword(facets, source, dest, index) }
     }
     rels
   }
 
-  /** @inheritdoc**/
-  override def getGraphEntitites(): List[NodeBucket] = {
-    this.buckets.collect { case a @ NodeBucket(_, _) => a }
-  }
-
   /** @inheritdoc */
-  private def getRelationship(facets: Facets, source: Long, dest: Long, index: String): Option[Relationship] = {
+  private def getRelationshipKeyword(facets: Facets, source: String, dest: String, index: String): Option[KeywordRelationship] = {
     val t = List(source, dest)
-    val agg = aggregateService.aggregateEntities(facets.withEntities(t), 2, t, Nil)(index)
+    // val agg = aggregateService.aggregateEntities(facets.withEntities(t), 2, t, Nil)(index)
+    val agg = aggregateService.keywordAggregate(facets, utils.keywordsField._1, 2, t, Nil)(index)
     agg match {
       // No edge between both since their frequency is zero
-      case Aggregation(_, NodeBucket(nodeA, 0) :: NodeBucket(nodeB, 0) :: Nil) =>
+      case KeywordAggregation(_, KeyTerm(nodeA, 0) :: KeyTerm(nodeB, 0) :: Nil) =>
         None
-      case Aggregation(_, NodeBucket(nodeA, freqA) :: NodeBucket(nodeB, freqB) :: Nil) =>
+      case KeywordAggregation(_, KeyTerm(nodeA, freqA) :: KeyTerm(nodeB, freqB) :: Nil) =>
         // freqA and freqB are the same since we query for docs containing both
-        Some(Relationship(nodeA, nodeB, freqA))
+        Some(KeywordRelationship(nodeA, nodeB, freqA))
       case _ => None
     }
   }
 
   /** @inheritdoc */
-  override def induceNetwork(facets: Facets, currentNetwork: List[Long], nodes: List[Long])(index: String): Network = {
-    val buckets = aggregateService.aggregateEntities(facets, nodes.length, nodes, Nil)(index).buckets.collect { case a @ NodeBucket(_, _) => a }
+  //noinspection ScalaStyle
+  override def induceNetworkKeyword(facets: Facets, currentNetwork: List[String], nodes: List[String])(index: String): KeywordNetwork = {
     // Fetch relationships between new nodes
-    val inBetweenRels = induceRelationships(facets, nodes, index)
+    val inBetweenRels = induceRelationshipsKeyword(facets, nodes, index)
     // Fetch relationships between new nodes and current network
     val connectingRels = nodes.flatMap { source =>
-      currentNetwork.flatMap { dest => getRelationship(facets, source, dest, index) }
+      currentNetwork.flatMap { dest => getRelationshipKeyword(facets, source, dest, index) }
     }
-    Network(buckets, inBetweenRels ++ connectingRels)
+
+    val intvalue: Int = 20
+    val keywords: Option[Int] = Option(intvalue)
+    KeywordNetwork(getKeywordsForEntities(facets, networkService.getGraphEntitites(), 20)(index), inBetweenRels ++ connectingRels)
+
+  }
+
+  override def setGraphNodes(nodes: List[NodeBucket]): Unit = {
+    this.graphNodes = nodes
   }
 
   /** @inheritdoc */
-  override def getNeighbors(facets: Facets, entityId: Long, size: Int, exclude: List[Long])(index: String): List[NodeBucket] = {
+  override def getNeighborsKeyword(facets: Facets, entityId: Long, size: Int, exclude: List[Long])(index: String): List[NodeBucket] = {
     val res = aggregateService.aggregateEntities(facets.withEntities(List(entityId)), size, List(), exclude)(index)
     res.buckets.collect { case a @ NodeBucket(_, _) => a }
   }
 
   /** @inheritdoc */
-  override def getNeighborCountsPerType(facets: Facets, entityId: Long)(index: String): Map[String, Int] = {
+  override def getNeighborCountsPerTypeKeyword(facets: Facets, entityId: Long)(index: String): Map[String, Int] = {
     // Add entity id as entities filter in order to receive documents where both co-occur
     val neighborFacets = facets.withEntities(List(entityId))
-    val res = cardinalityAggregate(neighborFacets, 0, index)
+    val res = cardinalityAggregateKeyword(neighborFacets, 0, index)
     res.buckets.collect { case MetaDataBucket(term, count) => (term, count.toInt) }.toMap
   }
 
   // TODO: Maybe move to aggregateService
-  private def cardinalityAggregate(facets: Facets, documentSize: Int, index: String): Aggregation = {
+  private def cardinalityAggregateKeyword(facets: Facets, documentSize: Int, index: String): Aggregation = {
     val requestBuilder = utils.createSearchRequest(facets, documentSize, index, clientService)
     // Add neighbor aggregation for each NE type
     val types = entityService.getTypes()(index).keys
@@ -221,14 +225,9 @@ class ESNetworkService @Inject() (
   }
 
   /** @inheritdoc */
-  override def getEdgeKeywords(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): List[KeyTerm] = {
-    // Only consider documents where the two entities occur
-    val res = aggregateService.aggregateKeywords(facets.withEntities(List(source, dest)), numTerms, Nil, Nil)(index)
+  def getKeywordsForEntities(facets: Facets, entities: List[NodeBucket], numTerms: Int)(index: String): List[KeyTerm] = {
+    // Only consider documents where the entities occur
+    val res = aggregateService.aggregateKeywords(facets.withEntities(for (entity <- entities) yield entity.id), numTerms, Nil, Nil)(index)
     res.buckets.collect { case MetaDataBucket(term, count) => KeyTerm(term, count.toInt) }
-  }
-
-  /** @inheritdoc*/
-  def getGraphEntities: List[NodeBucket] = {
-    buckets.collect { case a @ NodeBucket(_, _) => a }
   }
 }
