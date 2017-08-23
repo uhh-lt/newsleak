@@ -316,6 +316,16 @@ define([
                         });
                     }
 
+                    $scope.indexName = '';
+
+                    function getIndexName() {
+                      playRoutes.controllers.DocumentController.getIndexName().get().then(function(response) {
+                          $scope.indexName = response.data.index;
+                      });
+                    }
+
+                    getIndexName();
+
                     $scope.initTags = function(doc) {
                         $scope.tags[doc.id] = [];
                         playRoutes.controllers.DocumentController.getTagsByDocId(doc.id).get().then(function(response) {
@@ -358,7 +368,7 @@ define([
 
                     $scope.whitelist = function(entity, type, docId){
                       type = type.replace(/\s/g, '');
-                      $scope.esWhitelist(entity, type, docId);
+                      // $scope.esWhitelist(entity, type, docId);
                       EntityService.whitelist(entity, type, docId);
                     };
 
@@ -372,6 +382,7 @@ define([
                     $scope.selectedType = '';
                     var doc = $scope.tabs;
                     $scope.getSelectionEntity = function(doc) {
+                      console.log($scope.indexName);
                       var text = "";
                       // var doc = document.getElementsByTagName("doc-content")[0].innerText;
                       var start = 0;
@@ -392,7 +403,7 @@ define([
 
                     $scope.esWhitelist = function(entity, typeEnt, docId) {
                       client.search({
-                        index: 'newsleak',
+                        index: $scope.indexName,
                         type: 'document',
                         size: 0,
                         body: {
@@ -415,7 +426,7 @@ define([
 
                     $scope.createNewEntity = function(entity, typeEnt, docId) {
                       client.update({
-                        index: 'newsleak',
+                        index: $scope.indexName,
                         type: 'document',
                         id: docId,
                         body: {
@@ -441,7 +452,7 @@ define([
                     $scope.insertNewEntityType = function(entity, typeEnt, docId) {
                       var suffixType = typeEnt.toLowerCase();
                       client.update({
-                        index: 'newsleak',
+                        index: $scope.indexName,
                         type: 'document',
                         id: docId,
                         body: {

@@ -75,6 +75,11 @@ class DocumentController @Inject() (
     Ok(Json.obj("labels" -> Json.toJson(documentService.getDocumentLabels()(currentDataset)))).as("application/json")
   }
 
+  /** Returns index name. */
+  def getIndexName() = Action { implicit request =>
+    Ok(Json.obj("index" -> Json.toJson(documentService.getIndex()(currentDataset)))).as("application/json")
+  }
+
   /**
    * Annotates a document with the given label.
    *

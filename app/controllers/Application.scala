@@ -111,6 +111,7 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         controllers.routes.javascript.DocumentController.removeTagById,
         controllers.routes.javascript.DocumentController.getTagsByDocId,
         controllers.routes.javascript.DocumentController.getTagLabels,
+        controllers.routes.javascript.DocumentController.getIndexName,
         controllers.routes.javascript.DocumentController.getDocsByLabel,
         controllers.routes.javascript.NetworkController.blacklistEntitiesById,
         controllers.routes.javascript.NetworkController.mergeEntitiesById,
