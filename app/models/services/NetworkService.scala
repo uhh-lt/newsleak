@@ -100,13 +100,6 @@ trait NetworkService {
    * @return a list of [[models.KeyTerm]] representing important terms for the given relationship.
    */
   def getEdgeKeywords(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): List[KeyTerm]
-
-  /**
-   * Function to get the entities of the Entity Graph
-   *
-   * @return a list of [[models.NodeBucket]]
-   */
-  def getGraphEntitites(): List[NodeBucket]
 }
 
 /**
@@ -138,7 +131,8 @@ class ESNetworkService @Inject() (
     }.toList
 
     val rels = induceRelationships(facets, buckets.collect { case NodeBucket(id, _) => id }, index)
-    Network(buckets.collect { case a @ NodeBucket(_, _) => a }, rels)
+    val nodes = buckets.collect { case a @ NodeBucket(_, _) => a }
+    Network(nodes, rels)
   }
 
   /** @inheritdoc */
@@ -150,11 +144,6 @@ class ESNetworkService @Inject() (
       rest.flatMap { dest => getRelationship(facets, source, dest, index) }
     }
     rels
-  }
-
-  /** @inheritdoc**/
-  override def getGraphEntitites(): List[NodeBucket] = {
-    this.buckets.collect { case a @ NodeBucket(_, _) => a }
   }
 
   /** @inheritdoc */
@@ -225,10 +214,5 @@ class ESNetworkService @Inject() (
     // Only consider documents where the two entities occur
     val res = aggregateService.aggregateKeywords(facets.withEntities(List(source, dest)), numTerms, Nil, Nil)(index)
     res.buckets.collect { case MetaDataBucket(term, count) => KeyTerm(term, count.toInt) }
-  }
-
-  /** @inheritdoc*/
-  def getGraphEntities: List[NodeBucket] = {
-    buckets.collect { case a @ NodeBucket(_, _) => a }
   }
 }

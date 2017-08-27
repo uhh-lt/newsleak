@@ -95,8 +95,9 @@ class KeywordNetworkController @Inject() (
     val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
     val sizes = nodeFraction.mapValues(_.toInt)
 
-    val blacklistedKeywords = getBlacklistedKeywords()(currentDataset).map(_.term)
-    // val blacklistedKeywords = entityService.getBlacklisted()(currentDataset).map(_.id)
+    // val blacklistedKeywords = getBlacklistedKeywords()(currentDataset).map(_.term)
+    // val blacklistedKeywords = entityService.getBlacklisted()(currentDataset).map(_.name)
+    val blacklistedKeywords = List()
     val KeywordNetwork(nodes, relations) = keywordNetworkService.createNetworkKeyword(facets, sizes, blacklistedKeywords)(currentDataset)
 
     if (nodes.isEmpty) {
@@ -110,9 +111,11 @@ class KeywordNetworkController @Inject() (
     }
   }
 
+  /*
   def getBlacklistedKeywords()(index: String): List[KeyTerm] = db(index).readOnly { implicit session =>
-    SQL("SELECT * FROM terms").map(KeyTerm(_)).list.apply()
+    sql"SELECT * FROM terms").map(KeyTerm(_).list.apply()
   }
+  */
 
   /**
    * Adds new nodes to the current network matching the given search query.
@@ -160,6 +163,11 @@ class KeywordNetworkController @Inject() (
   /** Marks the entities associated with the given ids as blacklisted. */
   def blacklistEntitiesByIdKeyword(ids: List[Long]) = Action { implicit request =>
     Ok(Json.obj("result" -> entityService.blacklist(ids)(currentDataset))).as("application/json")
+  }
+
+  /** Marks the keywords associated with the given ids as blacklisted. */
+  def blacklistKeywordsByIdKeyword(ids: List[Long]) = Action { implicit request =>
+    Ok(Json.obj("result" -> entityService.blacklistKeyword(ids)(currentDataset))).as("application/json")
   }
 
   /**

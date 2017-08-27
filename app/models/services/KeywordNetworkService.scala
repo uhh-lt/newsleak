@@ -18,17 +18,16 @@
 package models.services
 
 import com.google.inject.{ ImplementedBy, Inject }
-import models.{KeywordAggregation, KeywordNetwork}
+import models.{ Bucket, Document, KeywordAggregation, KeywordNetwork }
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
 
 import scala.collection.mutable.ListBuffer
-// added
 import scalikejdbc.NamedDB
 // scalastyle:off
 import scala.collection.JavaConversions._
 // scalastyle:on
-import models.{Aggregation, Facets, MetaDataBucket, KeyTerm, NodeBucket, KeywordRelationship}
+import models.{ Aggregation, Facets, MetaDataBucket, KeyTerm, NodeBucket, KeywordRelationship }
 import util.es.ESRequestUtils
 
 /**
@@ -58,10 +57,10 @@ trait KeywordNetworkService {
    * it induces relationships between the new nodes and the current network and between the new nodes. It does not
    * provide nodes for the current network nor relationships between those nodes.
    *
-    * @param facets        the search query.
+   * @param facets        the search query.
    * @param currentNetwork the keyword terms of the current network.
-    * @param nodes         new keywords to be added to the network.
-    * @param index         the data source index or database name to query.
+   * @param nodes         new keywords to be added to the network.
+   * @param index         the data source index or database name to query.
    * @return a [[models.KeywordNetwork]] consisting of the nodes and relationships of the created co-occurrence network.
    */
   def induceNetworkKeyword(facets: Facets, currentNetwork: List[String], nodes: List[String])(index: String): KeywordNetwork
@@ -90,20 +89,6 @@ trait KeywordNetworkService {
    * @return a map linking from the unique entity type to the number of neighbors of that type.
    */
   def getNeighborCountsPerTypeKeyword(facets: Facets, entityId: Long)(index: String): Map[String, Int]
-
-  /**
-   * @param nodes the entities
-   */
-  def setGraphNodes(nodes: List[NodeBucket]): Unit
-
-  /**
-   * @param facets   the search query.
-   * @param entities the entities that should occur in the document.
-   * @param numTerms the amount of keywords.
-   * @param index    the data source index to query.
-   * @return a list of [[models.KeyTerm]] representing all important terms
-   */
-  def getKeywordsForEntities(facets: Facets, entities: List[NodeBucket], numTerms: Int)(index: String): List[KeyTerm]
 }
 
 /**
@@ -125,8 +110,6 @@ class ESKeywordNetworkService @Inject() (
 
   private val db = (index: String) => NamedDB(Symbol(index))
 
-  var graphNodes: List[NodeBucket] = List[NodeBucket]()
-
   /** @inheritdoc */
   //noinspection ScalaStyle
   override def createNetworkKeyword(
@@ -135,10 +118,11 @@ class ESKeywordNetworkService @Inject() (
     exclude: List[String]
   )(index: String): KeywordNetwork = {
 
-    val keywords = getKeywordsForEntities(facets, networkService.getGraphEntitites(), 10)(index)
-    // TODO Relationships
+    val keywords = aggregateService.keywordAggregate(facets, utils.keywordsField._1, 12, List(), exclude)(index).keywords.distinct
 
-    KeywordNetwork(keywords, induceRelationshipsKeyword(facets, for (keyword <- keywords) yield keyword.term, index))
+    val rels = induceRelationshipsKeyword(facets, keywords.collect { case KeyTerm(key, occurance) => key }, index)
+
+    KeywordNetwork(keywords, rels)
   }
 
   /** @inheritdoc */
@@ -171,6 +155,7 @@ class ESKeywordNetworkService @Inject() (
   /** @inheritdoc */
   //noinspection ScalaStyle
   override def induceNetworkKeyword(facets: Facets, currentNetwork: List[String], nodes: List[String])(index: String): KeywordNetwork = {
+    val buckets = aggregateService.aggregateKeywords(facets, nodes.length, nodes, Nil)(index).buckets.collect { case MetaDataBucket(key, occurrence) => KeyTerm(key, occurrence) }
     // Fetch relationships between new nodes
     val inBetweenRels = induceRelationshipsKeyword(facets, nodes, index)
     // Fetch relationships between new nodes and current network
@@ -178,14 +163,8 @@ class ESKeywordNetworkService @Inject() (
       currentNetwork.flatMap { dest => getRelationshipKeyword(facets, source, dest, index) }
     }
 
-    val intvalue: Int = 20
-    val keywords: Option[Int] = Option(intvalue)
-    KeywordNetwork(getKeywordsForEntities(facets, networkService.getGraphEntitites(), 20)(index), inBetweenRels ++ connectingRels)
+    KeywordNetwork(buckets, inBetweenRels ++ connectingRels)
 
-  }
-
-  override def setGraphNodes(nodes: List[NodeBucket]): Unit = {
-    this.graphNodes = nodes
   }
 
   /** @inheritdoc */
@@ -222,12 +201,5 @@ class ESKeywordNetworkService @Inject() (
     }.toList
 
     Aggregation("neighbors", buckets)
-  }
-
-  /** @inheritdoc */
-  def getKeywordsForEntities(facets: Facets, entities: List[NodeBucket], numTerms: Int)(index: String): List[KeyTerm] = {
-    // Only consider documents where the entities occur
-    val res = aggregateService.aggregateKeywords(facets.withEntities(for (entity <- entities) yield entity.id), numTerms, Nil, Nil)(index)
-    res.buckets.collect { case MetaDataBucket(term, count) => KeyTerm(term, count.toInt) }
   }
 }

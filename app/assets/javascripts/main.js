@@ -120,9 +120,9 @@
 			'ngVis': {
 				deps: ['angular', 'vis']
 			},
-      'contextMenu': {
-        deps: ['angular', 'bootstrap']
-      }
+            'contextMenu': {
+                deps: ['angular', 'bootstrap']
+            }
 		},
 		priority: [
 			'jquery',

@@ -48,6 +48,7 @@ define([
                 link: function(scope, element, attrs) {
                     var content = scope.document.content;
                     var entities = scope.document.entities;
+                    console.log(scope.document);
                     scope.addEntityFilter = function(id) {
                         var el = _.find(entities, function(e) { return e.id == id });
                         ObserverService.addItem({ type: 'entity', data: { id: id, description: el.name, item: el.name, type: el.type }});
@@ -375,11 +376,24 @@ define([
                     };
 
                     $scope.entityTypes = [];
-                    $scope.observer.getEntityTypes().$$state.value.map(function(e){
-                      if (e.name !== null){
-                        $scope.entityTypes.push(e);
-                      }
+
+                    $scope.observer.getEntityTypes().then(function (types) {
+                        console.log(types);
+                        types.map(function (e) {
+                            if (e.name !== null) {
+                                $scope.entityTypes.push(e);
+                            }
+                        });
                     });
+                    /*
+                     if($scope.observer.getEntityTypes().$$state.value) {
+                     $scope.observer.getEntityTypes().$$state.value.map(function (e) {
+                     if (e.name !== null) {
+                     $scope.entityTypes.push(e);
+                     }
+                     });
+                     }
+                     */
 
                     $scope.selectedType = '';
                     var doc = $scope.tabs;
