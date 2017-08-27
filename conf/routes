@@ -9,6 +9,7 @@ GET        /                                      controllers.Application.index
 GET        /getDatasets                           controllers.Application.getDatasets()
 GET        /changeDataset                         controllers.Application.changeDataset(name: String)
 GET        /getDocsByLabel                        controllers.DocumentController.getDocsByLabel(label: String)
+GET        /getIndexName                          controllers.DocumentController.getIndexName()
 GET        /getLabels                             controllers.DocumentController.getTagLabels()
 GET        /addTag                                controllers.DocumentController.addTag(id: Int, label: String)
 GET        /removeTag                             controllers.DocumentController.removeTagById(tagId: Int)

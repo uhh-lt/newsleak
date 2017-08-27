@@ -317,6 +317,18 @@ define([
                         });
                     }
 
+                    $scope.indexName = '';
+
+                    function getIndexName() {
+                      playRoutes.controllers.DocumentController.getIndexName().get().then(function(response) {
+                          $scope.indexName = response.data.index;
+                      });
+                    }
+
+                    getIndexName();
+
+                    console.log('index name: ' + $scope.indexName);
+
                     $scope.initTags = function(doc) {
                         $scope.tags[doc.id] = [];
                         playRoutes.controllers.DocumentController.getTagsByDocId(doc.id).get().then(function(response) {
@@ -406,7 +418,7 @@ define([
 
                     $scope.esWhitelist = function(entity, typeEnt, docId) {
                       client.search({
-                          index: 'enron',
+                        index: $scope.indexName,
                         type: 'document',
                         size: 0,
                         body: {
@@ -429,7 +441,7 @@ define([
 
                     $scope.createNewEntity = function(entity, typeEnt, docId) {
                       client.update({
-                          index: 'enron',
+                        index: $scope.indexName,
                         type: 'document',
                         id: docId,
                         body: {
@@ -455,7 +467,7 @@ define([
                     $scope.insertNewEntityType = function(entity, typeEnt, docId) {
                       var suffixType = typeEnt.toLowerCase();
                       client.update({
-                          index: 'enron',
+                        index: $scope.indexName,
                         type: 'document',
                         id: docId,
                         body: {

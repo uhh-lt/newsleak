@@ -111,6 +111,14 @@ trait DocumentService {
   def getDocumentLabels()(index: String): List[String]
 
   /**
+   * Returns Index name used in Database and Elasticsearch
+   *
+   * @param index the data source index or database name to query.
+   * @return Index name
+   */
+  def getIndex()(index: String): String
+
+  /**
    * Returns important terms occurring in the document content for the given document id.
    *
    * @param docId the document id.
@@ -233,6 +241,10 @@ trait DBDocumentService extends DocumentService {
   /** @inheritdoc */
   override def getDocumentLabels()(index: String): List[String] = db(index).readOnly { implicit session =>
     sql"SELECT label FROM labels".map(_.string("label")).list().apply()
+  }
+
+  override def getIndex()(index: String): String = db(index).readOnly { implicit session =>
+    index
   }
 
   /** @inheritdoc */
