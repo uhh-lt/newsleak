@@ -326,6 +326,8 @@ define([
 
                     getIndexName();
 
+                    console.log('index name: ' + $scope.indexName);
+
                     $scope.initTags = function(doc) {
                         $scope.tags[doc.id] = [];
                         playRoutes.controllers.DocumentController.getTagsByDocId(doc.id).get().then(function(response) {
@@ -368,7 +370,7 @@ define([
 
                     $scope.whitelist = function(entity, type, docId){
                       type = type.replace(/\s/g, '');
-                      // $scope.esWhitelist(entity, type, docId);
+                      $scope.esWhitelist(entity, type, docId);
                       EntityService.whitelist(entity, type, docId);
                     };
 
@@ -382,7 +384,6 @@ define([
                     $scope.selectedType = '';
                     var doc = $scope.tabs;
                     $scope.getSelectionEntity = function(doc) {
-                      console.log($scope.indexName);
                       var text = "";
                       // var doc = document.getElementsByTagName("doc-content")[0].innerText;
                       var start = 0;
