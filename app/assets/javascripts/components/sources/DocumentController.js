@@ -329,6 +329,27 @@ define([
 
                     console.log('index name: ' + $scope.indexName);
 
+                    $scope.menuOptions = [
+                        ['Buy', function ($itemScope) {
+                            // $scope.player.gold -= $itemScope.item.cost;
+                        }],
+                        null,
+                        ['Sell', function ($itemScope) {
+                            // $scope.player.gold += $itemScope.item.cost;
+                        }, function ($itemScope) {
+                            // return $itemScope.item.name.match(/Iron/) == null;
+                        }],
+                        null,
+                        ['More...', [
+                            ['Alert Cost', function ($itemScope) {
+                                alert($itemScope.item.cost);
+                            }],
+                            ['Alert Player Gold', function ($itemScope) {
+                                alert($scope.player.gold);
+                            }]
+                        ]]
+                    ];
+
                     $scope.initTags = function(doc) {
                         $scope.tags[doc.id] = [];
                         playRoutes.controllers.DocumentController.getTagsByDocId(doc.id).get().then(function(response) {
