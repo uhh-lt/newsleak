@@ -20,7 +20,8 @@ define([
     'ngSanitize',
     'ngMaterial',
     'contextMenu',
-    'elasticsearch'
+    'elasticsearch',
+    'ui-bootstrap'
 ], function (angular) {
     'use strict';
     /**
@@ -28,7 +29,7 @@ define([
      * - render document content
      * - load additional metdata/keywords for loaded document
      */
-    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ui.bootstrap.contextMenu', 'elasticsearch'])
+    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ui.bootstrap.contextMenu', 'elasticsearch', 'ui.bootstrap'])
         .service('client', function (esFactory) {
             return esFactory({
               host: 'localhost:9500',
@@ -235,6 +236,9 @@ define([
                 'EntityService',
                 'client',
                 'esFactory',
+                '$uibModal',
+                '$log',
+                '$document',
                 function ($scope,
                           $http,
                           $templateRequest,
@@ -246,7 +250,10 @@ define([
                           ObserverService,
                           EntityService,
                           client,
-                          esFactory) {
+                          esFactory,
+                          $uibModal,
+                          $log,
+                          $document) {
 
                     var self = this;
 
@@ -280,6 +287,79 @@ define([
 
                     function init() {
                         updateTagLabels();
+                    }
+
+
+                    $scope.open = function ($scope, doc) {
+                      // debugger;
+                      var entity = $scope.selectedEntity.text;
+                      // var parentElem = parentSelector ?
+                      //   angular.element($document[0].querySelector('.modal-demo ' + parentSelector)) : undefined;
+
+                        var modalInstance = $uibModal.open({
+                          templateUrl: 'myModalContent.html',
+                          animation: true,
+                          component: 'modalComponent',
+                          size: 'sm',
+                          resolve: {
+                            parentScope: function() {
+                              return $scope;
+                            },
+                            doc: function() {
+                              return doc;
+                            }
+                          },
+                          controller: ('ModalController', ['$scope', function($scope) {
+
+                              var $ctrl = this;
+                              var selectedEntity = $scope.$resolve.parentScope.selectedEntity;
+                              var entityTypes = $scope.$resolve.parentScope.entityTypes;
+                              var doc = $scope.$resolve.doc;
+
+                              $scope.entityName = selectedEntity.text
+                              $scope.entityTypes = entityTypes;
+                              $scope.selectedType = '';
+
+
+                              $ctrl.$onInit = function () {
+                                // $ctrl.items = $ctrl.resolve.items;
+                              };
+
+                              $scope.ok = function () {
+                                this.$resolve.parentScope.whitelist(selectedEntity, $scope.selectedType, doc.id);
+                                this.$close();
+                              };
+
+                              $scope.cancel = function () {
+                                this.$close();
+                              };
+                            }
+                          ])
+                        });
+
+                      modalInstance.result.then(function (selectedItem) {
+                        // self.selected = selectedItem;
+                      }, function () {
+                        $log.info('Modal dismissed at: ' + new Date());
+                      });
+                    };
+
+                    $scope.modalController = function ($scope, parentScope) {
+                      debugger;
+                      var $ctrl = this;
+
+                      $ctrl.$onInit = function () {
+                        // $ctrl.items = $ctrl.resolve.items;
+                      };
+
+                      $scope.ok = function () {
+                        debugger;
+                        this.$close();
+                      };
+
+                      $scope.cancel = function () {
+                        this.$close();
+                      };
                     }
 
                     $scope.retrieveKeywords = function(doc) {
@@ -329,27 +409,6 @@ define([
 
                     console.log('index name: ' + $scope.indexName);
 
-                    $scope.menuOptions = [
-                        ['Buy', function ($itemScope) {
-                            // $scope.player.gold -= $itemScope.item.cost;
-                        }],
-                        null,
-                        ['Sell', function ($itemScope) {
-                            // $scope.player.gold += $itemScope.item.cost;
-                        }, function ($itemScope) {
-                            // return $itemScope.item.name.match(/Iron/) == null;
-                        }],
-                        null,
-                        ['More...', [
-                            ['Alert Cost', function ($itemScope) {
-                                alert($itemScope.item.cost);
-                            }],
-                            ['Alert Player Gold', function ($itemScope) {
-                                alert($scope.player.gold);
-                            }]
-                        ]]
-                    ];
-
                     $scope.initTags = function(doc) {
                         $scope.tags[doc.id] = [];
                         playRoutes.controllers.DocumentController.getTagsByDocId(doc.id).get().then(function(response) {
@@ -387,11 +446,39 @@ define([
 
                     // Enable to select Entity
                     $scope.showSelectedEntity = function(doc) {
-                        $scope.selectedEntity =  $scope.getSelectionEntity(doc);
+                        $scope.selectedEntity =  $scope.getSelectionEntity(doc.content);
+                        if (($scope.selectedEntity.text.length) > 0 && ($scope.selectedEntity.text !== ' ')) {
+                          $scope.open($scope, doc);
+                          // $scope.menuOptions = [
+                          //     ['Entity: ' + $scope.selectedEntity.text, function ($itemScope) {
+                          //         // $scope.player.gold += $itemScope.item.cost;
+                          //     }, function ($itemScope) {
+                          //         // return $itemScope.item.name.match(/Iron/) == null;
+                          //     }],
+                          //     null,
+                          //     ['Sell', function ($itemScope) {
+                          //         // $scope.player.gold += $itemScope.item.cost;
+                          //     }, function ($itemScope) {
+                          //         // return $itemScope.item.name.match(/Iron/) == null;
+                          //     }],
+                          //     null,
+                          //     ['More...', [
+                          //         ['Alert Cost', function ($itemScope) {
+                          //             alert($itemScope.item.cost);
+                          //         }],
+                          //         ['Alert Player Gold', function ($itemScope) {
+                          //             alert($scope.player.gold);
+                          //         }]
+                          //     ]]
+                          // ];
+                        } else {
+                          $scope.menuOptions = [];
+                        }
                     };
 
                     $scope.whitelist = function(entity, type, docId){
                       type = type.replace(/\s/g, '');
+
                       $scope.esWhitelist(entity, type, docId);
                       EntityService.whitelist(entity, type, docId);
                     };
@@ -406,6 +493,7 @@ define([
                             }
                         });
                     });
+
                     /*
                      if($scope.observer.getEntityTypes().$$state.value) {
                      $scope.observer.getEntityTypes().$$state.value.map(function (e) {
