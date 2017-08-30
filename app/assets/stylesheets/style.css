@@ -432,6 +432,12 @@ footer > div #histogram {
     height: auto !important;
 }
 
+
+.selected-entity {
+  text-decoration: underline;
+  color: #2759AC;
+}
+
 /*
     ======================================
     Bar Chart

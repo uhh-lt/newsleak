@@ -77,11 +77,11 @@
                     </md-card-title-text>
                 </md-card-title>
                 <md-card-content>
-                    <doc-content layout-padding document="doc" ng-mouseup="showSelectedEntity(doc)" context-menu="menuOptions"></doc-content>
+                    <doc-content layout-padding document="doc" ng-mouseup="showSelectedEntity(doc)"></doc-content>
                     <div>
                       <br />
                       <b>Selected Entity:</b>
-                      <span ng-bind="selectedEntity.text"></span> {{selectedEntity}}
+                      <span ng-bind="selectedEntity.text" class="selected-entity"></span>
                       <select class="btn btn-default" name="selectEntityType" id="selectEntityType" ng-model="selectedType">
                         <option ng-repeat="entityType in entityTypes">
                           {{ entityType.name }}
@@ -93,7 +93,9 @@
                     </div>
                     <script type="text/ng-template" id="myModalContent.html">
                       <div class="modal-header">
-                          <h3 class="modal-title" id="modal-title">Add Entity: <span ng-bind="entityName"></span></h3>
+                          <h3 class="modal-title" id="modal-title">Add Entity:
+                            <span ng-bind="entityName" class="selected-entity"></span>
+                          </h3>
                       </div>
                       <div class="modal-body" id="modal-body">
                         Select Type:

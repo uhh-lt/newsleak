@@ -49,7 +49,6 @@ define([
                 link: function(scope, element, attrs) {
                     var content = scope.document.content;
                     var entities = scope.document.entities;
-                    console.log(scope.document);
                     scope.addEntityFilter = function(id) {
                         var el = _.find(entities, function(e) { return e.id == id });
                         ObserverService.addItem({ type: 'entity', data: { id: id, description: el.name, item: el.name, type: el.type }});
@@ -398,15 +397,14 @@ define([
                     }
 
                     $scope.indexName = '';
-
                     function getIndexName() {
                       playRoutes.controllers.DocumentController.getIndexName().get().then(function(response) {
                           $scope.indexName = response.data.index;
                       });
                     }
 
+                    // get index name from the back end and print to the console
                     getIndexName();
-
                     console.log('index name: ' + $scope.indexName);
 
                     $scope.initTags = function(doc) {
@@ -444,35 +442,11 @@ define([
                         return results;
                     };
 
-                    // Enable to select Entity
+                    // Enable to select Entity and activate whitelisting modal
                     $scope.showSelectedEntity = function(doc) {
                         $scope.selectedEntity =  $scope.getSelectionEntity(doc.content);
                         if (($scope.selectedEntity.text.length) > 0 && ($scope.selectedEntity.text !== ' ')) {
                           $scope.open($scope, doc);
-                          // $scope.menuOptions = [
-                          //     ['Entity: ' + $scope.selectedEntity.text, function ($itemScope) {
-                          //         // $scope.player.gold += $itemScope.item.cost;
-                          //     }, function ($itemScope) {
-                          //         // return $itemScope.item.name.match(/Iron/) == null;
-                          //     }],
-                          //     null,
-                          //     ['Sell', function ($itemScope) {
-                          //         // $scope.player.gold += $itemScope.item.cost;
-                          //     }, function ($itemScope) {
-                          //         // return $itemScope.item.name.match(/Iron/) == null;
-                          //     }],
-                          //     null,
-                          //     ['More...', [
-                          //         ['Alert Cost', function ($itemScope) {
-                          //             alert($itemScope.item.cost);
-                          //         }],
-                          //         ['Alert Player Gold', function ($itemScope) {
-                          //             alert($scope.player.gold);
-                          //         }]
-                          //     ]]
-                          // ];
-                        } else {
-                          $scope.menuOptions = [];
                         }
                     };
 
@@ -486,7 +460,6 @@ define([
                     $scope.entityTypes = [];
 
                     $scope.observer.getEntityTypes().then(function (types) {
-                        console.log(types);
                         types.map(function (e) {
                             if (e.name !== null) {
                                 $scope.entityTypes.push(e);
@@ -494,21 +467,10 @@ define([
                         });
                     });
 
-                    /*
-                     if($scope.observer.getEntityTypes().$$state.value) {
-                     $scope.observer.getEntityTypes().$$state.value.map(function (e) {
-                     if (e.name !== null) {
-                     $scope.entityTypes.push(e);
-                     }
-                     });
-                     }
-                     */
-
                     $scope.selectedType = '';
                     var doc = $scope.tabs;
                     $scope.getSelectionEntity = function(doc) {
                       var text = "";
-                      // var doc = document.getElementsByTagName("doc-content")[0].innerText;
                       var start = 0;
                       var end = 0;
                       if (window.getSelection) {
