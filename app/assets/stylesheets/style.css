@@ -648,6 +648,10 @@ ul#historyList {
     ======================================
 */
 
+.btn-primary {
+  background-color: #2759AC;
+}
+
 .btn-small {
     padding: 4px 6px;
 }
