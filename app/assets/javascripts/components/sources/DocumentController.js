@@ -290,76 +290,45 @@ define([
 
 
                     $scope.open = function ($scope, doc) {
-                      // debugger;
-                      var entity = $scope.selectedEntity.text;
-                      // var parentElem = parentSelector ?
-                      //   angular.element($document[0].querySelector('.modal-demo ' + parentSelector)) : undefined;
-
-                        var modalInstance = $uibModal.open({
-                          templateUrl: 'myModalContent.html',
-                          animation: true,
-                          component: 'modalComponent',
-                          size: 'sm',
-                          resolve: {
-                            parentScope: function() {
-                              return $scope;
-                            },
-                            doc: function() {
-                              return doc;
-                            }
+                      var modalInstance = $uibModal.open({
+                        templateUrl: 'myModalContent.html',
+                        animation: true,
+                        component: 'modalComponent',
+                        size: 'sm',
+                        resolve: {
+                          parentScope: function() {
+                            return $scope;
                           },
-                          controller: ('ModalController', ['$scope', function($scope) {
+                          doc: function() {
+                            return doc;
+                          }
+                        },
+                        controller: ('ModalController', ['$scope', function($scope) {
 
-                              var $ctrl = this;
-                              var selectedEntity = $scope.$resolve.parentScope.selectedEntity;
-                              var entityTypes = $scope.$resolve.parentScope.entityTypes;
-                              var doc = $scope.$resolve.doc;
+                            var selectedEntity = $scope.$resolve.parentScope.selectedEntity;
+                            var entityTypes = $scope.$resolve.parentScope.entityTypes;
+                            var doc = $scope.$resolve.doc;
 
-                              $scope.entityName = selectedEntity.text
-                              $scope.entityTypes = entityTypes;
-                              $scope.selectedType = '';
+                            $scope.entityName = selectedEntity.text
+                            $scope.entityTypes = entityTypes;
+                            $scope.selectedType = '';
 
+                            $scope.ok = function () {
+                              this.$resolve.parentScope.whitelist(selectedEntity, $scope.selectedType, doc.id);
+                              this.$close();
+                            };
 
-                              $ctrl.$onInit = function () {
-                                // $ctrl.items = $ctrl.resolve.items;
-                              };
-
-                              $scope.ok = function () {
-                                this.$resolve.parentScope.whitelist(selectedEntity, $scope.selectedType, doc.id);
-                                this.$close();
-                              };
-
-                              $scope.cancel = function () {
-                                this.$close();
-                              };
-                            }
-                          ])
-                        });
-
-                      modalInstance.result.then(function (selectedItem) {
-                        // self.selected = selectedItem;
+                            $scope.cancel = function () {
+                              this.$close();
+                            };
+                          }
+                        ])
+                      });
+                      modalInstance.result.then(function () {
                       }, function () {
                         $log.info('Modal dismissed at: ' + new Date());
                       });
                     };
-
-                    $scope.modalController = function ($scope, parentScope) {
-                      debugger;
-                      var $ctrl = this;
-
-                      $ctrl.$onInit = function () {
-                        // $ctrl.items = $ctrl.resolve.items;
-                      };
-
-                      $scope.ok = function () {
-                        debugger;
-                        this.$close();
-                      };
-
-                      $scope.cancel = function () {
-                        this.$close();
-                      };
-                    }
 
                     $scope.retrieveKeywords = function(doc) {
                         var terms =  [];
