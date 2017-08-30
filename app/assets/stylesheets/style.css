@@ -432,6 +432,12 @@ footer > div #histogram {
     height: auto !important;
 }
 
+
+.selected-entity {
+  text-decoration: underline;
+  color: #2759AC;
+}
+
 /*
     ======================================
     Bar Chart
@@ -641,6 +647,10 @@ ul#historyList {
     Generic
     ======================================
 */
+
+.btn-primary {
+  background-color: #2759AC;
+}
 
 .btn-small {
     padding: 4px 6px;

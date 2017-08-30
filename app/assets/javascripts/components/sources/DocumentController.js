@@ -20,7 +20,8 @@ define([
     'ngSanitize',
     'ngMaterial',
     'contextMenu',
-    'elasticsearch'
+    'elasticsearch',
+    'ui-bootstrap'
 ], function (angular) {
     'use strict';
     /**
@@ -28,7 +29,7 @@ define([
      * - render document content
      * - load additional metdata/keywords for loaded document
      */
-    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ui.bootstrap.contextMenu', 'elasticsearch'])
+    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ui.bootstrap.contextMenu', 'elasticsearch', 'ui.bootstrap'])
         .service('client', function (esFactory) {
             return esFactory({
               host: 'localhost:9500',
@@ -48,7 +49,6 @@ define([
                 link: function(scope, element, attrs) {
                     var content = scope.document.content;
                     var entities = scope.document.entities;
-                    console.log(scope.document);
                     scope.addEntityFilter = function(id) {
                         var el = _.find(entities, function(e) { return e.id == id });
                         ObserverService.addItem({ type: 'entity', data: { id: id, description: el.name, item: el.name, type: el.type }});
@@ -235,6 +235,9 @@ define([
                 'EntityService',
                 'client',
                 'esFactory',
+                '$uibModal',
+                '$log',
+                '$document',
                 function ($scope,
                           $http,
                           $templateRequest,
@@ -246,7 +249,10 @@ define([
                           ObserverService,
                           EntityService,
                           client,
-                          esFactory) {
+                          esFactory,
+                          $uibModal,
+                          $log,
+                          $document) {
 
                     var self = this;
 
@@ -281,6 +287,48 @@ define([
                     function init() {
                         updateTagLabels();
                     }
+
+
+                    $scope.open = function ($scope, doc) {
+                      var modalInstance = $uibModal.open({
+                        templateUrl: 'myModalContent.html',
+                        animation: true,
+                        component: 'modalComponent',
+                        size: 'sm',
+                        resolve: {
+                          parentScope: function() {
+                            return $scope;
+                          },
+                          doc: function() {
+                            return doc;
+                          }
+                        },
+                        controller: ('ModalController', ['$scope', function($scope) {
+
+                            var selectedEntity = $scope.$resolve.parentScope.selectedEntity;
+                            var entityTypes = $scope.$resolve.parentScope.entityTypes;
+                            var doc = $scope.$resolve.doc;
+
+                            $scope.entityName = selectedEntity.text
+                            $scope.entityTypes = entityTypes;
+                            $scope.selectedType = '';
+
+                            $scope.ok = function () {
+                              this.$resolve.parentScope.whitelist(selectedEntity, $scope.selectedType, doc.id);
+                              this.$close();
+                            };
+
+                            $scope.cancel = function () {
+                              this.$close();
+                            };
+                          }
+                        ])
+                      });
+                      modalInstance.result.then(function () {
+                      }, function () {
+                        $log.info('Modal dismissed at: ' + new Date());
+                      });
+                    };
 
                     $scope.retrieveKeywords = function(doc) {
                         var terms =  [];
@@ -318,15 +366,14 @@ define([
                     }
 
                     $scope.indexName = '';
-
                     function getIndexName() {
                       playRoutes.controllers.DocumentController.getIndexName().get().then(function(response) {
                           $scope.indexName = response.data.index;
                       });
                     }
 
+                    // get index name from the back end and print to the console
                     getIndexName();
-
                     console.log('index name: ' + $scope.indexName);
 
                     $scope.initTags = function(doc) {
@@ -364,42 +411,34 @@ define([
                         return results;
                     };
 
-                    // Enable to select Entity
+                    // Enable to select Entity and activate whitelisting modal
                     $scope.showSelectedEntity = function(doc) {
-                        $scope.selectedEntity =  $scope.getSelectionEntity(doc);
+                        $scope.selectedEntity =  $scope.getSelectionEntity(doc.content);
+                        if (($scope.selectedEntity.text.length) > 0 && ($scope.selectedEntity.text !== ' ')) {
+                          $scope.open($scope, doc);
+                        }
                     };
 
                     $scope.whitelist = function(entity, type, docId){
-                      type = type.replace(/\s/g, '');
+                      type = type.trim();
                       $scope.esWhitelist(entity, type, docId);
                       EntityService.whitelist(entity, type, docId);
                     };
 
+                    // Get entityTypes from observer service
                     $scope.entityTypes = [];
-
                     $scope.observer.getEntityTypes().then(function (types) {
-                        console.log(types);
                         types.map(function (e) {
                             if (e.name !== null) {
                                 $scope.entityTypes.push(e);
                             }
                         });
                     });
-                    /*
-                     if($scope.observer.getEntityTypes().$$state.value) {
-                     $scope.observer.getEntityTypes().$$state.value.map(function (e) {
-                     if (e.name !== null) {
-                     $scope.entityTypes.push(e);
-                     }
-                     });
-                     }
-                     */
 
                     $scope.selectedType = '';
                     var doc = $scope.tabs;
                     $scope.getSelectionEntity = function(doc) {
                       var text = "";
-                      // var doc = document.getElementsByTagName("doc-content")[0].innerText;
                       var start = 0;
                       var end = 0;
                       if (window.getSelection) {
@@ -409,6 +448,7 @@ define([
                       } else if (document.selection && document.selection.type != "Control") {
                          text = document.selection.createRange().text;
                       }
+                      text = text.trim();
                       return {
                         text,
                         start,
