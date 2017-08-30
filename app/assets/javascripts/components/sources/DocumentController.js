@@ -420,14 +420,13 @@ define([
                     };
 
                     $scope.whitelist = function(entity, type, docId){
-                      type = type.replace(/\s/g, '');
-
+                      type = type.trim();
                       $scope.esWhitelist(entity, type, docId);
                       EntityService.whitelist(entity, type, docId);
                     };
 
+                    // Get entityTypes from observer service
                     $scope.entityTypes = [];
-
                     $scope.observer.getEntityTypes().then(function (types) {
                         types.map(function (e) {
                             if (e.name !== null) {
@@ -449,6 +448,7 @@ define([
                       } else if (document.selection && document.selection.type != "Control") {
                          text = document.selection.createRange().text;
                       }
+                      text = text.trim();
                       return {
                         text,
                         start,
