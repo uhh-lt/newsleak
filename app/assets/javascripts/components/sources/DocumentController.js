@@ -522,12 +522,33 @@ define([
                       }).then(function (resp) {
                           $scope.esNewEntityType = resp;
                           $scope.removeTab(doc);
+                          var editItem = {
+                              type: 'openDoc',
+                              data: {
+                                  id: doc.id,
+                                  description: "#" + doc.id,
+                                  item: "#" + doc.id
+                              }
+                          };
+
+                          $scope.observer.addItem(editItem);
+
+                          playRoutes.controllers.EntityController.getEntitiesByDoc(doc.id).get().then(function (response) {
+                              // Provide document controller with document information
+                              $scope.sourceShared.tabs.push({
+                                  id: doc.id,
+                                  title: doc.id,
+                                  content: doc.content,
+                                  highlighted: doc.highlighted,
+                                  meta: doc.metadata,
+                                  entities: response.data
+                              });
+                          });
                       }, function (err) {
                           $scope.esNewEntityType = null;
                           console.trace(err.message);
                       });
                     }
-
 
                     function createFilterFor(query) {
                         var lowercaseQuery = angular.lowercase(query);
