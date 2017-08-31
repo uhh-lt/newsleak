@@ -288,7 +288,6 @@ define([
                         updateTagLabels();
                     }
 
-
                     $scope.open = function ($scope, doc) {
                       var modalInstance = $uibModal.open({
                         templateUrl: 'myModalContent.html',
@@ -314,7 +313,7 @@ define([
                             $scope.selectedType = '';
 
                             $scope.ok = function () {
-                              this.$resolve.parentScope.whitelist(selectedEntity, $scope.selectedType, doc.id);
+                              this.$resolve.parentScope.whitelist(selectedEntity, $scope.selectedType, doc);
                               this.$close();
                             };
 
@@ -419,10 +418,10 @@ define([
                         }
                     };
 
-                    $scope.whitelist = function(entity, type, docId){
+                    $scope.whitelist = function(entity, type, doc){
                       type = type.trim();
-                      $scope.esWhitelist(entity, type, docId);
-                      EntityService.whitelist(entity, type, docId);
+                      $scope.esWhitelist(entity, type, doc);
+                      EntityService.whitelist(entity, type, doc.id);
                     };
 
                     // Get entityTypes from observer service
@@ -456,7 +455,7 @@ define([
                       };
                     };
 
-                    $scope.esWhitelist = function(entity, typeEnt, docId) {
+                    $scope.esWhitelist = function(entity, typeEnt, doc) {
                       client.search({
                         index: $scope.indexName,
                         type: 'document',
@@ -472,18 +471,18 @@ define([
                         }
                       }).then(function (resp) {
                         $scope.esNewId = (resp.aggregations.max_id.value) + 1;
-                        $scope.createNewEntity(entity, typeEnt, docId);
+                        $scope.createNewEntity(entity, typeEnt, doc);
                       }, function (error, response) {
                         $scope.esNewId = null;
                         console.trace(err.message);
                       });
                     }
 
-                    $scope.createNewEntity = function(entity, typeEnt, docId) {
+                    $scope.createNewEntity = function(entity, typeEnt, doc) {
                       client.update({
                         index: $scope.indexName,
                         type: 'document',
-                        id: docId,
+                        id: doc.id,
                         body: {
                           script: "ctx._source.Entities.add(Entities)",
                           params: {
@@ -497,19 +496,19 @@ define([
                         }
                       }).then(function (resp) {
                           $scope.esNewEntity = resp;
-                          $scope.insertNewEntityType(entity, typeEnt, docId);
+                          $scope.insertNewEntityType(entity, typeEnt, doc);
                       }, function (err) {
                           $scope.esNewEntity = null;
                           console.trace(err.message);
                       });
                     }
 
-                    $scope.insertNewEntityType = function(entity, typeEnt, docId) {
+                    $scope.insertNewEntityType = function(entity, typeEnt, doc) {
                       var suffixType = typeEnt.toLowerCase();
                       client.update({
                         index: $scope.indexName,
                         type: 'document',
-                        id: docId,
+                        id: doc.id,
                         body: {
                           script: "ctx._source.Entities" + suffixType + ".add(Entities)",
                           params: {
@@ -522,13 +521,34 @@ define([
                         }
                       }).then(function (resp) {
                           $scope.esNewEntityType = resp;
-                          location.reload();
+                          $scope.removeTab(doc);
+                          var editItem = {
+                              type: 'openDoc',
+                              data: {
+                                  id: doc.id,
+                                  description: "#" + doc.id,
+                                  item: "#" + doc.id
+                              }
+                          };
+
+                          $scope.observer.addItem(editItem);
+
+                          playRoutes.controllers.EntityController.getEntitiesByDoc(doc.id).get().then(function (response) {
+                              // Provide document controller with document information
+                              $scope.sourceShared.tabs.push({
+                                  id: doc.id,
+                                  title: doc.id,
+                                  content: doc.content,
+                                  highlighted: doc.highlighted,
+                                  meta: doc.metadata,
+                                  entities: response.data
+                              });
+                          });
                       }, function (err) {
                           $scope.esNewEntityType = null;
                           console.trace(err.message);
                       });
                     }
-
 
                     function createFilterFor(query) {
                         var lowercaseQuery = angular.lowercase(query);
