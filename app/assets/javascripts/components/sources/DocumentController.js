@@ -44,7 +44,8 @@ define([
                 //replace: true,
                 scope: {
                     // Need to set-up a bi-directional binding in order to pass an object not a string
-                    document: '='
+                    document: '=',
+                    reloadDoc: '&withparam'
                 },
                 link: function(scope, element, attrs) {
                     var content = scope.document.content;
@@ -207,12 +208,13 @@ define([
                     }
                     // contextMenu for Blacklisting
                     scope.contextMenu = [
-                      ['Blacklist', function ($itemScope, event) {
-                        // $route.reload();
+                      ['Blacklist', function (scope, event) {
                         EntityService
                           .blacklist([
                             event.target.id
-                          ], true);
+                          ]);
+                        debugger;
+                        scope.reloadDoc(scope.document);
                       }],
                     ];
 
@@ -521,32 +523,37 @@ define([
                         }
                       }).then(function (resp) {
                           $scope.esNewEntityType = resp;
-                          $scope.removeTab(doc);
-                          var editItem = {
-                              type: 'openDoc',
-                              data: {
-                                  id: doc.id,
-                                  description: "#" + doc.id,
-                                  item: "#" + doc.id
-                              }
-                          };
-
-                          $scope.observer.addItem(editItem);
-
-                          playRoutes.controllers.EntityController.getEntitiesByDoc(doc.id).get().then(function (response) {
-                              // Provide document controller with document information
-                              $scope.sourceShared.tabs.push({
-                                  id: doc.id,
-                                  title: doc.id,
-                                  content: doc.content,
-                                  highlighted: doc.highlighted,
-                                  meta: doc.metadata,
-                                  entities: response.data
-                              });
-                          });
+                          $scope.reloadDoc(doc);
                       }, function (err) {
                           $scope.esNewEntityType = null;
                           console.trace(err.message);
+                      });
+                    }
+
+                    $scope.reloadDoc = function(doc) {
+                      debugger;
+                      $scope.removeTab(doc);
+                      var editItem = {
+                          type: 'openDoc',
+                          data: {
+                              id: doc.id,
+                              description: "#" + doc.id,
+                              item: "#" + doc.id
+                          }
+                      };
+
+                      $scope.observer.addItem(editItem);
+
+                      playRoutes.controllers.EntityController.getEntitiesByDoc(doc.id).get().then(function (response) {
+                          // Provide document controller with document information
+                          $scope.sourceShared.tabs.push({
+                              id: doc.id,
+                              title: doc.id,
+                              content: doc.content,
+                              highlighted: doc.highlighted,
+                              meta: doc.metadata,
+                              entities: response.data
+                          });
                       });
                     }
 
