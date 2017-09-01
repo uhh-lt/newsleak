@@ -213,8 +213,7 @@ define([
                           .blacklist([
                             event.target.id
                           ]);
-                        debugger;
-                        scope.reloadDoc(scope.document);
+                        scope.$parent.reloadDoc(scope.document);
                       }],
                     ];
 
@@ -531,7 +530,6 @@ define([
                     }
 
                     $scope.reloadDoc = function(doc) {
-                      debugger;
                       $scope.removeTab(doc);
                       var editItem = {
                           type: 'openDoc',
