@@ -135,6 +135,7 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         controllers.routes.javascript.EntityController.whitelistEntity,
         controllers.routes.javascript.EntityController.undoMergeByIds,
         controllers.routes.javascript.EntityController.getEntitiesByDoc,
+        controllers.routes.javascript.EntityController.getBlacklistsByDoc,
         controllers.routes.javascript.NetworkController.changeEntityTypeById,
         controllers.routes.javascript.KeywordNetworkController.changeEntityTypeByIdKeyword,
         controllers.routes.javascript.MetadataController.getMetadata,

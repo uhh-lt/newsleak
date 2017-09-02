@@ -421,8 +421,9 @@ define([
 
                     $scope.whitelist = function(entity, type, doc){
                       type = type.trim();
-                      $scope.esWhitelist(entity, type, doc);
-                      EntityService.whitelist(entity, type, doc.id);
+                      $scope.getBlacklists(doc);
+                      // $scope.esWhitelist(entity, type, doc);
+                      // EntityService.whitelist(entity, type, doc.id);
                     };
 
                     // Get entityTypes from observer service
@@ -526,6 +527,12 @@ define([
                       }, function (err) {
                           $scope.esNewEntityType = null;
                           console.trace(err.message);
+                      });
+                    }
+
+                    $scope.getBlacklists = function(doc) {
+                      playRoutes.controllers.EntityController.getEntitiesByDoc(doc.id).get().then(function (response) {
+                        console.log(response);
                       });
                     }
 
