@@ -217,6 +217,8 @@ define([
                       }],
                     ];
 
+                    scope.$parent.loadBlacklists(scope.document);
+
                     // Init component
                     scope.renderDoc();
                 }
@@ -421,7 +423,8 @@ define([
 
                     $scope.whitelist = function(entity, type, doc){
                       type = type.trim();
-                      $scope.getBlacklists(doc);
+                      var blacklists = isBlacklisted(entity, type);
+                      console.log(blacklists);
                       // $scope.esWhitelist(entity, type, doc);
                       // EntityService.whitelist(entity, type, doc.id);
                     };
@@ -530,10 +533,26 @@ define([
                       });
                     }
 
-                    $scope.getBlacklists = function(doc) {
-                      playRoutes.controllers.EntityController.getEntitiesByDoc(doc.id).get().then(function (response) {
-                        console.log(response);
+                    $scope.blacklists = [];
+                    $scope.loadBlacklists = function(doc) {
+                      playRoutes.controllers.EntityController.getBlacklistsByDoc(doc.id).get().then(function (response) {
+                        $scope.blacklists = response.data;
                       });
+                    }
+
+                    function isBlacklisted(entity, type) {
+                      var isBlacklisted = $scope.blacklists.filter((e) =>
+                        {
+                          if ((e.name === entity.text) &&
+                              (e.start === entity.start) &&
+                              (e.end === entity.end) &&
+                              (e.type === type)
+                            ) {
+                              return e;
+                            }
+                        }
+                      );
+                      return isBlacklisted;
                     }
 
                     $scope.reloadDoc = function(doc) {
