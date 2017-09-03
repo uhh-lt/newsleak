@@ -213,6 +213,7 @@ define([
                           .blacklist([
                             event.target.id
                           ]);
+                        scope.$parent.observer.notifyObservers();
                         scope.$parent.reloadDoc(scope.document);
                       }],
                     ];
@@ -424,9 +425,16 @@ define([
                     $scope.whitelist = function(entity, type, doc){
                       type = type.trim();
                       var blacklists = isBlacklisted(entity, type);
-                      console.log(blacklists);
-                      // $scope.esWhitelist(entity, type, doc);
-                      // EntityService.whitelist(entity, type, doc.id);
+                      if (blacklists.length > 0) {
+                        // Update network and frequency chart
+                        playRoutes.controllers.EntityController.undoBlacklistingByIds([blacklists[0].id]).get().then(function(response) {
+                          $scope.observer.notifyObservers();
+                          $scope.reloadDoc(doc);
+                        })
+                      } else {
+                        $scope.esWhitelist(entity, type, doc);
+                        EntityService.whitelist(entity, type, doc.id);
+                      }
                     };
 
                     // Get entityTypes from observer service
@@ -526,6 +534,7 @@ define([
                         }
                       }).then(function (resp) {
                           $scope.esNewEntityType = resp;
+                          $scope.observer.notifyObservers();
                           $scope.reloadDoc(doc);
                       }, function (err) {
                           $scope.esNewEntityType = null;
