@@ -42,6 +42,17 @@ trait EntityService {
    */
   def getByIds(ids: List[Long])(index: String): List[Entity]
 
+  /**
+   * Returns a record of [[models.Entity]] matching the given entity name and type.
+   *
+   * @param name entity name.
+   * @param type entity type
+   * @param index the data source index or database name to query.
+   * @return a list of [[models.Entity]] corresponding to the given name and type or [[scala.Nil]] if no
+   * matching entity is found.
+   */
+  def getNameAndType(name: String, enType: String)(index: String): List[Entity]
+
   // added
   /*
   /**
@@ -195,6 +206,15 @@ class DBEntityService extends EntityService {
     sql"""SELECT * FROM entity
           WHERE id IN (${ids})
                 AND NOT isblacklisted
+          ORDER BY frequency DESC""".map(Entity(_)).list.apply()
+  }
+
+  /** @inheritdoc */
+  override def getNameAndType(name: String, enType: String)(index: String): List[Entity] = db(index).readOnly { implicit session =>
+    sql"""SELECT * FROM entity
+          WHERE name IN (${name})
+          AND type IN (${enType})
+          AND NOT isblacklisted
           ORDER BY frequency DESC""".map(Entity(_)).list.apply()
   }
 
