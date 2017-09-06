@@ -83,6 +83,24 @@ class EntityController @Inject() (
   }
 
   /**
+   * Returns all blacklisted entity occurrences for the given document including their position in the document.
+   *
+   * @param docId the document id.
+   */
+  def getBlacklistsByDoc(docId: Long) = Action { implicit request =>
+    val typesToId = entityService.getTypes()(currentDataset)
+    val entityToOccurrences = entityService.getBlacklistFragments(docId)(currentDataset).groupBy(_._1)
+    val res = entityToOccurrences.flatMap {
+      case (Entity(id, name, t, _), occ) =>
+        occ.map {
+          case (_, fragment) =>
+            Json.obj("id" -> id, "name" -> name, "type" -> t, "typeId" -> typesToId(t), "start" -> fragment.start, "end" -> fragment.end)
+        }
+    }
+    Ok(toJson(res)).as("application/json")
+  }
+
+  /**
    * Removes the blacklisted mark from the entities associated with the given ids.
    *
    * @param ids the entity ids to remove the blacklist mark from.

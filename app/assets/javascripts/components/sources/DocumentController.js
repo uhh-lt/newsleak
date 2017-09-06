@@ -213,9 +213,12 @@ define([
                           .blacklist([
                             event.target.id
                           ]);
+                        scope.$parent.observer.notifyObservers();
                         scope.$parent.reloadDoc(scope.document);
                       }],
                     ];
+
+                    scope.$parent.loadBlacklists(scope.document);
 
                     // Init component
                     scope.renderDoc();
@@ -421,8 +424,17 @@ define([
 
                     $scope.whitelist = function(entity, type, doc){
                       type = type.trim();
-                      $scope.esWhitelist(entity, type, doc);
-                      EntityService.whitelist(entity, type, doc.id);
+                      var blacklists = isBlacklisted(entity, type);
+                      if (blacklists.length > 0) {
+                        // Update network and frequency chart
+                        playRoutes.controllers.EntityController.undoBlacklistingByIds([blacklists[0].id]).get().then(function(response) {
+                          $scope.observer.notifyObservers();
+                          $scope.reloadDoc(doc);
+                        })
+                      } else {
+                        $scope.esWhitelist(entity, type, doc);
+                        EntityService.whitelist(entity, type, doc.id);
+                      }
                     };
 
                     // Get entityTypes from observer service
@@ -522,11 +534,34 @@ define([
                         }
                       }).then(function (resp) {
                           $scope.esNewEntityType = resp;
+                          $scope.observer.notifyObservers();
                           $scope.reloadDoc(doc);
                       }, function (err) {
                           $scope.esNewEntityType = null;
                           console.trace(err.message);
                       });
+                    }
+
+                    $scope.blacklists = [];
+                    $scope.loadBlacklists = function(doc) {
+                      playRoutes.controllers.EntityController.getBlacklistsByDoc(doc.id).get().then(function (response) {
+                        $scope.blacklists = response.data;
+                      });
+                    }
+
+                    function isBlacklisted(entity, type) {
+                      var isBlacklisted = $scope.blacklists.filter((e) =>
+                        {
+                          if ((e.name === entity.text) &&
+                              (e.start === entity.start) &&
+                              (e.end === entity.end) &&
+                              (e.type === type)
+                            ) {
+                              return e;
+                            }
+                        }
+                      );
+                      return isBlacklisted;
                     }
 
                     $scope.reloadDoc = function(doc) {

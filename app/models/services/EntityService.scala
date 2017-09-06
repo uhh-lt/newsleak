@@ -172,6 +172,15 @@ trait EntityService {
    */
   def getEntityFragments(docId: Long)(index: String): List[(Entity, Fragment)]
 
+  /**
+   * Returns all blacklisted entity occurrences for the given document including their position in the document.
+   *
+   * @param docId the document id.
+   * @param index the data source index or database name to query.
+   * @return a list of tuple consisting of an entity and its position in the document.
+   */
+  def getBlacklistFragments(docId: Long)(index: String): List[(Entity, Fragment)]
+
   /** Returns a map of distinct entity types linking to a unique id for the underlying collection. */
   def getTypes()(index: String): Map[String, Int]
 }
@@ -288,6 +297,18 @@ class DBEntityService extends EntityService {
           INNER JOIN entity AS e ON e.id = entid
           WHERE docid = ${docId}
           AND NOT e.isblacklisted
+       """.map(rs => (Entity(rs), rs.int("entitystart"), rs.int("entityend"))).list.apply()
+    }
+    fragments.map { case (e, start, end) => (e, Fragment(start, end)) }
+  }
+
+  /** @inheritdoc */
+  override def getBlacklistFragments(docId: Long)(index: String): List[(Entity, Fragment)] = {
+    val fragments = db(index).readOnly { implicit session =>
+      sql"""SELECT entid AS id, e.name, e.type, e.frequency, entitystart, entityend FROM entityoffset
+          INNER JOIN entity AS e ON e.id = entid
+          WHERE docid = ${docId}
+          AND e.isblacklisted
        """.map(rs => (Entity(rs), rs.int("entitystart"), rs.int("entityend"))).list.apply()
     }
     fragments.map { case (e, start, end) => (e, Fragment(start, end)) }
