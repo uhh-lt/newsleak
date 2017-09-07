@@ -70,6 +70,16 @@ define([
 
             var self = this;
 
+            $scope.tagsSelected = false;
+
+            // TODO
+            $scope.selectTags = function (state) {
+                console.log('select tags!');
+                console.log(state);
+                // KeywordNetworkService.toggleTags(state);
+                $scope.reloadKeywordGraphWithEdgeImportance();
+            };
+
             /* Background collection */
             self.nodes = new VisDataSet([]);
             self.edges = new VisDataSet([]);
@@ -104,7 +114,7 @@ define([
                 }, {
                     title: 'Blacklist Keyword',
                     action: function (value, nodeId) {
-                        EntityService.blacklistKeyword([nodeId]);
+                        EntityService.blacklistKeyword(self.nodesDataset._data[nodeId].label, nodeId);
                     }
                 }
             ];
@@ -184,9 +194,6 @@ define([
 
                 var filters = currentFilter();
                 var fraction = $scope.types.map(function(t) { return { "key": t.name, "data": t.sliderModel }; });
-                console.log('Fraction:');
-                console.log(fraction);
-                console.log(filters.fulltext);
 
                 playRoutes.controllers.KeywordNetworkController.induceSubgraphKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, fraction).get().then(function(response) {
                         // Enable physics for new graph data when network is initialized
@@ -195,17 +202,23 @@ define([
                         }
                         $scope.loading = true;
 
-
                         var nodes = response.data.entities.map(function(n) {
                             // See css property div.network-tooltip for custom tooltip styling
-                            return {id: n.id, label: n.label, type: n.type, value: n.count};
+                            // TODO hier keyword und tag type für die farben einfügen
+                            if(n.id == -1) {
+                                return {id: n.id, label: n.label, type: 'TAG', value: n.count};
+                            }
+                            else {
+                                return {id: n.id, label: n.label, type: 'KEYWORD', value: n.count};
+                            }
                         });
 
+                        self.nodes.clear();
                         self.nodesDataset.clear();
                         self.nodesDataset.add(nodes);
+
                         // Highlight new nodes after each filtering step
                         markNewNodes(nodes.map(function(n) { return n.id; }));
-                        self.nodes.clear();
 
                         var edges = response.data.relations.map(function(n) {
                             return {
@@ -330,7 +343,7 @@ define([
                 updateImportanceSlider();
             }
 
-            $scope.entityService.subscribeBlacklist($scope, function blacklisted(ev, arg) {
+            $scope.entityService.subscribeBlacklistKeyword($scope, function blacklisted(ev, arg) {
                 // Remove node from the visual interface
                 hideNodes(arg.parameter);
                 // Fetch node replacements for the merged nodes and preserve the current applied edge importance
@@ -794,6 +807,21 @@ define([
                 for (var i = 0; i < dataset.length; i++) {
                     if (dataset[i].label == label) {
                         return dataset[i].id
+                    }
+                }
+            }
+
+            function getKeywordById(id, dataset) {
+
+                for(let item of dataset._data) {
+                    if(item.id == id) {
+                        return item.label;
+                    }
+                }
+
+                for (var i = 0; i < dataset._data.length; i++) {
+                    if (dataset._data[i].id == id) {
+                        return dataset._data[i].label
                     }
                 }
             }

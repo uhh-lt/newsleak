@@ -18,12 +18,12 @@
 package models.services
 
 import com.google.inject.{ ImplementedBy, Inject }
-import models.{ Bucket, Document, KeywordAggregation, KeywordNetwork }
+import models.{ Bucket, Document, KeywordAggregation, KeywordNetwork, Tag }
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
 
 import scala.collection.mutable.ListBuffer
-import scalikejdbc.NamedDB
+import scalikejdbc._
 // scalastyle:off
 import scala.collection.JavaConversions._
 // scalastyle:on
@@ -89,6 +89,16 @@ trait KeywordNetworkService {
    * @return a map linking from the unique entity type to the number of neighbors of that type.
    */
   def getNeighborCountsPerTypeKeyword(facets: Facets, entityId: Long)(index: String): Map[String, Int]
+
+  /**
+   * Selects all tags from the DB
+   * @return a list of all Tags that are stored in the DB
+   */
+  def getAllTags()(index: String): List[Tag]
+
+  def toggleTags(set: Boolean): Unit
+
+  def undoBlacklistingKeywords(blacklistedKeywords: List[String])(index: String): Unit
 }
 
 /**
@@ -109,6 +119,7 @@ class ESKeywordNetworkService @Inject() (
 ) extends KeywordNetworkService {
 
   private val db = (index: String) => NamedDB(Symbol(index))
+  var addTags = false
 
   /** @inheritdoc */
   //noinspection ScalaStyle
@@ -118,11 +129,35 @@ class ESKeywordNetworkService @Inject() (
     exclude: List[String]
   )(index: String): KeywordNetwork = {
 
-    val keywords = aggregateService.keywordAggregate(facets, utils.keywordsField._1, 12, List(), exclude)(index).keywords.distinct
+    var tags: List[Tag] = List()
 
-    val rels = induceRelationshipsKeyword(facets, keywords.collect { case KeyTerm(key, occurance) => key }, index)
+    val keywords = aggregateService.keywordAggregate(facets, utils.keywordsField._1, 20, List(), exclude)(index).keywords.distinct
 
-    KeywordNetwork(keywords, rels)
+    val keywordGraphNodes: ListBuffer[KeyTerm] = ListBuffer()
+    val searchableTerms: ListBuffer[String] = ListBuffer()
+
+    if (addTags) {
+      tags = getAllTags()(index)
+      val id: Long = -1
+
+      for (tag <- tags) {
+        if (!exclude.contains(tag.label)) {
+          keywordGraphNodes.append(KeyTerm(tag.label, id))
+          searchableTerms.append(tag.label)
+        }
+      }
+    }
+
+    for (keyword <- keywords) {
+      if (!exclude.contains(keyword.term)) {
+        keywordGraphNodes.append(keyword)
+        searchableTerms.append(keyword.term)
+      }
+    }
+
+    val rels = induceRelationshipsKeyword(facets, searchableTerms.toList, index)
+
+    KeywordNetwork(keywordGraphNodes.toList, rels)
   }
 
   /** @inheritdoc */
@@ -201,5 +236,47 @@ class ESKeywordNetworkService @Inject() (
     }.toList
 
     Aggregation("neighbors", buckets)
+  }
+
+  /** @inheritdoc **/
+  override def getAllTags()(index: String): List[Tag] = db(index).readOnly { implicit session =>
+    sql"""SELECT t.id, t.documentid, l.label FROM tags t
+          INNER JOIN labels AS l ON l.id = t.labelid"""
+      .map(Tag(_)).list().apply()
+  }
+
+  /**
+   * stores all keywords in database to add blacklist field
+   * @param keywords
+   * @param index
+   */
+  private def storeKeywordsInDB(keywords: List[KeyTerm])(index: String): Unit = db(index).localTx { implicit session =>
+    // TODO with occurence
+    for (keyword <- keywords) {
+      var keyterm: String = ""
+      var numResults: List[String] = List()
+      Option(keyword.term) match {
+        case Some(value) =>
+          keyterm = keyword.term
+          val selectString = sql"""SELECT term FROM terms WHERE $keyterm = term"""
+          numResults = selectString.map(_.toString).list().apply()
+
+          if (numResults.length == 0) {
+            sql"""INSERT INTO terms(term, frequency, isblacklisted) values ($keyterm, 1, false)"""
+              .update().apply()
+          }
+        case None => ;
+      }
+    }
+  }
+
+  def toggleTags(set: Boolean): Unit = {
+    addTags = set
+  }
+
+  def undoBlacklistingKeywords(blacklistedKeywords: List[String])(index: String) = db(index).localTx { implicit session =>
+    for (bk <- blacklistedKeywords) {
+      sql"DELETE FROM terms where term = ${bk}".update().apply()
+    }
   }
 }

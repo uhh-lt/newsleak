@@ -55,6 +55,12 @@ class EntityController @Inject() (
     Ok(toJson(entities)).as("application/json")
   }
 
+  /** Returns all blacklisted keywords for the underlying collection. */
+  def getBlacklistedKeywords = Action { implicit request =>
+    val keywords = entityService.getBlacklistedKeywords()(currentDataset)
+    Ok(toJson(keywords)).as("application/json")
+  }
+
   /** Returns all merged entities for the underlying collection. */
   def getMergedEntities = Action { implicit request =>
     val entities = entityService.getMerged()(currentDataset).map {

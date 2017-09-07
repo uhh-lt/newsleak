@@ -77,7 +77,7 @@ trait EntityService {
    * @return ''true'', if all keywords are successfully marked as blacklisted. ''False'' if at least one keyword
    *         is not correct marked.
    */
-  def blacklistKeyword(ids: List[Long])(index: String): Boolean
+  def blacklistKeyword(keyword: String)(index: String): Boolean
 
   /**
    * Marks the entity to whitelist.
@@ -112,6 +112,14 @@ trait EntityService {
    * @return a list of [[models.Entity]], where each entity is marked as blacklisted.
    */
   def getBlacklisted()(index: String): List[Entity]
+
+  /**
+   * Returns all blacklisted keywords for the underlying collection.
+   *
+   * @param index the data source index or database name to query.
+   * @return a list of String, where each keyterm is marked as blacklisted.
+   */
+  def getBlacklistedKeywords()(index: String): List[String]
 
   /**
    * Merges multiple nodes in a given focal node.
@@ -205,12 +213,14 @@ class DBEntityService extends EntityService {
   }
 
   /** @inheritdoc*/
-  override def blacklistKeyword(ids: List[Long])(index: String): Boolean = db(index).localTx { implicit session =>
-    // TODO whitelist() first
-    val id = sql"(SELECT coalesce(max(id),0)+1 FROM entity)".update().apply()
-    // sql"INSERT INTO entity (id, name, type, frequency) VALUES (${id}, ${keyword.name}, KEYWORD, ${keyword.score})".update().apply()
-    val entityCount = blacklist(List(id.toLong))(index)
-    entityCount == 1
+  override def blacklistKeyword(keyword: String)(index: String): Boolean = db(index).localTx { implicit session =>
+    val numResults = sql"SELECT term FROM terms WHERE ${keyword} = term".map(rs => rs.string("term")).list().apply()
+    val keywordType = "KEYWORD"
+
+    if (numResults.length == 0) {
+      sql"INSERT INTO terms(term, type) values (${keyword}, ${keywordType})".update().apply()
+    }
+    true
   }
 
   /** @inheritdoc */
@@ -233,6 +243,11 @@ class DBEntityService extends EntityService {
   /** @inheritdoc */
   override def getBlacklisted()(index: String): List[Entity] = db(index).readOnly { implicit session =>
     sql"SELECT * FROM entity WHERE isblacklisted".map(Entity(_)).list.apply()
+  }
+
+  /** @inheritdoc */
+  override def getBlacklistedKeywords()(index: String): List[String] = db(index).readOnly { implicit session =>
+    sql"SELECT term FROM terms".map(rs => rs.string("term")).list().apply()
   }
 
   /** @inheritdoc */
