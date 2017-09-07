@@ -75,9 +75,8 @@ define([
             // TODO
             $scope.selectTags = function (state) {
                 console.log('select tags!');
-                console.log(state);
-                // KeywordNetworkService.toggleTags(state);
-                $scope.reloadKeywordGraphWithEdgeImportance();
+                console.log(!state);
+                EntityService.toggleTags(!state, $scope);
             };
 
             /* Background collection */
@@ -202,14 +201,17 @@ define([
                         }
                         $scope.loading = true;
 
+                        console.log(response.data.entities);
+
                         var nodes = response.data.entities.map(function(n) {
                             // See css property div.network-tooltip for custom tooltip styling
-                            // TODO hier keyword und tag type für die farben einfügen
-                            if(n.id == -1) {
-                                return {id: n.id, label: n.label, type: 'TAG', value: n.count};
+                            if(n.termType == 'TAG') {
+                                console.log('TAG');
+                                return {id: n.id, label: n.label, group: 6, type: 'TAG', value: n.count};
                             }
                             else {
-                                return {id: n.id, label: n.label, type: 'KEYWORD', value: n.count};
+                                console.log('KEYWORD');
+                                return {id: n.id, label: n.label, group: 7, type: 'KEYWORD', value: n.count};
                             }
                         });
 
@@ -256,6 +258,7 @@ define([
                 $scope.observerService.getEntityTypes().then(function (types) {
                     $scope.types = types.map(function(t) { return _.extend(t, { sliderModel: 5 }) });
                     // Initialize graph
+                    $scope.reloadGraph();
                     $scope.reloadGraph();
                 });
             }
@@ -668,12 +671,18 @@ define([
                 playRoutes.controllers.KeywordNetworkController.getNeighborCountsKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, node.id).get().then(function(response) {
                     // var formattedTerms = response.data.map(function(t) { return '' +  t.type + ': ' + t.count; });
 
-                    var docTip = '<p>Occurs in <b>' + node.value + ' </b>documents</p>'; // <p>Type: <b>' + node.type + '</b></p>';
-                    // var neighborTip = '<p><b>Neighbors</b></p><ul><li>' + formattedTerms.join('</li><li>') + '</li></ul>';
-                    var tooltip = docTip; // + neighborTip;
+                    if(node.type != 'TAG'){
+                        var docTip = '<p>Occurs in <b>' + node.value + ' </b>documents</p>'; // <p>Type: <b>' + node.type + '</b></p>';
+                        // var neighborTip = '<p><b>Neighbors</b></p><ul><li>' + formattedTerms.join('</li><li>') + '</li></ul>';
+                        var tooltip = docTip; // + neighborTip;
+                    }
 
                     self.nodesDataset.update({ id: node.id, title: tooltip });
                 });
+
+                // TODO hier hover action einfügen
+                console.log('HOVER:');
+                console.log(node);
             }
 
             function clickEvent(event) {

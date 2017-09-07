@@ -146,7 +146,8 @@ class KeywordNetworkController @Inject() (
     for (i <- 0 to nodes.length - 1) termsArray(i) = Json.obj(
       "id" -> i,
       "label" -> nodes(i).term,
-      "count" -> nodes(i).score
+      "count" -> nodes(i).score,
+      "termType" -> nodes(i).termType
     )
 
     val terms: List[JsObject] = termsArray.toList
@@ -190,6 +191,11 @@ class KeywordNetworkController @Inject() (
 
   def undoBlacklistingKeywords(blacklistedKeywords: List[String]) = Action { implicit request =>
     keywordNetworkService.undoBlacklistingKeywords(blacklistedKeywords)(currentDataset)
+    Ok("success").as("Text")
+  }
+
+  def toggleTags(state: Boolean) = Action { implicit request =>
+    keywordNetworkService.toggleTags(state)
     Ok("success").as("Text")
   }
 }

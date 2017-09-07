@@ -56,6 +56,12 @@ define([
                     ).get().then(function(response) {
                         $rootScope.$emit('notifying-service-event', { parameter: entity, response: response });
                     });
+                },
+
+                toggleTags: function (state, scope) {
+                    playRoutes.controllers.KeywordNetworkController.toggleTags(state).get().then(function () {
+                        scope.reloadGraph();
+                    })
                 }
             };
         }])

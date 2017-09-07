@@ -292,8 +292,8 @@ class ESAggregateService @Inject() (clientService: SearchClientService, utils: E
         val agg: Terms = response.getAggregations.get(k)
         val buckets = agg.getBuckets.collect {
           // If include filter is given don't add zero count entries (will be post processed)
-          case (b) if filters.nonEmpty && filters.contains(b.getKeyAsString) => KeyTerm(b.getKeyAsString, b.getDocCount)
-          case (b) if filters.isEmpty => KeyTerm(b.getKeyAsString, b.getDocCount)
+          case (b) if filters.nonEmpty && filters.contains(b.getKeyAsString) => KeyTerm(b.getKeyAsString, b.getDocCount, "KEYWORD")
+          case (b) if filters.isEmpty => KeyTerm(b.getKeyAsString, b.getDocCount, "KEYWORD")
         }.toList
         // We need to add missing zero buckets for entities filters manually,
         // because aggregation is not able to process long ids with zero buckets
@@ -301,10 +301,10 @@ class ESAggregateService @Inject() (clientService: SearchClientService, utils: E
         val zeroEntities = filters.filterNot(s => addedBuckets.contains(s))
 
         val resBuckets = if (response.getHits.getTotalHits == 0) List() else buckets
-        KeywordAggregation(k, resBuckets ::: zeroEntities.map(s => KeyTerm(s, 0)))
+        KeywordAggregation(k, resBuckets ::: zeroEntities.map(s => KeyTerm(s, 0, "KEYWORD")))
       case (k, (v, s)) =>
         val agg: Terms = response.getAggregations.get(k)
-        val buckets = agg.getBuckets.map(b => KeyTerm(b.getKeyAsString, b.getDocCount)).toList
+        val buckets = agg.getBuckets.map(b => KeyTerm(b.getKeyAsString, b.getDocCount, "KEYWORD")).toList
 
         val resBuckets = if (response.getHits.getTotalHits == 0) buckets.filter(b => filters.contains(b.term)) else buckets
         KeywordAggregation(k, resBuckets)

@@ -118,6 +118,8 @@ class ESKeywordNetworkService @Inject() (
     networkService: NetworkService
 ) extends KeywordNetworkService {
 
+  // TODO fix tag relation -> search by tag.documentId for keywords
+
   private val db = (index: String) => NamedDB(Symbol(index))
   var addTags = false
 
@@ -131,8 +133,6 @@ class ESKeywordNetworkService @Inject() (
 
     var tags: List[Tag] = List()
 
-    val keywords = aggregateService.keywordAggregate(facets, utils.keywordsField._1, 20, List(), exclude)(index).keywords.distinct
-
     val keywordGraphNodes: ListBuffer[KeyTerm] = ListBuffer()
     val searchableTerms: ListBuffer[String] = ListBuffer()
 
@@ -142,11 +142,13 @@ class ESKeywordNetworkService @Inject() (
 
       for (tag <- tags) {
         if (!exclude.contains(tag.label)) {
-          keywordGraphNodes.append(KeyTerm(tag.label, id))
+          keywordGraphNodes.append(KeyTerm(tag.label, id, "TAG"))
           searchableTerms.append(tag.label)
         }
       }
     }
+
+    val keywords = aggregateService.keywordAggregate(facets, utils.keywordsField._1, 20 - searchableTerms.length, List(), exclude)(index).keywords.distinct
 
     for (keyword <- keywords) {
       if (!exclude.contains(keyword.term)) {
@@ -178,9 +180,9 @@ class ESKeywordNetworkService @Inject() (
     val agg = aggregateService.keywordAggregate(facets, utils.keywordsField._1, 2, t, Nil)(index)
     agg match {
       // No edge between both since their frequency is zero
-      case KeywordAggregation(_, KeyTerm(nodeA, 0) :: KeyTerm(nodeB, 0) :: Nil) =>
+      case KeywordAggregation(_, KeyTerm(nodeA, 0, "KEYWORD") :: KeyTerm(nodeB, 0, "KEYWORD") :: Nil) =>
         None
-      case KeywordAggregation(_, KeyTerm(nodeA, freqA) :: KeyTerm(nodeB, freqB) :: Nil) =>
+      case KeywordAggregation(_, KeyTerm(nodeA, freqA, "KEYWORD") :: KeyTerm(nodeB, freqB, "KEYWORD") :: Nil) =>
         // freqA and freqB are the same since we query for docs containing both
         Some(KeywordRelationship(nodeA, nodeB, freqA))
       case _ => None
@@ -190,7 +192,7 @@ class ESKeywordNetworkService @Inject() (
   /** @inheritdoc */
   //noinspection ScalaStyle
   override def induceNetworkKeyword(facets: Facets, currentNetwork: List[String], nodes: List[String])(index: String): KeywordNetwork = {
-    val buckets = aggregateService.aggregateKeywords(facets, nodes.length, nodes, Nil)(index).buckets.collect { case MetaDataBucket(key, occurrence) => KeyTerm(key, occurrence) }
+    val buckets = aggregateService.aggregateKeywords(facets, nodes.length, nodes, Nil)(index).buckets.collect { case MetaDataBucket(key, occurrence) => KeyTerm(key, occurrence, "KEYWORD") }
     // Fetch relationships between new nodes
     val inBetweenRels = induceRelationshipsKeyword(facets, nodes, index)
     // Fetch relationships between new nodes and current network
