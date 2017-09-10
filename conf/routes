@@ -30,14 +30,19 @@ GET        /induceSubgraphKeyword                 controllers.KeywordNetworkCont
 GET        /addNodeKeyword                        controllers.KeywordNetworkController.addNodesKeyword(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, currentNetwork: List[String], nodes: List[String])
 GET        /blacklistEntitiesByIdKeyword          controllers.KeywordNetworkController.blacklistEntitiesByIdKeyword(ids: List[Long])
 GET        /mergeEntitiesByIdKeyword              controllers.KeywordNetworkController.mergeEntitiesByIdKeyword(focalId: Long, duplicates: List[Long])
-GET        /blacklistKeywordsByIdKeyword          controllers.KeywordNetworkController.blacklistKeywordsByIdKeyword(ids: List[Long])
+GET        /blacklistKeywordByKeyTerm             controllers.KeywordNetworkController.blacklistKeywordByKeyTerm(keyword: String)
 GET        /changeEntityNameByIdKeyword           controllers.KeywordNetworkController.changeEntityNameByIdKeyword(id: Long, newName: String)
 GET        /changeEntityTypeByIdKeyword           controllers.KeywordNetworkController.changeEntityTypeByIdKeyword(id: Long, newType: String)
 GET        /getNeighborCountsKeyword              controllers.KeywordNetworkController.getNeighborCountsKeyword(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, nodeId: Long)
+GET        /undoBlacklistingKeywords              controllers.KeywordNetworkController.undoBlacklistingKeywords(blacklistedKeywords: List[String])
+GET        /toggleTags                            controllers.KeywordNetworkController.toggleTags(state: Boolean)
+GET        /getTags                               controllers.KeywordNetworkController.getTags
+GET        /setTagKeywordRelation                 controllers.KeywordNetworkController.setTagKeywordRelation(tag: String, keywords: List[String], frequencies: List[Long])
 GET        /getEntities                           controllers.EntityController.getEntitiesByType(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, size: Int, entityType: String, filter: List[Long])
 GET        /getRecordedEntity                     controllers.EntityController.getRecordedEntity(text: String, type: String)
 GET        /getEntityTypes                        controllers.EntityController.getEntityTypes
 GET        /getBlacklisted                        controllers.EntityController.getBlacklistedEntities
+GET        /getBlacklistedKeywords                controllers.EntityController.getBlacklistedKeywords
 GET        /getMerged                             controllers.EntityController.getMergedEntities
 GET        /undoBlacklisting                      controllers.EntityController.undoBlacklistingByIds(ids: List[Long])
 GET        /whitelistEntity                       controllers.EntityController.whitelistEntity(text: String, start: String, end: String, enType: String, docId: String, entId: String)

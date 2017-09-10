@@ -26,7 +26,7 @@ import scalikejdbc.WrappedResultSet
  * @param term the important term value.
  * @param score the score of the important term. Higher values represent more important terms.
  */
-case class KeyTerm(term: String, score: Long)
+case class KeyTerm(term: String, score: Long, termType: String)
 
 /** Companion object for [[models.KeyTerm]] instances. */
 object KeyTerm {
@@ -35,5 +35,5 @@ object KeyTerm {
   implicit val keyTermFormat = Json.format[KeyTerm]
 
   /** Factory method to create key terms from database result sets. */
-  def apply(rs: WrappedResultSet): KeyTerm = KeyTerm(rs.string("term"), rs.int("frequency"))
+  def apply(rs: WrappedResultSet): KeyTerm = KeyTerm(rs.string("term"), rs.int("frequency"), rs.string("type"))
 }

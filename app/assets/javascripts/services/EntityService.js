@@ -28,6 +28,11 @@ define([
                     scope.$on('$destroy', handler);
                 },
 
+                subscribeBlacklistKeyword: function(scope, callback) {
+                    var handler = $rootScope.$on('notifying-service-event2', callback);
+                    scope.$on('$destroy', handler);
+                },
+
                 blacklist: function(ids) {
                     // TODO: Move to EntityController
                     playRoutes.controllers.NetworkController.blacklistEntitiesById(ids).get().then(function(response) {
@@ -35,9 +40,9 @@ define([
                     });
                 },
 
-                blacklistKeyword: function (ids) {
-                    playRoutes.controllers.KeywordNetworkController.blacklistKeywordsByIdKeyword(ids).get().then(function (response) {
-                        $rootScope.$emit('notifying-service-event', {parameter: ids, response: response});
+                blacklistKeyword: function (keyword, id) {
+                    playRoutes.controllers.KeywordNetworkController.blacklistKeywordByKeyTerm(keyword).get().then(function (response) {
+                        $rootScope.$emit('notifying-service-event2', {parameter: [id], response: response});
                     });
                 },
 
@@ -52,6 +57,12 @@ define([
                     ).get().then(function(response) {
                         $rootScope.$emit('notifying-service-event', { parameter: entity, response: response });
                     });
+                },
+
+                toggleTags: function (state, scope) {
+                    playRoutes.controllers.KeywordNetworkController.toggleTags(state).get().then(function () {
+                        scope.reloadGraph();
+                    })
                 }
             };
         }])

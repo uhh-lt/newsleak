@@ -226,6 +226,20 @@ define([
             function fetchBlacklist() {
                  playRoutes.controllers.EntityController.getBlacklistedEntities().get().then(function (response) {
                      $scope.blacklist = response.data;
+                     playRoutes.controllers.EntityController.getBlacklistedKeywords().get().then(function (response) {
+
+                         let i = 1;
+                         for(let item of response.data){
+                             $scope.blacklist.push({
+                                 // id: Long, name: String, entityType: String, freq: Int
+                                 id: i,
+                                 name: item,
+                                 entityType: 'KEYWORD',
+                                 freq: 1
+                             });
+                             i++;
+                         }
+                     });
                 });
             }
 
@@ -253,6 +267,23 @@ define([
             };
 
             $scope.removeFromBlacklist = function() {
+
+                var blacklist = [];
+                for(let item of $scope.blacklistSelection) {
+                    if(item.entityType == 'KEYWORD'){
+                        blacklist.push(item.name);
+                    }
+                }
+
+                if(blacklist.length > 0) {
+                    playRoutes.controllers.KeywordNetworkController.undoBlacklistingKeywords(blacklist).get().then(function () {
+                        for(let item of blacklist){
+                            var index = $scope.blacklistSelection.indexOf(item);
+                            $scope.blacklistSelection.splice(index, 1);
+                        }
+                    });
+                }
+
                 // TODO: Enhancement update only special parts of the application
                 removeSelection(
                     $scope.blacklist,

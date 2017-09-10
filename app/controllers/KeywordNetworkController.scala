@@ -23,9 +23,11 @@ import models.services.{ EntityService, KeywordNetworkService }
 import models.{ Facets, KeyTerm, KeywordNetwork, KeywordRelationship }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
-import scalikejdbc.{ NamedDB, SQL }
+import scalikejdbc._
 import util.DateUtils
 import util.SessionUtils.currentDataset
+
+import scala.collection.mutable.ListBuffer
 
 /**
  * Provides network related actions.
@@ -95,9 +97,8 @@ class KeywordNetworkController @Inject() (
     val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
     val sizes = nodeFraction.mapValues(_.toInt)
 
-    // val blacklistedKeywords = getBlacklistedKeywords()(currentDataset).map(_.term)
-    // val blacklistedKeywords = entityService.getBlacklisted()(currentDataset).map(_.name)
-    val blacklistedKeywords = List()
+    val blacklistedKeywords: List[String] = entityService.getBlacklistedKeywords()(currentDataset)
+
     val KeywordNetwork(nodes, relations) = keywordNetworkService.createNetworkKeyword(facets, sizes, blacklistedKeywords)(currentDataset)
 
     if (nodes.isEmpty) {
@@ -110,12 +111,6 @@ class KeywordNetworkController @Inject() (
       Ok(Json.obj("entities" -> graphEntities, "relations" -> graphRelations)).as("application/json")
     }
   }
-
-  /*
-  def getBlacklistedKeywords()(index: String): List[KeyTerm] = db(index).readOnly { implicit session =>
-    sql"SELECT * FROM terms").map(KeyTerm(_).list.apply()
-  }
-  */
 
   /**
    * Adds new nodes to the current network matching the given search query.
@@ -153,7 +148,8 @@ class KeywordNetworkController @Inject() (
     for (i <- 0 to nodes.length - 1) termsArray(i) = Json.obj(
       "id" -> i,
       "label" -> nodes(i).term,
-      "count" -> nodes(i).score
+      "count" -> nodes(i).score,
+      "termType" -> nodes(i).termType
     )
 
     val terms: List[JsObject] = termsArray.toList
@@ -165,9 +161,13 @@ class KeywordNetworkController @Inject() (
     Ok(Json.obj("result" -> entityService.blacklist(ids)(currentDataset))).as("application/json")
   }
 
-  /** Marks the keywords associated with the given ids as blacklisted. */
-  def blacklistKeywordsByIdKeyword(ids: List[Long]) = Action { implicit request =>
-    Ok(Json.obj("result" -> entityService.blacklistKeyword(ids)(currentDataset))).as("application/json")
+  /**
+   * Marks the keyword associated with the given term as blacklisted.
+   * @param keyword
+   * @return
+   */
+  def blacklistKeywordByKeyTerm(keyword: String) = Action { implicit request =>
+    Ok(Json.obj("result" -> entityService.blacklistKeyword(keyword)(currentDataset))).as("application/json")
   }
 
   /**
@@ -189,5 +189,31 @@ class KeywordNetworkController @Inject() (
   /** Changes the type of the entity corresponding to the given entity id. */
   def changeEntityTypeByIdKeyword(id: Long, newType: String) = Action { implicit request =>
     Ok(Json.obj("result" -> entityService.changeType(id, newType)(currentDataset))).as("application/json")
+  }
+
+  def undoBlacklistingKeywords(blacklistedKeywords: List[String]) = Action { implicit request =>
+    keywordNetworkService.undoBlacklistingKeywords(blacklistedKeywords)(currentDataset)
+    Ok("success").as("Text")
+  }
+
+  def toggleTags(state: Boolean) = Action { implicit request =>
+    keywordNetworkService.toggleTags(state)
+    Ok("success").as("Text")
+  }
+
+  def getTags() = Action { implicit request =>
+    Ok(Json.obj("result" -> keywordNetworkService.getAllTags()(currentDataset))).as("application/json")
+  }
+
+  def setTagKeywordRelation(tag: String, keywords: List[String], frequencies: List[Long]) = Action { implicit request =>
+
+    var keyTerms: ListBuffer[KeyTerm] = ListBuffer()
+    var count: Int = 0
+    for (keyword <- keywords) {
+      keyTerms.append(KeyTerm(keyword, frequencies(count), "KEYWORD"))
+    }
+
+    keywordNetworkService.setTagKeywordRelation(tag, keyTerms.toList)
+    Ok("success").as("Text")
   }
 }
