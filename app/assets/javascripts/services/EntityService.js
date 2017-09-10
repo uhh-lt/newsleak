@@ -28,7 +28,7 @@ define([
                     scope.$on('$destroy', handler);
                 },
 
-                blacklist: function(ids, doc = false) {
+                blacklist: function(ids) {
                     // TODO: Move to EntityController
                     playRoutes.controllers.NetworkController.blacklistEntitiesById(ids).get().then(function(response) {
                         $rootScope.$emit('notifying-service-event', { parameter: ids, response: response });
@@ -41,13 +41,14 @@ define([
                     });
                 },
 
-                whitelist: function(entity, type, docId){
+                whitelist: function(entity, type, docId, entId = "empty") {
                     playRoutes.controllers.EntityController.whitelistEntity(
                       entity.text,
                       entity.start,
                       entity.end,
                       type,
-                      docId
+                      docId,
+                      entId
                     ).get().then(function(response) {
                         $rootScope.$emit('notifying-service-event', { parameter: entity, response: response });
                     });
