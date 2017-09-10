@@ -18,7 +18,7 @@
 package models.services
 
 import com.google.inject.{ ImplementedBy, Inject }
-import models.{ Bucket, Document, KeywordAggregation, KeywordNetwork, Tag }
+import models.{ KeywordAggregation, KeywordNetwork, Tag }
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
 
@@ -28,7 +28,7 @@ import scalikejdbc._
 import scala.collection.JavaConversions._
 // scalastyle:on
 import models.{ Aggregation, Facets, MetaDataBucket, KeyTerm, NodeBucket, KeywordRelationship }
-import util.es.ESRequestUtils
+import util.es.{ ESRequestUtils }
 
 /**
  * Defines common method for creating and extending co-occurrence networks given a search query.
@@ -99,6 +99,9 @@ trait KeywordNetworkService {
   def toggleTags(set: Boolean): Unit
 
   def undoBlacklistingKeywords(blacklistedKeywords: List[String])(index: String): Unit
+
+  def setTagKeywordRelation(tag: String, keywords: List[KeyTerm]): Unit
+
 }
 
 /**
@@ -122,6 +125,7 @@ class ESKeywordNetworkService @Inject() (
 
   private val db = (index: String) => NamedDB(Symbol(index))
   var addTags = false
+  var keywordTagRelation: ListBuffer[(String, List[KeyTerm])] = ListBuffer()
 
   /** @inheritdoc */
   //noinspection ScalaStyle
@@ -136,19 +140,26 @@ class ESKeywordNetworkService @Inject() (
     val keywordGraphNodes: ListBuffer[KeyTerm] = ListBuffer()
     val searchableTerms: ListBuffer[String] = ListBuffer()
 
-    if (addTags) {
-      tags = getAllTags()(index)
-      val id: Long = -1
+    val tagStrings: ListBuffer[String] = ListBuffer()
+    val tagRelations: ListBuffer[KeywordRelationship] = ListBuffer()
 
-      for (tag <- tags) {
-        if (!exclude.contains(tag.label)) {
-          keywordGraphNodes.append(KeyTerm(tag.label, id, "TAG"))
-          searchableTerms.append(tag.label)
+    if (addTags) {
+      val resultTags = keywordTagRelation.toList
+
+      for (tag <- resultTags) {
+        keywordGraphNodes.append(KeyTerm(tag._1, -1, "TAG"))
+        for (key <- tag._2) {
+          tagRelations.append(KeywordRelationship(tag._1, key.term, key.score))
         }
       }
     }
 
-    val keywords = aggregateService.keywordAggregate(facets, utils.keywordsField._1, 20 - searchableTerms.length, List(), exclude)(index).keywords.distinct
+    val size = nodeFraction.collect({
+      case (t, size) => size
+    }).toList(0)
+
+    val keywords = aggregateService.keywordAggregate(facets, utils.keywordsField._1, size,
+      List(), exclude)(index).keywords.distinct
 
     for (keyword <- keywords) {
       if (!exclude.contains(keyword.term)) {
@@ -159,7 +170,11 @@ class ESKeywordNetworkService @Inject() (
 
     val rels = induceRelationshipsKeyword(facets, searchableTerms.toList, index)
 
-    KeywordNetwork(keywordGraphNodes.toList, rels)
+    for (rel <- rels) {
+      tagRelations.append(rel)
+    }
+
+    KeywordNetwork(keywordGraphNodes.toList, tagRelations.toList)
   }
 
   /** @inheritdoc */
@@ -280,5 +295,9 @@ class ESKeywordNetworkService @Inject() (
     for (bk <- blacklistedKeywords) {
       sql"DELETE FROM terms where term = ${bk}".update().apply()
     }
+  }
+
+  def setTagKeywordRelation(tag: String, keywords: List[KeyTerm]): Unit = {
+    keywordTagRelation.append((tag, keywords))
   }
 }

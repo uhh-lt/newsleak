@@ -27,6 +27,8 @@ import scalikejdbc._
 import util.DateUtils
 import util.SessionUtils.currentDataset
 
+import scala.collection.mutable.ListBuffer
+
 /**
  * Provides network related actions.
  * @param entityService the service for entity backend operations.
@@ -196,6 +198,22 @@ class KeywordNetworkController @Inject() (
 
   def toggleTags(state: Boolean) = Action { implicit request =>
     keywordNetworkService.toggleTags(state)
+    Ok("success").as("Text")
+  }
+
+  def getTags() = Action { implicit request =>
+    Ok(Json.obj("result" -> keywordNetworkService.getAllTags()(currentDataset))).as("application/json")
+  }
+
+  def setTagKeywordRelation(tag: String, keywords: List[String], frequencies: List[Long]) = Action { implicit request =>
+
+    var keyTerms: ListBuffer[KeyTerm] = ListBuffer()
+    var count: Int = 0
+    for (keyword <- keywords) {
+      keyTerms.append(KeyTerm(keyword, frequencies(count), "KEYWORD"))
+    }
+
+    keywordNetworkService.setTagKeywordRelation(tag, keyTerms.toList)
     Ok("success").as("Text")
   }
 }
