@@ -49,6 +49,12 @@ class EntityController @Inject() (
     Ok(toJson(types)).as("application/json")
   }
 
+  /** Returns a recorded entity */
+  def getRecordedEntity(text: String, enType: String) = Action { implicit request =>
+    val types = entityService.getNameAndType(text, enType)(currentDataset)
+    Ok(toJson(types)).as("application/json")
+  }
+
   /** Returns all blacklisted entities for the underlying collection. */
   def getBlacklistedEntities = Action { implicit request =>
     val entities = entityService.getBlacklisted()(currentDataset)
@@ -125,8 +131,12 @@ class EntityController @Inject() (
    * @param enType type of entity
    *
    */
-  def whitelistEntity(text: String, start: String, end: String, enType: String, docId: String) = Action { implicit request =>
-    entityService.whitelist(text, start.toInt, end.toInt, enType, BigInt(docId))(currentDataset)
+  def whitelistEntity(text: String, start: String, end: String, enType: String, docId: String, entId: String) = Action { implicit request =>
+    if (entId == "empty") {
+      entityService.whitelist(text, start.toInt, end.toInt, enType, BigInt(docId))(currentDataset)
+    } else {
+      entityService.updateFrequency(text, start.toInt, end.toInt, enType, BigInt(entId), BigInt(docId))(currentDataset)
+    }
     Ok("success").as("Text")
   }
 

@@ -42,6 +42,17 @@ trait EntityService {
    */
   def getByIds(ids: List[Long])(index: String): List[Entity]
 
+  /**
+   * Returns a record of [[models.Entity]] matching the given entity name and type.
+   *
+   * @param name entity name.
+   * @param type entity type
+   * @param index the data source index or database name to query.
+   * @return a list of [[models.Entity]] corresponding to the given name and type or [[scala.Nil]] if no
+   * matching entity is found.
+   */
+  def getNameAndType(name: String, enType: String)(index: String): List[Entity]
+
   // added
   /*
   /**
@@ -88,10 +99,27 @@ trait EntityService {
    * @param start the start of entity offset.
    * @param end the end of entity offset.
    * @param index the data source index or database name to query.
+   * @param docId the identifier of document
    * @return ''true'', if all entities are successfully marked as blacklisted. ''False'' if at least one entity
    * is not correct marked.
    */
   def whitelist(text: String, start: Int, end: Int, enType: String, docId: BigInt)(index: String): Boolean
+
+  /**
+   * Marks the entity to whitelist.
+   *
+   * Whitelist new entity
+   *
+   * @param text the entity text to whitelist.
+   * @param start the start of entity offset.
+   * @param end the end of entity offset.
+   * @param index the data source index or database name to query.
+   * @param entId the identifier of entity
+   * @param docId the identifier of document
+   * @return ''true'', if all entities are successfully marked as blacklisted. ''False'' if at least one entity
+   * is not correct marked.
+   */
+  def updateFrequency(text: String, start: Int, end: Int, enType: String, entId: BigInt, docId: BigInt)(index: String): Boolean
 
   /**
    * Removes the blacklisted mark from the entities associated with the given ids.
@@ -207,6 +235,15 @@ class DBEntityService extends EntityService {
   }
 
   /** @inheritdoc */
+  override def getNameAndType(name: String, enType: String)(index: String): List[Entity] = db(index).readOnly { implicit session =>
+    sql"""SELECT * FROM entity
+          WHERE name IN (${name})
+          AND type IN (${enType})
+          AND NOT isblacklisted
+          ORDER BY frequency DESC""".map(Entity(_)).list.apply()
+  }
+
+  /** @inheritdoc */
   override def blacklist(ids: List[Long])(index: String): Boolean = db(index).localTx { implicit session =>
     val entityCount = sql"UPDATE entity SET isblacklisted = TRUE WHERE id IN (${ids})".update().apply()
     entityCount == ids.sum
@@ -227,7 +264,15 @@ class DBEntityService extends EntityService {
   override def whitelist(text: String, start: Int, end: Int, enType: String, docId: BigInt)(index: String): Boolean = db(index).localTx { implicit session =>
     sql"INSERT INTO entity (id, name, type, frequency) VALUES ((SELECT coalesce(max(id),0)+1 FROM entity), ${text}, ${enType}, 1)".update().apply()
     sql"""INSERT INTO entityoffset (docid, entid, entitystart, entityend)
-         VALUES ($docId, (SELECT coalesce(max(id),0) FROM entity), $start, $end)""".update().apply()
+         VALUES (${docId}, (SELECT coalesce(max(id),0) FROM entity), ${start}, ${end})""".update().apply()
+    true
+  }
+
+  /** @inheritdoc */
+  override def updateFrequency(text: String, start: Int, end: Int, enType: String, entId: BigInt, docId: BigInt)(index: String): Boolean = db(index).localTx { implicit session =>
+    sql"  UPDATE entity SET frequency = (SELECT coalesce(max(frequency),0)+1 FROM entity WHERE id=${entId}) WHERE id=${entId}".update().apply()
+    sql"""INSERT INTO entityoffset (docid, entid, entitystart, entityend)
+         VALUES (${docId}, ${entId}, ${start}, ${end})""".update().apply()
     true
   }
 

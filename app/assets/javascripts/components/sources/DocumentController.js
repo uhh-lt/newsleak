@@ -430,10 +430,16 @@ define([
                         playRoutes.controllers.EntityController.undoBlacklistingByIds([blacklists[0].id]).get().then(function(response) {
                           $scope.observer.notifyObservers();
                           $scope.reloadDoc(doc);
-                        })
+                        });
                       } else {
-                        $scope.esWhitelist(entity, type, doc);
-                        EntityService.whitelist(entity, type, doc.id);
+                        playRoutes.controllers.EntityController.getRecordedEntity(entity.text, type).get().then(function (response) {
+                          if (response.data.length > 0) {
+                            EntityService.whitelist(entity, type, doc.id, response.data[0].id);
+                          } else {
+                            $scope.esWhitelist(entity, type, doc);
+                            EntityService.whitelist(entity, type, doc.id);
+                          }
+                        });
                       }
                     };
 
