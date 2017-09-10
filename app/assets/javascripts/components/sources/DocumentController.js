@@ -434,6 +434,7 @@ define([
                       } else {
                         playRoutes.controllers.EntityController.getRecordedEntity(entity.text, type).get().then(function (response) {
                           if (response.data.length > 0) {
+                            $scope.createNewEntity(entity, type, doc, response.data[0].id);
                             EntityService.whitelist(entity, type, doc.id, response.data[0].id);
                           } else {
                             $scope.esWhitelist(entity, type, doc);
@@ -497,7 +498,7 @@ define([
                       });
                     }
 
-                    $scope.createNewEntity = function(entity, typeEnt, doc) {
+                    $scope.createNewEntity = function(entity, typeEnt, doc, entId = null) {
                       client.update({
                         index: $scope.indexName,
                         type: 'document',
@@ -506,7 +507,7 @@ define([
                           script: "ctx._source.Entities.add(Entities)",
                           params: {
                             Entities:  {
-                              EntId: $scope.esNewId,
+                              EntId: entId === null ? $scope.esNewId : entId,
                               Entname: entity.text,
                               EntType: typeEnt,
                               EntFrequency: 1
@@ -515,14 +516,14 @@ define([
                         }
                       }).then(function (resp) {
                           $scope.esNewEntity = resp;
-                          $scope.insertNewEntityType(entity, typeEnt, doc);
+                          $scope.insertNewEntityType(entity, typeEnt, doc, entId);
                       }, function (err) {
                           $scope.esNewEntity = null;
                           console.trace(err.message);
                       });
                     }
 
-                    $scope.insertNewEntityType = function(entity, typeEnt, doc) {
+                    $scope.insertNewEntityType = function(entity, typeEnt, doc, entId = null) {
                       var suffixType = typeEnt.toLowerCase();
                       client.update({
                         index: $scope.indexName,
@@ -532,7 +533,7 @@ define([
                           script: "ctx._source.Entities" + suffixType + ".add(Entities)",
                           params: {
                             Entities:  {
-                              EntId: $scope.esNewId,
+                              EntId: entId === null ? $scope.esNewId : entId,
                               Entname: entity.text,
                               EntFrequency: 1
                             }
