@@ -213,6 +213,6 @@ class ESNetworkService @Inject() (
   override def getEdgeKeywords(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): List[KeyTerm] = {
     // Only consider documents where the two entities occur
     val res = aggregateService.aggregateKeywords(facets.withEntities(List(source, dest)), numTerms, Nil, Nil)(index)
-    res.buckets.collect { case MetaDataBucket(term, count) => KeyTerm(term, count.toInt) }
+    res.buckets.collect { case MetaDataBucket(term, count) => KeyTerm(term, count.toInt, "KEYWORD") }
   }
 }

@@ -249,7 +249,7 @@ trait DBDocumentService extends DocumentService {
 
   /** @inheritdoc */
   override def getKeywords(docId: Long, size: Option[Int])(index: String): List[KeyTerm] = db(index).readOnly { implicit session =>
-    SQL("""SELECT term, frequency
+    SQL("""SELECT term, frequency, type
           FROM terms
           WHERE docid = {docId}
           %s

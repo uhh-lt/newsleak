@@ -281,7 +281,7 @@ main {
 }
 
 #document, #right-side {
-    width: 25%;
+    width: 20%;
 }
 
 #metadata-view {
@@ -289,7 +289,7 @@ main {
 }
 
 footer {
-    height: 200px;
+    height: 150px;
 }
 
 footer > md-tabs {
