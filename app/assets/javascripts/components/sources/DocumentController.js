@@ -372,12 +372,12 @@ define([
                     function getIndexName() {
                       playRoutes.controllers.DocumentController.getIndexName().get().then(function(response) {
                           $scope.indexName = response.data.index;
+                          console.log('index name: ' + $scope.indexName);
                       });
                     }
 
                     // get index name from the back end and print to the console
                     getIndexName();
-                    console.log('index name: ' + $scope.indexName);
 
                     $scope.initTags = function(doc) {
                         $scope.tags[doc.id] = [];
@@ -417,10 +417,26 @@ define([
                     // Enable to select Entity and activate whitelisting modal
                     $scope.showSelectedEntity = function(doc) {
                         $scope.selectedEntity =  $scope.getSelectionEntity(doc.content);
-                        if (($scope.selectedEntity.text.length) > 0 && ($scope.selectedEntity.text !== ' ')) {
+                        var selectedDoc = $scope.tabs.find((t) => { return t.id === doc.id; });
+                        var isInDoc = isEntityInDoc(selectedDoc, $scope.selectedEntity);
+                        if (!isInDoc && ($scope.selectedEntity.text.length) > 0 && ($scope.selectedEntity.text !== ' ')) {
                           $scope.open($scope, doc);
                         }
                     };
+
+                    function isEntityInDoc(selectedDoc, selectedEntity) {
+                      var entities = selectedDoc.entities.filter((e) =>
+                        {
+                          if ((e.name === selectedEntity.text) &&
+                              (e.start === selectedEntity.start) &&
+                              (e.end === selectedEntity.end)
+                            ) {
+                              return e;
+                            }
+                        }
+                      );
+                      return entities.length > 0 ? true : false;
+                    }
 
                     $scope.whitelist = function(entity, type, doc){
                       type = type.trim();
