@@ -414,6 +414,12 @@ define([
                         return results;
                     };
 
+                    $scope.isNewType = false;
+
+                    $scope.toggleType = function (state) {
+                      $scope.isNewType = !state;
+                    };
+
                     // Enable to select Entity and activate whitelisting modal
                     $scope.showSelectedEntity = function(doc) {
                         $scope.selectedEntity =  $scope.getSelectionEntity(doc.content);

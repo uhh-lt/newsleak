@@ -92,24 +92,38 @@
                       </button>
                     </div>
                     <script type="text/ng-template" id="myModalContent.html">
-                      <div class="modal-header">
-                          <h3 class="modal-title" id="modal-title">Add Entity:
+                      <md-toolbar class="modal-header">
+                          <h3 class="modal-title" id="modal-title">Add entity:
                             <span ng-bind="entityName" class="selected-entity"></span>
                           </h3>
-                      </div>
-                      <div class="modal-body" id="modal-body">
-                        Select Type:
-                        <select class="btn btn-default" name="selectEntityType" id="selectEntityType" ng-model="selectedType">
-                          <option ng-repeat="entityType in entityTypes">
-                            {{ entityType.name }}
-                          </option>
-                        </select>
-                      </div>
-                      <div class="modal-footer">
-                          <button class="btn btn-primary" type="button" ng-click="ok()">OK</button>
-                          <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
-                      </div>
-                  </script>
+                      </md-toolbar>
+                      <md-content class="modal-body" id="modal-body">
+                        <div ng-hide="isNewType" ng-model="isNewType">
+                          Select type:
+                          <div>
+                            <select class="md-select" name="selectEntityType" id="selectEntityType" ng-model="selectedType">
+                              <option ng-repeat="entityType in entityTypes">
+                                {{ entityType.name }}
+                              </option>
+                            </select>
+                          </div>
+                        </div>
+                        <div ng-show="isNewType" ng-model="isNewType">
+                           <md-input-container class="md-block" flex-gt-sm>
+                             <label>New Type</label>
+                             <input ng-model="newType">
+                           </md-input-container>
+                        </div>
+                        <md-checkbox ng-model="isNewType" aria-label="Tags" ng-click="toggleType(isNewType)">
+                            New type?
+                        </md-checkbox>
+                      </md-content>
+                      <md-dialog-actions layout="row">
+                        <md-button class="md-primary md-raised" type="button" ng-click="ok()">OK</md-button>
+                        <span flex></span>
+                        <md-button class="md-primary md-raised" type="button" ng-click="cancel()">Cancel</md-button>
+                      </md-dialog-actions>
+                    </script>
                 </md-card-content>
             </md-card>
         </md-content>
