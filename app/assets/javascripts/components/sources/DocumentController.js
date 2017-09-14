@@ -316,6 +316,11 @@ define([
                             $scope.entityTypes = entityTypes;
                             $scope.selectedType = '';
 
+                            $scope.toggleType = function (state) {
+                              this.$resolve.parentScope.isNewType = !state;
+                              $scope.selectedType = '';
+                            }
+
                             $scope.ok = function () {
                               this.$resolve.parentScope.whitelist(selectedEntity, $scope.selectedType, doc);
                               this.$close();
@@ -415,10 +420,6 @@ define([
                     };
 
                     $scope.isNewType = false;
-
-                    $scope.toggleType = function (state) {
-                      $scope.isNewType = !state;
-                    };
 
                     // Enable to select Entity and activate whitelisting modal
                     $scope.showSelectedEntity = function(doc) {

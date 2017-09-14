@@ -98,28 +98,33 @@
                           </h3>
                       </md-toolbar>
                       <md-content class="modal-body" id="modal-body">
-                        <div ng-hide="isNewType" ng-model="isNewType">
-                          Select type:
-                          <div>
-                            <select class="md-select" name="selectEntityType" id="selectEntityType" ng-model="selectedType">
-                              <option ng-repeat="entityType in entityTypes">
-                                {{ entityType.name }}
-                              </option>
-                            </select>
+                        <form name="entityForm">
+                          <div ng-hide="isNewType" ng-model="isNewType">
+                            Select type:
+                            <div>
+                              <select required class="md-select" name="selectEntityType" id="selectEntityType" ng-model="selectedType">
+                                <option ng-repeat="entityType in entityTypes">
+                                  {{ entityType.name }}
+                                </option>
+                              </select>
+                            </div>
                           </div>
-                        </div>
-                        <div ng-show="isNewType" ng-model="isNewType">
-                           <md-input-container class="md-block" flex-gt-sm>
-                             <label>New Type</label>
-                             <input ng-model="newType">
-                           </md-input-container>
-                        </div>
-                        <md-checkbox ng-model="isNewType" aria-label="Tags" ng-click="toggleType(isNewType)">
-                            New type?
-                        </md-checkbox>
+                          <div ng-show="isNewType" ng-model="isNewType">
+                             <md-input-container class="md-block" flex-gt-sm>
+                               <label>New Type</label>
+                               <input required name="inputEntityType" ng-model="selectedType">
+                               <div ng-messages="entityForm.inputEntityType.$error">
+                                 <div ng-message="required">This is required.</div>
+                               </div>
+                             </md-input-container>
+                          </div>
+                          <md-checkbox ng-model="isNewType" aria-label="Tags" ng-click="toggleType(isNewType)">
+                              New type?
+                          </md-checkbox>
+                        </form>
                       </md-content>
                       <md-dialog-actions layout="row">
-                        <md-button class="md-primary md-raised" type="button" ng-click="ok()">OK</md-button>
+                        <md-button class="md-primary md-raised" ng-disabled="selectedType == false" type="submit" ng-click="ok()">OK</md-button>
                         <span flex></span>
                         <md-button class="md-primary md-raised" type="button" ng-click="cancel()">Cancel</md-button>
                       </md-dialog-actions>
