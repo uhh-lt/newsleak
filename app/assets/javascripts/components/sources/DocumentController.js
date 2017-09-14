@@ -316,6 +316,11 @@ define([
                             $scope.entityTypes = entityTypes;
                             $scope.selectedType = '';
 
+                            $scope.toggleType = function (state) {
+                              this.$resolve.parentScope.isNewType = !state;
+                              $scope.selectedType = '';
+                            }
+
                             $scope.ok = function () {
                               this.$resolve.parentScope.whitelist(selectedEntity, $scope.selectedType, doc);
                               this.$close();
@@ -372,12 +377,12 @@ define([
                     function getIndexName() {
                       playRoutes.controllers.DocumentController.getIndexName().get().then(function(response) {
                           $scope.indexName = response.data.index;
+                          console.log('index name: ' + $scope.indexName);
                       });
                     }
 
                     // get index name from the back end and print to the console
                     getIndexName();
-                    console.log('index name: ' + $scope.indexName);
 
                     $scope.initTags = function(doc) {
                         $scope.tags[doc.id] = [];
@@ -414,13 +419,31 @@ define([
                         return results;
                     };
 
+                    $scope.isNewType = false;
+
                     // Enable to select Entity and activate whitelisting modal
                     $scope.showSelectedEntity = function(doc) {
                         $scope.selectedEntity =  $scope.getSelectionEntity(doc.content);
-                        if (($scope.selectedEntity.text.length) > 0 && ($scope.selectedEntity.text !== ' ')) {
+                        var selectedDoc = $scope.tabs.find((t) => { return t.id === doc.id; });
+                        var isInDoc = isEntityInDoc(selectedDoc, $scope.selectedEntity);
+                        if (!isInDoc && ($scope.selectedEntity.text.length) > 0 && ($scope.selectedEntity.text !== ' ')) {
                           $scope.open($scope, doc);
                         }
                     };
+
+                    function isEntityInDoc(selectedDoc, selectedEntity) {
+                      var entities = selectedDoc.entities.filter((e) =>
+                        {
+                          if ((e.name === selectedEntity.text) &&
+                              (e.start === selectedEntity.start) &&
+                              (e.end === selectedEntity.end)
+                            ) {
+                              return e;
+                            }
+                        }
+                      );
+                      return entities.length > 0 ? true : false;
+                    }
 
                     $scope.whitelist = function(entity, type, doc){
                       type = type.trim();
@@ -434,6 +457,7 @@ define([
                       } else {
                         playRoutes.controllers.EntityController.getRecordedEntity(entity.text, type).get().then(function (response) {
                           if (response.data.length > 0) {
+                            $scope.createNewEntity(entity, type, doc, response.data[0].id);
                             EntityService.whitelist(entity, type, doc.id, response.data[0].id);
                           } else {
                             $scope.esWhitelist(entity, type, doc);
@@ -497,7 +521,7 @@ define([
                       });
                     }
 
-                    $scope.createNewEntity = function(entity, typeEnt, doc) {
+                    $scope.createNewEntity = function(entity, typeEnt, doc, entId = null) {
                       client.update({
                         index: $scope.indexName,
                         type: 'document',
@@ -506,7 +530,7 @@ define([
                           script: "ctx._source.Entities.add(Entities)",
                           params: {
                             Entities:  {
-                              EntId: $scope.esNewId,
+                              EntId: entId === null ? $scope.esNewId : entId,
                               Entname: entity.text,
                               EntType: typeEnt,
                               EntFrequency: 1
@@ -515,14 +539,14 @@ define([
                         }
                       }).then(function (resp) {
                           $scope.esNewEntity = resp;
-                          $scope.insertNewEntityType(entity, typeEnt, doc);
+                          $scope.insertNewEntityType(entity, typeEnt, doc, entId);
                       }, function (err) {
                           $scope.esNewEntity = null;
                           console.trace(err.message);
                       });
                     }
 
-                    $scope.insertNewEntityType = function(entity, typeEnt, doc) {
+                    $scope.insertNewEntityType = function(entity, typeEnt, doc, entId = null) {
                       var suffixType = typeEnt.toLowerCase();
                       client.update({
                         index: $scope.indexName,
@@ -532,7 +556,7 @@ define([
                           script: "ctx._source.Entities" + suffixType + ".add(Entities)",
                           params: {
                             Entities:  {
-                              EntId: $scope.esNewId,
+                              EntId: entId === null ? $scope.esNewId : entId,
                               Entname: entity.text,
                               EntFrequency: 1
                             }
