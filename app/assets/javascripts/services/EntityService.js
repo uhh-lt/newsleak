@@ -21,6 +21,9 @@ define([
     'use strict';
     angular.module('myApp.entityservice', ['play.routing'])
         .factory('EntityService', ['$rootScope', 'playRoutes', function ($rootScope, playRoutes) {
+            var keywordScope = null;
+            var entityScope = null;
+
             return {
 
                 subscribeBlacklist: function(scope, callback) {
@@ -62,7 +65,42 @@ define([
                 toggleTags: function (state, scope) {
                     playRoutes.controllers.KeywordNetworkController.toggleTags(state).get().then(function () {
                         scope.reloadGraph();
+                        scope.rereloadGraph();
                     })
+                },
+
+                reloadKeywordGraph: function () {
+                    if(keywordScope != null){
+                        keywordScope.checkTags();
+                    }
+                },
+
+                setKeywordScope: function (scope) {
+                    keywordScope = scope;
+                },
+
+                setEntityScope: function (scope) {
+                    entityScope = scope;
+                },
+
+                highlightKeywords: function (keywords) {
+                    if(keywordScope != null){
+                        keywordScope.highlightKeywordNodes(keywords);
+                    }
+                },
+
+                removeKeywordNodeHighlight: function () {
+                    keywordScope.removeKeywordNodeHighlight();
+                },
+
+                highlightEntities: function (entities) {
+                    if(entityScope != null){
+                        entityScope.highlightEntityNodes(entities);
+                    }
+                },
+
+                removeEntityNodeHighlight: function () {
+                    entityScope.removeEntityNodeHighlight();
                 }
             };
         }])

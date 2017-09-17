@@ -404,13 +404,16 @@ define([
                             $scope.tags[doc.id].push({ id: response.data.id , label: tag.label });
                             // Update labels
                             updateTagLabels();
+                            EntityService.reloadKeywordGraph();
                         });
                     };
 
                     $scope.removeTag = function(tag) {
                         playRoutes.controllers.DocumentController.removeTagById(tag.id).get().then(function(response) {
                             // Update labels
+                            console.log('remove tags');
                             updateTagLabels();
+                            EntityService.reloadKeywordGraph();
                         });
                     };
 

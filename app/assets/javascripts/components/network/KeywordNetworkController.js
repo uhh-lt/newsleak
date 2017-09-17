@@ -36,12 +36,12 @@ define([
         });
     angular.module('myApp.keywordNetwork')
         // Keyword Network Legend Controller
-        .controller('LegendController', ['$scope', '$timeout', 'VisDataSet', 'graphProperties', function ($scope, $timeout, VisDataSet, graphProperties) {
+        .controller('KeywordLegendController', ['$scope', '$timeout', 'VisDataSet', 'graphProperties', function ($scope, $timeout, VisDataSet, graphProperties) {
 
             $scope.legendNodes = new VisDataSet([]);
-            this.legendOptions = graphProperties.legendOptions;
-            this.legendData = { nodes: $scope.legendNodes, edges: [] };
-            this.legendEvents = { "onload": function(network) { $scope.legendNetwork = network; } };
+            this.keywordLegendOptions = graphProperties.legendOptions;
+            this.keywordLegendData = { nodes: $scope.legendNodes, edges: [] };
+            this.keywordLegendEvents = { "onload": function(network) { $scope.keywordLegendNetwork = network; console.log(network);} };
 
             // See style.css 'legend' for width and height of the render area
             $scope.addLegend = function(types) {
@@ -61,17 +61,28 @@ define([
                     };
                 });
                 $scope.legendNodes.add(nodes);
-                $scope.legendNetwork.fit();
+                console.log($scope.legendNodes);
+                console.log($scope.keywordLegendNetwork);
+                $scope.keywordLegendNetwork.fit();
             };
 
             // Add nodes after the legend div is added to the dom
-            /*
-            $timeout(function(){
-                $scope.observerService.getEntityTypes().then(function (types) {
-                    $scope.addLegend(types);
-                });
+            let legendItems = [];
+            legendItems.push({
+                id: 7,
+                name: 'KEYWORD',
+                sliderModel: 20
             });
-             */
+            if($scope.areTagsSelected){
+                legendItems.push({
+                    id: 9,
+                    name: 'TAG'
+                })
+            }
+
+            console.log(legendItems);
+            $scope.addLegend(legendItems);
+
         }])
         // Keyword Network Controller
         .controller('KeywordNetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', 'client', 'esFactory', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService, client, esFactory) {
@@ -84,9 +95,7 @@ define([
 
             $scope.areTagsSelected = false;
 
-            $scope.selectTags = function (state) {
-
-                $scope.areTagsSelected = ! state;
+            $scope.selectTags = function (state, set) {
 
                 if(!state){
                     playRoutes.controllers.KeywordNetworkController.getTags().get().then(function (response) {
@@ -98,6 +107,10 @@ define([
                 }
                 else {
                     EntityService.toggleTags(!state, $scope);
+                }
+
+                if(set){
+                    $scope.areTagsSelected = ! state;
                 }
             };
 
@@ -147,9 +160,9 @@ define([
 
             self.physicOptions = physicOptions;
 
-            self.networkButtons = [
+            self.keywordNetworkButtons = [
                 { name: 'Fullscreen', template: '<div class="vis-button vis-fullscreen-button" ng-click="KeywordNetworkController.toggleFullscreen()"></div>' },
-                { name: 'Legend', template: '<div class="vis-button vis-legend-button" ng-click="showLegend = !showLegend"></div>' }
+                { name: 'Legend', template: '<div class="vis-button vis-legend-button" ng-click="showKeywordLegend = !showKeywordLegend"></div>' }
             ];
 
             // Context menu for single node selection
@@ -228,7 +241,8 @@ define([
                 "click": clickEvent,
                 "dragging": dragEvent,
                 "hoverEdge": hoverEdge,
-                "hoverNode": hoverNode
+                "hoverNode": hoverNode,
+                "blurNode": blurNode
             };
 
             /* Consists of objects with entity types and their id */
@@ -248,6 +262,17 @@ define([
 
             $scope.resultNodes = [];
             $scope.resultRelations = [];
+
+            $scope.highlightKeywordNodes = function (nodes) {
+                let graphNodes = Object.values($scope.graphData.nodes._data);
+                for(let node of nodes){
+                    for(let graphNode of graphNodes){
+                        if(node.Keyword == graphNode.label){
+                            hoverHighlight(graphNode);
+                        }
+                    }
+                }
+            };
 
             $scope.reloadGraph = function() {
                 var promise = $q.defer();
@@ -351,6 +376,10 @@ define([
                 return  promise.promise;
             };
 
+            $scope.checkTags = function () {
+                $scope.selectTags($scope.areTagsSelected, false);
+            };
+
             /**
              * Reloads the graph and preserves the applied edge importance value. In case the new maximum is lower than
              * the current applied edgeImportance, the value is set to the maximum value.
@@ -395,6 +424,7 @@ define([
                 });
                 // get index name from the back end
                 getIndexName();
+                EntityService.setKeywordScope($scope);
             }
             // Init the network module
             init();
@@ -417,13 +447,13 @@ define([
             });
 
             function addNetworkButtons() {
-                self.networkButtons.forEach(function(b) {
+                self.keywordNetworkButtons.forEach(function(b) {
                     addNetworkButtonFromTemplate(b.template);
                 });
             }
 
             function addNetworkButtonFromTemplate(template) {
-                var panel = angular.element(document.getElementsByClassName('vis-navigation')[0]);
+                var panel = angular.element(document.getElementsByClassName('vis-navigation')[1]);
                 var button = $compile(template)($scope);
                 panel.append(button);
             }
@@ -794,12 +824,19 @@ define([
                 */
             }
 
+            function hoverHighlight(node){
+                // Give new nodes a white and dashed border
+                var modifiedNodes = [{ id: node.id, shapeProperties: { borderDashes: [5, 5] }, color: { border: 'white' }, borderWidth: 2 }];
+                self.nodesDataset.update(modifiedNodes);
+            }
+
             function hoverNode(event) {
                 var node = self.nodesDataset.get(event.node);
+                var nodeId = '' + nodeId;
                 // Only fetch keywords if not already fetched
-                if(_.has(node, "title")) {
-                    return;
-                }
+                // if(_.has(node, "title")) {
+                //     return;
+                // }
 
                 var filters = currentFilter();
                 playRoutes.controllers.KeywordNetworkController.getNeighborCountsKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, node.id).get().then(function(response) {
@@ -814,10 +851,41 @@ define([
                     self.nodesDataset.update({ id: node.id, title: tooltip });
                 });
 
-                // TODO hier hover action einfügen
-                console.log('HOVER:');
-                console.log(node);
+                client.search({
+                    index: $scope.indexName,
+                    type: 'document',
+                    body: {
+                        query: {
+                            bool: {
+                                should: [
+                                    {
+                                        term: {
+                                            "Entities.EntId": {
+                                                value: node.id
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }).then(function (resp) {
+                    EntityService.highlightEntities(resp.hits.hits[0]._source.Entities);
+
+
+                }, function (error, response) {
+                    console.trace(error.message);
+                });
             }
+
+            function blurNode(event) {
+                EntityService.removeEntityNodeHighlight();
+            }
+
+            $scope.removeKeywordNodeHighlight = function(){
+                removeNodeHighlight(self.nodes, self.nodes);
+                removeNodeHighlight(self.nodesDataset, self.nodesDataset);
+            };
 
             function clickEvent(event) {
                 closeContextMenu();

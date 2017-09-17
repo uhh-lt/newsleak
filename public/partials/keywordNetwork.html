@@ -27,15 +27,15 @@
         </div>
         <md-slider ng-disabled="loading" flex min="1" max="{{ maxEdgeImportance }}" step ="1" md-discrete ng-model="edgeImportance" aria-label="blue"></md-slider>
 
-        <md-checkbox ng-model="tagsSelected" aria-label="Tags" ng-click="selectTags(tagsSelected)">
+        <md-checkbox ng-model="tagsSelected" aria-label="Tags" ng-click="selectTags(tagsSelected, true)">
             Tags
         </md-checkbox>
     </div>
 </md-toolbar>
 
 <!-- legend and network are rendered above each other -->
-<div id="legend" ng-controller="LegendController as ctrl" ng-if="showLegend">
-    <vis-network data="ctrl.legendData" options="ctrl.legendOptions" events="ctrl.legendEvents" layout-fill></vis-network>
+<div id="keywordLegend" ng-controller="KeywordLegendController as ctrl" ng-if="showKeywordLegend">
+    <vis-network data="ctrl.keywordLegendData" options="ctrl.keywordLegendOptions" events="ctrl.keywordLegendEvents" layout-fill></vis-network>
 </div>
 <div id="mykeywordnetwork">
     <vis-network data="graphData" options="graphOptions" layout-fill events="graphEvents"></vis-network>

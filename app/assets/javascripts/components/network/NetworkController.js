@@ -18,6 +18,7 @@
 define([
     'angular',
     'ngMaterial',
+    'elasticsearch',
     'ngVis'
 ], function(angular) {
     'use strict';
@@ -25,7 +26,14 @@ define([
      * network module:
      * visualization and interaction of network graph
      */
-    angular.module('myApp.network', ['ngMaterial', 'ngVis', 'play.routing']);
+    angular.module('myApp.network', ['ngMaterial', 'ngVis', 'play.routing', 'elasticsearch'])
+    .service('client', function (esFactory) {
+        return esFactory({
+            host: 'localhost:9500',
+            apiVersion: '5.5',
+            log: 'trace'
+        });
+    });
     angular.module('myApp.network')
         // Network Legend Controller
         .controller('LegendController', ['$scope', '$timeout', 'VisDataSet', 'graphProperties', function ($scope, $timeout, VisDataSet, graphProperties) {
@@ -54,7 +62,7 @@ define([
             });
         }])
         // Network Controller
-        .controller('NetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService) {
+        .controller('NetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', 'client', 'esFactory', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService, client, esFactory) {
 
             var self = this;
 
@@ -146,7 +154,8 @@ define([
                 "click": clickEvent,
                 "dragging": dragEvent,
                 "hoverEdge": hoverEdge,
-                "hoverNode": hoverNode
+                "hoverNode": hoverNode,
+                "blurNode": blurNode
             };
 
             /* Consists of objects with entity types and their id */
@@ -163,6 +172,17 @@ define([
             self.preserveEdgeImportance = false;
 
             $scope.$watch('edgeImportance', handleEdgeSlider);
+
+            $scope.highlightEntityNodes = function (nodes) {
+                let graphNodes = Object.values($scope.graphData.nodes._data);
+                for(let node of nodes){
+                    for(let graphNode of graphNodes){
+                        if(node.Entname == graphNode.label){
+                            hoverHighlight(graphNode);
+                        }
+                    }
+                }
+            };
 
             $scope.reloadGraph = function() {
                 var promise = $q.defer();
@@ -229,6 +249,7 @@ define([
                     // Initialize graph
                     $scope.reloadGraph();
                 });
+                EntityService.setEntityScope($scope);
             }
             // Init the network module
             init();
@@ -620,12 +641,20 @@ define([
                 });
             }
 
+            function hoverHighlight(node){
+                // Give new nodes a white and dashed border
+                var modifiedNodes = [{ id: node.id, shapeProperties: { borderDashes: [5, 5] }, color: { border: 'white' }, borderWidth: 2 }];
+                self.nodesDataset.update(modifiedNodes);
+            }
+
             function hoverNode(event) {
                 var node = self.nodesDataset.get(event.node);
+                var nodeLabel = '' + node.label;
                 // Only fetch keywords if not already fetched
-                if(_.has(node, "title")) {
-                    return;
-                }
+                // if(_.has(node, "title")) {
+                //     console.log('return');
+                //     return;
+                // }
 
                 var filters = currentFilter();
                 playRoutes.controllers.NetworkController.getNeighborCounts(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, node.id).get().then(function(response) {
@@ -637,7 +666,44 @@ define([
 
                     self.nodesDataset.update({ id: node.id, title: tooltip });
                 });
+
+                client.search({
+                    index: $scope.indexName,
+                    type: 'document',
+                    body: {
+                        query: {
+                            bool: {
+                                should: [
+                                    {
+                                        term: {
+                                            "Keywords.Keyword.raw": {
+                                                value: nodeLabel
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }).then(function (resp) {
+                    if(resp.hits.hits[0]) {
+                        EntityService.highlightKeywords(resp.hits.hits[0]._source.Keywords);
+                    }
+
+
+                }, function (error, resp) {
+                    console.trace(error.message);
+                });
             }
+
+            function blurNode(event) {
+                EntityService.removeKeywordNodeHighlight();
+            }
+
+            $scope.removeEntityNodeHighlight = function(){
+                removeNodeHighlight(self.nodes, self.nodes);
+                removeNodeHighlight(self.nodesDataset, self.nodesDataset);
+            };
 
             function clickEvent(event) {
                 closeContextMenu();
