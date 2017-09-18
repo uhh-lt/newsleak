@@ -119,13 +119,17 @@ define([
         return uiProperties;
     });
 
-    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', '$mdDialog', 'uiShareService', 'ObserverService', 'playRoutes', 'historyFactory',
-        function ($scope, $state, $timeout, $window, $mdDialog, uiShareService, ObserverService, playRoutes, historyFactory) {
+    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', '$mdDialog', 'uiShareService', 'ObserverService', 'playRoutes', 'historyFactory', 'EntityService',
+        function ($scope, $state, $timeout, $window, $mdDialog, uiShareService, ObserverService, playRoutes, historyFactory, EntityService) {
 
             // Select graph tab on startup. In order to update the value from the child scope we need an object here.
             $scope.selectedTab = { index: 0 };
             $scope.selectedDataset = '';
             $scope.datasets = [];
+
+            // initial values of graph checkboxes
+            $scope.showEntityGraph = true;
+            $scope.showKeywordGraph = true;
 
             $scope.historyFactory = historyFactory;
 
@@ -169,6 +173,22 @@ define([
                // setUILayoutProperties(parseInt($('#network-maps-container').css('width')), parseInt($('#network-maps-container').css('height'))-96);
                 $scope.resizeUI();
             });
+
+            $scope.toggleEntityGraph = function (state) {
+                EntityService.setToggleEntityGraph(state);
+            };
+
+            $scope.toggleKeywordGraph = function (state) {
+                EntityService.setToggleKeywordGraph(state);
+            };
+
+            $scope.getDisplayEntityGraph = function () {
+                return EntityService.getToggleEntityGraph();
+            };
+
+            $scope.getDisplayKeywordGraph = function () {
+                return EntityService.getToggleKeywordGraph();
+            };
 
             /**
              * This function sets properties that describe the dimensions of the UI layout.

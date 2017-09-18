@@ -88,13 +88,13 @@ html, body {
 
 #center-box-entity {
     position: relative;
-    width: 30%;
+    width: 45%;
     height: 100%;
 }
 
 #center-box-keyword {
     position: relative;
-    width: 30%;
+    width: 45%;
     height: 100%;
 }
 
@@ -265,6 +265,7 @@ div.popupMenu ul li:hover {
 
 #flex-body {
     height: calc(100% - 350px);
+    width: 80%;
 }
 
 #top-container {

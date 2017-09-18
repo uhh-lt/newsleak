@@ -173,6 +173,9 @@ define([
 
             $scope.$watch('edgeImportance', handleEdgeSlider);
 
+            $scope.resultNodes = [];
+            $scope.resultRelations = [];
+
             $scope.highlightEntityNodes = function (nodes) {
                 let graphNodes = Object.values($scope.graphData.nodes._data);
                 for(let node of nodes){
@@ -196,6 +199,9 @@ define([
                             applyPhysicsOptions(self.physicOptions);
                         }
                         $scope.loading = true;
+
+                        $scope.resultNodes = response.data.entities;
+                        $scope.resultRelations = response.data.relations;
 
                         var nodes = response.data.entities.map(function(n) {
                             // See css property div.network-tooltip for custom tooltip styling
@@ -231,6 +237,49 @@ define([
                 return  promise.promise;
             };
 
+            $scope.rereloadGraph = function() {
+                var promise = $q.defer();
+
+                    // Enable physics for new graph data when network is initialized
+                    if(!_.isUndefined(self.network)) {
+                        applyPhysicsOptions(self.physicOptions);
+                    }
+                    $scope.loading = true;
+
+                    var nodes = $scope.resultNodes.map(function(n) {
+                        // See css property div.network-tooltip for custom tooltip styling
+                        return { id: n.id, label: n.label, type: n.type, value: n.count, group: n.group };
+                    });
+
+                    self.nodesDataset.clear();
+                    self.nodesDataset.add(nodes);
+                    // Highlight new nodes after each filtering step
+                    markNewNodes(nodes.map(function(n) { return n.id; }));
+                    self.nodes.clear();
+
+                    var edges = $scope.resultRelations.map(function(n) {
+                        return { from: n.source, to: n.dest, value: n.occurrence };
+                    });
+
+                    self.edges.clear();
+                    self.edgesDataset.clear();
+                    self.edgesDataset.add(edges);
+
+                    console.log("" + self.nodesDataset.length + " nodes loaded");
+                    console.log("" + self.edgesDataset.length + " edges loaded");
+                    console.log("" + self.edgesDataset + " edges");
+
+                    // Initialize the graph
+                    $scope.graphData = {
+                        nodes: self.nodesDataset,
+                        edges: self.edgesDataset
+                    };
+
+                return  promise.promise;
+            };
+
+
+
             /**
              * Reloads the graph and preserves the applied edge importance value. In case the new maximum is lower than
              * the current applied edgeImportance, the value is set to the maximum value.
@@ -248,6 +297,7 @@ define([
                     $scope.types = types.map(function(t) { return _.extend(t, { sliderModel: 5 }) });
                     // Initialize graph
                     $scope.reloadGraph();
+                    $scope.rereloadGraph();
                 });
                 EntityService.setEntityScope($scope);
             }

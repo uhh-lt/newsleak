@@ -518,7 +518,7 @@ define([
             });
 
             function addNodeFilter(nodeId) {
-                var entity = self.nodes.get(nodeId);
+                var keyword = self.nodes.get(nodeId);
                 $scope.observerService.addItem({
                     type: 'keyword',
                         data: {

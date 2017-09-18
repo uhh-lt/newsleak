@@ -58,7 +58,7 @@
                     <div ui-view="documentlist"></div>
                 </nav>
 
-                <main id="center-box-entity" resizable r-directions="['right']" r-flex="true" flex="none">
+                <main id="center-box-entity" resizable r-directions="['right']" r-flex="true" flex="none" ng-if="getDisplayEntityGraph()">
                     <!-- selectedTab is defined in AppController -->
                     <md-tabs md-selected="selectedTab.index" md-border-bottom md-autoselect layout-fill ngsf-fullscreen="NetworkController">
 
@@ -70,7 +70,7 @@
                    </md-tabs>
                 </main>
 
-                <main id="center-box-keyword" resizable r-directions="['right']" r-flex="true" flex="none">
+                <main id="center-box-keyword" resizable r-directions="['right']" r-flex="true" flex="none" ng-if="getDisplayKeywordGraph()">
                         <!-- selectedTab is defined in AppController -->
                     <md-tabs md-selected="0" md-border-bottom md-autoselect layout-fill ngsf-fullscreen="KeywordNetworkController">
 

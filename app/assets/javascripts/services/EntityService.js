@@ -24,6 +24,9 @@ define([
             var keywordScope = null;
             var entityScope = null;
 
+            var toggleEntityGraph = true;
+            var toggleKeywordGraph = true;
+
             return {
 
                 subscribeBlacklist: function(scope, callback) {
@@ -90,7 +93,9 @@ define([
                 },
 
                 removeKeywordNodeHighlight: function () {
-                    keywordScope.removeKeywordNodeHighlight();
+                    if(keywordScope != null) {
+                        keywordScope.removeKeywordNodeHighlight();
+                    }
                 },
 
                 highlightEntities: function (entities) {
@@ -100,7 +105,30 @@ define([
                 },
 
                 removeEntityNodeHighlight: function () {
-                    entityScope.removeEntityNodeHighlight();
+                    if(entityScope != null) {
+                        entityScope.removeEntityNodeHighlight();
+                    }
+                },
+
+                setToggleEntityGraph: function () {
+                    toggleEntityGraph = ! toggleEntityGraph;
+                },
+
+                getToggleEntityGraph: function () {
+                    return toggleEntityGraph;
+                },
+
+                setToggleKeywordGraph: function (state) {
+                    if(state){
+                        toggleKeywordGraph = false;
+                    }
+                    else {
+                        toggleKeywordGraph = ! toggleKeywordGraph;
+                    }
+                },
+
+                getToggleKeywordGraph: function () {
+                    return toggleKeywordGraph;
                 }
             };
         }])
