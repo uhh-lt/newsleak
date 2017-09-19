@@ -539,7 +539,10 @@ define([
                         }
                       }).then(function (resp) {
                           $scope.esNewEntity = resp;
-                          $scope.insertNewEntityType(entity, typeEnt, doc, entId);
+                          $scope.isNewType === false ?
+                            $scope.insertNewEntityType(entity, typeEnt, doc, entId)
+                            :
+                            $scope.createNewEntityType(entity, typeEnt, doc);
                       }, function (err) {
                           $scope.esNewEntity = null;
                           console.trace(err.message);
@@ -557,6 +560,33 @@ define([
                           params: {
                             Entities:  {
                               EntId: entId === null ? $scope.esNewId : entId,
+                              Entname: entity.text,
+                              EntFrequency: 1
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                          $scope.esNewEntityType = resp;
+                          $scope.observer.notifyObservers();
+                          $scope.reloadDoc(doc);
+                      }, function (err) {
+                          $scope.esNewEntityType = null;
+                          console.trace(err.message);
+                      });
+                    }
+
+
+                    $scope.createNewEntityType = function(entity, typeEnt, doc) {
+                      var suffixType = typeEnt.toLowerCase();
+                      client.update({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        body: {
+                          script: "ctx._source.Entities" + suffixType + " = (Entities)",
+                          params: {
+                            Entities:  {
+                              EntId: $scope.esNewId,
                               Entname: entity.text,
                               EntFrequency: 1
                             }
