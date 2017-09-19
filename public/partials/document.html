@@ -87,7 +87,7 @@
                           {{ entityType.name }}
                         </option>
                       </select>
-                      <button type="button" class="btn btn-primary" ng-model="selectedEntity" ng-click="whitelist(selectedEntity, selectedType, doc.id)">
+                      <button type="button" class="btn btn-primary" ng-disabled="selectedType == false" ng-model="selectedEntity" ng-click="whitelist(selectedEntity, selectedType, doc.id)">
                         Whitelist
                       </button>
                     </div>

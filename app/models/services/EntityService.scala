@@ -263,6 +263,7 @@ class DBEntityService extends EntityService {
   /** @inheritdoc */
   override def whitelist(text: String, start: Int, end: Int, enType: String, docId: BigInt)(index: String): Boolean = db(index).localTx { implicit session =>
     sql"INSERT INTO entity (id, name, type, frequency) VALUES ((SELECT coalesce(max(id),0)+1 FROM entity), ${text}, ${enType}, 1)".update().apply()
+    sql"DELETE FROM entityoffset WHERE docId=${docId} AND entitystart=${start} AND entityend=${end}".update().apply()
     sql"""INSERT INTO entityoffset (docid, entid, entitystart, entityend)
          VALUES (${docId}, (SELECT coalesce(max(id),0) FROM entity), ${start}, ${end})""".update().apply()
     true
