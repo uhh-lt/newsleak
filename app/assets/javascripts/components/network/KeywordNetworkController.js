@@ -162,7 +162,7 @@ define([
 
             self.keywordNetworkButtons = [
                 { name: 'Fullscreen', template: '<div class="vis-button vis-fullscreen-button" ng-click="KeywordNetworkController.toggleFullscreen()"></div>' },
-                { name: 'Legend', template: '<div class="vis-button vis-legend-button" ng-click="showKeywordLegend = !showKeywordLegend"></div>' }
+                // { name: 'Legend', template: '<div class="vis-button vis-legend-button" ng-click="showKeywordLegend = !showKeywordLegend"></div>' }
             ];
 
             // Context menu for single node selection
@@ -171,13 +171,14 @@ define([
                     title: 'Add as filter',
                     action: function(value, nodeId) { addNodeFilter(nodeId); }
 
-                }, {
+                },
+                /*{
                     title: 'Edit node',
                     action: function(value, nodeId) { editNode(nodeId); }
                 }, {
                     title: 'Expand',
                     action: function(value, nodeId) { expandNode(nodeId); }
-                },
+                },*/
                 {
                     title: 'Hide',
                     action: function(value, nodeId) { hideNodes([nodeId]); }
@@ -190,7 +191,7 @@ define([
             ];
 
             // Context menu for multiple node selection
-            self.multiNodeMenu = [
+            /*self.multiNodeMenu = [
                 {
                     title: 'Merge nodes',
                     action: function(value, nodeIds) { mergeNodes(nodeIds); }
@@ -208,7 +209,7 @@ define([
             self.edgeMenu = [{
                 title: 'Add as filter',
                 action: function(value, edgeId) { addEdgeFilter(edgeId); }
-            }];
+            }];*/
 
             $scope.observerService = ObserverService;
             $scope.entityService = EntityService;
@@ -961,7 +962,7 @@ define([
 
                 // Multiple nodes selected and the right-clicked node is in this selection
                 if(!_.isUndefined(nodeIdOpt) && selection.length > 1 && _.contains(selection, nodeIdOpt)) {
-                    showContextMenu(_.extend(position, { id: selection }), self.multiNodeMenu);
+                    //showContextMenu(_.extend(position, { id: selection }), self.multiNodeMenu);
                 }
                 // Single node selected
                 else if(!_.isUndefined(nodeIdOpt)) {
@@ -970,7 +971,7 @@ define([
                 // Edge selected
                 } else if(!_.isUndefined(edgeIdOpt)) {
                     self.network.selectEdges([edgeIdOpt]);
-                    showContextMenu(_.extend(position, { id: edgeIdOpt }), self.edgeMenu);
+                    //showContextMenu(_.extend(position, { id: edgeIdOpt }), self.edgeMenu);
                 }
                 else {
                     // Nop
