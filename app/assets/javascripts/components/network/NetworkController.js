@@ -689,7 +689,7 @@ define([
 
             function hoverHighlight(node){
                 // Give new nodes a white and dashed border
-                var modifiedNodes = [{ id: node.id, shapeProperties: { borderDashes: [5, 5] }, color: { border: 'white' }, borderWidth: 2 }];
+                var modifiedNodes = [{ id: node.id, shapeProperties: { borderDashes: [5, 5] }, color: { border: 'red' }, borderWidth: 4 }];
                 self.nodesDataset.update(modifiedNodes);
             }
 

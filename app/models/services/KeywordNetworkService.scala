@@ -102,6 +102,8 @@ trait KeywordNetworkService {
 
   def setTagKeywordRelation(tag: String, keywords: List[KeyTerm]): Unit
 
+  def resetTagKeywordRelation(): Unit
+
 }
 
 /**
@@ -299,5 +301,9 @@ class ESKeywordNetworkService @Inject() (
 
   def setTagKeywordRelation(tag: String, keywords: List[KeyTerm]): Unit = {
     keywordTagRelation.append((tag, keywords))
+  }
+
+  def resetTagKeywordRelation(): Unit = {
+    keywordTagRelation.clear()
   }
 }

@@ -216,4 +216,9 @@ class KeywordNetworkController @Inject() (
     keywordNetworkService.setTagKeywordRelation(tag, keyTerms.toList)
     Ok("success").as("Text")
   }
+
+  def resetTagKeywordRelation() = Action { implicit request =>
+    keywordNetworkService.resetTagKeywordRelation()
+    Ok("success").as("Text")
+  }
 }

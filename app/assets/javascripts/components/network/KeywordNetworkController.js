@@ -91,30 +91,40 @@ define([
 
             $scope.tagsSelected = false;
 
-            $scope.tagCount = 0;
+            $scope.currentTags = [];
 
             $scope.areTagsSelected = false;
 
-            $scope.selectTags = function (state, set) {
+            $scope.selectTags = function (toggle = false) {
 
-                if(!state){
-                    playRoutes.controllers.KeywordNetworkController.getTags().get().then(function (response) {
+                if(!toggle){
+                    $scope.areTagsSelected = ! $scope.areTagsSelected;
+                }
 
-                        for(let res of response.data.result) {
-                            esSearchKeywords('' + res.documentId, res.label, response.data.result.length, state);
-                        }
+                if($scope.areTagsSelected){
+                    playRoutes.controllers.KeywordNetworkController.resetTagKeywordRelation().get().then(function () {
+                        playRoutes.controllers.KeywordNetworkController.getTags().get().then(function (response) {
+
+                            $scope.tagCount = 0;
+                            $scope.currentTags = response.data.result;
+
+                            for(let res of $scope.currentTags) {
+                                esSearchKeywords('' + res.documentId, res.label);
+                            }
+                        });
                     });
                 }
                 else {
-                    EntityService.toggleTags(!state, $scope);
-                }
-
-                if(set){
-                    $scope.areTagsSelected = ! state;
+                    EntityService.toggleTags($scope.areTagsSelected, $scope);
                 }
             };
 
-            function esSearchKeywords(res, tag, size, state) {
+            $scope.getTagsSelected = function () {
+                return $scope.areTagsSelected;
+            };
+
+            function esSearchKeywords(res, tag) {
+
                 client.search({
                     index: $scope.indexName,
                     type: 'document',
@@ -129,23 +139,28 @@ define([
 
                 }).then(function (resp) {
 
-                    let keywords = [];
-                    let frequencies = [];
+                    if(resp.hits.hits[0]._source.Keywords){
+                        let keywords = [];
+                        let frequencies = [];
 
-                    for(let item of resp.hits.hits[0]._source.Keywords){
-                        keywords.push(item.Keyword);
-                        frequencies.push(item.TermFrequency);
+                        for(let item of resp.hits.hits[0]._source.Keywords){
+                            keywords.push(item.Keyword);
+                            frequencies.push(item.TermFrequency);
+                        }
+
+                        playRoutes.controllers.KeywordNetworkController.setTagKeywordRelation(tag, keywords, frequencies).get().then(function () {
+                            $scope.tagCount++;
+
+                            if($scope.tagCount == $scope.currentTags.length){
+                                EntityService.toggleTags($scope.areTagsSelected, $scope);
+                            }
+                        });
+                    }
+                    else {
+                        $scope.tagCount++;
                     }
 
-                    playRoutes.controllers.KeywordNetworkController.setTagKeywordRelation(tag, keywords, frequencies).get().then(function () {
-                        $scope.tagCount++;
-
-                        if($scope.tagCount == size){
-                            EntityService.toggleTags(!state, $scope);
-                        }
-                    });
-
-                }, function (error, response) {
+                }, function (error) {
                     console.trace(error.message);
                 });
             }
@@ -294,10 +309,10 @@ define([
                         var nodes = response.data.entities.map(function(n) {
                             // See css property div.network-tooltip for custom tooltip styling
                             if(n.termType == 'TAG') {
-                                return {id: n.id, label: n.label, group: 6, type: 'TAG', value: n.count};
+                                return {id: n.id, label: n.label, group: -2, type: 'TAG', value: n.count, borderWidth: 2};
                             }
                             else {
-                                return {id: n.id, label: n.label, group: 7, type: 'KEYWORD', value: n.count};
+                                return {id: n.id, label: n.label, group: -1, type: 'KEYWORD', value: n.count, borderWidth: 3};
                             }
                         });
 
@@ -343,10 +358,10 @@ define([
                     var nodes = $scope.resultNodes.map(function(n) {
                         // See css property div.network-tooltip for custom tooltip styling
                         if(n.termType == 'TAG') {
-                            return {id: n.id, label: n.label, group: 6, type: 'TAG', value: n.count};
+                            return {id: n.id, label: n.label, group: -2, type: 'TAG', value: n.count, borderWidth: 2};
                         }
                         else {
-                            return {id: n.id, label: n.label, group: 7, type: 'KEYWORD', value: n.count};
+                            return {id: n.id, label: n.label, group: -1, type: 'KEYWORD', value: n.count, borderWidth: 3};
                         }
                     });
 
@@ -377,8 +392,8 @@ define([
                 return  promise.promise;
             };
 
-            $scope.checkTags = function () {
-                $scope.selectTags($scope.areTagsSelected, false);
+            $scope.checkTags = function (toggle = false) {
+                $scope.selectTags(toggle);
             };
 
             /**
@@ -483,7 +498,7 @@ define([
 
                     var diff = _.difference(nextNodeIds, currentNodeIds);
                     // Give new nodes a white and dashed border
-                    var modifiedNodes = diff.map(function(id) { return { id: id, shapeProperties: { borderDashes: [5, 5] }, color: { border: 'white' }, borderWidth: 2 }});
+                    var modifiedNodes = diff.map(function(id) { return { id: id, shapeProperties: { borderDashes: [5, 5] }, color: { border: 'red' }, borderWidth: 3 }});
                     self.nodesDataset.update(modifiedNodes);
 
                     // TODO Move
@@ -741,7 +756,7 @@ define([
             }
 
             function removeNodeHighlight(dataset, nodesToBeUpdated) {
-                var cleanNodes = nodesToBeUpdated.map(function(n) { return _.extend(n, { 'shapeProperties': { borderDashes: false }, color: undefined, borderWidth: 1 })});
+                var cleanNodes = nodesToBeUpdated.map(function(n) { return _.extend(n, { 'shapeProperties': { borderDashes: false }, color: undefined, borderWidth: 3 })});
                 dataset.update(cleanNodes);
             }
 
@@ -827,7 +842,7 @@ define([
 
             function hoverHighlight(node){
                 // Give new nodes a white and dashed border
-                var modifiedNodes = [{ id: node.id, shapeProperties: { borderDashes: [5, 5] }, color: { border: 'white' }, borderWidth: 2 }];
+                var modifiedNodes = [{ id: node.id, shapeProperties: { borderDashes: [5, 5] }, color: { border: 'red' }, borderWidth: 4 }];
                 self.nodesDataset.update(modifiedNodes);
             }
 
@@ -852,31 +867,54 @@ define([
                     self.nodesDataset.update({ id: node.id, title: tooltip });
                 });
 
-                client.search({
-                    index: $scope.indexName,
-                    type: 'document',
-                    body: {
-                        query: {
-                            bool: {
-                                should: [
-                                    {
-                                        term: {
-                                            "Entities.EntId": {
-                                                value: node.id
+                if(node.type == 'KEYWORD'){
+                    client.search({
+                        index: $scope.indexName,
+                        type: 'document',
+                        body: {
+                            query: {
+                                bool: {
+                                    should: [
+                                        {
+                                            term: {
+                                                "Entities.EntId": {
+                                                    value: node.id
+                                                }
                                             }
                                         }
-                                    }
-                                ]
+                                    ]
+                                }
                             }
                         }
+                    }).then(function (resp) {
+                        EntityService.highlightEntities(resp.hits.hits[0]._source.Entities);
+
+
+                    }, function (error) {
+                        console.trace(error.message);
+                    });
+                }
+                else if (node.type == 'TAG'){
+                    for(let tag of $scope.currentTags){
+                        if(tag.label == node.label){
+                            client.search({
+                                index: $scope.indexName,
+                                type: 'document',
+                                id: tag.documentId,
+                                body: {
+                                    query: {
+                                        match: {
+                                            _id: tag.documentId
+                                        }
+                                    }
+                                }
+
+                            }).then(function (resp) {
+                                EntityService.highlightEntities(resp.hits.hits[0]._source.Entities);
+                            });
+                        }
                     }
-                }).then(function (resp) {
-                    EntityService.highlightEntities(resp.hits.hits[0]._source.Entities);
-
-
-                }, function (error, response) {
-                    console.trace(error.message);
-                });
+                }
             }
 
             function blurNode(event) {

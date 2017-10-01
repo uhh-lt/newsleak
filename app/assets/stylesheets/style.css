@@ -87,15 +87,21 @@ html, body {
 }
 
 #center-box-entity {
-    position: relative;
-    width: 30%;
+    position: absolute;
+    width: 50%;
     height: 100%;
 }
 
 #center-box-keyword {
-    position: relative;
-    width: 30%;
+    position: absolute;
+    width: 50%;
     height: 100%;
+    left: 50%;
+}
+
+.fullGraph {
+    width: 100% !important;
+    left: 0 !important;
 }
 
 #mynetwork {
@@ -114,6 +120,12 @@ html, body {
     top: 74px;
     height: calc(100% - 74px);
     background-color: #d1d1d1;
+}
+
+.graphs {
+    position: relative;
+    width: 60%;
+    height: 100%;
 }
 
 #legend {

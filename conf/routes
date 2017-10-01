@@ -38,6 +38,7 @@ GET        /undoBlacklistingKeywords              controllers.KeywordNetworkCont
 GET        /toggleTags                            controllers.KeywordNetworkController.toggleTags(state: Boolean)
 GET        /getTags                               controllers.KeywordNetworkController.getTags
 GET        /setTagKeywordRelation                 controllers.KeywordNetworkController.setTagKeywordRelation(tag: String, keywords: List[String], frequencies: List[Long])
+GET        /clearTagKeywordRelation               controllers.KeywordNetworkController.resetTagKeywordRelation
 GET        /getEntities                           controllers.EntityController.getEntitiesByType(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, size: Int, entityType: String, filter: List[Long])
 GET        /getRecordedEntity                     controllers.EntityController.getRecordedEntity(text: String, type: String)
 GET        /getEntityTypes                        controllers.EntityController.getEntityTypes

@@ -72,9 +72,9 @@ define([
                     })
                 },
 
-                reloadKeywordGraph: function () {
+                reloadKeywordGraph: function (toggle = false) {
                     if(keywordScope != null){
-                        keywordScope.checkTags();
+                        keywordScope.checkTags(toggle);
                     }
                 },
 
@@ -129,6 +129,10 @@ define([
 
                 getToggleKeywordGraph: function () {
                     return toggleKeywordGraph;
+                },
+
+                getTagsSelected() {
+                    return keywordScope.getTagsSelected();
                 }
             };
         }])
