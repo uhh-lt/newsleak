@@ -452,7 +452,7 @@ define([
                     }
 
                     $scope.whitelist = function(entity, type, doc){
-                      type = type.trim();
+                      type = type.replace(/\s/g,'');
                       var blacklists = isBlacklisted(entity, type);
                       if (blacklists.length > 0) {
                         // Update network and frequency chart
