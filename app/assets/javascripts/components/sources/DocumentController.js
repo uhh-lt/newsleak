@@ -315,6 +315,7 @@ define([
                             $scope.entityName = selectedEntity.text
                             $scope.entityTypes = entityTypes;
                             $scope.selectedType = '';
+                            $scope.isEntityInDoc = $scope.$resolve.parentScope.isEntityInDoc;
 
                             $scope.toggleType = function (state) {
                               this.$resolve.parentScope.isNewType = !state;
@@ -426,6 +427,7 @@ define([
                     };
 
                     $scope.isNewType = false;
+                    $scope.isEntityInDoc = false;
 
                     // Enable to select Entity and activate whitelisting modal
                     $scope.showSelectedEntity = function(doc) {
@@ -433,6 +435,10 @@ define([
                         var selectedDoc = $scope.tabs.find((t) => { return t.id === doc.id; });
                         var isInDoc = isEntityInDoc(selectedDoc, $scope.selectedEntity);
                         if (!isInDoc && ($scope.selectedEntity.text.length) > 0 && ($scope.selectedEntity.text !== ' ')) {
+                          $scope.isEntityInDoc = false;
+                          $scope.open($scope, doc);
+                        } else {
+                          $scope.isEntityInDoc = true;
                           $scope.open($scope, doc);
                         }
                     };
@@ -440,9 +446,15 @@ define([
                     function isEntityInDoc(selectedDoc, selectedEntity) {
                       var entities = selectedDoc.entities.filter((e) =>
                         {
-                          if ((e.name === selectedEntity.text) &&
-                              (e.start === selectedEntity.start) &&
-                              (e.end === selectedEntity.end)
+                          //avoids new entity contains / intersects / inside an existed entity
+                          if (((e.start >= selectedEntity.start) &&
+                              (e.end <= selectedEntity.end)) ||
+                              ((e.start <= selectedEntity.start) &&
+                              (e.end >= selectedEntity.end)) ||
+                              ((e.start <= selectedEntity.start) &&
+                              (e.end >= selectedEntity.start)) ||
+                              ((e.start <= selectedEntity.end) &&
+                              (e.end >= selectedEntity.end))
                             ) {
                               return e;
                             }
@@ -452,7 +464,7 @@ define([
                     }
 
                     $scope.whitelist = function(entity, type, doc){
-                      type = type.trim();
+                      type = type.replace(/\s/g,'');
                       var blacklists = isBlacklisted(entity, type);
                       if (blacklists.length > 0) {
                         // Update network and frequency chart
