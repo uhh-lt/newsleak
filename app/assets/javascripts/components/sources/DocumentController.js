@@ -428,6 +428,7 @@ define([
 
                     $scope.isNewType = false;
                     $scope.isEntityInDoc = false;
+
                     // Enable to select Entity and activate whitelisting modal
                     $scope.showSelectedEntity = function(doc) {
                         $scope.selectedEntity =  $scope.getSelectionEntity(doc.content);
@@ -438,7 +439,6 @@ define([
                           $scope.open($scope, doc);
                         } else {
                           $scope.isEntityInDoc = true;
-                          console.log($scope.isEntityInDoc);
                           $scope.open($scope, doc);
                         }
                     };
