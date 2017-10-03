@@ -92,13 +92,16 @@
                       </button>
                     </div>
                     <script type="text/ng-template" id="myModalContent.html">
-                      <md-toolbar class="modal-header">
+                      <md-toolbar class="modal-header" ng-hide="isEntityInDoc" ng-model="isEntityInDoc">
                           <h3 class="modal-title" id="modal-title">Add entity:
                             <span ng-bind="entityName" class="selected-entity"></span>
                           </h3>
                       </md-toolbar>
+                      <md-toolbar class="modal-header md-warn" ng-show="isEntityInDoc" ng-model="isEntityInDoc">
+                          <md-icon class="material-icons ng-scope" role="img" aria-hidden="true">warning</md-icon>
+                      </md-toolbar>
                       <md-content class="modal-body" id="modal-body">
-                        <form name="entityForm">
+                        <form name="entityForm" ng-hide="isEntityInDoc" ng-model="isEntityInDoc">
                           <div ng-hide="isNewType" ng-model="isNewType">
                             Select type:
                             <div>
@@ -122,8 +125,9 @@
                               New type?
                           </md-checkbox>
                         </form>
+                        <div class="whitelist-warning" ng-show="isEntityInDoc" ng-model="isEntityInDoc">Selection can not contain an existed entity</div>
                       </md-content>
-                      <md-dialog-actions layout="row">
+                      <md-dialog-actions layout="row" ng-hide="isEntityInDoc" ng-model="isEntityInDoc">
                         <md-button class="md-primary md-raised" ng-disabled="selectedType == false" type="submit" ng-click="ok()">OK</md-button>
                         <span flex></span>
                         <md-button class="md-primary md-raised" type="button" ng-click="cancel()">Cancel</md-button>
