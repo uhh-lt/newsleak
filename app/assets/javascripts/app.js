@@ -22,6 +22,7 @@ define([
     './components/sources/SourceController',
     './components/sources/DocumentController',
     './components/network/NetworkController',
+    './components/network/KeywordNetworkController',
     './components/network/GraphConfig',
     './components/metadata/MetadataController',
     './components/sources/SearchController',
@@ -47,7 +48,7 @@ define([
     var app = angular.module('myApp', [
             'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial',
             'underscore', 'myApp.observer', 'myApp.history', 'myApp.graphConfig', 'angularScreenfull',
-            'myApp.network', 'myApp.search', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.metafactory',
+            'myApp.network', 'myApp.keywordNetwork', 'myApp.search', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.metafactory',
             'myApp.document', 'myApp.histogram', 'myApp.histogramX', 'ngVis', 'myApp.entityservice']
     );
 
@@ -78,6 +79,10 @@ define([
                 'network': {
                     templateUrl: 'assets/partials/network.html',
                     controller: 'NetworkController'
+                },
+                'keywordNetwork': {
+                    templateUrl: 'assets/partials/keywordNetwork.html',
+                    controller: 'KeywordNetworkController'
                 },
                 'histogram': {
                     templateUrl: 'assets/partials/histogram.html',
@@ -114,13 +119,17 @@ define([
         return uiProperties;
     });
 
-    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', '$mdDialog', 'uiShareService', 'ObserverService', 'playRoutes', 'historyFactory',
-        function ($scope, $state, $timeout, $window, $mdDialog, uiShareService, ObserverService, playRoutes, historyFactory) {
+    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', '$mdDialog', 'uiShareService', 'ObserverService', 'playRoutes', 'historyFactory', 'EntityService',
+        function ($scope, $state, $timeout, $window, $mdDialog, uiShareService, ObserverService, playRoutes, historyFactory, EntityService) {
 
             // Select graph tab on startup. In order to update the value from the child scope we need an object here.
             $scope.selectedTab = { index: 0 };
             $scope.selectedDataset = '';
             $scope.datasets = [];
+
+            // initial values of graph checkboxes
+            $scope.showEntityGraph = true;
+            $scope.showKeywordGraph = true;
 
             $scope.historyFactory = historyFactory;
 
@@ -164,6 +173,22 @@ define([
                // setUILayoutProperties(parseInt($('#network-maps-container').css('width')), parseInt($('#network-maps-container').css('height'))-96);
                 $scope.resizeUI();
             });
+
+            $scope.toggleEntityGraph = function (state) {
+                EntityService.setToggleEntityGraph(state);
+            };
+
+            $scope.toggleKeywordGraph = function (state) {
+                EntityService.setToggleKeywordGraph(state);
+            };
+
+            $scope.getDisplayEntityGraph = function () {
+                return EntityService.getToggleEntityGraph();
+            };
+
+            $scope.getDisplayKeywordGraph = function () {
+                return EntityService.getToggleKeywordGraph();
+            };
 
             /**
              * This function sets properties that describe the dimensions of the UI layout.
@@ -221,6 +246,20 @@ define([
             function fetchBlacklist() {
                  playRoutes.controllers.EntityController.getBlacklistedEntities().get().then(function (response) {
                      $scope.blacklist = response.data;
+                     playRoutes.controllers.EntityController.getBlacklistedKeywords().get().then(function (response) {
+
+                         let i = 1;
+                         for(let item of response.data){
+                             $scope.blacklist.push({
+                                 // id: Long, name: String, entityType: String, freq: Int
+                                 id: i,
+                                 name: item,
+                                 entityType: 'KEYWORD',
+                                 freq: 1
+                             });
+                             i++;
+                         }
+                     });
                 });
             }
 
@@ -248,6 +287,23 @@ define([
             };
 
             $scope.removeFromBlacklist = function() {
+
+                var blacklist = [];
+                for(let item of $scope.blacklistSelection) {
+                    if(item.entityType == 'KEYWORD'){
+                        blacklist.push(item.name);
+                    }
+                }
+
+                if(blacklist.length > 0) {
+                    playRoutes.controllers.KeywordNetworkController.undoBlacklistingKeywords(blacklist).get().then(function () {
+                        for(let item of blacklist){
+                            var index = $scope.blacklistSelection.indexOf(item);
+                            $scope.blacklistSelection.splice(index, 1);
+                        }
+                    });
+                }
+
                 // TODO: Enhancement update only special parts of the application
                 removeSelection(
                     $scope.blacklist,

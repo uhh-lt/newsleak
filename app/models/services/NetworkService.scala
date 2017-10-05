@@ -17,15 +17,16 @@
 
 package models.services
 
-import scala.collection.mutable.ListBuffer
 import com.google.inject.{ ImplementedBy, Inject }
 import models.KeyTerm
 import org.elasticsearch.search.aggregations.AggregationBuilders
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
+
+import scala.collection.mutable.ListBuffer
 // scalastyle:off
 import scala.collection.JavaConversions._
 // scalastyle:on
-import models.{ Facets, NodeBucket, MetaDataBucket, Aggregation, Relationship, Network }
+import models.{ Aggregation, Facets, MetaDataBucket, Network, NodeBucket, Relationship }
 import util.es.ESRequestUtils
 
 /**
@@ -116,19 +117,22 @@ class ESNetworkService @Inject() (
     utils: ESRequestUtils
 ) extends NetworkService {
 
+  var buckets = List[Any]()
+
   /** @inheritdoc */
   override def createNetwork(
     facets: Facets,
     nodeFraction: Map[String, Int],
     exclude: List[Long]
   )(index: String): Network = {
-    val buckets = nodeFraction.flatMap {
+    this.buckets = nodeFraction.flatMap {
       case (t, size) =>
         aggregateService.aggregateEntitiesByType(facets, t, size, List(), exclude)(index).buckets
     }.toList
 
     val rels = induceRelationships(facets, buckets.collect { case NodeBucket(id, _) => id }, index)
-    Network(buckets.collect { case a @ NodeBucket(_, _) => a }, rels)
+    val nodes = buckets.collect { case a @ NodeBucket(_, _) => a }
+    Network(nodes, rels)
   }
 
   /** @inheritdoc */
@@ -209,6 +213,6 @@ class ESNetworkService @Inject() (
   override def getEdgeKeywords(facets: Facets, source: Long, dest: Long, numTerms: Int)(index: String): List[KeyTerm] = {
     // Only consider documents where the two entities occur
     val res = aggregateService.aggregateKeywords(facets.withEntities(List(source, dest)), numTerms, Nil, Nil)(index)
-    res.buckets.collect { case MetaDataBucket(term, count) => KeyTerm(term, count.toInt) }
+    res.buckets.collect { case MetaDataBucket(term, count) => KeyTerm(term, count.toInt, "KEYWORD") }
   }
 }

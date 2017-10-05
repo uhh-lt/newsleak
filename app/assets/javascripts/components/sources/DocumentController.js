@@ -18,7 +18,10 @@
 define([
     'angular',
     'ngSanitize',
-    'ngMaterial'
+    'ngMaterial',
+    'contextMenu',
+    'elasticsearch',
+    'ui-bootstrap'
 ], function (angular) {
     'use strict';
     /**
@@ -26,26 +29,34 @@ define([
      * - render document content
      * - load additional metdata/keywords for loaded document
      */
-    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial'])
-        .directive('docContent', ['$compile', 'ObserverService', 'graphProperties',  '_', function($compile, ObserverService, graphProperties, _) {
+    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ui.bootstrap.contextMenu', 'elasticsearch', 'ui.bootstrap'])
+        .service('client', function (esFactory) {
+            return esFactory({
+              host: 'localhost:9500',
+              apiVersion: '5.5',
+              log: 'trace'
+            });
+          })
+        .directive('docContent', ['$compile', 'ObserverService', 'EntityService', 'graphProperties',  '_', function($compile, ObserverService, EntityService, graphProperties, _) {
             return {
                 restrict: 'E',
                 transclude: true,
                 //replace: true,
                 scope: {
                     // Need to set-up a bi-directional binding in order to pass an object not a string
-                    document: '='
+                    document: '=',
+                    reloadDoc: '&withparam'
                 },
                 link: function(scope, element, attrs) {
                     var content = scope.document.content;
                     var entities = scope.document.entities;
-                    
                     scope.addEntityFilter = function(id) {
                         var el = _.find(entities, function(e) { return e.id == id });
                         ObserverService.addItem({ type: 'entity', data: { id: id, description: el.name, item: el.name, type: el.type }});
                     };
 
                     scope.renderDoc = function() {
+
                         var highlights = scope.document.highlighted !== null ? calcHighlightOffsets(scope.document.highlighted, '<em>', '</em>') : [];
                         // The plain highlighter with query_string search highlights phrases as multiple words
                         // i.e. "Angela Merkel" -> <em> Angela </em> <em> Merkel </em>. Thus, we need to group
@@ -182,7 +193,7 @@ define([
                         var color = graphProperties.options['groups'][typeId]['color']['background'];
                         var innerElement = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none, \'border-bottom\': \'3px solid ' + color + '\'}"></span>');
                         innerElement.className = 'highlight-general';
-                        var addFilter = angular.element('<a ng-click="addEntityFilter(' + id +')" style="text-decoration: none;"></a>');
+                        var addFilter = angular.element('<a id='+ id +' ng-click="addEntityFilter(' + id +')" context-menu="contextMenu" style="text-decoration: none;"></a>');
 
                         addFilter.append(document.createTextNode(name));
                         innerElement.append(addFilter);
@@ -195,6 +206,19 @@ define([
                         outerElement.append(document.createTextNode(name));
                         return outerElement;
                     }
+                    // contextMenu for Blacklisting
+                    scope.contextMenu = [
+                      ['Blacklist', function (scope, event) {
+                        EntityService
+                          .blacklist([
+                            event.target.id
+                          ]);
+                        scope.$parent.observer.notifyObservers();
+                        scope.$parent.reloadDoc(scope.document);
+                      }],
+                    ];
+
+                    scope.$parent.loadBlacklists(scope.document);
 
                     // Init component
                     scope.renderDoc();
@@ -212,6 +236,12 @@ define([
                 '_',
                 'sourceShareService',
                 'ObserverService',
+                'EntityService',
+                'client',
+                'esFactory',
+                '$uibModal',
+                '$log',
+                '$document',
                 function ($scope,
                           $http,
                           $templateRequest,
@@ -220,7 +250,13 @@ define([
                           playRoutes,
                           _,
                           sourceShareService,
-                          ObserverService) {
+                          ObserverService,
+                          EntityService,
+                          client,
+                          esFactory,
+                          $uibModal,
+                          $log,
+                          $document) {
 
                     var self = this;
 
@@ -255,6 +291,53 @@ define([
                     function init() {
                         updateTagLabels();
                     }
+
+                    $scope.open = function ($scope, doc) {
+                      var modalInstance = $uibModal.open({
+                        templateUrl: 'myModalContent.html',
+                        animation: true,
+                        component: 'modalComponent',
+                        size: 'sm',
+                        resolve: {
+                          parentScope: function() {
+                            return $scope;
+                          },
+                          doc: function() {
+                            return doc;
+                          }
+                        },
+                        controller: ('ModalController', ['$scope', function($scope) {
+
+                            var selectedEntity = $scope.$resolve.parentScope.selectedEntity;
+                            var entityTypes = $scope.$resolve.parentScope.entityTypes;
+                            var doc = $scope.$resolve.doc;
+
+                            $scope.entityName = selectedEntity.text
+                            $scope.entityTypes = entityTypes;
+                            $scope.selectedType = '';
+                            $scope.isEntityInDoc = $scope.$resolve.parentScope.isEntityInDoc;
+
+                            $scope.toggleType = function (state) {
+                              this.$resolve.parentScope.isNewType = !state;
+                              $scope.selectedType = '';
+                            }
+
+                            $scope.ok = function () {
+                              this.$resolve.parentScope.whitelist(selectedEntity, $scope.selectedType, doc);
+                              this.$close();
+                            };
+
+                            $scope.cancel = function () {
+                              this.$close();
+                            };
+                          }
+                        ])
+                      });
+                      modalInstance.result.then(function () {
+                      }, function () {
+                        $log.info('Modal dismissed at: ' + new Date());
+                      });
+                    };
 
                     $scope.retrieveKeywords = function(doc) {
                         var terms =  [];
@@ -291,6 +374,17 @@ define([
                         });
                     }
 
+                    $scope.indexName = '';
+                    function getIndexName() {
+                      playRoutes.controllers.DocumentController.getIndexName().get().then(function(response) {
+                          $scope.indexName = response.data.index;
+                          console.log('index name: ' + $scope.indexName);
+                      });
+                    }
+
+                    // get index name from the back end and print to the console
+                    getIndexName();
+
                     $scope.initTags = function(doc) {
                         $scope.tags[doc.id] = [];
                         playRoutes.controllers.DocumentController.getTagsByDocId(doc.id).get().then(function(response) {
@@ -311,6 +405,9 @@ define([
                             $scope.tags[doc.id].push({ id: response.data.id , label: tag.label });
                             // Update labels
                             updateTagLabels();
+                            if(EntityService.getTagsSelected()){
+                                EntityService.reloadKeywordGraph(true);
+                            }
                         });
                     };
 
@@ -318,6 +415,9 @@ define([
                         playRoutes.controllers.DocumentController.removeTagById(tag.id).get().then(function(response) {
                             // Update labels
                             updateTagLabels();
+                            if(EntityService.getTagsSelected()){
+                                EntityService.reloadKeywordGraph(true);
+                            }
                         });
                     };
 
@@ -325,6 +425,248 @@ define([
                         var results = query ? $scope.labels.filter(createFilterFor(query)) : [];
                         return results;
                     };
+
+                    $scope.isNewType = false;
+                    $scope.isEntityInDoc = false;
+
+                    // Enable to select Entity and activate whitelisting modal
+                    $scope.showSelectedEntity = function(doc) {
+                        $scope.selectedEntity =  $scope.getSelectionEntity(doc.content);
+                        var selectedDoc = $scope.tabs.find((t) => { return t.id === doc.id; });
+                        var isInDoc = isEntityInDoc(selectedDoc, $scope.selectedEntity);
+                        if (!isInDoc && ($scope.selectedEntity.text.length) > 0 && ($scope.selectedEntity.text !== ' ')) {
+                          $scope.isEntityInDoc = false;
+                          $scope.open($scope, doc);
+                        } else {
+                          $scope.isEntityInDoc = true;
+                          $scope.open($scope, doc);
+                        }
+                    };
+
+                    function isEntityInDoc(selectedDoc, selectedEntity) {
+                      var entities = selectedDoc.entities.filter((e) =>
+                        {
+                          //avoids new entity contains / intersects / inside an existed entity
+                          if (((e.start >= selectedEntity.start) &&
+                              (e.end <= selectedEntity.end)) ||
+                              ((e.start <= selectedEntity.start) &&
+                              (e.end >= selectedEntity.end)) ||
+                              ((e.start <= selectedEntity.start) &&
+                              (e.end >= selectedEntity.start)) ||
+                              ((e.start <= selectedEntity.end) &&
+                              (e.end >= selectedEntity.end))
+                            ) {
+                              return e;
+                            }
+                        }
+                      );
+                      return entities.length > 0 ? true : false;
+                    }
+
+                    $scope.whitelist = function(entity, type, doc){
+                      type = type.replace(/\s/g,'');
+                      var blacklists = isBlacklisted(entity, type);
+                      if (blacklists.length > 0) {
+                        // Update network and frequency chart
+                        playRoutes.controllers.EntityController.undoBlacklistingByIds([blacklists[0].id]).get().then(function(response) {
+                          $scope.observer.notifyObservers();
+                          $scope.reloadDoc(doc);
+                        });
+                      } else {
+                        playRoutes.controllers.EntityController.getRecordedEntity(entity.text, type).get().then(function (response) {
+                          if (response.data.length > 0) {
+                            $scope.createNewEntity(entity, type, doc, response.data[0].id);
+                            EntityService.whitelist(entity, type, doc.id, response.data[0].id);
+                          } else {
+                            $scope.esWhitelist(entity, type, doc);
+                            EntityService.whitelist(entity, type, doc.id);
+                          }
+                        });
+                      }
+                    };
+
+                    // Get entityTypes from observer service
+                    $scope.entityTypes = [];
+                    $scope.observer.getEntityTypes().then(function (types) {
+                        types.map(function (e) {
+                            if (e.name !== null) {
+                                $scope.entityTypes.push(e);
+                            }
+                        });
+                    });
+
+                    $scope.selectedType = '';
+                    var doc = $scope.tabs;
+                    $scope.getSelectionEntity = function(doc) {
+                      var text = "";
+                      var start = 0;
+                      var end = 0;
+                      if (window.getSelection) {
+                         text = window.getSelection().toString();
+                         start = doc.match(text).index;
+                         end = start + text.length;
+                      } else if (document.selection && document.selection.type != "Control") {
+                         text = document.selection.createRange().text;
+                      }
+                      text = text.trim();
+                      return {
+                        text,
+                        start,
+                        end
+                      };
+                    };
+
+                    $scope.esWhitelist = function(entity, typeEnt, doc) {
+                      client.search({
+                        index: $scope.indexName,
+                        type: 'document',
+                        size: 0,
+                        body: {
+                          aggs: {
+                            max_id: {
+                              max: {
+                                field: "Entities.EntId"
+                              }
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                        $scope.esNewId = (resp.aggregations.max_id.value) + 1;
+                        $scope.createNewEntity(entity, typeEnt, doc);
+                      }, function (error, response) {
+                        $scope.esNewId = null;
+                        console.trace(err.message);
+                      });
+                    }
+
+                    $scope.createNewEntity = function(entity, typeEnt, doc, entId = null) {
+                      client.update({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        body: {
+                          script: "ctx._source.Entities.add(Entities)",
+                          params: {
+                            Entities:  {
+                              EntId: entId === null ? $scope.esNewId : entId,
+                              Entname: entity.text,
+                              EntType: typeEnt,
+                              EntFrequency: 1
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                          $scope.esNewEntity = resp;
+                          $scope.isNewType === false ?
+                            $scope.insertNewEntityType(entity, typeEnt, doc, entId)
+                            :
+                            $scope.createNewEntityType(entity, typeEnt, doc);
+                      }, function (err) {
+                          $scope.esNewEntity = null;
+                          console.trace(err.message);
+                      });
+                    }
+
+                    $scope.insertNewEntityType = function(entity, typeEnt, doc, entId = null) {
+                      var suffixType = typeEnt.toLowerCase();
+                      client.update({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        body: {
+                          script: "ctx._source.Entities" + suffixType + ".add(Entities)",
+                          params: {
+                            Entities:  {
+                              EntId: entId === null ? $scope.esNewId : entId,
+                              Entname: entity.text,
+                              EntFrequency: 1
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                          $scope.esNewEntityType = resp;
+                          $scope.observer.notifyObservers();
+                          $scope.reloadDoc(doc);
+                      }, function (err) {
+                          $scope.esNewEntityType = null;
+                          console.trace(err.message);
+                      });
+                    }
+
+
+                    $scope.createNewEntityType = function(entity, typeEnt, doc) {
+                      var suffixType = typeEnt.toLowerCase();
+                      client.update({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        body: {
+                          script: "ctx._source.Entities" + suffixType + " = (Entities)",
+                          params: {
+                            Entities:  {
+                              EntId: $scope.esNewId,
+                              Entname: entity.text,
+                              EntFrequency: 1
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                          $scope.esNewEntityType = resp;
+                          $scope.observer.notifyObservers();
+                          $scope.reloadDoc(doc);
+                      }, function (err) {
+                          $scope.esNewEntityType = null;
+                          console.trace(err.message);
+                      });
+                    }
+
+                    $scope.blacklists = [];
+                    $scope.loadBlacklists = function(doc) {
+                      playRoutes.controllers.EntityController.getBlacklistsByDoc(doc.id).get().then(function (response) {
+                        $scope.blacklists = response.data;
+                      });
+                    }
+
+                    function isBlacklisted(entity, type) {
+                      var isBlacklisted = $scope.blacklists.filter((e) =>
+                        {
+                          if ((e.name === entity.text) &&
+                              (e.start === entity.start) &&
+                              (e.end === entity.end) &&
+                              (e.type === type)
+                            ) {
+                              return e;
+                            }
+                        }
+                      );
+                      return isBlacklisted;
+                    }
+
+                    $scope.reloadDoc = function(doc) {
+                      $scope.removeTab(doc);
+                      var editItem = {
+                          type: 'openDoc',
+                          data: {
+                              id: doc.id,
+                              description: "#" + doc.id,
+                              item: "#" + doc.id
+                          }
+                      };
+
+                      $scope.observer.addItem(editItem);
+
+                      playRoutes.controllers.EntityController.getEntitiesByDoc(doc.id).get().then(function (response) {
+                          // Provide document controller with document information
+                          $scope.sourceShared.tabs.push({
+                              id: doc.id,
+                              title: doc.id,
+                              content: doc.content,
+                              highlighted: doc.highlighted,
+                              meta: doc.metadata,
+                              entities: response.data
+                          });
+                      });
+                    }
 
                     function createFilterFor(query) {
                         var lowercaseQuery = angular.lowercase(query);

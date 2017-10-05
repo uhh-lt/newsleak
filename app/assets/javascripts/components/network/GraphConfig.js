@@ -82,8 +82,9 @@ define([
                     '8': { color:  {border: "#FD5A77", background: "#FFC0CB", highlight: {border: "#FD5A77", background: "#FFD1D9"}, hover: {border: "#FD5A77", background: "#FFD1D9"}}}, // 8: pink
                     '9': { color:  {border: "#41A906", background: "#7BE141", highlight: {border: "#41A906", background: "#A1EC76"}, hover: {border: "#41A906", background: "#A1EC76"}}}, // 9: green
                     '10': { color: {border: "#990000", background: "#EE0000", highlight: {border: "#BB0000", background: "#FF3333"}, hover: {border: "#BB0000", background: "#FF3333"}}}, // 10:bright red
-                    '11': { color: {border: "#FF6000", background: "#FF6000", highlight: {border: "#FF6000", background: "#FF6000"}, hover: {border: "#FF6000", background: "#FF6000"}}}  // 12: real orange
-
+                    '11': { color: {border: "#FF6000", background: "#FF6000", highlight: {border: "#FF6000", background: "#FF6000"}, hover: {border: "#FF6000", background: "#FF6000"}}},  // 12: real orange
+                    '-1': { color: {border: "#4575b4", background: "#FFFFFF", highlight: {border: "#4575b4", background: "#FFFFFF"}, hover: {border: "#4575b4", background: "#FFFFFF"}}},  // -1: white / blue
+                    '-2': { color: {border: "#7BE141", background: "#FFFFFF", highlight: {border: "#7BE141", background: "#FFFFFF"}, hover: {border: "#7BE141", background: "#FFFFFF"}}},  // -2: white / green
                 }
             }
         )

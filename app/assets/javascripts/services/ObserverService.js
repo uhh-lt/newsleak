@@ -37,8 +37,8 @@ define([
             var items = {};
             //types of tracked items
             // TODO: expandNode, egoNetwork not used. Remove them. Make sure index of types still fits! Better don't access via index ...
-            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset", "delete", "openDoc", "timeX"];
-            var notfiyTypes = ["entity", "metadata", "time", "timeX", "fulltext", "reset"];
+            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset", "delete", "openDoc", "timeX", "keyword"];
+            var notfiyTypes = ["entity", "metadata", "time", "timeX", "fulltext", "reset", "keyword"];
             var metadataTypes = [];
             var entityTypes = [];
             var histogramLoD = [];

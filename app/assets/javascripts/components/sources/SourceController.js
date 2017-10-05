@@ -44,6 +44,7 @@ define([
                 '_',
                 'sourceShareService',
                 'ObserverService',
+                'EntityService',
                 function ($scope,
                           $http,
                           $timeout,
@@ -53,7 +54,8 @@ define([
                           playRoutes,
                           _,
                           sourceShareService,
-                          ObserverService) {
+                          ObserverService,
+                          EntityService) {
 
                     $scope.allDocumentsLoadedMsg = 'All matching Documents loaded';
                     $scope.noDocumentsMsg = 'No document found for current applied filters.';
@@ -115,7 +117,6 @@ define([
                         });
 
                         playRoutes.controllers.DocumentController.getDocs(fulltext, facets, entities, $scope.observer.getTimeRange(),$scope.observer.getXTimeRange()).get().then(function (x) {
-                            // console.log(x.data);
                             $scope.sourceShared.reset();
                             $scope.sourceShared.addDocs(x.data.docs);
                             $scope.hits = x.data.hits;
@@ -181,6 +182,7 @@ define([
                     });
 
                     $scope.loadFullDocument = function (doc) {
+                        EntityService.setToggleKeywordGraph(true);
                         // Focus open tab if document is already opened
                         if($scope.isDocumentOpen(doc.id)) {
                             var index = _.findIndex($scope.sourceShared.tabs, function(t) { return t.id == doc.id; });
