@@ -459,7 +459,7 @@ define([
                         if (!isInDoc && ($scope.selectedEntity.text.length) > 0 && ($scope.selectedEntity.text !== ' ')) {
                           $scope.isEntityInDoc = false;
                           $scope.open($scope, doc);
-                        } else {
+                        } else if (isInDoc && ($scope.selectedEntity.text.length) > 0 && ($scope.selectedEntity.text !== ' ')){
                           $scope.isEntityInDoc = true;
                           $scope.open($scope, doc);
                         }
