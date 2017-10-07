@@ -316,10 +316,16 @@ define([
                             $scope.entityTypes = entityTypes;
                             $scope.selectedType = '';
                             $scope.isEntityInDoc = $scope.$resolve.parentScope.isEntityInDoc;
+                            $scope.isKeyword = $scope.$resolve.parentScope.isKeyword;
 
                             $scope.toggleType = function (state) {
                               this.$resolve.parentScope.isNewType = !state;
                               $scope.selectedType = '';
+                            }
+
+                            $scope.toggleKeyword = function (state) {
+                              this.$resolve.parentScope.isKeyword = !state;
+                              $scope.selectedType = state === false ? 'key' : '';
                             }
 
                             $scope.ok = function () {
@@ -428,6 +434,7 @@ define([
 
                     $scope.isNewType = false;
                     $scope.isEntityInDoc = false;
+                    $scope.isKeyword = false;
 
                     // Enable to select Entity and activate whitelisting modal
                     $scope.showSelectedEntity = function(doc) {

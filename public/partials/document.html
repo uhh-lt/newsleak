@@ -93,7 +93,7 @@
                     </div>
                     <script type="text/ng-template" id="myModalContent.html">
                       <md-toolbar class="modal-header" ng-hide="isEntityInDoc" ng-model="isEntityInDoc">
-                          <h3 class="modal-title" id="modal-title">Add entity:
+                          <h3 class="modal-title" id="modal-title">Add {{isKeyword ? 'keyword' : 'entity'}}:
                             <span ng-bind="entityName" class="selected-entity"></span>
                           </h3>
                       </md-toolbar>
@@ -102,14 +102,16 @@
                       </md-toolbar>
                       <md-content class="modal-body" id="modal-body">
                         <form name="entityForm" ng-hide="isEntityInDoc" ng-model="isEntityInDoc">
-                          <div ng-hide="isNewType" ng-model="isNewType">
-                            Select type:
-                            <div>
-                              <select required class="md-select" name="selectEntityType" id="selectEntityType" ng-model="selectedType">
-                                <option ng-repeat="entityType in entityTypes">
-                                  {{ entityType.name }}
-                                </option>
-                              </select>
+                          <div ng-hide="isKeyword" ng-model="isKeyword">
+                            <div ng-hide="isNewType" ng-model="isNewType">
+                              Select type:
+                              <div>
+                                <select required class="md-select" name="selectEntityType" id="selectEntityType" ng-model="selectedType">
+                                  <option ng-repeat="entityType in entityTypes">
+                                    {{ entityType.name }}
+                                  </option>
+                                </select>
+                              </div>
                             </div>
                           </div>
                           <div ng-show="isNewType" ng-model="isNewType">
@@ -121,9 +123,16 @@
                                </div>
                              </md-input-container>
                           </div>
-                          <md-checkbox ng-model="isNewType" aria-label="Tags" ng-click="toggleType(isNewType)">
-                              New type?
-                          </md-checkbox>
+                          <div ng-hide="isKeyword" ng-model="isKeyword">
+                            <md-checkbox ng-model="isNewType" aria-label="Tags" ng-click="toggleType(isNewType)">
+                                New type?
+                            </md-checkbox>
+                          </div>
+                          <div ng-hide="isNewType" ng-model="isNewType">
+                            <md-checkbox ng-model="isKeyword" aria-label="Tags" ng-click="toggleKeyword(isKeyword)">
+                                Is Keyword?
+                            </md-checkbox>
+                          </div>
                         </form>
                         <div class="whitelist-warning" ng-show="isEntityInDoc" ng-model="isEntityInDoc">Selection cannot contain existing entity</div>
                       </md-content>
