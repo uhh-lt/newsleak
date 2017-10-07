@@ -60,8 +60,7 @@ define([
                     return { id: -(i+1), x: x + i * distance, y: y, label: t.name, group: t.id, value: 1, fixed: true, physics: false };
                 });
                 $scope.legendNodes.add(nodes);
-                //$scope.legendNetwork.fit();
-                console.log($scope.legendNetwork);
+                // $scope.legendNetwork.fit();
             };
 
             // Add nodes after the legend div is added to the dom

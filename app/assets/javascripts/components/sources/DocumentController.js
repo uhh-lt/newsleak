@@ -274,6 +274,9 @@ define([
                     $scope.removeTab = function (tab) {
                         var index = $scope.tabs.indexOf(tab);
                         $scope.tabs.splice(index, 1);
+                        if($scope.tabs.length == 0){
+                            EntityService.setToggleKeywordGraph();
+                        }
                     };
 
                     $scope.observer = ObserverService;
@@ -341,8 +344,27 @@ define([
 
                     $scope.retrieveKeywords = function(doc) {
                         var terms =  [];
-                        playRoutes.controllers.DocumentController.getKeywordsById(doc.id, self.numKeywords).get().then(function(response) {
-                            response.data.forEach(function(t) { return terms.push(t.term); });
+                        // playRoutes.controllers.DocumentController.getKeywordsById(doc.id, self.numKeywords).get().then(function(response) {
+                        //    response.data.forEach(function(t) { return terms.push(t.term); });
+                        //});
+                        client.search({
+                            index: $scope.indexName,
+                            type: 'document',
+                            id: doc.id,
+                            body: {
+                                query: {
+                                    match: {
+                                        _id: doc.id
+                                    }
+                                }
+                            }
+
+                        }).then(function (resp) {
+                            if(resp.hits.hits[0]._source.Keywords){
+                                for(let keyword of resp.hits.hits[0]._source.Keywords) {
+                                    terms.push(keyword.Keyword);
+                                }
+                            }
                         });
                         return terms;
                     };
