@@ -336,6 +336,7 @@ define([
                             edges: self.edgesDataset
                         };
                 });
+                $scope.rereloadGraph();
                 return  promise.promise;
             };
 
@@ -431,7 +432,7 @@ define([
 
                     // Initialize graph
                     $scope.reloadGraph();
-                    $scope.rereloadGraph();
+                    // $scope.rereloadGraph();
                 });
                 // get index name from the back end
                 getIndexName();
