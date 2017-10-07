@@ -294,7 +294,7 @@ define([
 
                     $scope.open = function ($scope, doc) {
                       var modalInstance = $uibModal.open({
-                        templateUrl: 'myModalContent.html',
+                        templateUrl: 'whitelistModal.html',
                         animation: true,
                         component: 'modalComponent',
                         size: 'sm',
@@ -317,6 +317,7 @@ define([
                             $scope.selectedType = '';
                             $scope.isEntityInDoc = $scope.$resolve.parentScope.isEntityInDoc;
                             $scope.isKeyword = $scope.$resolve.parentScope.isKeyword;
+                            $scope.isKeyword = false;
 
                             $scope.toggleType = function (state) {
                               this.$resolve.parentScope.isNewType = !state;
@@ -473,22 +474,27 @@ define([
                     $scope.whitelist = function(entity, type, doc){
                       type = type.replace(/\s/g,'');
                       var blacklists = isBlacklisted(entity, type);
-                      if (blacklists.length > 0) {
-                        // Update network and frequency chart
-                        playRoutes.controllers.EntityController.undoBlacklistingByIds([blacklists[0].id]).get().then(function(response) {
-                          $scope.observer.notifyObservers();
-                          $scope.reloadDoc(doc);
-                        });
+                      $scope.isKeyword;
+                      if ($scope.isKeyword === true) {
+                        $scope.createNewKeyword(entity.text, doc);
                       } else {
-                        playRoutes.controllers.EntityController.getRecordedEntity(entity.text, type).get().then(function (response) {
-                          if (response.data.length > 0) {
-                            $scope.createNewEntity(entity, type, doc, response.data[0].id);
-                            EntityService.whitelist(entity, type, doc.id, response.data[0].id);
-                          } else {
-                            $scope.esWhitelist(entity, type, doc);
-                            EntityService.whitelist(entity, type, doc.id);
-                          }
-                        });
+                        if (blacklists.length > 0) {
+                          // Update network and frequency chart
+                          playRoutes.controllers.EntityController.undoBlacklistingByIds([blacklists[0].id]).get().then(function(response) {
+                            $scope.observer.notifyObservers();
+                            $scope.reloadDoc(doc);
+                          });
+                        } else {
+                          playRoutes.controllers.EntityController.getRecordedEntity(entity.text, type).get().then(function (response) {
+                            if (response.data.length > 0) {
+                              $scope.createNewEntity(entity, type, doc, response.data[0].id);
+                              EntityService.whitelist(entity, type, doc.id, response.data[0].id);
+                            } else {
+                              $scope.esWhitelist(entity, type, doc);
+                              EntityService.whitelist(entity, type, doc.id);
+                            }
+                          });
+                        }
                       }
                     };
 
@@ -574,6 +580,29 @@ define([
                       });
                     }
 
+                    //TODO: check if index doesn't have Keywords field
+                    $scope.createNewKeyword = function(keyword, doc) {
+                      client.update({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        body: {
+                          script: "ctx._source.Keywords.add(keyword)",
+                          params: {
+                            keyword:  {
+                              Keyword: keyword,
+                              EntFrequency: 1
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                          $scope.observer.notifyObservers();
+                          $scope.reloadDoc(doc);
+                      }, function (err) {
+                          console.trace(err.message);
+                      });
+                    }
+
                     $scope.insertNewEntityType = function(entity, typeEnt, doc, entId = null) {
                       var suffixType = typeEnt.toLowerCase();
                       client.update({
@@ -608,7 +637,7 @@ define([
                         type: 'document',
                         id: doc.id,
                         body: {
-                          script: "ctx._source.Entities" + suffixType + " = (Entities)",
+                          script: "ctx._source.Entities" + suffixType + " = [(Entities)]",
                           params: {
                             Entities:  {
                               EntId: $scope.esNewId,
