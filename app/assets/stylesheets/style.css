@@ -137,6 +137,15 @@ html, body {
     z-index: 10;
 }
 
+#keywordLegend {
+    position: absolute;
+    width: 200px;
+    height: 80px;
+    top: 74px;
+    left: 10px;
+    z-index: 10;
+}
+
 .vis-network .vis-navigation .vis-button {
     background-color: white;
     margin-bottom: 20px;

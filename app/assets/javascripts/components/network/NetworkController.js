@@ -222,17 +222,11 @@ define([
                         self.edgesDataset.clear();
                         self.edgesDataset.add(edges);
 
-                        console.log("" + self.nodesDataset.length + " nodes loaded");
-                    console.log("" + self.edgesDataset.length + " edges loaded");
-                    console.log("" + self.edgesDataset + " edges");
-
                         // Initialize the graph
                         $scope.graphData = {
                             nodes: self.nodesDataset,
                             edges: self.edgesDataset
                         };
-                    console.log('SCOPE 1');
-                    console.log($scope.graphData);
                 });
                 return  promise.promise;
             };
