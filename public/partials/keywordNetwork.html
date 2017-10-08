@@ -35,7 +35,7 @@
 
 <!-- legend and network are rendered above each other -->
 <div id="keywordLegend" ng-controller="KeywordLegendController as ctrl" ng-show="getToggleKeywordLegend()">
-    <vis-network data="ctrl.legendData" options="ctrl.legendOptions" events="ctrl.legendEvents" layout-fill style="left: 50%; top: 50%;"></vis-network>
+    <vis-network data="ctrl.legendData" options="ctrl.legendOptions" events="ctrl.legendEvents" layout-fill></vis-network>
 </div>
 <div id="mykeywordnetwork">
     <vis-network data="graphData" options="graphOptions" layout-fill events="graphEvents"></vis-network>

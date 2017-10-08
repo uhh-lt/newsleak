@@ -292,16 +292,15 @@ define([
                 var fraction = $scope.keywordTypes.map(function(t) { return { "key": t.name, "data": t.sliderModel }; });
 
                 playRoutes.controllers.KeywordNetworkController.induceSubgraphKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, fraction).get().then(function(response) {
+
                         // Enable physics for new graph data when network is initialized
                         if(!_.isUndefined(self.network)) {
                             applyPhysicsOptions(self.physicOptions);
                         }
+
                         $scope.loading = true;
 
-                        $scope.resultNodes = response.data.entities;
-                        $scope.resultRelations = response.data.relations;
-
-                        var nodes = response.data.entities.map(function(n) {
+                        $scope.resultNodes = response.data.entities.map(function(n) {
                             // See css property div.network-tooltip for custom tooltip styling
                             if(n.termType == 'TAG') {
                                 return {id: n.id, label: n.label, group: -2, type: 'TAG', value: n.count, borderWidth: 2};
@@ -311,14 +310,7 @@ define([
                             }
                         });
 
-                        self.nodes.clear();
-                        self.nodesDataset.clear();
-                        self.nodesDataset.add(nodes);
-
-                        // Highlight new nodes after each filtering step
-                        markNewNodes(nodes.map(function(n) { return n.id; }));
-
-                        var edges = response.data.relations.map(function(n) {
+                        $scope.resultRelations = response.data.relations.map(function(n) {
                             return {
                                 from: getEdgeByLabel(n.source, response.data.entities),
                                 to: getEdgeByLabel(n.dest, response.data.entities),
@@ -326,18 +318,25 @@ define([
                             };
                         });
 
+                        self.nodes.clear();
+                        self.nodesDataset.clear();
+                        self.nodesDataset.add($scope.resultNodes);
+
                         self.edges.clear();
                         self.edgesDataset.clear();
-                        self.edgesDataset.add(edges);
+                        self.edgesDataset.add($scope.resultRelations);
 
                         // Initialize the graph
                         $scope.graphData = {
                             nodes: self.nodesDataset,
                             edges: self.edgesDataset
                         };
+
+                        self.network.redraw();
+                        self.network.fit();
+
                 });
-                $scope.rereloadGraph();
-                return  promise.promise;
+                return $scope.rereloadGraph();
             };
 
 
@@ -349,36 +348,17 @@ define([
                     if(!_.isUndefined(self.network)) {
                         applyPhysicsOptions(self.physicOptions);
                     }
-                    $scope.loading = true;
-
-                    var nodes = $scope.resultNodes.map(function(n) {
-                        // See css property div.network-tooltip for custom tooltip styling
-                        if(n.termType == 'TAG') {
-                            return {id: n.id, label: n.label, group: -2, type: 'TAG', value: n.count, borderWidth: 2};
-                        }
-                        else {
-                            return {id: n.id, label: n.label, group: -1, type: 'KEYWORD', value: n.count, borderWidth: 3};
-                        }
-                    });
 
                     self.nodes.clear();
                     self.nodesDataset.clear();
-                    self.nodesDataset.add(nodes);
+                    self.nodesDataset.add($scope.resultNodes);
 
                     // Highlight new nodes after each filtering step
-                    markNewNodes(nodes.map(function(n) { return n.id; }));
-
-                    var edges = $scope.resultRelations.map(function(n) {
-                        return {
-                            from: getEdgeByLabel(n.source, $scope.resultNodes),
-                            to: getEdgeByLabel(n.dest, $scope.resultNodes),
-                            value: n.occurrence
-                        };
-                    });
+                    markNewNodes($scope.resultNodes.map(function(n) { return n.id; }));
 
                     self.edges.clear();
                     self.edgesDataset.clear();
-                    self.edgesDataset.add(edges);
+                    self.edgesDataset.add($scope.resultRelations);
 
                     // Initialize the graph
                     $scope.graphData = {
@@ -410,30 +390,12 @@ define([
 
 
             function init() {
-                // Fetch the named entity types
-                playRoutes.controllers.KeywordNetworkController.getTags().get().then(function (response) {
-
-                    if($scope.areTagsSelected){
-                        $scope.keywordTypes = [{
-                            name: "KEY",
-                            sliderModel: 20
-                        },
-                            {
-                                name: "TAG",
-                                sliderModel: response.data.result.length
-                            }];
-                    }
-                    else {
-                        $scope.keywordTypes = [{
-                            name: "KEY",
-                            sliderModel: 20
-                        }];
-                    }
-
-                    // Initialize graph
-                    $scope.reloadGraph();
-                    // $scope.rereloadGraph();
-                });
+                // init graph
+                $scope.keywordTypes = [{
+                    name: "KEY",
+                    sliderModel: 20
+                }];
+                $scope.reloadGraph();
                 // get index name from the back end
                 getIndexName();
                 EntityService.setKeywordScope($scope);

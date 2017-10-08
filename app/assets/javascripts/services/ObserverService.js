@@ -107,7 +107,6 @@ define([
                  * IMPORTANT: the callback function has to return a promise a
                  */
                 registerObserverCallback: function(callbackInstance){
-                    console.log(callbackInstance);
                     observerCallbacks.push(callbackInstance);
                 },
                 /**

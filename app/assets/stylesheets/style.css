@@ -73,14 +73,14 @@ html, body {
 
 
 #network {
-    position: absolute;
+    position: relative;
     overflow-y: hidden;
     width: 100%;
     height: 100%;
 }
 
 #keywordNetwork {
-    position: absolute;
+    position: relative;
     overflow-y: hidden;
     width: 100%;
     height: 100%;
@@ -105,19 +105,17 @@ html, body {
 }
 
 #mynetwork {
-    position: absolute;
+    position: relative;
     overflow-y: hidden;
     width: 100%;
-    top: 74px;
     height: calc(100% - 74px);
     background-color: #d1d1d1;
 }
 
 #mykeywordnetwork {
-    position: absolute;
+    position: relative;
     overflow-y: hidden;
     width: 100%;
-    top: 74px;
     height: calc(100% - 74px);
     background-color: #d1d1d1;
 }

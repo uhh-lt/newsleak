@@ -227,6 +227,7 @@ define([
                             nodes: self.nodesDataset,
                             edges: self.edgesDataset
                         };
+
                 });
                 return  promise.promise;
             };
@@ -287,7 +288,7 @@ define([
                     $scope.types = types.map(function(t) { return _.extend(t, { sliderModel: 5 }) });
                     // Initialize graph
                     $scope.reloadGraph();
-                    $scope.rereloadGraph();
+                    // $scope.rereloadGraph();
                 });
                 EntityService.setEntityScope($scope);
             }
