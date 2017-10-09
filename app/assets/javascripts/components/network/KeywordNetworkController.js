@@ -39,50 +39,34 @@ define([
         .controller('KeywordLegendController', ['$scope', '$timeout', 'VisDataSet', 'graphProperties', function ($scope, $timeout, VisDataSet, graphProperties) {
 
             $scope.legendNodes = new VisDataSet([]);
-            this.keywordLegendOptions = graphProperties.legendOptions;
-            this.keywordLegendData = { nodes: $scope.legendNodes, edges: [] };
-            this.keywordLegendEvents = { "onload": function(network) { $scope.keywordLegendNetwork = network; console.log(network);} };
+            $scope.legendTypes = [{
+                id: -1,
+                name: 'KEY',
+                sliderModel: 20
+            },{
+                id: -2,
+                name: 'TAG',
+                sliderModel: $scope.currentTags.length
+            }];
+            this.legendOptions = graphProperties.legendOptions;
+            this.legendData = { nodes: $scope.legendNodes, edges: [] };
+            this.legendEvents = { "onload": function(network) { $scope.legendNetwork = network; } };
 
             // See style.css 'legend' for width and height of the render area
             $scope.addLegend = function(types) {
-                var x = 0; var y = 0; var distance = 100;
+                var x = 40; var y = 20; var distance = 80;
 
                 var nodes = types.map(function(t, i) {
-                    return {
-                        id: -(i + 1),
-                        x: x + i * distance,
-                        y: y,
-                        label: t.name,
-                        group: t.id,
-                        type: 'KEYWORD',
-                        value: 1,
-                        fixed: true,
-                        physics: false
-                    };
+                    return { id: -(i+1), x: x + i * distance, y: y, label: t.name, group: t.id, value: 1, fixed: true, physics: false };
                 });
                 $scope.legendNodes.add(nodes);
-                console.log($scope.legendNodes);
-                console.log($scope.keywordLegendNetwork);
-                $scope.keywordLegendNetwork.fit();
+                // $scope.legendNetwork.fit();
             };
 
             // Add nodes after the legend div is added to the dom
-            let legendItems = [];
-            legendItems.push({
-                id: 7,
-                name: 'KEYWORD',
-                sliderModel: 20
+            $timeout(function(){
+                $scope.addLegend($scope.legendTypes);
             });
-            if($scope.areTagsSelected){
-                legendItems.push({
-                    id: 9,
-                    name: 'TAG'
-                })
-            }
-
-            console.log(legendItems);
-            $scope.addLegend(legendItems);
-
         }])
         // Keyword Network Controller
         .controller('KeywordNetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', 'client', 'esFactory', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService, client, esFactory) {
@@ -175,9 +159,20 @@ define([
 
             self.physicOptions = physicOptions;
 
+            $scope.showKeywordLegend = false;
+
+            $scope.getToggleKeywordLegend = function () {
+                return $scope.showKeywordLegend;
+            };
+
+            $scope.toggleKeywordLegend = function () {
+
+                $scope.showKeywordLegend = ! $scope.showKeywordLegend;
+            };
+
             self.keywordNetworkButtons = [
                 { name: 'Fullscreen', template: '<div class="vis-button vis-fullscreen-button" ng-click="KeywordNetworkController.toggleFullscreen()"></div>' },
-                // { name: 'Legend', template: '<div class="vis-button vis-legend-button" ng-click="showKeywordLegend = !showKeywordLegend"></div>' }
+                { name: 'Legend', template: '<div class="vis-button vis-legend-button" ng-click="toggleKeywordLegend()"></div>' }
             ];
 
             // Context menu for single node selection
@@ -187,13 +182,13 @@ define([
                     action: function(value, nodeId) { addNodeFilter(nodeId); }
 
                 },
-                /*{
+                {
                     title: 'Edit node',
                     action: function(value, nodeId) { editNode(nodeId); }
                 }, {
                     title: 'Expand',
                     action: function(value, nodeId) { expandNode(nodeId); }
-                },*/
+                },
                 {
                     title: 'Hide',
                     action: function(value, nodeId) { hideNodes([nodeId]); }
@@ -206,7 +201,7 @@ define([
             ];
 
             // Context menu for multiple node selection
-            /*self.multiNodeMenu = [
+            self.multiNodeMenu = [
                 {
                     title: 'Merge nodes',
                     action: function(value, nodeIds) { mergeNodes(nodeIds); }
@@ -224,7 +219,7 @@ define([
             self.edgeMenu = [{
                 title: 'Add as filter',
                 action: function(value, edgeId) { addEdgeFilter(edgeId); }
-            }];*/
+            }];
 
             $scope.observerService = ObserverService;
             $scope.entityService = EntityService;
@@ -297,16 +292,15 @@ define([
                 var fraction = $scope.keywordTypes.map(function(t) { return { "key": t.name, "data": t.sliderModel }; });
 
                 playRoutes.controllers.KeywordNetworkController.induceSubgraphKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, fraction).get().then(function(response) {
+
                         // Enable physics for new graph data when network is initialized
                         if(!_.isUndefined(self.network)) {
                             applyPhysicsOptions(self.physicOptions);
                         }
+
                         $scope.loading = true;
 
-                        $scope.resultNodes = response.data.entities;
-                        $scope.resultRelations = response.data.relations;
-
-                        var nodes = response.data.entities.map(function(n) {
+                        $scope.resultNodes = response.data.entities.map(function(n) {
                             // See css property div.network-tooltip for custom tooltip styling
                             if(n.termType == 'TAG') {
                                 return {id: n.id, label: n.label, group: -2, type: 'TAG', value: n.count, borderWidth: 2};
@@ -316,14 +310,7 @@ define([
                             }
                         });
 
-                        self.nodes.clear();
-                        self.nodesDataset.clear();
-                        self.nodesDataset.add(nodes);
-
-                        // Highlight new nodes after each filtering step
-                        markNewNodes(nodes.map(function(n) { return n.id; }));
-
-                        var edges = response.data.relations.map(function(n) {
+                        $scope.resultRelations = response.data.relations.map(function(n) {
                             return {
                                 from: getEdgeByLabel(n.source, response.data.entities),
                                 to: getEdgeByLabel(n.dest, response.data.entities),
@@ -331,17 +318,25 @@ define([
                             };
                         });
 
+                        self.nodes.clear();
+                        self.nodesDataset.clear();
+                        self.nodesDataset.add($scope.resultNodes);
+
                         self.edges.clear();
                         self.edgesDataset.clear();
-                        self.edgesDataset.add(edges);
+                        self.edgesDataset.add($scope.resultRelations);
 
                         // Initialize the graph
                         $scope.graphData = {
                             nodes: self.nodesDataset,
                             edges: self.edgesDataset
                         };
+
+                        self.network.redraw();
+                        self.network.fit();
+
                 });
-                return  promise.promise;
+                return $scope.rereloadGraph();
             };
 
 
@@ -353,36 +348,17 @@ define([
                     if(!_.isUndefined(self.network)) {
                         applyPhysicsOptions(self.physicOptions);
                     }
-                    $scope.loading = true;
-
-                    var nodes = $scope.resultNodes.map(function(n) {
-                        // See css property div.network-tooltip for custom tooltip styling
-                        if(n.termType == 'TAG') {
-                            return {id: n.id, label: n.label, group: -2, type: 'TAG', value: n.count, borderWidth: 2};
-                        }
-                        else {
-                            return {id: n.id, label: n.label, group: -1, type: 'KEYWORD', value: n.count, borderWidth: 3};
-                        }
-                    });
 
                     self.nodes.clear();
                     self.nodesDataset.clear();
-                    self.nodesDataset.add(nodes);
+                    self.nodesDataset.add($scope.resultNodes);
 
                     // Highlight new nodes after each filtering step
-                    markNewNodes(nodes.map(function(n) { return n.id; }));
-
-                    var edges = $scope.resultRelations.map(function(n) {
-                        return {
-                            from: getEdgeByLabel(n.source, $scope.resultNodes),
-                            to: getEdgeByLabel(n.dest, $scope.resultNodes),
-                            value: n.occurrence
-                        };
-                    });
+                    markNewNodes($scope.resultNodes.map(function(n) { return n.id; }));
 
                     self.edges.clear();
                     self.edgesDataset.clear();
-                    self.edgesDataset.add(edges);
+                    self.edgesDataset.add($scope.resultRelations);
 
                     // Initialize the graph
                     $scope.graphData = {
@@ -414,30 +390,12 @@ define([
 
 
             function init() {
-                // Fetch the named entity types
-                playRoutes.controllers.KeywordNetworkController.getTags().get().then(function (response) {
-
-                    if($scope.areTagsSelected){
-                        $scope.keywordTypes = [{
-                            name: "KEY",
-                            sliderModel: 20
-                        },
-                            {
-                                name: "TAG",
-                                sliderModel: response.data.result.length
-                            }];
-                    }
-                    else {
-                        $scope.keywordTypes = [{
-                            name: "KEY",
-                            sliderModel: 20
-                        }];
-                    }
-
-                    // Initialize graph
-                    $scope.reloadGraph();
-                    $scope.rereloadGraph();
-                });
+                // init graph
+                $scope.keywordTypes = [{
+                    name: "KEY",
+                    sliderModel: 20
+                }];
+                $scope.reloadGraph();
                 // get index name from the back end
                 getIndexName();
                 EntityService.setKeywordScope($scope);
@@ -668,8 +626,8 @@ define([
                                 group: n.group,
                                 // highlight new nodes
                                 shapeProperties: { borderDashes: [5, 5] },
-                                color: { border: 'white' },
-                                borderWidth: 2 };
+                                color: { border: 'red' },
+                                borderWidth: 3 };
                         });
 
                         var edges = response.data.relations.map(function(n) {

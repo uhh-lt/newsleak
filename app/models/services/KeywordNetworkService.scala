@@ -92,16 +92,37 @@ trait KeywordNetworkService {
 
   /**
    * Selects all tags from the DB
+   *
    * @return a list of all Tags that are stored in the DB
    */
   def getAllTags()(index: String): List[Tag]
 
+  /**
+   * Toggles if tags should be calculated
+   *
+   * @param set the boolean flag
+   */
   def toggleTags(set: Boolean): Unit
 
+  /**
+   * Removes a blacklisted keyword from the DB
+   *
+   * @param blacklistedKeywords the blacklisted keyword
+   * @param index the ES index
+   */
   def undoBlacklistingKeywords(blacklistedKeywords: List[String])(index: String): Unit
 
+  /**
+   * Sets the tag keyword relations calculated by ES js
+   *
+   * @param tag the tag
+   * @param keywords the list of keywords
+   */
   def setTagKeywordRelation(tag: String, keywords: List[KeyTerm]): Unit
 
+  /**
+   * Resets the tag keyword relation for new calculation
+   */
   def resetTagKeywordRelation(): Unit
 
 }
@@ -123,11 +144,11 @@ class ESKeywordNetworkService @Inject() (
     networkService: NetworkService
 ) extends KeywordNetworkService {
 
-  // TODO fix tag relation -> search by tag.documentId for keywords
-
   private val db = (index: String) => NamedDB(Symbol(index))
   var addTags = false
   var keywordTagRelation: ListBuffer[(String, List[KeyTerm])] = ListBuffer()
+  var calculatedKeywords: ListBuffer[KeyTerm] = ListBuffer()
+  var calculatedKeywordRelations: ListBuffer[KeywordRelationship] = ListBuffer()
 
   /** @inheritdoc */
   //noinspection ScalaStyle
@@ -137,13 +158,8 @@ class ESKeywordNetworkService @Inject() (
     exclude: List[String]
   )(index: String): KeywordNetwork = {
 
-    var tags: List[Tag] = List()
-
     val keywordGraphNodes: ListBuffer[KeyTerm] = ListBuffer()
     val searchableTerms: ListBuffer[String] = ListBuffer()
-
-    val tagStrings: ListBuffer[String] = ListBuffer()
-    val tagRelations: ListBuffer[KeywordRelationship] = ListBuffer()
 
     if (addTags) {
       val resultTags = keywordTagRelation.toList
@@ -151,32 +167,43 @@ class ESKeywordNetworkService @Inject() (
       for (tag <- resultTags) {
         keywordGraphNodes.append(KeyTerm(tag._1, -1, "TAG"))
         for (key <- tag._2) {
-          tagRelations.append(KeywordRelationship(tag._1, key.term, key.score))
+          calculatedKeywordRelations.append(KeywordRelationship(tag._1, key.term, key.score))
         }
       }
-    }
 
-    val size = nodeFraction.collect({
-      case (t, size) => size
-    }).toList(0)
-
-    val keywords = aggregateService.keywordAggregate(facets, utils.keywordsField._1, size,
-      List(), exclude)(index).keywords.distinct
-
-    for (keyword <- keywords) {
-      if (!exclude.contains(keyword.term)) {
-        keywordGraphNodes.append(keyword)
-        searchableTerms.append(keyword.term)
+      for (keyword <- calculatedKeywords) {
+        if (!exclude.contains(keyword.term)) {
+          keywordGraphNodes.append(keyword)
+          searchableTerms.append(keyword.term)
+        }
       }
+
+    } else {
+
+      val size = nodeFraction.collect({
+        case (t, size) => size
+      }).toList(0)
+
+      val keywords = aggregateService.keywordAggregate(facets, utils.keywordsField._1, size,
+        List(), exclude)(index).keywords.distinct
+
+      for (keyword <- keywords) {
+        if (!exclude.contains(keyword.term)) {
+          keywordGraphNodes.append(keyword)
+          searchableTerms.append(keyword.term)
+        }
+      }
+
+      calculatedKeywords.clear()
+      keywords.foreach(x => calculatedKeywords.append(x))
+
+      val rels = induceRelationshipsKeyword(facets, searchableTerms.toList, index)
+
+      calculatedKeywordRelations.clear()
+      rels.foreach(x => calculatedKeywordRelations.append(x))
     }
 
-    val rels = induceRelationshipsKeyword(facets, searchableTerms.toList, index)
-
-    for (rel <- rels) {
-      tagRelations.append(rel)
-    }
-
-    KeywordNetwork(keywordGraphNodes.toList, tagRelations.toList)
+    KeywordNetwork(keywordGraphNodes.toList, calculatedKeywordRelations.toList)
   }
 
   /** @inheritdoc */
@@ -257,7 +284,7 @@ class ESKeywordNetworkService @Inject() (
     Aggregation("neighbors", buckets)
   }
 
-  /** @inheritdoc **/
+  /** @inheritdoc */
   override def getAllTags()(index: String): List[Tag] = db(index).readOnly { implicit session =>
     sql"""SELECT t.id, t.documentid, l.label FROM tags t
           INNER JOIN labels AS l ON l.id = t.labelid"""
@@ -289,21 +316,25 @@ class ESKeywordNetworkService @Inject() (
     }
   }
 
-  def toggleTags(set: Boolean): Unit = {
+  /** @inheritdoc */
+  override def toggleTags(set: Boolean): Unit = {
     addTags = set
   }
 
-  def undoBlacklistingKeywords(blacklistedKeywords: List[String])(index: String) = db(index).localTx { implicit session =>
+  /** @inheritdoc */
+  override def undoBlacklistingKeywords(blacklistedKeywords: List[String])(index: String) = db(index).localTx { implicit session =>
     for (bk <- blacklistedKeywords) {
       sql"DELETE FROM terms where term = ${bk}".update().apply()
     }
   }
 
-  def setTagKeywordRelation(tag: String, keywords: List[KeyTerm]): Unit = {
+  /** @inheritdoc */
+  override def setTagKeywordRelation(tag: String, keywords: List[KeyTerm]): Unit = {
     keywordTagRelation.append((tag, keywords))
   }
 
-  def resetTagKeywordRelation(): Unit = {
+  /** @inheritdoc */
+  override def resetTagKeywordRelation(): Unit = {
     keywordTagRelation.clear()
   }
 }
