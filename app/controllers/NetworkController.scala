@@ -65,7 +65,7 @@ class NetworkController @Inject() (
 
     val (from, to) = dateUtils.parseTimeRange(timeRange)
     val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
-    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+    val facets = Facets(fullText, generic, entities, List(), from, to, timeExprFrom, timeExprTo)
 
     val res = networkService.getNeighborCountsPerType(facets, nodeId)(currentDataset)
     val counts = res.map { case (t, c) => Json.obj("type" -> t, "count" -> c) }
@@ -97,7 +97,7 @@ class NetworkController @Inject() (
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
     val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
-    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+    val facets = Facets(fullText, generic, entities, List(), from, to, timeExprFrom, timeExprTo)
 
     val terms = networkService.getEdgeKeywords(facets, first, second, numberOfTerms)(currentDataset)
     Ok(Json.toJson(terms)).as("application/json")
@@ -118,13 +118,14 @@ class NetworkController @Inject() (
     fullText: List[String],
     generic: Map[String, List[String]],
     entities: List[Long],
+    keywords: List[String],
     timeRange: String,
     timeExprRange: String,
     nodeFraction: Map[String, String]
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
     val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
-    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+    val facets = Facets(fullText, generic, entities, keywords, from, to, timeExprFrom, timeExprTo)
     val sizes = nodeFraction.mapValues(_.toInt)
 
     val blacklistedIds = entityService.getBlacklisted()(currentDataset).map(_.id)
@@ -164,7 +165,7 @@ class NetworkController @Inject() (
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
     val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
-    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+    val facets = Facets(fullText, generic, entities, List(), from, to, timeExprFrom, timeExprTo)
 
     val Network(buckets, relations) = networkService.induceNetwork(facets, currentNetwork, nodes)(currentDataset)
 
@@ -196,7 +197,7 @@ class NetworkController @Inject() (
     // TODO Duplicated code to parse facets
     val (from, to) = dateUtils.parseTimeRange(timeRange)
     val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
-    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+    val facets = Facets(fullText, generic, entities, List(), from, to, timeExprFrom, timeExprTo)
 
     // TODO: we don't need to add the blacklist as exclude when we use getById.contains
     val blacklistedIds = entityService.getBlacklisted()(currentDataset).map(_.id)

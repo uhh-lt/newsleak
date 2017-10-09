@@ -176,7 +176,7 @@ class EntityController @Inject() (
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
     val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
-    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+    val facets = Facets(fullText, generic, entities, List(), from, to, timeExprFrom, timeExprTo)
     var newSize = size
 
     val blacklistedIds = entityService.getBlacklisted()(currentDataset).map(_.id)

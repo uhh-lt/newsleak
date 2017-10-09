@@ -66,7 +66,7 @@ class KeywordNetworkController @Inject() (
 
     val (from, to) = dateUtils.parseTimeRange(timeRange)
     val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
-    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+    val facets = Facets(fullText, generic, entities, List(), from, to, timeExprFrom, timeExprTo)
 
     val res = keywordNetworkService.getNeighborCountsPerTypeKeyword(facets, nodeId)(currentDataset)
     val counts = res.map { case (t, c) => Json.obj("type" -> t, "count" -> c) }
@@ -88,13 +88,14 @@ class KeywordNetworkController @Inject() (
     fullText: List[String],
     generic: Map[String, List[String]],
     entities: List[Long],
+    keywords: List[String],
     timeRange: String,
     timeExprRange: String,
     nodeFraction: Map[String, String]
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
     val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
-    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+    val facets = Facets(fullText, generic, entities, keywords, from, to, timeExprFrom, timeExprTo)
     val sizes = nodeFraction.mapValues(_.toInt)
 
     val blacklistedKeywords: List[String] = entityService.getBlacklistedKeywords()(currentDataset)
@@ -135,7 +136,7 @@ class KeywordNetworkController @Inject() (
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
     val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
-    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+    val facets = Facets(fullText, generic, entities, List(), from, to, timeExprFrom, timeExprTo)
 
     val KeywordNetwork(buckets, relations) = keywordNetworkService.induceNetworkKeyword(facets, currentNetwork, nodes)(currentDataset)
 

@@ -129,18 +129,21 @@ define([
             $scope.observer_subscribe_fulltext = function(items) { $scope.fulltextFilters = items; };
             $scope.observer_subscribe_metadata = function(items) { $scope.metadataFilters = items; };
             $scope.observer_subscribe_entity = function(items) { $scope.entityFilters = items; };
+            $scope.observer_subscribe_keyword = function(items) { $scope.keywordFilters = items; };
             $scope.observerService.subscribeItems($scope.observer_subscribe_fulltext, "fulltext");
             $scope.observerService.subscribeItems($scope.observer_subscribe_metadata, "metadata");
             $scope.observerService.subscribeItems($scope.observer_subscribe_entity, "entity");
+            $scope.observerService.subscribeItems($scope.observer_subscribe_keyword, "keyword");
 
             function currentFilter() {
                 var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.item; });
                 var entities = $scope.entityFilters.map(function(v) { return v.data.id; });
+                var keywords = $scope.keywordFilters.map(function (v) { return v.data.item });
                 var timeRange = $scope.observerService.getTimeRange();
                 var timeRangeX = $scope.observerService.getXTimeRange();
                 var facets = $scope.observerService.getFacets();
 
-                return { fulltext: fulltext, entities: entities, timeRange: timeRange, timeRangeX: timeRangeX, facets: facets };
+                return { fulltext: fulltext, entities: entities, keywords: keywords, timeRange: timeRange, timeRangeX: timeRangeX, facets: facets };
             }
 
             $scope.graphOptions = graphProperties.options;
@@ -187,40 +190,37 @@ define([
                 }
             };
 
-            $scope.reloadGraph = function() {
+            $scope.buildGraph = function() {
+
                 var promise = $q.defer();
 
                 var filters = currentFilter();
                 var fraction = $scope.types.map(function(t) { return { "key": t.name, "data": t.sliderModel }; });
 
-                playRoutes.controllers.NetworkController.induceSubgraph(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, fraction).get().then(function(response) {
+                playRoutes.controllers.NetworkController.induceSubgraph(filters.fulltext, filters.facets, filters.entities, [], filters.timeRange, filters.timeRangeX, fraction).get().then(function(response) {
                         // Enable physics for new graph data when network is initialized
                         if(!_.isUndefined(self.network)) {
                             applyPhysicsOptions(self.physicOptions);
                         }
                         $scope.loading = true;
 
-                        $scope.resultNodes = response.data.entities;
-                        $scope.resultRelations = response.data.relations;
-
-                        var nodes = response.data.entities.map(function(n) {
+                        $scope.resultNodes = response.data.entities.map(function(n) {
                             // See css property div.network-tooltip for custom tooltip styling
                             return { id: n.id, label: n.label, type: n.type, value: n.count, group: n.group };
                         });
 
                         self.nodesDataset.clear();
-                        self.nodesDataset.add(nodes);
-                        // Highlight new nodes after each filtering step
-                        markNewNodes(nodes.map(function(n) { return n.id; }));
+                        self.nodesDataset.add($scope.resultNodes);
+
                         self.nodes.clear();
 
-                        var edges = response.data.relations.map(function(n) {
+                        $scope.resultRelations = response.data.relations.map(function(n) {
                             return { from: n.source, to: n.dest, value: n.occurrence };
                         });
 
                         self.edges.clear();
                         self.edgesDataset.clear();
-                        self.edgesDataset.add(edges);
+                        self.edgesDataset.add($scope.resultRelations);
 
                         // Initialize the graph
                         $scope.graphData = {
@@ -229,47 +229,36 @@ define([
                         };
 
                 });
-                return  promise.promise;
+                return promise.promise;
             };
 
-            $scope.rereloadGraph = function() {
+            function clearGraph() {
+
                 var promise = $q.defer();
 
-                    // Enable physics for new graph data when network is initialized
-                    if(!_.isUndefined(self.network)) {
-                        applyPhysicsOptions(self.physicOptions);
-                    }
-                    $scope.loading = true;
+                if(!_.isUndefined(self.network)) {
+                    applyPhysicsOptions(self.physicOptions);
+                }
 
-                    var nodes = $scope.resultNodes.map(function(n) {
-                        // See css property div.network-tooltip for custom tooltip styling
-                        return { id: n.id, label: n.label, type: n.type, value: n.count, group: n.group };
-                    });
+                self.nodes.clear();
+                self.nodesDataset.clear();
 
-                    self.nodesDataset.clear();
-                    self.nodesDataset.add(nodes);
-                    // Highlight new nodes after each filtering step
-                    markNewNodes(nodes.map(function(n) { return n.id; }));
-                    self.nodes.clear();
+                self.edges.clear();
+                self.edgesDataset.clear();
 
-                    var edges = $scope.resultRelations.map(function(n) {
-                        return { from: n.source, to: n.dest, value: n.occurrence };
-                    });
+                // Initialize the graph
+                $scope.graphData = {
+                    nodes: self.nodesDataset,
+                    edges: self.edgesDataset
+                };
 
-                    self.edges.clear();
-                    self.edgesDataset.clear();
-                    self.edgesDataset.add(edges);
+                return promise.promise;
+            }
 
-                    // Initialize the graph
-                    $scope.graphData = {
-                        nodes: self.nodesDataset,
-                        edges: self.edgesDataset
-                    };
-
-                return  promise.promise;
+            $scope.reloadGraph = function () {
+                clearGraph();
+                $scope.buildGraph();
             };
-
-
 
             /**
              * Reloads the graph and preserves the applied edge importance value. In case the new maximum is lower than
@@ -288,7 +277,6 @@ define([
                     $scope.types = types.map(function(t) { return _.extend(t, { sliderModel: 5 }) });
                     // Initialize graph
                     $scope.reloadGraph();
-                    // $scope.rereloadGraph();
                 });
                 EntityService.setEntityScope($scope);
             }
@@ -566,8 +554,10 @@ define([
              */
             function updateImportanceSlider() {
                 // Update new edge max value from non hidden edges
-                var max = new VisDataSet(self.edges.get({ filter: function(edge) { return !edge.hidden; }})).max("value").value;
-                $scope.maxEdgeImportance = max;
+                var max = new VisDataSet(self.edges.get({ filter: function(edge) { return !edge.hidden; }})).max("value");
+                if(max){
+                    $scope.maxEdgeImportance = max.value;
+                }
             }
 
             // ----------------------------------------------------------------------------------

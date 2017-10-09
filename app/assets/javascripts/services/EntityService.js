@@ -68,7 +68,6 @@ define([
                 toggleTags: function (state, scope) {
                     playRoutes.controllers.KeywordNetworkController.toggleTags(state).get().then(function () {
                         scope.reloadGraph();
-                        // scope.rereloadGraph();
                     })
                 },
 

@@ -227,18 +227,21 @@ define([
             $scope.observer_subscribe_fulltext = function(items) { $scope.fulltextFilters = items; };
             $scope.observer_subscribe_metadata = function(items) { $scope.metadataFilters = items; };
             $scope.observer_subscribe_entity = function(items) { $scope.entityFilters = items; };
+            $scope.observer_subscribe_keyword = function(items) { $scope.keywordFilters = items; };
             $scope.observerService.subscribeItems($scope.observer_subscribe_fulltext, "fulltext");
             $scope.observerService.subscribeItems($scope.observer_subscribe_metadata, "metadata");
             $scope.observerService.subscribeItems($scope.observer_subscribe_entity, "entity");
+            $scope.observerService.subscribeItems($scope.observer_subscribe_keyword, "keyword");
 
             function currentFilter() {
                 var fulltext = $scope.fulltextFilters.map(function(v) { return v.data.item; });
                 var entities = $scope.entityFilters.map(function(v) { return v.data.id; });
+                var keywords = $scope.keywordFilters.map(function(v) { return v.data.item; });
                 var timeRange = $scope.observerService.getTimeRange();
                 var timeRangeX = $scope.observerService.getXTimeRange();
                 var facets = $scope.observerService.getFacets();
 
-                return { fulltext: fulltext, entities: entities, timeRange: timeRange, timeRangeX: timeRangeX, facets: facets };
+                return { fulltext: fulltext, entities: entities, keywords: keywords, timeRange: timeRange, timeRangeX: timeRangeX, facets: facets };
             }
 
             $scope.graphOptions = graphProperties.options;
@@ -285,13 +288,36 @@ define([
                 }
             };
 
-            $scope.reloadGraph = function() {
+            function clearGraph() {
+
+                var promise = $q.defer();
+
+                if(!_.isUndefined(self.network)) {
+                    applyPhysicsOptions(self.physicOptions);
+                }
+
+                self.nodes.clear();
+                self.nodesDataset.clear();
+
+                self.edges.clear();
+                self.edgesDataset.clear();
+
+                // Initialize the graph
+                $scope.graphData = {
+                    nodes: self.nodesDataset,
+                    edges: self.edgesDataset
+                };
+
+                return promise.promise;
+            }
+
+            $scope.buildGraph = function() {
                 var promise = $q.defer();
 
                 var filters = currentFilter();
                 var fraction = $scope.keywordTypes.map(function(t) { return { "key": t.name, "data": t.sliderModel }; });
 
-                playRoutes.controllers.KeywordNetworkController.induceSubgraphKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, fraction).get().then(function(response) {
+                playRoutes.controllers.KeywordNetworkController.induceSubgraphKeyword(filters.fulltext, filters.facets, filters.entities, [], filters.timeRange, filters.timeRangeX, fraction).get().then(function(response) {
 
                         // Enable physics for new graph data when network is initialized
                         if(!_.isUndefined(self.network)) {
@@ -322,6 +348,9 @@ define([
                         self.nodesDataset.clear();
                         self.nodesDataset.add($scope.resultNodes);
 
+                        // Highlight new nodes after each filtering step
+                        markNewNodes($scope.resultNodes.map(function(n) { return n.id; }));
+
                         self.edges.clear();
                         self.edgesDataset.clear();
                         self.edgesDataset.add($scope.resultRelations);
@@ -331,45 +360,30 @@ define([
                             nodes: self.nodesDataset,
                             edges: self.edgesDataset
                         };
-
-                        self.network.redraw();
-                        self.network.fit();
-
                 });
-                return $scope.rereloadGraph();
+                return promise.promise;
             };
 
-
-
-            $scope.rereloadGraph = function() {
-                var promise = $q.defer();
-
-                    // Enable physics for new graph data when network is initialized
-                    if(!_.isUndefined(self.network)) {
-                        applyPhysicsOptions(self.physicOptions);
-                    }
-
-                    self.nodes.clear();
-                    self.nodesDataset.clear();
-                    self.nodesDataset.add($scope.resultNodes);
-
-                    // Highlight new nodes after each filtering step
-                    markNewNodes($scope.resultNodes.map(function(n) { return n.id; }));
-
-                    self.edges.clear();
-                    self.edgesDataset.clear();
-                    self.edgesDataset.add($scope.resultRelations);
-
-                    // Initialize the graph
-                    $scope.graphData = {
-                        nodes: self.nodesDataset,
-                        edges: self.edgesDataset
-                    };
-                return  promise.promise;
+            $scope.reloadGraph = function () {
+                // Clear Graph first to avoid wrong structuring of graph on load
+                clearGraph();
+                $scope.buildGraph();
             };
 
             $scope.checkTags = function (toggle = false) {
                 $scope.selectTags(toggle);
+            };
+
+            $scope.checkChange = function (event) {
+                // if click event reload after two seconds
+                if(event && event.type){
+                    setTimeout(function () {
+                        $scope.reloadGraph();
+                    }, 2000);
+                }
+                else {
+                    $scope.reloadGraph();
+                }
             };
 
             /**
@@ -680,8 +694,10 @@ define([
              */
             function updateImportanceSlider() {
                 // Update new edge max value from non hidden edges
-                var max = new VisDataSet(self.edges.get({ filter: function(edge) { return !edge.hidden; }})).max("value").value;
-                $scope.maxEdgeImportance = max;
+                var max = new VisDataSet(self.edges.get({ filter: function(edge) { return !edge.hidden; }})).max("value");
+                if(max){
+                    $scope.maxEdgeImportance = max.value;
+                }
             }
 
             // ----------------------------------------------------------------------------------
@@ -958,7 +974,7 @@ define([
 
                 // Multiple nodes selected and the right-clicked node is in this selection
                 if(!_.isUndefined(nodeIdOpt) && selection.length > 1 && _.contains(selection, nodeIdOpt)) {
-                    //showContextMenu(_.extend(position, { id: selection }), self.multiNodeMenu);
+                    showContextMenu(_.extend(position, { id: selection }), self.multiNodeMenu);
                 }
                 // Single node selected
                 else if(!_.isUndefined(nodeIdOpt)) {
@@ -967,7 +983,7 @@ define([
                 // Edge selected
                 } else if(!_.isUndefined(edgeIdOpt)) {
                     self.network.selectEdges([edgeIdOpt]);
-                    //showContextMenu(_.extend(position, { id: edgeIdOpt }), self.edgeMenu);
+                    showContextMenu(_.extend(position, { id: edgeIdOpt }), self.edgeMenu);
                 }
                 else {
                     // Nop

@@ -113,6 +113,7 @@ define([
                  * call all observer callback functions
                  */
                 notifyObservers: function(){
+                    console.log('notify observers');
                     var callBackPromises = [];
                     var prioritized = observerCallbacks.sort(function(a, b) { return a.priority - b.priority; });
 

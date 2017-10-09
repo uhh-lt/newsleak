@@ -32,15 +32,17 @@ import org.joda.time.LocalDateTime
  * @param toDate end date for the document creation date (inclusive).
  * @param fromTimeExpression start date for the time expression mentioned in the document body (inclusive).
  * @param toTimeExpression end date for the time expresson mentioned in the document body (inclusive).
+ * @param keywords a list of keywords that should occur in the document.
  */
 case class Facets(
     fullTextSearch: List[String],
     generic: Map[String, List[String]],
     entities: List[Long],
+    keywords: List[String],
+    toTimeExpression: Option[LocalDateTime],
     fromDate: Option[LocalDateTime],
     toDate: Option[LocalDateTime],
-    fromTimeExpression: Option[LocalDateTime],
-    toTimeExpression: Option[LocalDateTime]
+    fromTimeExpression: Option[LocalDateTime]
 ) {
 
   def withEntities(ids: List[Long]): Facets = this.copy(entities = this.entities ++ ids)
@@ -59,6 +61,6 @@ case class Facets(
 object Facets {
 
   /** Represents an empty filter search i.e. retrieve all documents */
-  val empty = Facets(List(), Map(), List(), None, None, None, None)
+  val empty = Facets(List(), Map(), List(), List(), None, None, None, None)
 }
 

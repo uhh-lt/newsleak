@@ -83,6 +83,9 @@ define([
                     $scope.observer_subscribe_entity = function (items) {
                         $scope.entityFilters = items
                     };
+                    $scope.observer_subscribe_keyword = function (items) {
+                        $scope.keywordFilters = items
+                    };
                     $scope.observer_subscribe_metadata = function (items) {
                         $scope.metadataFilters = items
                     };
@@ -90,6 +93,7 @@ define([
                         $scope.fulltextFilters = items
                     };
                     $scope.observer.subscribeItems($scope.observer_subscribe_entity, "entity");
+                    $scope.observer.subscribeItems($scope.observer_subscribe_keyword, "keyword");
                     $scope.observer.subscribeItems($scope.observer_subscribe_metadata, "metadata");
                     $scope.observer.subscribeItems($scope.observer_subscribe_fulltext, "fulltext");
 
@@ -104,19 +108,25 @@ define([
                     $scope.updateDocumentList = function () {
                         $scope.docsLoading = true;
                         $scope.showLoading = true;
-                        console.log("reload doc list");
                         $scope.defered = $q.defer();
+
                         var entities = [];
                         angular.forEach($scope.entityFilters, function (item) {
                             entities.push(item.data.id);
                         });
+
+                        var keywords = [];
+                        angular.forEach($scope.keywordFilters, function (item) {
+                            keywords.push(item.data.item);
+                        });
+
                         var facets = $scope.observer.getFacets();
                         var fulltext = [];
                         angular.forEach($scope.fulltextFilters, function (item) {
                             fulltext.push(item.data.item);
                         });
 
-                        playRoutes.controllers.DocumentController.getDocs(fulltext, facets, entities, $scope.observer.getTimeRange(),$scope.observer.getXTimeRange()).get().then(function (x) {
+                        playRoutes.controllers.DocumentController.getDocs(fulltext, facets, entities, keywords, $scope.observer.getTimeRange(),$scope.observer.getXTimeRange()).get().then(function (x) {
                             $scope.sourceShared.reset();
                             $scope.sourceShared.addDocs(x.data.docs);
                             $scope.hits = x.data.hits;
