@@ -295,12 +295,13 @@ define([
                         updateTagLabels();
                     }
 
-                    $scope.open = function ($scope, doc) {
+                    $scope.open = function ($scope, doc, backdrop) {
                       var modalInstance = $uibModal.open({
                         templateUrl: 'whitelistModal.html',
                         animation: true,
                         component: 'modalComponent',
                         size: 'sm',
+                        backdrop: backdrop,
                         resolve: {
                           parentScope: function() {
                             return $scope;
@@ -334,10 +335,16 @@ define([
 
                             $scope.ok = function () {
                               this.$resolve.parentScope.whitelist(selectedEntity, $scope.selectedType, doc);
-                              this.$close();
+                              this.modalClose();
                             };
 
                             $scope.cancel = function () {
+                              this.modalClose();
+                            };
+
+                            $scope.modalClose = function() {
+                              this.$resolve.parentScope.isNewType = false;
+                              this.$resolve.parentScope.isKeyword = false;
                               this.$close();
                             };
                           }
@@ -466,10 +473,10 @@ define([
                         var isInDoc = isEntityInDoc(selectedDoc, $scope.selectedEntity);
                         if (!isInDoc && ($scope.selectedEntity.text.length) > 0 && ($scope.selectedEntity.text !== ' ')) {
                           $scope.isEntityInDoc = false;
-                          $scope.open($scope, doc);
+                          $scope.open($scope, doc, 'static');
                         } else if (isInDoc && ($scope.selectedEntity.text.length) > 0 && ($scope.selectedEntity.text !== ' ')){
                           $scope.isEntityInDoc = true;
-                          $scope.open($scope, doc);
+                          $scope.open($scope, doc, 'true');
                         }
                     };
 
@@ -495,10 +502,18 @@ define([
 
                     $scope.whitelist = function(entity, type, doc){
                       type = type.replace(/\s/g,'');
-                      var blacklists = isBlacklisted(entity, type);
                       $scope.isKeyword;
+                      var blacklists = isBlacklisted(entity, type, $scope.isKeyword);
+                      ;
                       if ($scope.isKeyword === true) {
-                        $scope.createNewKeyword(entity.text, doc);
+                        if (blacklists.length > 0) {
+                          playRoutes.controllers.KeywordNetworkController.undoBlacklistingKeywords(blacklists).get().then(function (response) {
+                            $scope.observer.notifyObservers();
+                            $scope.reloadDoc(doc);
+                          });
+                        } else {
+                          $scope.esKeyWhitelist(entity.text, doc);
+                        }
                       } else {
                         if (blacklists.length > 0) {
                           // Update network and frequency chart
@@ -551,6 +566,68 @@ define([
                       };
                     };
 
+                    $scope.esKeyWhitelist = function(keyword, doc) {
+                      client.get({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        source: 'Keywords'
+                      }).then(function (response) {
+                        var key = response._source.Keywords;
+                        if (key) {
+                          $scope.createNewKeyword(keyword, doc);
+                        } else {
+                          $scope.createInitKeyword(keyword, doc);
+                        }
+                      }, function (err, response) {
+                        console.trace(err.message);
+                      });
+                    }
+
+                    $scope.createInitKeyword = function(keyword, doc) {
+                      client.update({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        body: {
+                          script: "ctx._source.Keywords = [(keyword)]",
+                          params: {
+                            keyword:  {
+                              Keyword: keyword,
+                              EntFrequency: 1
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                          $scope.observer.notifyObservers();
+                          $scope.reloadDoc(doc);
+                      }, function (err) {
+                          console.trace(err.message);
+                      });
+                    }
+
+                    $scope.createNewKeyword = function(keyword, doc) {
+                      client.update({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        body: {
+                          script: "ctx._source.Keywords.add(keyword)",
+                          params: {
+                            keyword:  {
+                              Keyword: keyword,
+                              EntFrequency: 1
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                          $scope.observer.notifyObservers();
+                          $scope.reloadDoc(doc);
+                      }, function (err) {
+                          console.trace(err.message);
+                      });
+                    }
+
                     $scope.esWhitelist = function(entity, typeEnt, doc) {
                       client.search({
                         index: $scope.indexName,
@@ -598,29 +675,6 @@ define([
                             $scope.createNewEntityType(entity, typeEnt, doc);
                       }, function (err) {
                           $scope.esNewEntity = null;
-                          console.trace(err.message);
-                      });
-                    }
-
-                    //TODO: check if index doesn't have Keywords field
-                    $scope.createNewKeyword = function(keyword, doc) {
-                      client.update({
-                        index: $scope.indexName,
-                        type: 'document',
-                        id: doc.id,
-                        body: {
-                          script: "ctx._source.Keywords.add(keyword)",
-                          params: {
-                            keyword:  {
-                              Keyword: keyword,
-                              EntFrequency: 1
-                            }
-                          }
-                        }
-                      }).then(function (resp) {
-                          $scope.observer.notifyObservers();
-                          $scope.reloadDoc(doc);
-                      }, function (err) {
                           console.trace(err.message);
                       });
                     }
@@ -682,21 +736,45 @@ define([
                     $scope.loadBlacklists = function(doc) {
                       playRoutes.controllers.EntityController.getBlacklistsByDoc(doc.id).get().then(function (response) {
                         $scope.blacklists = response.data;
+                        playRoutes.controllers.EntityController.getBlacklistedKeywords(doc.id).get().then(function (response) {
+                            let i = 1;
+                            for(let item of response.data){
+                                $scope.blacklists.push({
+                                    // id: Long, name: String, entityType: String, freq: Int
+                                    id: i,
+                                    name: item,
+                                    entityType: 'KEYWORD',
+                                    freq: 1
+                                });
+                                i++;
+                            }
+                        });
                       });
                     }
 
-                    function isBlacklisted(entity, type) {
-                      var isBlacklisted = $scope.blacklists.filter((e) =>
-                        {
-                          if ((e.name === entity.text) &&
-                              (e.start === entity.start) &&
-                              (e.end === entity.end) &&
-                              (e.type === type)
-                            ) {
-                              return e;
+                    function isBlacklisted(entity, type, isKeyword) {
+                      var isBlacklisted = [];
+                      if (isKeyword) {
+                        $scope.blacklists.filter((e) =>
+                          {
+                            if((e.entityType === 'KEYWORD') && (e.name === entity.text)){
+                                return isBlacklisted.push(e.name);
                             }
-                        }
-                      );
+                          }
+                        );
+                      } else {
+                        isBlacklisted = $scope.blacklists.filter((e) =>
+                          {
+                            if ((e.name === entity.text) &&
+                                (e.start === entity.start) &&
+                                (e.end === entity.end) &&
+                                (e.type === type)
+                              ) {
+                                return e;
+                              }
+                          }
+                        );
+                      }
                       return isBlacklisted;
                     }
 
