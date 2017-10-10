@@ -510,6 +510,7 @@ define([
                           playRoutes.controllers.KeywordNetworkController.undoBlacklistingKeywords(blacklists).get().then(function (response) {
                             $scope.observer.notifyObservers();
                             $scope.reloadDoc(doc);
+                            EntityService.reloadKeywordGraph(true);
                           });
                         } else {
                           $scope.esKeyWhitelist(entity.text, doc);
@@ -520,6 +521,7 @@ define([
                           playRoutes.controllers.EntityController.undoBlacklistingByIds([blacklists[0].id]).get().then(function(response) {
                             $scope.observer.notifyObservers();
                             $scope.reloadDoc(doc);
+                            EntityService.reloadEntityGraph();
                           });
                         } else {
                           playRoutes.controllers.EntityController.getRecordedEntity(entity.text, type).get().then(function (response) {
@@ -601,6 +603,7 @@ define([
                       }).then(function (resp) {
                           $scope.observer.notifyObservers();
                           $scope.reloadDoc(doc);
+                          EntityService.reloadKeywordGraph(true);
                       }, function (err) {
                           console.trace(err.message);
                       });
@@ -623,6 +626,7 @@ define([
                       }).then(function (resp) {
                           $scope.observer.notifyObservers();
                           $scope.reloadDoc(doc);
+                          EntityService.reloadKeywordGraph(true);
                       }, function (err) {
                           console.trace(err.message);
                       });
@@ -719,6 +723,7 @@ define([
                           $scope.esNewEntityType = resp;
                           $scope.observer.notifyObservers();
                           $scope.reloadDoc(doc);
+                          EntityService.reloadEntityGraph();
                       }, function (err) {
                           $scope.esNewEntityType = null;
                           console.trace(err.message);
@@ -746,6 +751,7 @@ define([
                           $scope.esNewEntityType = resp;
                           $scope.observer.notifyObservers();
                           $scope.reloadDoc(doc);
+                          EntityService.reloadEntityGraph();
                       }, function (err) {
                           $scope.esNewEntityType = null;
                           console.trace(err.message);
