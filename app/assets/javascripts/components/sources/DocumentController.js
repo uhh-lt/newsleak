@@ -339,12 +339,12 @@ define([
                             };
 
                             $scope.cancel = function () {
+                              this.$resolve.parentScope.isKeyword = false;
+                              this.$resolve.parentScope.isNewType = false;
                               this.modalClose();
                             };
 
                             $scope.modalClose = function() {
-                              this.$resolve.parentScope.isNewType = false;
-                              this.$resolve.parentScope.isKeyword = false;
                               this.$close();
                             };
                           }
@@ -574,7 +574,7 @@ define([
                         source: 'Keywords'
                       }).then(function (response) {
                         var key = response._source.Keywords;
-                        if (key) {
+                        if (key !== undefined) {
                           $scope.createNewKeyword(keyword, doc);
                         } else {
                           $scope.createInitKeyword(keyword, doc);
@@ -670,12 +670,32 @@ define([
                       }).then(function (resp) {
                           $scope.esNewEntity = resp;
                           $scope.isNewType === false ?
-                            $scope.insertNewEntityType(entity, typeEnt, doc, entId)
+                            $scope.checkNewEntityType(entity, typeEnt, doc, entId)
                             :
                             $scope.createNewEntityType(entity, typeEnt, doc);
                       }, function (err) {
                           $scope.esNewEntity = null;
                           console.trace(err.message);
+                      });
+                    }
+
+                    $scope.checkNewEntityType = function(entity, typeEnt, doc, entId = null) {
+                      var suffixType = typeEnt.toLowerCase();
+                      var newType = 'Entities' + suffixType;
+                      client.get({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        source: 'Entities'+ suffixType
+                      }).then(function (response) {
+                        var type = response._source[newType];
+                        if (type !== undefined) {
+                          $scope.insertNewEntityType(entity, typeEnt, doc)
+                        } else {
+                          $scope.createNewEntityType(entity, typeEnt, doc);
+                        }
+                      }, function (err, response) {
+                        console.trace(err.message);
                       });
                     }
 
