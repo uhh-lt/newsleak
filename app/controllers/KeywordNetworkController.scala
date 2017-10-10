@@ -177,8 +177,8 @@ class KeywordNetworkController @Inject() (
    * @param focalId the central entity id.
    * @param duplicates entity ids referring to similar textual mentions of the focal id.
    */
-  def mergeEntitiesByIdKeyword(focalId: Long, duplicates: List[Long]) = Action { implicit request =>
-    entityService.merge(focalId, duplicates)(currentDataset)
+  def mergeKeywords(focalId: String, duplicates: List[String]) = Action { implicit request =>
+    entityService.mergeKeywords(focalId, duplicates)(currentDataset)
     Ok("success").as("Text")
   }
 

@@ -828,7 +828,9 @@ define([
                               entities: response.data
                           });
                       });
-                    }
+
+                      EntityService.setToggleKeywordGraph(false);
+                    };
 
                     function createFilterFor(query) {
                         var lowercaseQuery = angular.lowercase(query);

@@ -183,13 +183,6 @@ define([
 
                 },
                 {
-                    title: 'Edit node',
-                    action: function(value, nodeId) { editNode(nodeId); }
-                }, {
-                    title: 'Expand',
-                    action: function(value, nodeId) { expandNode(nodeId); }
-                },
-                {
                     title: 'Hide',
                     action: function(value, nodeId) { hideNodes([nodeId]); }
                 }, {
@@ -532,133 +525,6 @@ define([
                 });
             }
 
-            function editNode(nodeId) {
-                var entity = self.nodes.get(nodeId);
-                $mdDialog.show({
-                    templateUrl: 'assets/partials/editNode.html',
-                    controller: ['$scope', '$mdDialog', 'playRoutes', 'e',
-                        function($scope, $mdDialog, playRoutes, e) {
-                            $scope.title = e.label;
-                            $scope.entity = e;
-
-                            $scope.apply = function () { $mdDialog.hide($scope.entity); };
-                            $scope.closeClick = function() { $mdDialog.cancel(); };
-                        }],
-                    locals: { e: entity },
-                    autoWrap: false,
-                    parent: $scope.KeywordNetworkController.isFullscreen() ? angular.element(document.getElementById('networkKeyword')) : angular.element(document.body)
-                }).then(function(response) {
-                    // Adapt tooltip and node color
-                    var modified = _.extend(response, {
-                        group: $scope.keywordTypes[response.group].id,
-                        // TODO Adapt to new tooltip
-                        title: 'Co-occurrence: ' + response.value + '<br>Typ: ' + response.type
-                    });
-                    self.nodesDataset.update(modified);
-                    self.nodes.update(modified);
-                    // Store changes
-                    playRoutes.controllers.KeywordNetworkController.changeEntityNameByIdKeyword(response.id, response.label).get().then(function(response) { /* Error handling */ });
-                    playRoutes.controllers.KeywordNetworkController.changeEntityTypeByIdKeyword(response.id, response.type).get().then(function(response) { /* Error handling */ });
-                }, function() { /* cancel click */ });
-            }
-
-
-            function expandNode(nodeId) {
-                var entity = self.nodes.get(nodeId);
-                var ids = self.nodes.getIds();
-                $mdDialog.show({
-                    templateUrl: 'assets/partials/expandNode.html',
-                    controller: ['$scope', '$mdDialog', 'playRoutes', 'EntityService', 'e', 'networkIds',
-                        function($scope, $mdDialog, playRoutes, EntityService, e, networkIds) {
-
-                            $scope.title = e.label;
-                            $scope.entity = e;
-                            $scope.neighbors = [];
-
-                            $scope.selection = [];
-
-                            $scope.init = function() {
-                                fetchNeighbors();
-                            };
-
-                            $scope.init();
-
-                            function fetchNeighbors() {
-                                var filters = currentFilter();
-                                // Exclude current network nodes from the expansion list
-                                // playRoutes.controllers.KeywordNetworkController.getNeighborsKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, networkIds, $scope.entity.id).get().then(function(response) {
-                                //    $scope.neighbors = response.data;
-                                //});
-                            }
-
-                            $scope.blacklist = function(id, list) {
-                                // Blacklist entity and inform other components
-                                EntityService.blacklist([id]);
-                                var index = _.findIndex(list, function(n) { return n.id == id; });
-                                list.splice(index, 1);
-                            };
-
-                            // TODO duplicate in app.js
-                            $scope.toggle = function (item, list) {
-                                if($scope.exists(item, list)) {
-                                    // Remove element in-place from list
-                                    var index = list.indexOf(item);
-                                    list.splice(index, 1);
-                                } else { list.push(item); }
-                            };
-
-                            $scope.exists = function (item, list) {
-                                var index = list.indexOf(item);
-                                return index > -1;
-                            };
-
-                            $scope.apply = function () { $mdDialog.hide($scope.selection); };
-                            $scope.closeClick = function() { $mdDialog.cancel(); };
-                        }],
-                    locals: { e: entity, networkIds: ids },
-                    autoWrap: false,
-                    parent: $scope.KeywordNetworkController.isFullscreen() ? angular.element(document.getElementById('keywordNetwork')) : angular.element(document.body)
-                }).then(function(response) {
-                    var filters = currentFilter();
-                    var networkNodes = self.nodesDataset.getIds();
-
-                    var n = response.map(function(n) { return n.id; });
-                    playRoutes.controllers.KeywordNetworkController.addNodesKeyword(filters.fulltext, filters.facets, filters.entities, filters.timeRange, filters.timeRangeX, networkNodes, n).get().then(function(response) {
-                        // Remove highlight from previous nodes including background collection
-                        removeNodeHighlight(self.nodes, self.nodes);
-                        removeNodeHighlight(self.nodesDataset, self.nodesDataset);
-
-                        applyPhysicsOptions(self.physicOptions);
-                        $scope.loading = true;
-                        var nodes = response.data.entities.map(function(n) {
-                            return {
-                                id: n.id,
-                                label: n.label,
-                                type: n.type,
-                                value: n.count,
-                                group: n.group,
-                                // highlight new nodes
-                                shapeProperties: { borderDashes: [5, 5] },
-                                color: { border: 'red' },
-                                borderWidth: 3 };
-                        });
-
-                        var edges = response.data.relations.map(function(n) {
-                            return { from: n.source, to: n.dest, value: n.occurrence };
-                        });
-
-                        self.nodesDataset.add(nodes);
-                        self.edgesDataset.add(edges);
-
-                        // Initialize the graph
-                        $scope.graphData = {
-                            nodes: self.nodesDataset,
-                            edges: self.edgesDataset
-                        };
-                    });
-                }, function() { /* cancel click */ });
-            }
-
             function mergeNodes(nodeIds) {
                 var nodes = self.nodesDataset.get(nodeIds);
 
@@ -668,20 +534,24 @@ define([
                         function($scope, $mdDialog, playRoutes, entities) {
 
                             $scope.entities = entities;
+                            console.log(entities);
 
-                            $scope.apply = function () { $mdDialog.hide(parseInt($scope.target)); };
+                            $scope.apply = function () { $mdDialog.hide(self.network.body.nodes[$scope.target].options.label); };
                             $scope.closeClick = function() { $mdDialog.cancel(); };
                         }],
                     locals: { entities: nodes },
                     autoWrap: false,
                     parent: $scope.KeywordNetworkController.isFullscreen() ? angular.element(document.getElementById('keywordNetwork')) : angular.element(document.body)
                 }).then(function(response) {
-                    var duplicates = _.without(nodeIds, response);
+                    var nodeLabels = [];
+                    nodeIds.forEach(item => nodeLabels.push(self.network.body.nodes[item].options.label));
+                    var duplicates = _.without(nodeLabels, response);
                     // Remove duplicates from the current network view
                     removeNodes(duplicates, self.nodesDataset, self.edgesDataset);
                     // Remove duplicates from the background collection
                     removeNodes(duplicates, self.nodes, self.edges);
-                    playRoutes.controllers.KeywordNetworkController.mergeEntitiesByIdKeyword(response, duplicates).get().then(function(response) {
+
+                    playRoutes.controllers.KeywordNetworkController.mergeKeywords(response, duplicates).get().then(function(response) {
                         // Fetch node replacements for the merged nodes
                         $scope.reloadGraph();
                     });
