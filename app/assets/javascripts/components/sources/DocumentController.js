@@ -345,6 +345,7 @@ define([
                             };
 
                             $scope.modalClose = function() {
+                              this.$resolve.parentScope.isKeyword = false;
                               this.$close();
                             };
                           }
@@ -504,7 +505,6 @@ define([
                       type = type.replace(/\s/g,'');
                       $scope.isKeyword;
                       var blacklists = isBlacklisted(entity, type, $scope.isKeyword);
-                      ;
                       if ($scope.isKeyword === true) {
                         if (blacklists.length > 0) {
                           playRoutes.controllers.KeywordNetworkController.undoBlacklistingKeywords(blacklists).get().then(function (response) {
