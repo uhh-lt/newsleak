@@ -79,7 +79,7 @@ define([
 
                 reloadEntityGraph: function () {
                     if(entityScope){
-                        entityScope.reloadGraph();
+                      entityScope.reloadGraph();
                     }
                 },
 
