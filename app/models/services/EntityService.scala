@@ -46,7 +46,7 @@ trait EntityService {
    * Returns a record of [[models.Entity]] matching the given entity name and type.
    *
    * @param name entity name.
-   * @param type entity type
+   * @param enType entity type
    * @param index the data source index or database name to query.
    * @return a list of [[models.Entity]] corresponding to the given name and type or [[scala.Nil]] if no
    * matching entity is found.
@@ -163,6 +163,16 @@ trait EntityService {
   def merge(focalId: Long, duplicates: List[Long])(index: String): Boolean
 
   /**
+   * Merges multiple keywords in a given focal node.
+   *
+   * @param focalId the central keyword.
+   * @param duplicates keywords referring to similar textual mentions of the focal keyword.
+   * @param index the data source index or database name to query.
+   * @return ''true'', if the operation was successful. ''False'' otherwise.
+   */
+  def mergeKeywords(focalId: String, duplicates: List[String])(index: String): Boolean
+
+  /**
    * Withdraws [[models.services.EntityService#merge]] for the given entity id.
    *
    * @param focalIds the central entity ids.
@@ -172,12 +182,29 @@ trait EntityService {
   def undoMerge(focalIds: List[Long])(index: String): Boolean
 
   /**
+   * Withdraws [[models.services.EntityService#merge]] for the given keyword.
+   *
+   * @param focalIds the central keywords.
+   * @param index the data source index or database name to query.
+   * @return ''true'', if the removal was successful. ''False'' otherwise.
+   */
+  def undoMergeKeywords(focalIds: List[String])(index: String): Boolean
+
+  /**
    * Returns all merged entities for the underlying collection.
    *
    * @param index the data source index or database name to query.
    * @return a map linking from the focal entity to its duplicates.
    */
   def getMerged()(index: String): Map[Entity, List[Entity]]
+
+  /**
+   * Returns all merged keywords for the underlying collection.
+   *
+   * @param index the data source index or database name to query.
+   * @return a map linking from the focal keyword to its duplicates.
+   */
+  def getMergedKeywords()(index: String): Boolean
 
   /**
    * Changes the name of the entity corresponding to the given entity id.
@@ -308,6 +335,17 @@ class DBEntityService extends EntityService {
   }
 
   /** @inheritdoc */
+  override def mergeKeywords(focalId: String, duplicates: List[String])(index: String): Boolean = db(index).localTx { implicit session =>
+    // Keep track of the origin keywords for the given duplicates
+    val merged = duplicates.map { keyword =>
+      sql"INSERT INTO duplicateKeywords VALUES (${keyword}, ${focalId})".update.apply()
+      // Blacklist duplicates in order to prevent that they show up in any query
+      blacklistKeyword(keyword)(index)
+    }
+    merged.length == duplicates.length && merged.forall(identity)
+  }
+
+  /** @inheritdoc */
   override def undoMerge(focalIds: List[Long])(index: String): Boolean = db(index).localTx { implicit session =>
     // Remove blacklist flag from all duplicate entries with matching focalIds
     sql"""UPDATE entity
@@ -317,6 +355,14 @@ class DBEntityService extends EntityService {
 
     sql"DELETE FROM duplicates WHERE focalid IN (${focalIds})".update().apply()
     // TODO
+    true
+  }
+
+  /** @inheritdoc */
+  override def undoMergeKeywords(focalIds: List[String])(index: String): Boolean = db(index).localTx { implicit session =>
+    for (focal <- focalIds) {
+      sql"DELETE FROM duplicatekeywords where ($focal) = duplicate".update().apply()
+    }
     true
   }
 
@@ -336,6 +382,19 @@ class DBEntityService extends EntityService {
     }.list.apply()
 
     duplicates.groupBy { case (_, focalEntity) => focalEntity }.mapValues(_.map(_._1))
+  }
+
+  /** @inheritdoc */
+  override def getMergedKeywords()(index: String): Boolean = db(index).readOnly { implicit session =>
+    val duplicates = sql"""SELECT * FROM duplicatekeywords""".map(List(_)).list.apply()
+
+    for (duplicate <- duplicates) {
+      duplicate
+    }
+
+    true
+
+    // duplicates.groupBy { case (_, focalKeyword) => focalKeyword }.mapValues(_.map(_._1))
   }
 
   /** @inheritdoc */

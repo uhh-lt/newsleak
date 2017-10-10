@@ -29,7 +29,7 @@ GET        /changeEntityTypeById                  controllers.NetworkController.
 GET        /induceSubgraphKeyword                 controllers.KeywordNetworkController.induceSubgraphKeyword(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], keywords: List[String], timeRange: String, timeExprRange: String, nodeFraction: Map[String, String])
 GET        /addNodeKeyword                        controllers.KeywordNetworkController.addNodesKeyword(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, currentNetwork: List[String], nodes: List[String])
 GET        /blacklistEntitiesByIdKeyword          controllers.KeywordNetworkController.blacklistEntitiesByIdKeyword(ids: List[Long])
-GET        /mergeEntitiesByIdKeyword              controllers.KeywordNetworkController.mergeEntitiesByIdKeyword(focalId: Long, duplicates: List[Long])
+GET        /mergeKeywords                         controllers.KeywordNetworkController.mergeKeywords(focalId: String, duplicates: List[String])
 GET        /blacklistKeywordByKeyTerm             controllers.KeywordNetworkController.blacklistKeywordByKeyTerm(keyword: String)
 GET        /changeEntityNameByIdKeyword           controllers.KeywordNetworkController.changeEntityNameByIdKeyword(id: Long, newName: String)
 GET        /changeEntityTypeByIdKeyword           controllers.KeywordNetworkController.changeEntityTypeByIdKeyword(id: Long, newType: String)

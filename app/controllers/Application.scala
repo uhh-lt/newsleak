@@ -122,7 +122,7 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         controllers.routes.javascript.NetworkController.getNeighborCounts,
         controllers.routes.javascript.NetworkController.getNeighbors,
         controllers.routes.javascript.KeywordNetworkController.blacklistEntitiesByIdKeyword,
-        controllers.routes.javascript.KeywordNetworkController.mergeEntitiesByIdKeyword,
+        controllers.routes.javascript.KeywordNetworkController.mergeKeywords,
         controllers.routes.javascript.KeywordNetworkController.changeEntityNameByIdKeyword,
         controllers.routes.javascript.KeywordNetworkController.induceSubgraphKeyword,
         controllers.routes.javascript.KeywordNetworkController.addNodesKeyword,
