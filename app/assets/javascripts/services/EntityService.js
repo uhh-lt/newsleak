@@ -77,6 +77,12 @@ define([
                     }
                 },
 
+                reloadEntityGraph: function () {
+                    if(entityScope){
+                        entityScope.reloadGraph();
+                    }
+                },
+
                 setKeywordScope: function (scope) {
                     keywordScope = scope;
                 },
