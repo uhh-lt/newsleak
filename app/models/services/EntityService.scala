@@ -337,12 +337,15 @@ class DBEntityService extends EntityService {
   /** @inheritdoc */
   override def mergeKeywords(focalId: String, duplicates: List[String])(index: String): Boolean = db(index).localTx { implicit session =>
     // Keep track of the origin keywords for the given duplicates
-    val merged = duplicates.map { keyword =>
-      sql"INSERT INTO duplicateKeywords VALUES (${keyword}, ${focalId})".update.apply()
-      // Blacklist duplicates in order to prevent that they show up in any query
-      blacklistKeyword(keyword)(index)
-    }
-    merged.length == duplicates.length && merged.forall(identity)
+    // TODO merge keywords and undo merging
+
+    // val merged = duplicates.map { keyword =>
+    //  sql"INSERT INTO duplicateKeywords VALUES (${keyword}, ${focalId})".update.apply()
+    //  // Blacklist duplicates in order to prevent that they show up in any query
+    //  blacklistKeyword(keyword)(index)
+    // }
+    // merged.length == duplicates.length && merged.forall(identity)
+    true
   }
 
   /** @inheritdoc */
