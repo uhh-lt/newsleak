@@ -113,7 +113,6 @@ define([
                  * call all observer callback functions
                  */
                 notifyObservers: function(){
-                    console.log('notify observers');
                     var callBackPromises = [];
                     var prioritized = observerCallbacks.sort(function(a, b) { return a.priority - b.priority; });
 
@@ -431,7 +430,6 @@ define([
                  * @param input json object holding items and history array
                  */
                 loadState: function(input) {
-                    console.log(input);
                     var rootThis = this;
                     history.splice(0);
                     history.length = 0;
@@ -445,7 +443,6 @@ define([
                     this.initTypes();
 
                     //history = angular.copy(input.history);
-                    console.log(history);
                     $q.all([
                         promiseEntities, promiseLoD, promiseMetadata
                     ]).then(function() {
@@ -463,7 +460,6 @@ define([
                                     }
                                 });
                             });
-                        console.log(items);
 
                         lastAdded = history[history.length-1].id;
                         lastRemoved = -1;

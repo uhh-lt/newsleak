@@ -148,7 +148,6 @@ define([
                     $scope.updateDocumentList();
 
                     $scope.loadMore = function () {
-                        console.log("reload doc list");
                         if (!$scope.iteratorEmpty) {
                             $scope.docsLoading = true;
                             var entities = [];

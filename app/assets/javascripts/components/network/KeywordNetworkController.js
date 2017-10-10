@@ -212,7 +212,8 @@ define([
                 },
                 {
                     title: 'Blacklist keywords',
-                    action: function(value, nodeIds) { EntityService.blacklist(nodeIds); }
+                    action: function(value, nodeIds) {
+                        nodeIds.forEach(id => EntityService.blacklistKeyword(self.nodesDataset._data[id].label, id)); }
                 }
             ];
 
@@ -317,7 +318,7 @@ define([
                 var filters = currentFilter();
                 var fraction = $scope.keywordTypes.map(function(t) { return { "key": t.name, "data": t.sliderModel }; });
 
-                playRoutes.controllers.KeywordNetworkController.induceSubgraphKeyword(filters.fulltext, filters.facets, filters.entities, [], filters.timeRange, filters.timeRangeX, fraction).get().then(function(response) {
+                playRoutes.controllers.KeywordNetworkController.induceSubgraphKeyword(filters.fulltext, filters.facets, filters.entities, filters.keywords, filters.timeRange, filters.timeRangeX, fraction).get().then(function(response) {
 
                         // Enable physics for new graph data when network is initialized
                         if(!_.isUndefined(self.network)) {
@@ -420,13 +421,11 @@ define([
             $scope.observerService.registerObserverCallback({
                 priority: 1,
                 callback: function () {
-                    console.log("Update Keyword Network");
                     return $scope.reloadGraph();
                 }
             });
 
             $scope.observerService.subscribeReset(function() {
-                console.log("Keyword Network reset");
                 // Do not use data from previous filtering steps when collection is changed
                 self.nodes.clear();
                 self.edges.clear();
@@ -861,9 +860,12 @@ define([
                             }
                         }
                     }).then(function (resp) {
-                        EntityService.highlightEntities(resp.hits.hits[0]._source.Entities);
-
-
+                        if(resp.hits.hits[0]) {
+                            let entities = resp.hits.hits[0]._source.Entities;
+                            if (entities) {
+                                EntityService.highlightEntities(entities);
+                            }
+                        }
                     }, function (error) {
                         console.trace(error.message);
                     });
@@ -884,7 +886,12 @@ define([
                                 }
 
                             }).then(function (resp) {
-                                EntityService.highlightEntities(resp.hits.hits[0]._source.Entities);
+                                if(resp.hits.hits[0]) {
+                                    let entities = resp.hits.hits[0]._source.Entities;
+                                    if (entities) {
+                                        EntityService.highlightEntities(entities);
+                                    }
+                                }
                             });
                         }
                     }
@@ -977,13 +984,15 @@ define([
                     showContextMenu(_.extend(position, { id: selection }), self.multiNodeMenu);
                 }
                 // Single node selected
-                else if(!_.isUndefined(nodeIdOpt)) {
+                else if(!_.isUndefined(nodeIdOpt) && self.network && self.network.body.nodes[nodeIdOpt].options.type != 'TAG') {
                     self.network.selectNodes([nodeIdOpt]);
                     showContextMenu(_.extend(position, { id: nodeIdOpt }), self.singleNodeMenu);
                 // Edge selected
                 } else if(!_.isUndefined(edgeIdOpt)) {
                     self.network.selectEdges([edgeIdOpt]);
-                    showContextMenu(_.extend(position, { id: edgeIdOpt }), self.edgeMenu);
+                    if(self.network && self.network.body.edges[edgeIdOpt].from.options.type != 'TAG' && self.network.body.edges[edgeIdOpt].to.options.type != 'TAG'){
+                        showContextMenu(_.extend(position, { id: edgeIdOpt }), self.edgeMenu);
+                    }
                 }
                 else {
                     // Nop

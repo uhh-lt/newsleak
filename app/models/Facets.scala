@@ -48,7 +48,7 @@ case class Facets(
   def withEntities(ids: List[Long]): Facets = this.copy(entities = this.entities ++ ids)
 
   /** Returns ''true'' when the filter is empty i.e. it matches all documents. ''False'' otherwise. */
-  def isEmpty: Boolean = fullTextSearch.isEmpty && generic.isEmpty && entities.isEmpty && !hasDateFilter
+  def isEmpty: Boolean = fullTextSearch.isEmpty && generic.isEmpty && entities.isEmpty && keywords.isEmpty && !hasDateFilter
 
   /**
    * Returns ''true'' when the filter defines any date restriction such as the document creation date or a time expression

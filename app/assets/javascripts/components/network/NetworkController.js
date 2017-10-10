@@ -197,7 +197,7 @@ define([
                 var filters = currentFilter();
                 var fraction = $scope.types.map(function(t) { return { "key": t.name, "data": t.sliderModel }; });
 
-                playRoutes.controllers.NetworkController.induceSubgraph(filters.fulltext, filters.facets, filters.entities, [], filters.timeRange, filters.timeRangeX, fraction).get().then(function(response) {
+                playRoutes.controllers.NetworkController.induceSubgraph(filters.fulltext, filters.facets, filters.entities, filters.keywords, filters.timeRange, filters.timeRangeX, fraction).get().then(function(response) {
                         // Enable physics for new graph data when network is initialized
                         if(!_.isUndefined(self.network)) {
                             applyPhysicsOptions(self.physicOptions);
@@ -286,13 +286,11 @@ define([
             $scope.observerService.registerObserverCallback({
                 priority: 1,
                 callback: function () {
-                    console.log("Update network");
                     return $scope.reloadGraph();
                 }
             });
 
             $scope.observerService.subscribeReset(function() {
-                console.log("Network reset");
                 // Do not use data from previous filtering steps when collection is changed
                 self.nodes.clear();
                 self.edges.clear();
@@ -718,7 +716,10 @@ define([
                     }
                 }).then(function (resp) {
                     if(resp.hits.hits[0]) {
-                        EntityService.highlightKeywords(resp.hits.hits[0]._source.Keywords);
+                        let keywords = resp.hits.hits[0]._source.Keywords;
+                        if(keywords){
+                            EntityService.highlightKeywords(keywords);
+                        }
                     }
 
 
