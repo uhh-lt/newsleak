@@ -304,11 +304,11 @@ class ESKeywordNetworkService @Inject() (
       Option(keyword.term) match {
         case Some(value) =>
           keyterm = keyword.term
-          val selectString = sql"""SELECT term FROM terms WHERE $keyterm = term"""
+          val selectString = sql"""SELECT term FROM blacklistedkeywords WHERE $keyterm = term"""
           numResults = selectString.map(_.toString).list().apply()
 
           if (numResults.length == 0) {
-            sql"""INSERT INTO terms(term, frequency, isblacklisted) values ($keyterm, 1, false)"""
+            sql"""INSERT INTO blacklistedkeywords(term, frequency, isblacklisted) values ($keyterm, 1, false)"""
               .update().apply()
           }
         case None => ;
@@ -324,7 +324,7 @@ class ESKeywordNetworkService @Inject() (
   /** @inheritdoc */
   override def undoBlacklistingKeywords(blacklistedKeywords: List[String])(index: String) = db(index).localTx { implicit session =>
     for (bk <- blacklistedKeywords) {
-      sql"DELETE FROM terms where term = ${bk}".update().apply()
+      sql"DELETE FROM blacklistedkeywords where term = ${bk}".update().apply()
     }
   }
 

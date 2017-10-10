@@ -534,7 +534,6 @@ define([
                         function($scope, $mdDialog, playRoutes, entities) {
 
                             $scope.entities = entities;
-                            console.log(entities);
 
                             $scope.apply = function () { $mdDialog.hide(self.network.body.nodes[$scope.target].options.label); };
                             $scope.closeClick = function() { $mdDialog.cancel(); };

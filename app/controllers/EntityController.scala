@@ -150,6 +150,16 @@ class EntityController @Inject() (
     Ok("success").as("Text")
   }
 
+  /**
+   * Withdraws [[models.services.EntityService#merge]] for the given keywords.
+   *
+   * @param focalTerms the central keywords.
+   */
+  def undoMergeKeywords(focalTerms: List[String]) = Action { implicit request =>
+    entityService.undoMergeKeywords(focalTerms)(currentDataset)
+    Ok("success").as("Text")
+  }
+
   // scalastyle:off
   /**
    * Returns frequent entities occurring in the documents matching the given query.

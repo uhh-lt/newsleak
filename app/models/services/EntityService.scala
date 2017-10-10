@@ -19,6 +19,8 @@ package models.services
 
 import com.google.inject.ImplementedBy
 import models.KeyTerm
+
+import scala.collection.mutable.ListBuffer
 // scalastyle:off
 import scalikejdbc._
 // scalastyle:on
@@ -204,7 +206,7 @@ trait EntityService {
    * @param index the data source index or database name to query.
    * @return a map linking from the focal keyword to its duplicates.
    */
-  def getMergedKeywords()(index: String): Boolean
+  def getMergedKeywords()(index: String): Map[String, List[String]]
 
   /**
    * Changes the name of the entity corresponding to the given entity id.
@@ -278,11 +280,11 @@ class DBEntityService extends EntityService {
 
   /** @inheritdoc*/
   override def blacklistKeyword(keyword: String)(index: String): Boolean = db(index).localTx { implicit session =>
-    val numResults = sql"SELECT term FROM terms WHERE ${keyword} = term".map(rs => rs.string("term")).list().apply()
+    val numResults = sql"SELECT term FROM blacklistedkeywords WHERE ${keyword} = term".map(rs => rs.string("term")).list().apply()
     val keywordType = "KEYWORD"
 
     if (numResults.length == 0) {
-      sql"INSERT INTO terms(term, type) values (${keyword}, ${keywordType})".update().apply()
+      sql"INSERT INTO blacklistedkeywords(term, type) values (${keyword}, ${keywordType})".update().apply()
     }
     true
   }
@@ -320,7 +322,7 @@ class DBEntityService extends EntityService {
 
   /** @inheritdoc */
   override def getBlacklistedKeywords()(index: String): List[String] = db(index).readOnly { implicit session =>
-    sql"SELECT term FROM terms".map(rs => rs.string("term")).list().apply()
+    sql"SELECT term FROM blacklistedkeywords".map(rs => rs.string("term")).list().apply()
   }
 
   /** @inheritdoc */
@@ -339,12 +341,12 @@ class DBEntityService extends EntityService {
     // Keep track of the origin keywords for the given duplicates
     // TODO merge keywords and undo merging
 
-    // val merged = duplicates.map { keyword =>
-    //  sql"INSERT INTO duplicateKeywords VALUES (${keyword}, ${focalId})".update.apply()
-    //  // Blacklist duplicates in order to prevent that they show up in any query
-    //  blacklistKeyword(keyword)(index)
-    // }
-    // merged.length == duplicates.length && merged.forall(identity)
+    val merged = duplicates.map { keyword =>
+      sql"INSERT INTO duplicateKeywords VALUES (${keyword}, ${focalId})".update.apply()
+      // Blacklist duplicates in order to prevent that they show up in any query
+      blacklistKeyword(keyword)(index)
+    }
+    merged.length == duplicates.length && merged.forall(identity)
     true
   }
 
@@ -363,15 +365,22 @@ class DBEntityService extends EntityService {
 
   /** @inheritdoc */
   override def undoMergeKeywords(focalIds: List[String])(index: String): Boolean = db(index).localTx { implicit session =>
+
+    var origin = focalIds.head
+    sql"DELETE FROM duplicatekeywords where ($origin) = focal".update().apply()
+
     for (focal <- focalIds) {
-      sql"DELETE FROM duplicatekeywords where ($focal) = duplicate".update().apply()
+      if (focalIds.indexOf(focal) > 0) {
+        sql"DELETE FROM blacklistedkeywords where term = ($focal)".update().apply()
+      }
     }
+
     true
   }
 
   /** @inheritdoc */
   override def getMerged()(index: String): Map[Entity, List[Entity]] = db(index).readOnly { implicit session =>
-    val duplicates = sql"""SELECT e1.id, e1.name, e1.type, e1.frequency,
+    var duplicates = sql"""SELECT e1.id, e1.name, e1.type, e1.frequency,
                                   e2.id AS focalId, e2.name AS focalName, e2.type AS focalType, e2.frequency AS focalFreq
                            FROM duplicates AS d
                            INNER JOIN entity AS e1 ON e1.id = d.duplicateid
@@ -384,20 +393,43 @@ class DBEntityService extends EntityService {
       ))
     }.list.apply()
 
-    duplicates.groupBy { case (_, focalEntity) => focalEntity }.mapValues(_.map(_._1))
+    var duplicateKeywords = getMergedKeywords()(index)
+
+    var result = duplicates.groupBy { case (_, focalEntity) => focalEntity }.mapValues(_.map(_._1))
+
+    for (keyword <- duplicateKeywords) {
+      val list = keyword._2.map { case x: String => Entity(-1, x, "KEYWORD", 1) }
+      result += (Entity(-1, keyword._1, "KEYWORD", 1) -> list)
+    }
+
+    result
   }
 
   /** @inheritdoc */
-  override def getMergedKeywords()(index: String): Boolean = db(index).readOnly { implicit session =>
-    val duplicates = sql"""SELECT * FROM duplicatekeywords""".map(List(_)).list.apply()
+  override def getMergedKeywords()(index: String): Map[String, List[String]] = db(index).readOnly { implicit session =>
+    val tuples = sql"""SELECT * FROM duplicatekeywords""".map { rs => (rs.string("duplicate"), rs.string("focal")) }.list.apply()
 
-    for (duplicate <- duplicates) {
-      duplicate
+    var keywordMap: Map[String, ListBuffer[String]] = Map()
+
+    for (tuple <- tuples) {
+      var addToList = true
+      for (entry <- keywordMap) {
+        if (tuple._2 == entry._1) {
+          addToList = false
+          if (!entry._2.contains(tuple._1)) {
+            entry._2.append(tuple._1)
+          }
+        }
+      }
+      if (addToList) {
+        keywordMap += (tuple._2 -> ListBuffer(tuple._1))
+      }
     }
+    var result: Map[String, List[String]] = Map()
 
-    true
+    keywordMap.map { case (a, b) => result += (a -> b.toList) }
 
-    // duplicates.groupBy { case (_, focalKeyword) => focalKeyword }.mapValues(_.map(_._1))
+    result
   }
 
   /** @inheritdoc */

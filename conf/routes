@@ -48,6 +48,7 @@ GET        /getMerged                             controllers.EntityController.g
 GET        /undoBlacklisting                      controllers.EntityController.undoBlacklistingByIds(ids: List[Long])
 GET        /whitelistEntity                       controllers.EntityController.whitelistEntity(text: String, start: String, end: String, enType: String, docId: String, entId: String)
 GET        /undoMerge                             controllers.EntityController.undoMergeByIds(focalIds: List[Long])
+GET        /undoMergeKeywords                     controllers.EntityController.undoMergeKeywords(focalTerms: List[String])
 GET        /getEntitiesByDoc                      controllers.EntityController.getEntitiesByDoc(id: Long)
 GET        /getBlacklistsByDoc                    controllers.EntityController.getBlacklistsByDoc(id: Long)
 GET        /getMetadata                           controllers.MetadataController.getMetadata(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String)

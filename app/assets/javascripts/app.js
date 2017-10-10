@@ -267,6 +267,9 @@ define([
                 playRoutes.controllers.EntityController.getMergedEntities().get().then(function (response) {
                     $scope.mergelist = response.data;
                 });
+                playRoutes.controllers.EntityController.getMergedEntities().get().then(function (response) {
+                    $scope.mergelist = response.data;
+                });
             }
 
             $scope.joinDuplicates = function(duplicates) {
@@ -290,7 +293,7 @@ define([
 
                 var blacklist = [];
                 for(let item of $scope.blacklistSelection) {
-                    if(item.entityType == 'KEYWORD'){
+                    if(item.entityType && item.entityType == 'KEYWORD'){
                         blacklist.push(item.name);
                     }
                 }
@@ -311,7 +314,8 @@ define([
                     function(ids, observer) {
                         // Update network and frequency chart
                         playRoutes.controllers.EntityController.undoBlacklistingByIds(ids).get().then(function(response) {  observer.notifyObservers(); })
-                    });
+                    },
+                    null);
             };
 
             $scope.removeFromMergelist = function() {
@@ -320,12 +324,38 @@ define([
                     $scope.mergelistSelection,
                     function(ids, observer) {
                         playRoutes.controllers.EntityController.undoMergeByIds(ids).get().then(function(response) {  observer.notifyObservers(); })
+                    },
+                    function(terms, observer) {
+                        playRoutes.controllers.EntityController.undoMergeKeywords(terms).get().then(function(response) {  observer.notifyObservers(); })
                     });
             };
 
-            function removeSelection(list, selection, callback) {
-                var ids = selection.map(function(e) { return e.id });
-                callback(ids, ObserverService);
+            function removeSelection(list, selection, callbackIds, callbackTerms) {
+                var ids = [];
+                var terms = [];
+                for(let item of selection){
+                    if(item.origin && item.origin.entityType == "KEYWORD"){
+                        terms.push(item.origin.name);
+                        item.duplicates.forEach(x => terms.push(x.name));
+                    }
+                    else {
+                        if(item.origin){
+                            ids.push(item.origin.id);
+                            item.duplicates.forEach(x => ids.push(x.id));
+                        }
+                        else {
+                            ids.push(item.id);
+                        }
+                    }
+                }
+
+                if(ids.length > 0){
+                    callbackIds(ids, ObserverService);
+                }
+                if(terms.length > 0){
+                    callbackTerms(terms, ObserverService);
+                }
+
                 // Remove selected items from the list in-place
                 selection.forEach(function(el) {
                     var index = list.indexOf(el);
