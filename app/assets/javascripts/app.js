@@ -158,7 +158,9 @@ define([
                 $("#histogram").highcharts().reflow();
                 $("#histogramX").highcharts().reflow();
                 $(".scroll-chart").css("height",$("#metadata").height()-150);
-                $("#metadata-view .md-active .meta-chart").highcharts().reflow();
+                if($("#metadata-view .md-active .meta-chart").highcharts()){
+                    $("#metadata-view .md-active .meta-chart").highcharts().reflow();
+                }
             };
 
             $scope.$on("angular-resizable.resizeEnd", function (event, args) {
@@ -174,12 +176,12 @@ define([
                 $scope.resizeUI();
             });
 
-            $scope.toggleEntityGraph = function (state) {
-                EntityService.setToggleEntityGraph(state);
+            $scope.toggleEntityGraph = function () {
+                EntityService.toggleEntityGraph();
             };
 
-            $scope.toggleKeywordGraph = function (state) {
-                EntityService.setToggleKeywordGraph(state);
+            $scope.toggleKeywordGraph = function () {
+                EntityService.toggleKeywordGraph();
             };
 
             $scope.getDisplayEntityGraph = function () {

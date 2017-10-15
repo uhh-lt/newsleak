@@ -191,7 +191,8 @@ define([
                     });
 
                     $scope.loadFullDocument = function (doc) {
-                        EntityService.setToggleKeywordGraph(true);
+                        EntityService.setToggleEntityGraph(true);
+                        EntityService.setToggleKeywordGraph(false);
                         // Focus open tab if document is already opened
                         if($scope.isDocumentOpen(doc.id)) {
                             var index = _.findIndex($scope.sourceShared.tabs, function(t) { return t.id == doc.id; });

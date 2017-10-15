@@ -115,7 +115,11 @@ define([
                     }
                 },
 
-                setToggleEntityGraph: function () {
+                setToggleEntityGraph: function (state) {
+                    toggleEntityGraph = state;
+                },
+
+                toggleEntityGraph: function () {
                     toggleEntityGraph = ! toggleEntityGraph;
                 },
 
@@ -124,12 +128,11 @@ define([
                 },
 
                 setToggleKeywordGraph: function (state) {
-                    if(state){
-                        toggleKeywordGraph = false;
-                    }
-                    else {
-                        toggleKeywordGraph = ! toggleKeywordGraph;
-                    }
+                    toggleKeywordGraph = state;
+                },
+
+                toggleKeywordGraph: function () {
+                    toggleKeywordGraph = ! toggleKeywordGraph;
                 },
 
                 getToggleKeywordGraph: function () {

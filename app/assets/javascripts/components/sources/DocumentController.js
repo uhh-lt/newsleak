@@ -275,7 +275,8 @@ define([
                         var index = $scope.tabs.indexOf(tab);
                         $scope.tabs.splice(index, 1);
                         if($scope.tabs.length == 0){
-                            EntityService.setToggleKeywordGraph();
+                            EntityService.setToggleEntityGraph(true);
+                            EntityService.setToggleKeywordGraph(true);
                         }
                     };
 

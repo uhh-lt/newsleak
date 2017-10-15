@@ -54,12 +54,13 @@
 
     <span flex></span>
 
-    <md-checkbox ng-model="showEntityGraph" style="padding-right: 5px;" aria-label="Entity Graph"
+    <md-checkbox ng-model="showEntityGraph" ng-checked="getDisplayEntityGraph()" style="padding-right: 5px;" aria-label="Entity Graph"
                  ng-click="toggleEntityGraph()">
       Entity Graph
     </md-checkbox>
 
-    <md-checkbox ng-model="showKeywordGraph" ng-checked="getDisplayKeywordGraph()" aria-label="Keyword Graph" ng-click="toggleKeywordGraph()">
+    <md-checkbox ng-model="showKeywordGraph" ng-checked="getDisplayKeywordGraph()" aria-label="Keyword Graph"
+                 ng-click="toggleKeywordGraph()">
       Keyword Graph
     </md-checkbox>
 

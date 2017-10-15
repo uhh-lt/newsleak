@@ -128,8 +128,15 @@ define([
                         let frequencies = [];
 
                         for(let item of resp.hits.hits[0]._source.Keywords){
-                            keywords.push(item.Keyword);
-                            frequencies.push(item.TermFrequency);
+                            if(item.Keyword){
+                                keywords.push(item.Keyword);
+                            }
+                            if(item.TermFrequency){
+                                frequencies.push(item.TermFrequency);
+                            }
+                            else {
+                                frequencies.push(0);
+                            }
                         }
 
                         playRoutes.controllers.KeywordNetworkController.setTagKeywordRelation(tag, keywords, frequencies).get().then(function () {
@@ -141,7 +148,10 @@ define([
                         });
                     }
                     else {
-                        $scope.tagCount++;
+                        console.log($scope.currentTags);
+                        $scope.currentTags.slice($scope.currentTags.indexOf(tag), 1);
+                        console.log($scope.currentTags);
+                        // $scope.tagCount++;
                     }
 
                 }, function (error) {
