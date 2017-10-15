@@ -270,6 +270,14 @@ define([
                 // $scope.reloadKeywordGraphWithEdgeImportance();
             };
 
+            function initES() {
+                playRoutes.controllers.KeywordNetworkController.getHostAddress().get().then(function (response) {
+                    if(response && response.data){
+                        client.indices.transport._config.host = response.data;
+                        client.indices.transport._config.hosts = response.data;
+                    }
+                });
+            }
 
             function init() {
                 // Fetch the named entity types
@@ -279,6 +287,7 @@ define([
                     $scope.reloadGraph();
                 });
                 EntityService.setEntityScope($scope);
+                initES();
             }
             // Init the network module
             init();

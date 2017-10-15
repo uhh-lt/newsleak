@@ -138,7 +138,13 @@ define([
 
                 getTagsSelected() {
                     return keywordScope.getTagsSelected();
+                },
+
+                getHostAddress() {
+                    playRoutes.controllers.KeywordNetworkController.getHostAddress().get().then(function (response) {
+                        return response;
+                    });
                 }
             };
         }])
-})
+});

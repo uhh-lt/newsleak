@@ -288,12 +288,21 @@ define([
                         updateTagLabels();
                     });
 
-
-                    init();
-
                     function init() {
                         updateTagLabels();
+                        initES();
                     }
+
+                    function initES() {
+                        playRoutes.controllers.KeywordNetworkController.getHostAddress().get().then(function (response) {
+                            if(response && response.data){
+                                client.indices.transport._config.host = response.data;
+                                client.indices.transport._config.hosts = response.data;
+                            }
+                        });
+                    }
+
+                    init();
 
                     $scope.open = function ($scope, doc, backdrop) {
                       var modalInstance = $uibModal.open({

@@ -24,7 +24,7 @@ import models.{ Facets, KeyTerm, KeywordNetwork, KeywordRelationship }
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
 import scalikejdbc._
-import util.DateUtils
+import util.{ DateUtils }
 import util.SessionUtils.currentDataset
 
 import scala.collection.mutable.ListBuffer
@@ -221,5 +221,9 @@ class KeywordNetworkController @Inject() (
   def resetTagKeywordRelation() = Action { implicit request =>
     keywordNetworkService.resetTagKeywordRelation()
     Ok("success").as("Text")
+  }
+
+  def getHostAddress() = Action { implicit request =>
+    Ok(keywordNetworkService.getHostAddress()).as("Text")
   }
 }

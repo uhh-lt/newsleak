@@ -133,6 +133,7 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         controllers.routes.javascript.KeywordNetworkController.getTags,
         controllers.routes.javascript.KeywordNetworkController.setTagKeywordRelation,
         controllers.routes.javascript.KeywordNetworkController.resetTagKeywordRelation,
+        controllers.routes.javascript.KeywordNetworkController.getHostAddress,
         controllers.routes.javascript.EntityController.getEntitiesByType,
         controllers.routes.javascript.EntityController.getEntityTypes,
         controllers.routes.javascript.EntityController.getRecordedEntity,

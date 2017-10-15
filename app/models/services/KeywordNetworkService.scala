@@ -24,6 +24,7 @@ import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
 
 import scala.collection.mutable.ListBuffer
 import scalikejdbc._
+import util.NewsleakConfigReader
 // scalastyle:off
 import scala.collection.JavaConversions._
 // scalastyle:on
@@ -125,6 +126,11 @@ trait KeywordNetworkService {
    */
   def resetTagKeywordRelation(): Unit
 
+  /**
+   * Returns the current ES Address for the JS client
+   * @return the address as string
+   */
+  def getHostAddress(): String
 }
 
 /**
@@ -336,5 +342,10 @@ class ESKeywordNetworkService @Inject() (
   /** @inheritdoc */
   override def resetTagKeywordRelation(): Unit = {
     keywordTagRelation.clear()
+  }
+
+  /** @inheritdoc */
+  override def getHostAddress(): String = {
+    NewsleakConfigReader.esSettings.address + ":" + NewsleakConfigReader.esSettings.port
   }
 }

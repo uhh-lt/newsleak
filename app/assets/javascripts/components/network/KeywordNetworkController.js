@@ -396,6 +396,14 @@ define([
                 });
             }
 
+            function initES() {
+                playRoutes.controllers.KeywordNetworkController.getHostAddress().get().then(function (response) {
+                    if(response && response.data){
+                        client.indices.transport._config.host = response.data;
+                        client.indices.transport._config.hosts = response.data;
+                    }
+                });
+            }
 
             function init() {
                 // init graph
@@ -407,6 +415,8 @@ define([
                 // get index name from the back end
                 getIndexName();
                 EntityService.setKeywordScope($scope);
+
+                initES();
             }
             // Init the network module
             init();
