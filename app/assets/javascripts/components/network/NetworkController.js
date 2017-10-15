@@ -81,6 +81,13 @@ define([
                 { name: 'Legend', template: '<div class="vis-button vis-legend-button" ng-click="showLegend = !showLegend"></div>' }
             ];
 
+            $scope.resizeNetwork = function () {
+                if(self.network){
+                    self.network.redraw();
+                    self.network.fit();
+                }
+            };
+
             // Context menu for single node selection
             self.singleNodeMenu = [
                 {

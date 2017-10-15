@@ -20,7 +20,7 @@ define([
 ], function (angular) {
     'use strict';
     angular.module('myApp.entityservice', ['play.routing'])
-        .factory('EntityService', ['$rootScope', 'playRoutes', function ($rootScope, playRoutes) {
+        .factory('EntityService', ['$rootScope', 'playRoutes', '$timeout', function ($rootScope, playRoutes, $timeout) {
             var keywordScope = null;
             var entityScope = null;
 
@@ -117,10 +117,40 @@ define([
 
                 setToggleEntityGraph: function (state) {
                     toggleEntityGraph = state;
+                    if(keywordScope && entityScope){
+                        if(toggleEntityGraph){
+                            setTimeout(function() {
+                                entityScope.resizeNetwork();
+                            }, 500);
+                        }
+                        else {
+                            $timeout(function() {
+                                keywordScope.resizeNetwork();
+                            }, 500);
+                        }
+                    }
+                    else {
+                        console.log('scopes not defined');
+                    }
                 },
 
                 toggleEntityGraph: function () {
                     toggleEntityGraph = ! toggleEntityGraph;
+                    if(keywordScope && entityScope){
+                        if(toggleEntityGraph){
+                            setTimeout(function() {
+                                entityScope.resizeNetwork();
+                            }, 500);
+                        }
+                        else {
+                            $timeout(function() {
+                                keywordScope.resizeNetwork();
+                            }, 500);
+                        }
+                    }
+                    else {
+                        console.log('scopes not defined');
+                    }
                 },
 
                 getToggleEntityGraph: function () {
@@ -129,10 +159,40 @@ define([
 
                 setToggleKeywordGraph: function (state) {
                     toggleKeywordGraph = state;
+                    if(keywordScope && entityScope){
+                        if(toggleKeywordGraph) {
+                            $timeout(function() {
+                                keywordScope.resizeNetwork();
+                            }, 500);
+                        }
+                        else {
+                            setTimeout(function() {
+                                entityScope.resizeNetwork();
+                            }, 500);
+                        }
+                    }
+                    else {
+                        console.log('scopes not defined');
+                    }
                 },
 
                 toggleKeywordGraph: function () {
                     toggleKeywordGraph = ! toggleKeywordGraph;
+                    if(keywordScope && entityScope){
+                        if(toggleKeywordGraph){
+                            $timeout(function() {
+                                keywordScope.resizeNetwork();
+                            }, 500);
+                        }
+                        else {
+                            setTimeout(function() {
+                                entityScope.resizeNetwork();
+                            }, 500);
+                        }
+                    }
+                    else {
+                        console.log('scopes not defined');
+                    }
                 },
 
                 getToggleKeywordGraph: function () {
