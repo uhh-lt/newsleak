@@ -292,6 +292,7 @@ class ESKeywordNetworkService @Inject() (
 
   /** @inheritdoc */
   override def getAllTags()(index: String): List[Tag] = db(index).readOnly { implicit session =>
+    // TODO filter for current documents
     sql"""SELECT t.id, t.documentid, l.label FROM tags t
           INNER JOIN labels AS l ON l.id = t.labelid"""
       .map(Tag(_)).list().apply()
@@ -346,6 +347,6 @@ class ESKeywordNetworkService @Inject() (
 
   /** @inheritdoc */
   override def getHostAddress(): String = {
-    NewsleakConfigReader.esSettings.address + ":" + NewsleakConfigReader.esSettings.port
+    NewsleakConfigReader.esSettings.address + ":" + NewsleakConfigReader.config.getInt("es.httpPort")
   }
 }

@@ -26,14 +26,7 @@ define([
      * network keyword module:
      * visualization and interaction of keywords in network graph
      */
-    angular.module('myApp.keywordNetwork', ['ngMaterial', 'ngVis', 'play.routing', 'elasticsearch'])
-        .service('client', function (esFactory) {
-            return esFactory({
-                host: 'localhost:9500',
-                apiVersion: '5.5',
-                log: 'trace'
-            });
-        });
+    angular.module('myApp.keywordNetwork', ['ngMaterial', 'ngVis', 'play.routing']);
     angular.module('myApp.keywordNetwork')
         // Keyword Network Legend Controller
         .controller('KeywordLegendController', ['$scope', '$timeout', 'VisDataSet', 'graphProperties', function ($scope, $timeout, VisDataSet, graphProperties) {
@@ -69,7 +62,7 @@ define([
             });
         }])
         // Keyword Network Controller
-        .controller('KeywordNetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', 'client', 'esFactory', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService, client, esFactory) {
+        .controller('KeywordNetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', 'esFactory', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService, esFactory) {
 
             var self = this;
 
@@ -109,7 +102,7 @@ define([
 
             function esSearchKeywords(res, tag) {
 
-                client.search({
+                $scope.client.search({
                     index: $scope.indexName,
                     type: 'document',
                     id: res,
@@ -416,13 +409,17 @@ define([
             function initES() {
                 playRoutes.controllers.KeywordNetworkController.getHostAddress().get().then(function (response) {
                     if(response && response.data){
-                        client.indices.transport._config.host = response.data;
-                        client.indices.transport._config.hosts = response.data;
+                        $scope.client = esFactory({
+                            host: response.data,
+                            apiVersion: '5.5',
+                            log: 'trace'
+                        });
                     }
                 });
             }
 
             function init() {
+                initES();
                 // init graph
                 $scope.keywordTypes = [{
                     name: "KEY",
@@ -432,8 +429,6 @@ define([
                 // get index name from the back end
                 getIndexName();
                 EntityService.setKeywordScope($scope);
-
-                initES();
             }
             // Init the network module
             init();
@@ -737,7 +732,7 @@ define([
                 });
 
                 if(node.type == 'KEYWORD'){
-                    client.search({
+                    $scope.client.search({
                         index: $scope.indexName,
                         type: 'document',
                         body: {
@@ -769,7 +764,7 @@ define([
                 else if (node.type == 'TAG'){
                     for(let tag of $scope.currentTags){
                         if(tag.label == node.label){
-                            client.search({
+                            $scope.client.search({
                                 index: $scope.indexName,
                                 type: 'document',
                                 id: tag.documentId,

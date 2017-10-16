@@ -27,13 +27,6 @@ define([
      * visualization and interaction of network graph
      */
     angular.module('myApp.network', ['ngMaterial', 'ngVis', 'play.routing', 'elasticsearch'])
-    .service('client', function (esFactory) {
-        return esFactory({
-            host: 'localhost:9500',
-            apiVersion: '5.5',
-            log: 'trace'
-        });
-    });
     angular.module('myApp.network')
         // Network Legend Controller
         .controller('LegendController', ['$scope', '$timeout', 'VisDataSet', 'graphProperties', function ($scope, $timeout, VisDataSet, graphProperties) {
@@ -62,7 +55,7 @@ define([
             });
         }])
         // Network Controller
-        .controller('NetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', 'client', 'esFactory', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService, client, esFactory) {
+        .controller('NetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', 'esFactory', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService, esFactory) {
 
             var self = this;
 
@@ -280,13 +273,17 @@ define([
             function initES() {
                 playRoutes.controllers.KeywordNetworkController.getHostAddress().get().then(function (response) {
                     if(response && response.data){
-                        client.indices.transport._config.host = response.data;
-                        client.indices.transport._config.hosts = response.data;
+                        $scope.client = esFactory({
+                            host: response.data,
+                            apiVersion: '5.5',
+                            log: 'trace'
+                        });
                     }
                 });
             }
 
             function init() {
+                initES();
                 // Fetch the named entity types
                 $scope.observerService.getEntityTypes().then(function (types) {
                     $scope.types = types.map(function(t) { return _.extend(t, { sliderModel: 5 }) });
@@ -294,7 +291,6 @@ define([
                     $scope.reloadGraph();
                 });
                 EntityService.setEntityScope($scope);
-                initES();
             }
             // Init the network module
             init();
@@ -712,7 +708,7 @@ define([
                     self.nodesDataset.update({ id: node.id, title: tooltip });
                 });
 
-                client.search({
+                $scope.client.search({
                     index: $scope.indexName,
                     type: 'document',
                     body: {

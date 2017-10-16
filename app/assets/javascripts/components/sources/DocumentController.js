@@ -30,13 +30,6 @@ define([
      * - load additional metdata/keywords for loaded document
      */
     angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ui.bootstrap.contextMenu', 'elasticsearch', 'ui.bootstrap'])
-        .service('client', function (esFactory) {
-            return esFactory({
-              host: 'localhost:9500',
-              apiVersion: '5.5',
-              log: 'trace'
-            });
-          })
         .directive('docContent', ['$compile', 'ObserverService', 'EntityService', 'graphProperties',  '_', function($compile, ObserverService, EntityService, graphProperties, _) {
             return {
                 restrict: 'E',
@@ -237,7 +230,6 @@ define([
                 'sourceShareService',
                 'ObserverService',
                 'EntityService',
-                'client',
                 'esFactory',
                 '$uibModal',
                 '$log',
@@ -252,7 +244,6 @@ define([
                           sourceShareService,
                           ObserverService,
                           EntityService,
-                          client,
                           esFactory,
                           $uibModal,
                           $log,
@@ -297,8 +288,11 @@ define([
                     function initES() {
                         playRoutes.controllers.KeywordNetworkController.getHostAddress().get().then(function (response) {
                             if(response && response.data){
-                                client.indices.transport._config.host = response.data;
-                                client.indices.transport._config.hosts = response.data;
+                                $scope.client = esFactory({
+                                    host: response.data,
+                                    apiVersion: '5.5',
+                                    log: 'trace'
+                                });
                             }
                         });
                     }
@@ -372,7 +366,7 @@ define([
                         // playRoutes.controllers.DocumentController.getKeywordsById(doc.id, self.numKeywords).get().then(function(response) {
                         //    response.data.forEach(function(t) { return terms.push(t.term); });
                         //});
-                        client.search({
+                        $scope.client.search({
                             index: $scope.indexName,
                             type: 'document',
                             id: doc.id,
@@ -579,7 +573,7 @@ define([
                     };
 
                     $scope.esKeyWhitelist = function(keyword, doc) {
-                      client.get({
+                        $scope.client.get({
                         index: $scope.indexName,
                         type: 'document',
                         id: doc.id,
@@ -597,7 +591,7 @@ define([
                     }
 
                     $scope.createInitKeyword = function(keyword, doc) {
-                      client.update({
+                        $scope.client.update({
                         index: $scope.indexName,
                         type: 'document',
                         id: doc.id,
@@ -620,7 +614,7 @@ define([
                     }
 
                     $scope.createNewKeyword = function(keyword, doc) {
-                      client.update({
+                        $scope.client.update({
                         index: $scope.indexName,
                         type: 'document',
                         id: doc.id,
@@ -643,7 +637,7 @@ define([
                     }
 
                     $scope.esWhitelist = function(entity, typeEnt, doc) {
-                      client.search({
+                        $scope.client.search({
                         index: $scope.indexName,
                         type: 'document',
                         size: 0,
@@ -666,7 +660,7 @@ define([
                     }
 
                     $scope.createNewEntity = function(entity, typeEnt, doc, entId = null) {
-                      client.update({
+                        $scope.client.update({
                         index: $scope.indexName,
                         type: 'document',
                         id: doc.id,
@@ -696,7 +690,7 @@ define([
                     $scope.checkNewEntityType = function(entity, typeEnt, doc, entId = null) {
                       var suffixType = typeEnt.toLowerCase();
                       var newType = 'Entities' + suffixType;
-                      client.get({
+                        $scope.client.get({
                         index: $scope.indexName,
                         type: 'document',
                         id: doc.id,
@@ -715,7 +709,7 @@ define([
 
                     $scope.insertNewEntityType = function(entity, typeEnt, doc, entId = null) {
                       var suffixType = typeEnt.toLowerCase();
-                      client.update({
+                        $scope.client.update({
                         index: $scope.indexName,
                         type: 'document',
                         id: doc.id,
@@ -743,7 +737,7 @@ define([
 
                     $scope.createNewEntityType = function(entity, typeEnt, doc) {
                       var suffixType = typeEnt.toLowerCase();
-                      client.update({
+                        $scope.client.update({
                         index: $scope.indexName,
                         type: 'document',
                         id: doc.id,
