@@ -716,10 +716,13 @@ define([
                             bool: {
                                 should: [
                                     {
-                                        term: {
-                                            "Keywords.Keyword.raw": {
-                                                value: nodeLabel
-                                            }
+                                        match: {
+                                            "Keywords.Keyword.raw": nodeLabel
+                                        }
+                                    }, {
+                                        match: {
+                                            "Entities.Entname": nodeLabel
+
                                         }
                                     }
                                 ]
