@@ -505,36 +505,52 @@ define([
                       return entities.length > 0 ? true : false;
                     }
 
+                    // Whitelist: Entiy Annotation and Keyword Insertion
                     $scope.whitelist = function(entity, type, doc){
                       type = type.replace(/\s/g,'');
                       $scope.isKeyword;
                       var blacklists = isBlacklisted(entity, type, $scope.isKeyword);
+                      // Check whether it is an entity or keyword
                       if ($scope.isKeyword === true) {
+                        // Keyword Insertion / Whitelisting
                         if (blacklists.length > 0) {
+                          // If a keyword has already been listed in blacklists, we undoBlacklistingKeywords
                           playRoutes.controllers.KeywordNetworkController.undoBlacklistingKeywords(blacklists).get().then(function (response) {
                             $scope.observer.notifyObservers();
                             $scope.reloadDoc(doc);
                             EntityService.reloadKeywordGraph(true);
                           });
                         } else {
+                          // Keyword insertion
                           $scope.esKeyWhitelist(entity.text, doc);
                         }
                       } else {
+                        // The text is an entity
                         if (blacklists.length > 0) {
-                          // Update network and frequency chart
+                          // If an entity has already been listed in blacklists, we undoBlacklistingByIds
                           playRoutes.controllers.EntityController.undoBlacklistingByIds([blacklists[0].id]).get().then(function(response) {
                             $scope.observer.notifyObservers();
                             $scope.reloadDoc(doc);
                             EntityService.reloadEntityGraph();
                           });
                         } else {
+                          // Entity Annotation / Whitelisting
                           playRoutes.controllers.EntityController.getRecordedEntity(entity.text, type).get().then(function (response) {
+                            // Checking if an entity has already in database
                             if (response.data.length > 0) {
-                              $scope.createNewEntity(entity, type, doc, response.data[0].id);
+                              // If yes, update the frequency of that entity
                               EntityService.whitelist(entity, type, doc.id, response.data[0].id);
+                              $scope.createNewEntity(entity, type, doc, response.data[0].id);
                             } else {
-                              $scope.esWhitelist(entity, type, doc);
-                              EntityService.whitelist(entity, type, doc.id);
+                              // The entity is new, we need to create a new record and give it a new ID.
+                              playRoutes.controllers.EntityController.whitelistEntity(entity.text, entity.start, entity.end, type, doc.id, "empty")
+                              .get().then(function(response) {
+                                  $scope.$emit('notifying-service-event', { parameter: entity, response: response });
+                                  playRoutes.controllers.EntityController.getRecordedEntity(entity.text, type).get().then(function (response) {
+                                    $scope.esNewId = response.data[0].id;
+                                    $scope.esWhitelist(entity, type, doc);
+                                  });
+                              });
                             }
                           });
                         }
@@ -651,10 +667,10 @@ define([
                           }
                         }
                       }).then(function (resp) {
-                        $scope.esNewId = (resp.aggregations.max_id.value) + 1;
+                        // $scope.esNewId = (resp.aggregations.max_id.value) + 1;
                         $scope.createNewEntity(entity, typeEnt, doc);
                       }, function (error, response) {
-                        $scope.esNewId = null;
+                        // $scope.esNewId = null;
                         console.trace(err.message);
                       });
                     }
