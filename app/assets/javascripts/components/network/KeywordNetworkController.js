@@ -68,11 +68,14 @@ define([
 
             $scope.tagsSelected = false;
 
-            $scope.currentTags = [];
-
             $scope.areTagsSelected = false;
 
+            $scope.currentTags = [];
+
             $scope.selectTags = function (toggle = false) {
+
+                $scope.allTagIds = [];
+                $scope.currentTagIds = [];
 
                 if(!toggle){
                     $scope.areTagsSelected = ! $scope.areTagsSelected;
@@ -84,9 +87,84 @@ define([
 
                             $scope.tagCount = 0;
                             $scope.currentTags = response.data.result;
+                            for(let tag of $scope.currentTags){
+                                $scope.allTagIds.push(tag.documentId);
+                            }
 
-                            for(let res of $scope.currentTags) {
-                                esSearchKeywords('' + res.documentId, res.label);
+                            var filters = currentFilter();
+
+                            if(filters.fulltext.length > 0 || filters.entities.length > 0 || filters.keywords.length > 0) {
+                                $scope.client.search({
+                                    index: $scope.indexName,
+                                    type: 'document',
+                                    body: {
+                                        query: {
+                                            bool: {
+                                                must: [
+                                                    {
+                                                        terms: {
+                                                            "_id": $scope.allTagIds
+                                                        }
+                                                    },
+                                                    {
+                                                        bool: {
+                                                            should: [
+                                                                {
+                                                                    terms: {
+                                                                        "Content": filters.fulltext
+                                                                    }
+                                                                },
+                                                                {
+                                                                    terms: {
+                                                                        "Keywords.Keyword.raw": filters.keywords
+                                                                    }
+                                                                },
+                                                                {
+                                                                    terms: {
+                                                                        "Entities.EntId": filters.entities
+
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }).then(function (resp) {
+                                    if (resp.hits.hits) {
+                                        for (let item of resp.hits.hits) {
+                                            $scope.currentTagIds.push(item._id);
+                                        }
+                                    }
+
+                                    if($scope.currentTagIds.length == 0){
+                                        $scope.currentTags = [];
+                                    }
+                                    else {
+                                        var tmpTags = [];
+
+                                        for(let t of $scope.currentTags){
+                                            for(let i of $scope.currentTagIds){
+                                                if(t.documentId == i){
+                                                    tmpTags.push(t);
+                                                }
+                                            }
+                                        }
+
+                                        $scope.currentTags = tmpTags;
+                                    }
+
+                                    for(let res of $scope.currentTags) {
+                                        esSearchKeywords('' + res.documentId, res.label);
+                                    }
+                                });
+                            }
+                            else {
+                                for(let res of $scope.currentTags) {
+                                    esSearchKeywords('' + res.documentId, res.label);
+                                }
                             }
                         });
                     });
@@ -141,10 +219,8 @@ define([
                         });
                     }
                     else {
-                        console.log($scope.currentTags);
-                        $scope.currentTags.slice($scope.currentTags.indexOf(tag), 1);
-                        console.log($scope.currentTags);
-                        // $scope.tagCount++;
+                        // $scope.currentTags.slice($scope.currentTags.indexOf(tag), 1);
+                        $scope.tagCount++;
                     }
 
                 }, function (error) {
@@ -934,21 +1010,6 @@ define([
                 for (var i = 0; i < dataset.length; i++) {
                     if (dataset[i].label == label) {
                         return dataset[i].id
-                    }
-                }
-            }
-
-            function getKeywordById(id, dataset) {
-
-                for(let item of dataset._data) {
-                    if(item.id == id) {
-                        return item.label;
-                    }
-                }
-
-                for (var i = 0; i < dataset._data.length; i++) {
-                    if (dataset._data[i].id == id) {
-                        return dataset._data[i].label
                     }
                 }
             }
