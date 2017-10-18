@@ -580,6 +580,9 @@ define([
                 removeNodes(nodeIds, self.nodesDataset, self.edgesDataset);
                 // Hide given nodes in background collection
                 self.nodes.update(nodeIds.map(function(n) { return { id: n, hidden: true }}));
+                if(nodeIds.indexOf(0) > -1){
+                    self.nodesDataset.update([{ id: 0, hidden: true }]);
+                }
                 // Retrieve adjacent edges from the background collection
                 var adjacentEdges = getAdjacentEdges(nodeIds, self.edges);
                 // Hide adjacent edges in background collection
