@@ -653,25 +653,48 @@ define([
                     }
 
                     $scope.esWhitelist = function(entity, typeEnt, doc) {
-                        $scope.client.search({
+                      $scope.client.get({
                         index: $scope.indexName,
                         type: 'document',
-                        size: 0,
+                        id: doc.id,
+                        source: 'Entities'
+                      }).then(function (response) {
+                        var key = response._source.Entities;
+                        if (key !== undefined) {
+                          $scope.createNewEntity(entity, typeEnt, doc);
+                        } else {
+                          $scope.createInitEntity(entity, typeEnt, doc);
+                        }
+                      }, function (error, response) {
+                        console.trace(err.message);
+                      });
+                    }
+
+                    $scope.createInitEntity = function(entity, typeEnt, doc, entId = null) {
+                        $scope.client.update({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
                         body: {
-                          aggs: {
-                            max_id: {
-                              max: {
-                                field: "Entities.EntId"
-                              }
+                          script: "ctx._source.Entities = [(Entities)]",
+                          params: {
+                            Entities:  {
+                              EntId: entId === null ? $scope.esNewId : entId,
+                              Entname: entity.text,
+                              EntType: typeEnt,
+                              EntFrequency: 1
                             }
                           }
                         }
                       }).then(function (resp) {
-                        // $scope.esNewId = (resp.aggregations.max_id.value) + 1;
-                        $scope.createNewEntity(entity, typeEnt, doc);
-                      }, function (error, response) {
-                        // $scope.esNewId = null;
-                        console.trace(err.message);
+                          $scope.esNewEntity = resp;
+                          $scope.isNewType === false ?
+                            $scope.checkNewEntityType(entity, typeEnt, doc, entId)
+                            :
+                            $scope.createNewEntityType(entity, typeEnt, doc);
+                      }, function (err) {
+                          $scope.esNewEntity = null;
+                          console.trace(err.message);
                       });
                     }
 
