@@ -716,7 +716,7 @@ define([
                     body: {
                         query: {
                             bool: {
-                                should: [
+                                must: [
                                     {
                                         match: {
                                             "Keywords.Keyword.raw": nodeLabel
@@ -724,7 +724,6 @@ define([
                                     }, {
                                         match: {
                                             "Entities.Entname": nodeLabel
-
                                         }
                                     }
                                 ]

@@ -141,6 +141,8 @@ define([
 
                                     if($scope.currentTagIds.length == 0){
                                         $scope.currentTags = [];
+                                        $scope.areTagsSelected = false;
+                                        // TODO add alert that no tags are available for current filter
                                     }
                                     else {
                                         var tmpTags = [];
@@ -817,7 +819,7 @@ define([
                         body: {
                             query: {
                                 bool: {
-                                    should: [
+                                    must: [
                                         {
                                             match: {
                                                 "Keywords.Keyword.raw": node.label
