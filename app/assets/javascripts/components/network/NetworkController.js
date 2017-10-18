@@ -363,15 +363,17 @@ define([
             // ----------------------------------------------------------------------------------
 
             function hideNodes(nodeIds) {
-                removeNodes(nodeIds, self.nodesDataset, self.edgesDataset);
-                // Hide given nodes in background collection
-                self.nodes.update(nodeIds.map(function(n) { return { id: n, hidden: true }}));
-                // Retrieve adjacent edges from the background collection
-                var adjacentEdges = getAdjacentEdges(nodeIds, self.edges);
-                // Hide adjacent edges in background collection
-                var hiddenEdges = adjacentEdges.map(function(edge) { return _.extend(edge, { hidden: true }); });
-                self.edges.update(hiddenEdges);
-                updateImportanceSlider();
+                if(nodeIds.length){
+                    removeNodes(nodeIds, self.nodesDataset, self.edgesDataset);
+                    // Hide given nodes in background collection
+                    self.nodes.update(nodeIds.map(function(n) { return { id: n, hidden: true }}));
+                    // Retrieve adjacent edges from the background collection
+                    var adjacentEdges = getAdjacentEdges(nodeIds, self.edges);
+                    // Hide adjacent edges in background collection
+                    var hiddenEdges = adjacentEdges.map(function(edge) { return _.extend(edge, { hidden: true }); });
+                    self.edges.update(hiddenEdges);
+                    updateImportanceSlider();
+                }
             }
 
             $scope.entityService.subscribeBlacklist($scope, function blacklisted(ev, arg) {
