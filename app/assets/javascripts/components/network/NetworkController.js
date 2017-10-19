@@ -713,15 +713,12 @@ define([
                 $scope.client.search({
                     index: $scope.indexName,
                     type: 'document',
+                    size: 100,
                     body: {
                         query: {
                             bool: {
                                 must: [
                                     {
-                                        match: {
-                                            "Keywords.Keyword.raw": nodeLabel
-                                        }
-                                    }, {
                                         match: {
                                             "Entities.Entname": nodeLabel
                                         }
@@ -731,14 +728,19 @@ define([
                         }
                     }
                 }).then(function (resp) {
-                    if(resp.hits.hits[0]) {
-                        let keywords = resp.hits.hits[0]._source.Keywords;
-                        if(keywords){
+                    if(resp.hits.hits) {
+                        let keywords = [];
+                        for(let hit of Object.values(resp.hits.hits)){
+                            if(hit._source.Keywords) {
+                                for (let keyword of Object.values(hit._source.Keywords)) {
+                                    keywords.push(keyword);
+                                }
+                            }
+                        }
+                        if (keywords.length > 0) {
                             EntityService.highlightKeywords(keywords);
                         }
                     }
-
-
                 }, function (error, resp) {
                     console.trace(error.message);
                 });

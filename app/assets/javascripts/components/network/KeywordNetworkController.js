@@ -816,6 +816,7 @@ define([
                     $scope.client.search({
                         index: $scope.indexName,
                         type: 'document',
+                        size: 100,
                         body: {
                             query: {
                                 bool: {
@@ -824,20 +825,22 @@ define([
                                             match: {
                                                 "Keywords.Keyword.raw": node.label
                                             }
-                                        }, {
-                                            match: {
-                                                "Entities.Entname": node.label
-
-                                            }
                                         }
                                     ]
                                 }
                             }
                         }
                     }).then(function (resp) {
-                        if(resp.hits.hits[0]) {
-                            let entities = resp.hits.hits[0]._source.Entities;
-                            if (entities) {
+                        if(resp.hits.hits) {
+                            let entities = [];
+                            for(let hit of Object.values(resp.hits.hits)){
+                                if(hit._source.Entities) {
+                                    for (let entity of Object.values(hit._source.Entities)) {
+                                        entities.push(entity);
+                                    }
+                                }
+                            }
+                            if (entities.length > 0) {
                                 EntityService.highlightEntities(entities);
                             }
                         }
