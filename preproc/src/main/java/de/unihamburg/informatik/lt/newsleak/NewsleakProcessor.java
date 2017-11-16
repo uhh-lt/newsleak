@@ -35,6 +35,10 @@ public class NewsleakProcessor {
         else if (args[0].equals("-g")) {
             extractNER();
         }
+        // Extracting keyterms
+        else if (args[0].equals("-k")) {
+            extractKeyterms();
+        }
         // Importing data to PSQL database
         else if (args[0].equals("-d")) {
             importUnitsToPSQLDB();
@@ -55,7 +59,18 @@ public class NewsleakProcessor {
         }
     }
 
-    private static void buildESIndex() throws Exception {
+    private static void extractKeyterms() throws Exception {
+      	System.out.println("=======================");
+        System.out.println("= Extracting Keyterms =");
+        System.out.println("=======================");
+        KeyTermExtractor.main(
+                ("-t " + documentName + " -o out -l resources/wordlists/" + lang + ".frequency.txt").split(" "));
+        System.out.println("============================");
+        System.out.println("= Extracting Keyterms done =");
+        System.out.println("============================");
+	}
+
+	private static void buildESIndex() throws Exception {
         System.out.println("======================================");
         System.out.println("=    Building elasticsearch index    =");
         System.out.println("======================================");
