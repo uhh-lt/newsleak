@@ -1,0 +1,152 @@
+# ======================== Elasticsearch Configuration =========================
+#
+# NOTE: Elasticsearch comes with reasonable defaults for most settings.
+#       Before you set out to tweak and tune the configuration, make sure you
+#       understand what are you trying to accomplish and the consequences.
+#
+# The primary way of configuring a node is via this file. This template lists
+# the most important settings you may want to configure for a production cluster.
+#
+# Please see the documentation for further information on configuration options:
+# <http://www.elastic.co/guide/en/elasticsearch/reference/current/setup-configuration.html>
+#
+# ---------------------------------- Cluster -----------------------------------
+#
+# Use a descriptive name for your cluster:
+#
+ cluster.name: NewsLeaksCluster
+#
+# ------------------------------------ Node ------------------------------------
+#
+# Use a descriptive name for the node:
+#
+ node.name: NewsLeaksNode-1
+#
+# Add custom attributes to the node:
+#
+# node.rack: r1
+#
+
+#################################### Index ####################################
+
+# You can set a number of options (such as shard/replica options, mapping
+# or analyzer definitions, translog settings, ...) for indices globally,
+# in this file.
+#
+# Note, that it makes more sense to configure index settings specifically for
+# a certain index, either when creating it or by using the index templates API.
+#
+# See <http://elasticsearch.org/guide/en/elasticsearch/reference/current/index-modules.html> and
+# <http://elasticsearch.org/guide/en/elasticsearch/reference/current/indices-create-index.html>
+# for more information.
+
+# Set the number of shards (splits) of an index (5 by default):
+#
+ index.number_of_shards: 1
+
+# Set the number of replicas (additional copies) of an index (1 by default):
+#
+ index.number_of_replicas: 1
+
+# Note, that for development on a local machine, with small indices, it usually
+# makes sense to "disable" the distributed features:
+#
+# index.number_of_shards: 1
+# index.number_of_replicas: 0
+
+# These settings directly affect the performance of index and search operations
+# in your cluster. Assuming you have enough machines to hold shards and
+# replicas, the rule of thumb is:
+#
+# 1. Having more *shards* enhances the _indexing_ performance and allows to
+#    _distribute_ a big index across machines.
+# 2. Having more *replicas* enhances the _search_ performance and improves the
+#    cluster _availability_.
+#
+# The "number_of_shards" is a one-time setting for an index.
+#
+# The "number_of_replicas" can be increased or decreased anytime,
+# by using the Index Update Settings API.
+#
+# ElasticSearch takes care about load balancing, relocating, gathering the
+# results from nodes, etc. Experiment with different settings to fine-tune
+# your setup.
+
+# Use the Index Status API (<http://localhost:9200/A/_status>) to inspect
+# the index status.
+
+# ----------------------------------- Paths ------------------------------------
+#
+# Path to directory where to store the data (separate multiple locations by comma):
+#
+ path.data: /opt/elasticsearch-2.2.0/
+ path.home: /opt/elasticsearch-2.2.0/
+
+# path.data: /media/seid/DATA/LT/DIVID-DJ/elasticsearch-5.1.1
+# path.home: /media/seid/DATA/LT/DIVID-DJ/elasticsearch-5.1.1
+#
+# Path to log files:
+#
+# path.logs: /path/to/logs
+#
+# ----------------------------------- Memory -----------------------------------
+#
+# Lock the memory on startup:
+#
+# bootstrap.mlockall: true
+#
+# Make sure that the `ES_HEAP_SIZE` environment variable is set to about half the memory
+# available on the system and that the owner of the process is allowed to use this limit.
+#
+# Elasticsearch performs poorly when the system is swapping the memory.
+#
+# ---------------------------------- Network -----------------------------------
+#
+# Set the bind address to a specific IP (IPv4 or IPv6):
+#
+ network.host: 0.0.0.0
+#
+
+# Set a custom port for the node to node communication (9300 by default):
+#
+ transport.tcp.port: 9501
+# Set a custom port for HTTP:
+#
+ http.port: 9500
+#
+# For more information, see the documentation at:
+# <http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-network.html>
+#
+# --------------------------------- Discovery ----------------------------------
+#
+# Pass an initial list of hosts to perform discovery when new node is started:
+# The default list of hosts is ["127.0.0.1", "[::1]"]
+#
+# discovery.zen.ping.unicast.hosts: ["host1", "host2"]
+#
+# Prevent the "split brain" by configuring the majority of nodes (total number of nodes / 2 + 1):
+#
+# discovery.zen.minimum_master_nodes: 3
+#
+# For more information, see the documentation at:
+# <http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-discovery.html>
+#
+# ---------------------------------- Gateway -----------------------------------
+#
+# Block initial recovery after a full cluster restart until N nodes are started:
+#
+# gateway.recover_after_nodes: 3
+#
+# For more information, see the documentation at:
+# <http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-gateway.html>
+#
+# ---------------------------------- Various -----------------------------------
+#
+# Disable starting multiple nodes on a single system:
+#
+# node.max_local_storage_nodes: 1
+#
+# Require explicit names when deleting indices:
+#
+# action.destructive_requires_name: true
+#
