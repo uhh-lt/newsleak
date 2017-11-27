@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.commons.csv.CSVFormat;
@@ -16,7 +15,6 @@ import org.apache.uima.collection.CollectionException;
 import org.apache.uima.fit.component.CasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
-import org.apache.uima.jcas.cas.StringArray;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
@@ -100,6 +98,7 @@ public class NewsleakCsvStreamReader extends CasCollectionReader_ImplBase {
 		// Set metadata
 		Metadata metaCas = new Metadata(jcas);
 		metaCas.setDocId(docId);
+		metaCas.addToIndexes();
 		
 //		CSVRecord metaRecord;
 //		ArrayList<String> tripletNames = new ArrayList<String>();

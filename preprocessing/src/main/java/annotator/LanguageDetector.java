@@ -10,25 +10,29 @@ import org.apache.uima.fit.descriptor.ExternalResource;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 
+import opennlp.tools.langdetect.LanguageDetectorME;
 import resources.LanguageDetectorResource;
 
 public class LanguageDetector extends JCasAnnotator_ImplBase {
 	
+	private LanguageDetectorME languageDetector;
+	
 	public final static String MODEL_FILE = "LangDetectorModel";
 	@ExternalResource(key = MODEL_FILE)
-	private LanguageDetectorResource languageDetector;
+	private LanguageDetectorResource languageDetectorResource;
 	
 	public HashSet<String> supportedLanguages;
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
-		// TODO Auto-generated method stub
 		super.initialize(context);
 		supportedLanguages = new HashSet<String>();
 		File[] directories = new File("resources").listFiles(File::isDirectory);
 		for (File dir : directories) {
 			supportedLanguages.add(dir.getName());
 		}
+		
+		languageDetector = new LanguageDetectorME(languageDetectorResource.getModel());
 	}
 
 
@@ -37,7 +41,8 @@ public class LanguageDetector extends JCasAnnotator_ImplBase {
 		
 		String docText = jcas.getDocumentText();
 		Integer maxLength = Math.min(docText.length(), 2000);
-		String docLang = languageDetector.detectLanguage(docText.substring(0, maxLength));
+		String docBeginning = docText.substring(0, maxLength);
+		String docLang = languageDetector.predictLanguage(docBeginning).getLang();
 		
 		// Only set language, if we support it
 		if (supportedLanguages.contains(docLang)) {
