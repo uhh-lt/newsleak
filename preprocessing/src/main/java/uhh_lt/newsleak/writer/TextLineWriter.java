@@ -1,4 +1,4 @@
-package writer;
+package uhh_lt.newsleak.writer;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -19,9 +19,9 @@ import org.apache.uima.util.Logger;
 
 import opennlp.uima.Sentence;
 import opennlp.uima.Token;
-import uhh_lt.types.Metadata;
+import uhh_lt.newsleak.types.Metadata;
 
-@OperationalProperties(multipleDeploymentAllowed=false, modifiesCas=false)
+@OperationalProperties(multipleDeploymentAllowed=true, modifiesCas=false)
 public class TextLineWriter extends JCasAnnotator_ImplBase {
 
 	Logger logger;

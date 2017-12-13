@@ -1,4 +1,4 @@
-package resources;
+package uhh_lt.newsleak.resources;
 
 import java.io.File;
 import org.apache.uima.resource.DataResource;

@@ -33,8 +33,6 @@ import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.apache.uima.util.Logger;
 import org.apache.uima.util.XMLInputSource;
 
-import annotator.HeidelTimeOpenNLP;
-import annotator.LanguageDetector;
 import de.tu.darmstadt.lt.ner.annotator.NERAnnotator;
 import de.tudarmstadt.ukp.dkpro.core.api.ner.type.Person;
 import de.unihd.dbs.uima.annotator.heideltime.HeidelTime;
@@ -52,9 +50,12 @@ import opennlp.uima.sentdetect.SentenceModelResourceImpl;
 import opennlp.uima.tokenize.Tokenizer;
 import opennlp.uima.tokenize.TokenizerModelResourceImpl;
 import opennlp.uima.util.UimaUtil;
-import reader.NewsleakCsvStreamReader;
-import resources.LanguageDetectorResource;
-import writer.TextLineWriter;
+import uhh_lt.newsleak.annotator.HeidelTimeOpenNLP;
+import uhh_lt.newsleak.annotator.LanguageDetector;
+import uhh_lt.newsleak.reader.NewsleakCsvStreamReader;
+import uhh_lt.newsleak.resources.DocumentLanguagesResource;
+import uhh_lt.newsleak.resources.LanguageDetectorResource;
+import uhh_lt.newsleak.writer.TextLineWriter;
 
 /**
  * Reads document.csv and metadata.csv, processes them in a UIMA pipeline
@@ -147,10 +148,24 @@ public class NewsleakPreprocessor
 		// language detection
 		ExternalResourceDescription resourceLangDect = ExternalResourceFactory.createExternalResourceDescription(
 				LanguageDetectorResource.class, new File("resources/langdetect-183.bin"));
+//		ExternalResourceDescription resourceDocLang = ExternalResourceFactory.createExternalResourceDescription(
+//				DocumentLanguagesResource.class, new File("data/tmp/documentLanguages.ser"));
 		AnalysisEngineDescription langDetect = AnalysisEngineFactory.createEngineDescription(
 				LanguageDetector.class,
-				LanguageDetector.MODEL_FILE, resourceLangDect
+				LanguageDetector.MODEL_FILE, resourceLangDect,
+				LanguageDetector.DOCLANG_FILE, "data/documentLanguages.ser"
 		);
+		
+		AnalysisEngineDescription ldPipeline = AnalysisEngineFactory.createEngineDescription(	
+				langDetect
+		);
+		CpeBuilder ldCpeBuilder = new CpeBuilder();
+		ldCpeBuilder.setReader(reader);
+		ldCpeBuilder.setMaxProcessingUnitThreadCount(np.threads);
+		ldCpeBuilder.setAnalysisEngine(ldPipeline);
+		NewsleakStatusCallbackListener statusListener = new NewsleakStatusCallbackListener(np.logger);
+		ldCpeBuilder.createCpe(statusListener).process();
+		// Todo: get number of total documents and inject into reader for next pipeline
 		
 		/* openNLP base annotations: Sentence, Token, POS */
 		
@@ -196,9 +211,7 @@ public class NewsleakPreprocessor
 		AnalysisEngineDescription heideltime = AnalysisEngineFactory.createEngineDescription(
 				HeidelTimeOpenNLP.class
 		);
-//		Path descriptorFilePath = Paths.get("desc", "Heideltime_annotator.xml");
-//		XMLInputSource xmlInputSource = new XMLInputSource(descriptorFilePath.toFile());
-//		AnalysisEngineDescription heideltime = UIMAFramework.getXMLParser().parseAnalysisEngineDescription(xmlInputSource);
+		
 		
 		// ner
 		ExternalResourceDescription resourceNer = ExternalResourceFactory.createExternalResourceDescription(
@@ -222,8 +235,7 @@ public class NewsleakPreprocessor
 				XmiWriter.PARAM_OUTPUT_DIRECTORY, np.dataDirectory + File.separator + "xmi"
 		);
 		
-		AnalysisEngineDescription pipeline = AnalysisEngineFactory.createEngineDescription(	
-				langDetect,
+		AnalysisEngineDescription pipeline = AnalysisEngineFactory.createEngineDescription(
 				sentence,
 				token,
 				pos,
@@ -239,7 +251,7 @@ public class NewsleakPreprocessor
 		cpeBuilder.setMaxProcessingUnitThreadCount(np.threads);
 		cpeBuilder.setAnalysisEngine(pipeline);
 
-		NewsleakStatusCallbackListener statusListener = new NewsleakStatusCallbackListener(np.logger);
+		statusListener = new NewsleakStatusCallbackListener(np.logger);
 		CollectionProcessingEngine engine = cpeBuilder.createCpe(statusListener);
 		engine.process();
 

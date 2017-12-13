@@ -13,8 +13,8 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 
 /** 
- * Updated by JCasGen Thu Nov 23 18:01:11 CET 2017
- * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/openNLP.xml
+ * Updated by JCasGen Wed Dec 13 13:13:22 CET 2017
+ * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
 public class Parse extends Annotation {
   /** @generated

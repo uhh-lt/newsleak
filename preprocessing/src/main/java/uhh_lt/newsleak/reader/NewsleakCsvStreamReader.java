@@ -1,4 +1,4 @@
-package reader;
+package uhh_lt.newsleak.reader;
 
 import java.io.File;
 import java.io.FileReader;
@@ -19,7 +19,7 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 
-import uhh_lt.types.Metadata;
+import uhh_lt.newsleak.types.Metadata;
 
 public class NewsleakCsvStreamReader extends CasCollectionReader_ImplBase {
 
@@ -50,7 +50,7 @@ public class NewsleakCsvStreamReader extends CasCollectionReader_ImplBase {
 	private Iterable<CSVRecord> metadata; 
 	private Iterator<CSVRecord> metadataIterator; 
 
-	private boolean countFilesInitially = true;
+	private boolean countFilesInitially = false;
 	private int totalRecords = 0;
 	private int currentRecord = 0;
 

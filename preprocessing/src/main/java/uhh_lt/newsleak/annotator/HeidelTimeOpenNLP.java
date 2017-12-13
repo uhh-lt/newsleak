@@ -1,4 +1,4 @@
-package annotator;
+package uhh_lt.newsleak.annotator;
 
 /* Based on: https://github.com/HeidelTime/heideltime/blob/master/src/de/unihd/dbs/uima/annotator/heideltime/HeidelTime.java
  * 
@@ -94,9 +94,9 @@ public class HeidelTimeOpenNLP extends JCasAnnotator_ImplBase {
 	private String PARAM_DEBUG	   = "Debugging";
 	private String PARAM_GROUP     = "ConvertDurations";
 	private Boolean find_dates     = true;
-	private Boolean find_times     = true;
-	private Boolean find_durations = true;
-	private Boolean find_sets      = true;
+	private Boolean find_times     = false;
+	private Boolean find_durations = false;
+	private Boolean find_sets      = false;
 	private Boolean find_temponyms = false;
 	private Boolean group_gran     = true;
 	// FOR DEBUGGING PURPOSES (IF FALSE)

@@ -1,4 +1,4 @@
-package uhh_lt.types;
+package uhh_lt.newsleak.types;
 
 /* First created by JCasGen Wed Nov 22 15:48:08 CET 2017 */
 
@@ -11,7 +11,7 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.jcas.tcas.DocumentAnnotation_Type;
 
 /** 
- * Updated by JCasGen Thu Nov 23 16:42:41 CET 2017
+ * Updated by JCasGen Wed Dec 13 13:13:22 CET 2017
  * @generated */
 public class Metadata_Type extends DocumentAnnotation_Type {
   /** @generated */
@@ -20,7 +20,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
   /** @generated 
      @modifiable */
   @SuppressWarnings ("hiding")
-  public final static boolean featOkTst = JCasRegistry.getFeatOkTst("uhh_lt.types.Metadata");
+  public final static boolean featOkTst = JCasRegistry.getFeatOkTst("uhh_lt.newsleak.types.Metadata");
  
   /** @generated */
   final Feature casFeat_metaTripletsNames;
@@ -32,7 +32,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
    */ 
   public int getMetaTripletsNames(int addr) {
         if (featOkTst && casFeat_metaTripletsNames == null)
-      jcas.throwFeatMissing("metaTripletsNames", "uhh_lt.types.Metadata");
+      jcas.throwFeatMissing("metaTripletsNames", "uhh_lt.newsleak.types.Metadata");
     return ll_cas.ll_getRefValue(addr, casFeatCode_metaTripletsNames);
   }
   /** @generated
@@ -41,7 +41,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
    */    
   public void setMetaTripletsNames(int addr, int v) {
         if (featOkTst && casFeat_metaTripletsNames == null)
-      jcas.throwFeatMissing("metaTripletsNames", "uhh_lt.types.Metadata");
+      jcas.throwFeatMissing("metaTripletsNames", "uhh_lt.newsleak.types.Metadata");
     ll_cas.ll_setRefValue(addr, casFeatCode_metaTripletsNames, v);}
     
    /** @generated
@@ -51,7 +51,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
    */
   public String getMetaTripletsNames(int addr, int i) {
         if (featOkTst && casFeat_metaTripletsNames == null)
-      jcas.throwFeatMissing("metaTripletsNames", "uhh_lt.types.Metadata");
+      jcas.throwFeatMissing("metaTripletsNames", "uhh_lt.newsleak.types.Metadata");
     if (lowLevelTypeChecks)
       return ll_cas.ll_getStringArrayValue(ll_cas.ll_getRefValue(addr, casFeatCode_metaTripletsNames), i, true);
     jcas.checkArrayBounds(ll_cas.ll_getRefValue(addr, casFeatCode_metaTripletsNames), i);
@@ -65,7 +65,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
    */ 
   public void setMetaTripletsNames(int addr, int i, String v) {
         if (featOkTst && casFeat_metaTripletsNames == null)
-      jcas.throwFeatMissing("metaTripletsNames", "uhh_lt.types.Metadata");
+      jcas.throwFeatMissing("metaTripletsNames", "uhh_lt.newsleak.types.Metadata");
     if (lowLevelTypeChecks)
       ll_cas.ll_setStringArrayValue(ll_cas.ll_getRefValue(addr, casFeatCode_metaTripletsNames), i, v, true);
     jcas.checkArrayBounds(ll_cas.ll_getRefValue(addr, casFeatCode_metaTripletsNames), i);
@@ -83,7 +83,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
    */ 
   public int getMetaTripletsValues(int addr) {
         if (featOkTst && casFeat_metaTripletsValues == null)
-      jcas.throwFeatMissing("metaTripletsValues", "uhh_lt.types.Metadata");
+      jcas.throwFeatMissing("metaTripletsValues", "uhh_lt.newsleak.types.Metadata");
     return ll_cas.ll_getRefValue(addr, casFeatCode_metaTripletsValues);
   }
   /** @generated
@@ -92,7 +92,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
    */    
   public void setMetaTripletsValues(int addr, int v) {
         if (featOkTst && casFeat_metaTripletsValues == null)
-      jcas.throwFeatMissing("metaTripletsValues", "uhh_lt.types.Metadata");
+      jcas.throwFeatMissing("metaTripletsValues", "uhh_lt.newsleak.types.Metadata");
     ll_cas.ll_setRefValue(addr, casFeatCode_metaTripletsValues, v);}
     
    /** @generated
@@ -102,7 +102,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
    */
   public String getMetaTripletsValues(int addr, int i) {
         if (featOkTst && casFeat_metaTripletsValues == null)
-      jcas.throwFeatMissing("metaTripletsValues", "uhh_lt.types.Metadata");
+      jcas.throwFeatMissing("metaTripletsValues", "uhh_lt.newsleak.types.Metadata");
     if (lowLevelTypeChecks)
       return ll_cas.ll_getStringArrayValue(ll_cas.ll_getRefValue(addr, casFeatCode_metaTripletsValues), i, true);
     jcas.checkArrayBounds(ll_cas.ll_getRefValue(addr, casFeatCode_metaTripletsValues), i);
@@ -116,7 +116,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
    */ 
   public void setMetaTripletsValues(int addr, int i, String v) {
         if (featOkTst && casFeat_metaTripletsValues == null)
-      jcas.throwFeatMissing("metaTripletsValues", "uhh_lt.types.Metadata");
+      jcas.throwFeatMissing("metaTripletsValues", "uhh_lt.newsleak.types.Metadata");
     if (lowLevelTypeChecks)
       ll_cas.ll_setStringArrayValue(ll_cas.ll_getRefValue(addr, casFeatCode_metaTripletsValues), i, v, true);
     jcas.checkArrayBounds(ll_cas.ll_getRefValue(addr, casFeatCode_metaTripletsValues), i);
@@ -134,7 +134,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
    */ 
   public int getMetaTripletsTypes(int addr) {
         if (featOkTst && casFeat_metaTripletsTypes == null)
-      jcas.throwFeatMissing("metaTripletsTypes", "uhh_lt.types.Metadata");
+      jcas.throwFeatMissing("metaTripletsTypes", "uhh_lt.newsleak.types.Metadata");
     return ll_cas.ll_getRefValue(addr, casFeatCode_metaTripletsTypes);
   }
   /** @generated
@@ -143,7 +143,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
    */    
   public void setMetaTripletsTypes(int addr, int v) {
         if (featOkTst && casFeat_metaTripletsTypes == null)
-      jcas.throwFeatMissing("metaTripletsTypes", "uhh_lt.types.Metadata");
+      jcas.throwFeatMissing("metaTripletsTypes", "uhh_lt.newsleak.types.Metadata");
     ll_cas.ll_setRefValue(addr, casFeatCode_metaTripletsTypes, v);}
     
    /** @generated
@@ -153,7 +153,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
    */
   public String getMetaTripletsTypes(int addr, int i) {
         if (featOkTst && casFeat_metaTripletsTypes == null)
-      jcas.throwFeatMissing("metaTripletsTypes", "uhh_lt.types.Metadata");
+      jcas.throwFeatMissing("metaTripletsTypes", "uhh_lt.newsleak.types.Metadata");
     if (lowLevelTypeChecks)
       return ll_cas.ll_getStringArrayValue(ll_cas.ll_getRefValue(addr, casFeatCode_metaTripletsTypes), i, true);
     jcas.checkArrayBounds(ll_cas.ll_getRefValue(addr, casFeatCode_metaTripletsTypes), i);
@@ -167,7 +167,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
    */ 
   public void setMetaTripletsTypes(int addr, int i, String v) {
         if (featOkTst && casFeat_metaTripletsTypes == null)
-      jcas.throwFeatMissing("metaTripletsTypes", "uhh_lt.types.Metadata");
+      jcas.throwFeatMissing("metaTripletsTypes", "uhh_lt.newsleak.types.Metadata");
     if (lowLevelTypeChecks)
       ll_cas.ll_setStringArrayValue(ll_cas.ll_getRefValue(addr, casFeatCode_metaTripletsTypes), i, v, true);
     jcas.checkArrayBounds(ll_cas.ll_getRefValue(addr, casFeatCode_metaTripletsTypes), i);
@@ -185,7 +185,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
    */ 
   public String getDocId(int addr) {
         if (featOkTst && casFeat_docId == null)
-      jcas.throwFeatMissing("docId", "uhh_lt.types.Metadata");
+      jcas.throwFeatMissing("docId", "uhh_lt.newsleak.types.Metadata");
     return ll_cas.ll_getStringValue(addr, casFeatCode_docId);
   }
   /** @generated
@@ -194,7 +194,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
    */    
   public void setDocId(int addr, String v) {
         if (featOkTst && casFeat_docId == null)
-      jcas.throwFeatMissing("docId", "uhh_lt.types.Metadata");
+      jcas.throwFeatMissing("docId", "uhh_lt.newsleak.types.Metadata");
     ll_cas.ll_setStringValue(addr, casFeatCode_docId, v);}
     
   
@@ -209,7 +209,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
    */ 
   public String getTimestamp(int addr) {
         if (featOkTst && casFeat_timestamp == null)
-      jcas.throwFeatMissing("timestamp", "uhh_lt.types.Metadata");
+      jcas.throwFeatMissing("timestamp", "uhh_lt.newsleak.types.Metadata");
     return ll_cas.ll_getStringValue(addr, casFeatCode_timestamp);
   }
   /** @generated
@@ -218,7 +218,7 @@ public class Metadata_Type extends DocumentAnnotation_Type {
    */    
   public void setTimestamp(int addr, String v) {
         if (featOkTst && casFeat_timestamp == null)
-      jcas.throwFeatMissing("timestamp", "uhh_lt.types.Metadata");
+      jcas.throwFeatMissing("timestamp", "uhh_lt.newsleak.types.Metadata");
     ll_cas.ll_setStringValue(addr, casFeatCode_timestamp, v);}
     
   

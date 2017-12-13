@@ -11,7 +11,7 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 
 /** 
- * Updated by JCasGen Thu Nov 23 16:42:40 CET 2017
+ * Updated by JCasGen Wed Dec 13 13:13:22 CET 2017
  * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
 public class Timex3 extends Annotation {

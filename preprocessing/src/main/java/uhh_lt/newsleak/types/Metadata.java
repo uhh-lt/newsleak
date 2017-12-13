@@ -1,4 +1,4 @@
-package uhh_lt.types;
+package uhh_lt.newsleak.types;
 
 /* First created by JCasGen Wed Nov 22 15:48:08 CET 2017 */
 
@@ -11,7 +11,7 @@ import org.apache.uima.jcas.tcas.DocumentAnnotation;
 
 
 /** 
- * Updated by JCasGen Thu Nov 23 16:42:41 CET 2017
+ * Updated by JCasGen Wed Dec 13 13:13:22 CET 2017
  * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
 public class Metadata extends DocumentAnnotation {
@@ -85,7 +85,7 @@ public class Metadata extends DocumentAnnotation {
    */
   public StringArray getMetaTripletsNames() {
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_metaTripletsNames == null)
-      jcasType.jcas.throwFeatMissing("metaTripletsNames", "uhh_lt.types.Metadata");
+      jcasType.jcas.throwFeatMissing("metaTripletsNames", "uhh_lt.newsleak.types.Metadata");
     return (StringArray)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsNames)));}
     
   /** setter for metaTripletsNames - sets  
@@ -94,7 +94,7 @@ public class Metadata extends DocumentAnnotation {
    */
   public void setMetaTripletsNames(StringArray v) {
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_metaTripletsNames == null)
-      jcasType.jcas.throwFeatMissing("metaTripletsNames", "uhh_lt.types.Metadata");
+      jcasType.jcas.throwFeatMissing("metaTripletsNames", "uhh_lt.newsleak.types.Metadata");
     jcasType.ll_cas.ll_setRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsNames, jcasType.ll_cas.ll_getFSRef(v));}    
     
   /** indexed getter for metaTripletsNames - gets an indexed value - 
@@ -104,7 +104,7 @@ public class Metadata extends DocumentAnnotation {
    */
   public String getMetaTripletsNames(int i) {
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_metaTripletsNames == null)
-      jcasType.jcas.throwFeatMissing("metaTripletsNames", "uhh_lt.types.Metadata");
+      jcasType.jcas.throwFeatMissing("metaTripletsNames", "uhh_lt.newsleak.types.Metadata");
     jcasType.jcas.checkArrayBounds(jcasType.ll_cas.ll_getRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsNames), i);
     return jcasType.ll_cas.ll_getStringArrayValue(jcasType.ll_cas.ll_getRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsNames), i);}
 
@@ -115,7 +115,7 @@ public class Metadata extends DocumentAnnotation {
    */
   public void setMetaTripletsNames(int i, String v) { 
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_metaTripletsNames == null)
-      jcasType.jcas.throwFeatMissing("metaTripletsNames", "uhh_lt.types.Metadata");
+      jcasType.jcas.throwFeatMissing("metaTripletsNames", "uhh_lt.newsleak.types.Metadata");
     jcasType.jcas.checkArrayBounds(jcasType.ll_cas.ll_getRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsNames), i);
     jcasType.ll_cas.ll_setStringArrayValue(jcasType.ll_cas.ll_getRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsNames), i, v);}
    
@@ -129,7 +129,7 @@ public class Metadata extends DocumentAnnotation {
    */
   public StringArray getMetaTripletsValues() {
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_metaTripletsValues == null)
-      jcasType.jcas.throwFeatMissing("metaTripletsValues", "uhh_lt.types.Metadata");
+      jcasType.jcas.throwFeatMissing("metaTripletsValues", "uhh_lt.newsleak.types.Metadata");
     return (StringArray)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsValues)));}
     
   /** setter for metaTripletsValues - sets  
@@ -138,7 +138,7 @@ public class Metadata extends DocumentAnnotation {
    */
   public void setMetaTripletsValues(StringArray v) {
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_metaTripletsValues == null)
-      jcasType.jcas.throwFeatMissing("metaTripletsValues", "uhh_lt.types.Metadata");
+      jcasType.jcas.throwFeatMissing("metaTripletsValues", "uhh_lt.newsleak.types.Metadata");
     jcasType.ll_cas.ll_setRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsValues, jcasType.ll_cas.ll_getFSRef(v));}    
     
   /** indexed getter for metaTripletsValues - gets an indexed value - 
@@ -148,7 +148,7 @@ public class Metadata extends DocumentAnnotation {
    */
   public String getMetaTripletsValues(int i) {
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_metaTripletsValues == null)
-      jcasType.jcas.throwFeatMissing("metaTripletsValues", "uhh_lt.types.Metadata");
+      jcasType.jcas.throwFeatMissing("metaTripletsValues", "uhh_lt.newsleak.types.Metadata");
     jcasType.jcas.checkArrayBounds(jcasType.ll_cas.ll_getRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsValues), i);
     return jcasType.ll_cas.ll_getStringArrayValue(jcasType.ll_cas.ll_getRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsValues), i);}
 
@@ -159,7 +159,7 @@ public class Metadata extends DocumentAnnotation {
    */
   public void setMetaTripletsValues(int i, String v) { 
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_metaTripletsValues == null)
-      jcasType.jcas.throwFeatMissing("metaTripletsValues", "uhh_lt.types.Metadata");
+      jcasType.jcas.throwFeatMissing("metaTripletsValues", "uhh_lt.newsleak.types.Metadata");
     jcasType.jcas.checkArrayBounds(jcasType.ll_cas.ll_getRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsValues), i);
     jcasType.ll_cas.ll_setStringArrayValue(jcasType.ll_cas.ll_getRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsValues), i, v);}
    
@@ -173,7 +173,7 @@ public class Metadata extends DocumentAnnotation {
    */
   public StringArray getMetaTripletsTypes() {
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_metaTripletsTypes == null)
-      jcasType.jcas.throwFeatMissing("metaTripletsTypes", "uhh_lt.types.Metadata");
+      jcasType.jcas.throwFeatMissing("metaTripletsTypes", "uhh_lt.newsleak.types.Metadata");
     return (StringArray)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsTypes)));}
     
   /** setter for metaTripletsTypes - sets  
@@ -182,7 +182,7 @@ public class Metadata extends DocumentAnnotation {
    */
   public void setMetaTripletsTypes(StringArray v) {
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_metaTripletsTypes == null)
-      jcasType.jcas.throwFeatMissing("metaTripletsTypes", "uhh_lt.types.Metadata");
+      jcasType.jcas.throwFeatMissing("metaTripletsTypes", "uhh_lt.newsleak.types.Metadata");
     jcasType.ll_cas.ll_setRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsTypes, jcasType.ll_cas.ll_getFSRef(v));}    
     
   /** indexed getter for metaTripletsTypes - gets an indexed value - 
@@ -192,7 +192,7 @@ public class Metadata extends DocumentAnnotation {
    */
   public String getMetaTripletsTypes(int i) {
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_metaTripletsTypes == null)
-      jcasType.jcas.throwFeatMissing("metaTripletsTypes", "uhh_lt.types.Metadata");
+      jcasType.jcas.throwFeatMissing("metaTripletsTypes", "uhh_lt.newsleak.types.Metadata");
     jcasType.jcas.checkArrayBounds(jcasType.ll_cas.ll_getRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsTypes), i);
     return jcasType.ll_cas.ll_getStringArrayValue(jcasType.ll_cas.ll_getRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsTypes), i);}
 
@@ -203,7 +203,7 @@ public class Metadata extends DocumentAnnotation {
    */
   public void setMetaTripletsTypes(int i, String v) { 
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_metaTripletsTypes == null)
-      jcasType.jcas.throwFeatMissing("metaTripletsTypes", "uhh_lt.types.Metadata");
+      jcasType.jcas.throwFeatMissing("metaTripletsTypes", "uhh_lt.newsleak.types.Metadata");
     jcasType.jcas.checkArrayBounds(jcasType.ll_cas.ll_getRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsTypes), i);
     jcasType.ll_cas.ll_setStringArrayValue(jcasType.ll_cas.ll_getRefValue(addr, ((Metadata_Type)jcasType).casFeatCode_metaTripletsTypes), i, v);}
    
@@ -217,7 +217,7 @@ public class Metadata extends DocumentAnnotation {
    */
   public String getDocId() {
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_docId == null)
-      jcasType.jcas.throwFeatMissing("docId", "uhh_lt.types.Metadata");
+      jcasType.jcas.throwFeatMissing("docId", "uhh_lt.newsleak.types.Metadata");
     return jcasType.ll_cas.ll_getStringValue(addr, ((Metadata_Type)jcasType).casFeatCode_docId);}
     
   /** setter for docId - sets  
@@ -226,7 +226,7 @@ public class Metadata extends DocumentAnnotation {
    */
   public void setDocId(String v) {
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_docId == null)
-      jcasType.jcas.throwFeatMissing("docId", "uhh_lt.types.Metadata");
+      jcasType.jcas.throwFeatMissing("docId", "uhh_lt.newsleak.types.Metadata");
     jcasType.ll_cas.ll_setStringValue(addr, ((Metadata_Type)jcasType).casFeatCode_docId, v);}    
    
     
@@ -239,7 +239,7 @@ public class Metadata extends DocumentAnnotation {
    */
   public String getTimestamp() {
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_timestamp == null)
-      jcasType.jcas.throwFeatMissing("timestamp", "uhh_lt.types.Metadata");
+      jcasType.jcas.throwFeatMissing("timestamp", "uhh_lt.newsleak.types.Metadata");
     return jcasType.ll_cas.ll_getStringValue(addr, ((Metadata_Type)jcasType).casFeatCode_timestamp);}
     
   /** setter for timestamp - sets  
@@ -248,7 +248,7 @@ public class Metadata extends DocumentAnnotation {
    */
   public void setTimestamp(String v) {
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_timestamp == null)
-      jcasType.jcas.throwFeatMissing("timestamp", "uhh_lt.types.Metadata");
+      jcasType.jcas.throwFeatMissing("timestamp", "uhh_lt.newsleak.types.Metadata");
     jcasType.ll_cas.ll_setStringValue(addr, ((Metadata_Type)jcasType).casFeatCode_timestamp, v);}    
   }
 

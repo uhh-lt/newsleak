@@ -1,172 +1,215 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <typeSystemDescription xmlns="http://uima.apache.org/resourceSpecifier">
-            
+              
+  
   
   
   
   <name>NewsleakDocument</name>
-            
+              
+  
   
   
   
   <description/>
-            
+              
+  
   
   
   
   <version>1.0</version>
-            
+              
+  
   
   
   
   <vendor/>
-          
+            
+  
   
   
   
   <imports>
-            
+                
+    
     
     <import location="openNLP.xml"/>
-          
+              
   
-    <import location="HeidelTime.xml"/>
-  </imports>
     
+    <import location="HeidelTime.xml"/>
+      
+  </imports>
+      
+  
   <types>
-                    
+                        
+    
     
     
     
     <typeDescription>
-                        
-      
-      
-      <name>uhh_lt.types.Metadata</name>
-                        
-      
-      
-      <description/>
-                        
-      
-      
-      <supertypeName>uima.tcas.DocumentAnnotation</supertypeName>
-                        
-      
-      
-      <features>
-                                
-        
-        
-        <featureDescription>
-                                        
-          
-          
-          <name>metaTripletsNames</name>
-                                        
-          
-          
-          <description/>
-                                        
-          
-          
-          <rangeTypeName>uima.cas.StringArray</rangeTypeName>
-                                      
-        
-        
-        </featureDescription>
-                                
-        
-        
-        <featureDescription>
-                                        
-          
-          
-          <name>metaTripletsValues</name>
-                                        
-          
-          
-          <description/>
-                                        
-          
-          
-          <rangeTypeName>uima.cas.StringArray</rangeTypeName>
-                                      
-        
-        
-        </featureDescription>
-                                
-        
-        
-        <featureDescription>
-                                        
-          
-          
-          <name>metaTripletsTypes</name>
-                                        
-          
-          
-          <description/>
-                                        
-          
-          
-          <rangeTypeName>uima.cas.StringArray</rangeTypeName>
-                                      
-        
-        
-        </featureDescription>
-                                
-        
-        
-        <featureDescription>
-                                        
-          
-          
-          <name>docId</name>
-                                        
-          
-          
-          <description/>
-                                        
-          
-          
-          <rangeTypeName>uima.cas.String</rangeTypeName>
-                                      
-        
-        
-        </featureDescription>
-                                
-        
-        
-        <featureDescription>
-                                        
-          
-          
-          <name>timestamp</name>
-                                        
-          
-          
-          <description/>
-                                        
-          
-          
-          <rangeTypeName>uima.cas.String</rangeTypeName>
-                                      
-        
-        
-        </featureDescription>
                               
       
       
+      
+      <name>uhh_lt.newsleak.types.Metadata</name>
+                              
+      
+      
+      
+      <description/>
+                              
+      
+      
+      
+      <supertypeName>uima.tcas.DocumentAnnotation</supertypeName>
+                              
+      
+      
+      
+      <features>
+                                        
+        
+        
+        
+        <featureDescription>
+                                                  
+          
+          
+          
+          <name>metaTripletsNames</name>
+                                                  
+          
+          
+          
+          <description/>
+                                                  
+          
+          
+          
+          <rangeTypeName>uima.cas.StringArray</rangeTypeName>
+                                                
+        
+        
+        
+        </featureDescription>
+                                        
+        
+        
+        
+        <featureDescription>
+                                                  
+          
+          
+          
+          <name>metaTripletsValues</name>
+                                                  
+          
+          
+          
+          <description/>
+                                                  
+          
+          
+          
+          <rangeTypeName>uima.cas.StringArray</rangeTypeName>
+                                                
+        
+        
+        
+        </featureDescription>
+                                        
+        
+        
+        
+        <featureDescription>
+                                                  
+          
+          
+          
+          <name>metaTripletsTypes</name>
+                                                  
+          
+          
+          
+          <description/>
+                                                  
+          
+          
+          
+          <rangeTypeName>uima.cas.StringArray</rangeTypeName>
+                                                
+        
+        
+        
+        </featureDescription>
+                                        
+        
+        
+        
+        <featureDescription>
+                                                  
+          
+          
+          
+          <name>docId</name>
+                                                  
+          
+          
+          
+          <description/>
+                                                  
+          
+          
+          
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+                                                
+        
+        
+        
+        </featureDescription>
+                                        
+        
+        
+        
+        <featureDescription>
+                                                  
+          
+          
+          
+          <name>timestamp</name>
+                                                  
+          
+          
+          
+          <description/>
+                                                  
+          
+          
+          
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+                                                
+        
+        
+        
+        </featureDescription>
+                                      
+      
+      
+      
       </features>
-                      
+                            
+    
     
     
     </typeDescription>
-          
+              
+  
   
   </types>
-        
+          
+
 
 
 
