@@ -19,7 +19,6 @@ import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 
 import opennlp.tools.langdetect.LanguageDetectorME;
-import uhh_lt.newsleak.resources.DocumentLanguagesResource;
 import uhh_lt.newsleak.resources.LanguageDetectorResource;
 import uhh_lt.newsleak.types.Metadata;
 
