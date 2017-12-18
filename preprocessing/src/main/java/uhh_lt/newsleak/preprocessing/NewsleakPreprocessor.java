@@ -171,7 +171,7 @@ public class NewsleakPreprocessor
 				ElasticsearchResource.PARAM_CLUSTERNAME, this.esClustername,
 				ElasticsearchResource.PARAM_INDEX, this.esIndex,
 				ElasticsearchResource.PARAM_PORT, this.esPort,
-				ElasticsearchResource.PARAM_DOCUMENT_MAPPING_FILE, "desc/elasticsearch_mapping_document.json");
+				ElasticsearchResource.PARAM_DOCUMENT_MAPPING_FILE, "desc/elasticsearch_mapping_document_2.4.json");
 		AnalysisEngineDescription esWriter = AnalysisEngineFactory.createEngineDescription(
 				ElasticsearchDocumentWriter.class,
 				ElasticsearchDocumentWriter.RESOURCE_ESCLIENT, esResource

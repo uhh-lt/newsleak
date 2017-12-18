@@ -16,13 +16,11 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.TransportAddress;
-import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 public class ElasticsearchResource extends Resource_ImplBase {
 	
@@ -61,8 +59,10 @@ public class ElasticsearchResource extends Resource_ImplBase {
 		this.logger = this.getLogger();
 		Settings settings = Settings.builder().put("cluster.name", mClustername).build();
 		try {
-			client = new PreBuiltTransportClient(settings)
-			        .addTransportAddress(new TransportAddress(InetAddress.getLocalHost(), mPort));
+//			client = new PreBuiltTransportClient(settings)
+//			        .addTransportAddress(new TransportAddress(InetAddress.getLocalHost(), mPort));
+			client = TransportClient.builder().settings(settings).build()
+			        .addTransportAddress(new InetSocketTransportAddress(InetAddress.getLocalHost(), mPort));
 			createIndex();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -115,7 +115,7 @@ public class ElasticsearchResource extends Resource_ImplBase {
 			
 			XContentBuilder builder = XContentFactory.jsonBuilder();
 			XContentParser parser = XContentFactory.xContent(XContentType.JSON)
-					.createParser(NamedXContentRegistry.EMPTY, docMapping.getBytes());
+					.createParser(docMapping.getBytes());
 			parser.close();
 			builder.copyCurrentStructure(parser);
 			

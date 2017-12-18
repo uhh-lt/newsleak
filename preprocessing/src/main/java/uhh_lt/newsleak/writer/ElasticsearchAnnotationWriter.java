@@ -120,7 +120,7 @@ public class ElasticsearchAnnotationWriter extends JCasAnnotator_ImplBase {
 		int bblen = 0;
 
 		ResultSet entTypes = conn.createStatement().executeQuery("select distinct type from entity;");
-		Set<String> types = new HashSet<>();
+		Set<String> types = new HashSet<String>();
 		while(entTypes.next()){
 			types.add(entTypes.getString("type").toLowerCase());
 		}
