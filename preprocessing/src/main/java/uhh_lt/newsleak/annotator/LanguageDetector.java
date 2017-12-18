@@ -30,9 +30,6 @@ public class LanguageDetector extends JCasAnnotator_ImplBase {
 	@ExternalResource(key = MODEL_FILE)
 	private LanguageDetectorResource languageDetectorResource;
 
-	//	public final static String DOCLANG_FILE = "DocumentLanguagesFile";
-	//	@ExternalResource(key = DOCLANG_FILE)
-	//	private DocumentLanguagesResource documentLanguagesResource;
 	public final static String DOCLANG_FILE = "documentLanguagesFile";
 	@ConfigurationParameter(
 			name = DOCLANG_FILE, 

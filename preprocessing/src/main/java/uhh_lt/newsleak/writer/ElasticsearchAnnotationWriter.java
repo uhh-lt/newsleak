@@ -84,6 +84,19 @@ public class ElasticsearchAnnotationWriter extends JCasAnnotator_ImplBase {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	private void createMappingEntities() {
+		
+	}
+	
+	private void createMappingKeyterms() {
+		
+	}
+	
+	private void createMappingTimeX() {
+		
+	}
 
 	private void documenIndexer(Client client, String indexName,
 			String documentType/* , String mappingFile */) throws Exception {

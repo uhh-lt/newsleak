@@ -49,6 +49,7 @@ import uhh_lt.newsleak.resources.ElasticsearchResource;
 import uhh_lt.newsleak.resources.LanguageDetectorResource;
 import uhh_lt.newsleak.resources.TextLineWriterResource;
 import uhh_lt.newsleak.writer.ElasticsearchAnnotationWriter;
+import uhh_lt.newsleak.writer.ElasticsearchDocumentWriter;
 import uhh_lt.newsleak.writer.TextLineWriter;
 
 /**
@@ -141,7 +142,7 @@ public class NewsleakPreprocessor
 		np.typeSystem = TypeSystemDescriptionFactory.createTypeSystemDescriptionFromPath(typeSystemFile);
 
 		np.pipelineLanguageDetection();
-		np.pipelineAnnotation();
+		// np.pipelineAnnotation();
 
 	}
 
@@ -158,17 +159,29 @@ public class NewsleakPreprocessor
 		// language detection
 		ExternalResourceDescription resourceLangDect = ExternalResourceFactory.createExternalResourceDescription(
 				LanguageDetectorResource.class, new File("resources/langdetect-183.bin"));
-		//				ExternalResourceDescription resourceDocLang = ExternalResourceFactory.createExternalResourceDescription(
-		//						DocumentLanguagesResource.class, new File("data/tmp/documentLanguages.ser"));
 		AnalysisEngineDescription langDetect = AnalysisEngineFactory.createEngineDescription(
 				LanguageDetector.class,
 				LanguageDetector.MODEL_FILE, resourceLangDect,
 				LanguageDetector.DOCLANG_FILE, "data/documentLanguages.ser"
 				);
+		
+		// elasticsearch writer
+		ExternalResourceDescription esResource = ExternalResourceFactory.createExternalResourceDescription(
+				ElasticsearchResource.class, 
+				ElasticsearchResource.PARAM_CLUSTERNAME, this.esClustername,
+				ElasticsearchResource.PARAM_INDEX, this.esIndex,
+				ElasticsearchResource.PARAM_PORT, this.esPort,
+				ElasticsearchResource.PARAM_DOCUMENT_MAPPING_FILE, "desc/elasticsearch_mapping_document.json");
+		AnalysisEngineDescription esWriter = AnalysisEngineFactory.createEngineDescription(
+				ElasticsearchDocumentWriter.class,
+				ElasticsearchDocumentWriter.RESOURCE_ESCLIENT, esResource
+				);
 
 		AnalysisEngineDescription ldPipeline = AnalysisEngineFactory.createEngineDescription(	
-				langDetect
+				langDetect,
+				esWriter
 				);
+		
 		CpeBuilder ldCpeBuilder = new CpeBuilder();
 		ldCpeBuilder.setReader(csvReader);
 		ldCpeBuilder.setMaxProcessingUnitThreadCount(this.threads);
@@ -255,16 +268,6 @@ public class NewsleakPreprocessor
 		AnalysisEngineDescription xmi = AnalysisEngineFactory.createEngineDescription(
 				XmiWriter.class,
 				XmiWriter.PARAM_OUTPUT_DIRECTORY, this.dataDirectory + File.separator + "xmi"
-				);
-
-		ExternalResourceDescription esResource = ExternalResourceFactory.createExternalResourceDescription(
-				ElasticsearchResource.class, 
-				ElasticsearchResource.PARAM_CLUSTERNAME, this.esClustername,
-				ElasticsearchResource.PARAM_INDEX, this.esIndex,
-				ElasticsearchResource.PARAM_PORT, this.esPort);
-		AnalysisEngineDescription esWriter = AnalysisEngineFactory.createEngineDescription(
-				ElasticsearchAnnotationWriter.class,
-				ElasticsearchAnnotationWriter.RESOURCE_ESCLIENT, esResource
 				);
 
 		AnalysisEngineDescription pipeline = AnalysisEngineFactory.createEngineDescription(

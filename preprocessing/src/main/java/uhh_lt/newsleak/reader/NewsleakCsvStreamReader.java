@@ -46,14 +46,12 @@ public class NewsleakCsvStreamReader extends CasCollectionReader_ImplBase {
 	private Iterable<CSVRecord> records;
 	private Iterator<CSVRecord> recordsIterator;
 	
-	private Reader metadataReader;
-	private Iterable<CSVRecord> metadata; 
-	private Iterator<CSVRecord> metadataIterator; 
+//	private Reader metadataReader;
+//	private Iterable<CSVRecord> metadata; 
+//	private Iterator<CSVRecord> metadataIterator; 
 
-	private boolean countFilesInitially = false;
 	private int totalRecords = 0;
 	private int currentRecord = 0;
-	private int maxRecords = 100;
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
@@ -63,18 +61,11 @@ public class NewsleakCsvStreamReader extends CasCollectionReader_ImplBase {
 			csvReader = new FileReader(csvFile);
 			records = CSVFormat.RFC4180.parse(csvReader);
 			recordsIterator = records.iterator();
-			if (countFilesInitially) {
-				Reader countReader = new FileReader(csvFile);
-				Iterator<CSVRecord> countIt = CSVFormat.RFC4180.parse(countReader).iterator();
-				while (countIt.hasNext()) {
-					totalRecords++;
-					countIt.next();
-				}
-				countReader.close();
-			}
-		    metadataReader = new FileReader(new File(inputDir, metadataFile));
-		    metadata = CSVFormat.RFC4180.parse(metadataReader);
-		    metadataIterator = metadata.iterator();
+			
+			// Process metadata file separately
+//		    metadataReader = new FileReader(new File(inputDir, metadataFile));
+//		    metadata = CSVFormat.RFC4180.parse(metadataReader);
+//		    metadataIterator = metadata.iterator();
 		} catch (IOException e) {
 			throw new ResourceInitializationException(e);
 		}
@@ -93,12 +84,18 @@ public class NewsleakCsvStreamReader extends CasCollectionReader_ImplBase {
 		// Set document data
 		CSVRecord record = recordsIterator.next();
 		String docId = record.get(0);
+		
+		// split into paragraphs
+		// add paragraph with annotation
+		// LangDect: per paragraph, doc-lang = majority of paragraph languages
+		
 		jcas.setDocumentText(record.get(1));
-		jcas.setDocumentLanguage(defaultLanguage);
+		jcas.setDocumentLanguage(record.size() > 3 ? record.get(3) : defaultLanguage);
 		
 		// Set metadata
 		Metadata metaCas = new Metadata(jcas);
 		metaCas.setDocId(docId);
+		metaCas.setTimestamp(record.get(2));
 		metaCas.addToIndexes();
 		
 //		CSVRecord metaRecord;
@@ -119,7 +116,7 @@ public class NewsleakCsvStreamReader extends CasCollectionReader_ImplBase {
 
 	public void close() throws IOException {
 		csvReader.close();
-		metadataReader.close();
+		// metadataReader.close();
 	}
 
 	public Progress[] getProgress() {
@@ -133,7 +130,6 @@ public class NewsleakCsvStreamReader extends CasCollectionReader_ImplBase {
 	}
 
 	public boolean hasNext() throws IOException, CollectionException {
-		if (currentRecord == maxRecords) return false;
 		return recordsIterator.hasNext();
 	}
 
