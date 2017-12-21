@@ -3,6 +3,7 @@ package uhh_lt.newsleak.resources;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.uima.fit.component.Resource_ImplBase;
@@ -23,7 +24,7 @@ import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
 
 public class ElasticsearchResource extends Resource_ImplBase {
-	
+
 	private Logger logger;
 	private static final String DOCUMENT_TYPE = "document";
 
@@ -39,31 +40,35 @@ public class ElasticsearchResource extends Resource_ImplBase {
 	public static final String PARAM_DOCUMENT_MAPPING_FILE = "documentMappingFile";
 	@ConfigurationParameter(name = PARAM_DOCUMENT_MAPPING_FILE)
 	private String documentMappingFile;
-	public final static String PARAM_REMOVE_EXISTING_INDEX = "removeExistingIndex";
+	public final static String PARAM_CREATE_INDEX = "createIndex";
 	@ConfigurationParameter(
-			name = PARAM_REMOVE_EXISTING_INDEX, 
+			name = PARAM_CREATE_INDEX, 
 			mandatory = false,
-			defaultValue = "true",
-			description = "If true, an existing index will be removed before initialization.")
-	private boolean removeExistingIndex;
+			defaultValue = "false",
+			description = "If true, an new index will be created (existing index will be removed).")
+	private boolean createIndex;
+
+	// private HashMap<String, Object> knownMappings;
 
 	private TransportClient client;
-	
+
 
 	@Override
 	public boolean initialize(ResourceSpecifier aSpecifier, Map<String, Object> aAdditionalParams)
 			throws ResourceInitializationException {
 		if (!super.initialize(aSpecifier, aAdditionalParams)) {
-		      return false;
+			return false;
 		}
 		this.logger = this.getLogger();
 		Settings settings = Settings.builder().put("cluster.name", mClustername).build();
 		try {
-//			client = new PreBuiltTransportClient(settings)
-//			        .addTransportAddress(new TransportAddress(InetAddress.getLocalHost(), mPort));
+			//			client = new PreBuiltTransportClient(settings)
+			//			        .addTransportAddress(new TransportAddress(InetAddress.getLocalHost(), mPort));
 			client = TransportClient.builder().settings(settings).build()
-			        .addTransportAddress(new InetSocketTransportAddress(InetAddress.getLocalHost(), mPort));
-			createIndex();
+					.addTransportAddress(new InetSocketTransportAddress(InetAddress.getLocalHost(), mPort));
+			if (createIndex) {
+				createIndex();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(0);
@@ -75,8 +80,8 @@ public class ElasticsearchResource extends Resource_ImplBase {
 	public TransportClient getClient() {
 		return client;
 	}
-	
-	
+
+
 	public String getIndex() {
 		return mIndex;
 	}
@@ -92,15 +97,15 @@ public class ElasticsearchResource extends Resource_ImplBase {
 		super.destroy();
 		client.close();
 	}
-	
+
 	/*
 	 * Creates the index and adds a mapping for the document type
 	 */
 	private void createIndex() throws Exception {
-		
+
 		boolean exists = client.admin().indices().prepareExists(mIndex).execute().actionGet().isExists();
-		
-		if (exists && removeExistingIndex) {
+
+		if (exists) {
 			logger.log(Level.INFO, "Preexisting index " + mIndex + " will be removed.");
 			DeleteIndexResponse deleteResponse = client.admin().indices().delete(new DeleteIndexRequest(mIndex)).actionGet();
 			if (deleteResponse.isAcknowledged()) {
@@ -108,24 +113,20 @@ public class ElasticsearchResource extends Resource_ImplBase {
 				exists = false;
 			}
 		}
-		
-		if (!exists) {
-			logger.log(Level.INFO, "Index " + mIndex + " will be created.");
-			String docMapping = new String(Files.readAllBytes(Paths.get(documentMappingFile)));
-			
-			XContentBuilder builder = XContentFactory.jsonBuilder();
-			XContentParser parser = XContentFactory.xContent(XContentType.JSON)
-					.createParser(docMapping.getBytes());
-			parser.close();
-			builder.copyCurrentStructure(parser);
-			
-			CreateIndexRequestBuilder createIndexRequestBuilder = client.admin().indices().prepareCreate(mIndex);
-			createIndexRequestBuilder.addMapping(DOCUMENT_TYPE, builder);
-			// logger.log(Level.INFO, builder.string());
-			createIndexRequestBuilder.execute().actionGet();
 
-		}
-		
+		logger.log(Level.INFO, "Index " + mIndex + " will be created.");
+		String docMapping = new String(Files.readAllBytes(Paths.get(documentMappingFile)));
+
+		XContentBuilder builder = XContentFactory.jsonBuilder();
+		XContentParser parser = XContentFactory.xContent(XContentType.JSON)
+				.createParser(docMapping.getBytes());
+		parser.close();
+		builder.copyCurrentStructure(parser);
+
+		CreateIndexRequestBuilder createIndexRequestBuilder = client.admin().indices().prepareCreate(mIndex);
+		createIndexRequestBuilder.addMapping(DOCUMENT_TYPE, builder);
+		createIndexRequestBuilder.execute().actionGet();
+
 	}
 
 }

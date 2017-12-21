@@ -26,6 +26,8 @@ import uhh_lt.newsleak.types.Metadata;
 public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 
 	private Logger logger;
+	
+	public static final String ES_TYPE_DOCUMENT = "document";
 
 	public static final String RESOURCE_ESCLIENT = "esResource";
 	@ExternalResource(key = RESOURCE_ESCLIENT)
@@ -58,7 +60,7 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 					.field("Created", dateFormat.format(created))
 					.field("DocumentLanguage", jcas.getDocumentLanguage())
 					.endObject();
-			IndexResponse response = client.prepareIndex(esResource.getIndex(), "document", metadata.getDocId())
+			IndexResponse response = client.prepareIndex(esResource.getIndex(), ES_TYPE_DOCUMENT, metadata.getDocId())
 					.setSource(builder).get();
 			logger.log(Level.INFO, response.toString());
 		} catch (IOException e) {

@@ -5,19 +5,19 @@
 	<groupId>newsleak</groupId>
 	<artifactId>preprocessing</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-    <packaging>jar</packaging>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<packaging>jar</packaging>
 
 	<name>preprocessing</name>
 	<url>http://maven.apache.org</url>
@@ -104,18 +104,15 @@
 			<artifactId>elasticsearch</artifactId>
 			<version>2.4.6</version>
 		</dependency>
-		<!-- 
+		<!-- <dependency> <groupId>org.elasticsearch</groupId> <artifactId>elasticsearch</artifactId> 
+			<version>6.0.1</version> </dependency> <dependency> <groupId>org.elasticsearch.client</groupId> 
+			<artifactId>transport</artifactId> <version>6.0.1</version> </dependency> -->
+
 		<dependency>
-			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch</artifactId>
-			<version>6.0.1</version>
+			<groupId>postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>9.1-901.jdbc4</version>
 		</dependency>
-		<dependency>
-			<groupId>org.elasticsearch.client</groupId>
-			<artifactId>transport</artifactId>
-			<version>6.0.1</version>
-		</dependency>
-		-->
 
 	</dependencies>
 </project>
