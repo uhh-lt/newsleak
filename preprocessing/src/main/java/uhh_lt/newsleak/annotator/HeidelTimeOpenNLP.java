@@ -30,6 +30,7 @@ import org.apache.uima.UimaContext;
 import org.apache.uima.cas.FSIterator;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
+import org.apache.uima.fit.descriptor.OperationalProperties;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 
@@ -59,6 +60,7 @@ import opennlp.uima.Token;
  * @author jannik stroetgen
  * 
  */
+@OperationalProperties(multipleDeploymentAllowed=true, modifiesCas=true)
 public class HeidelTimeOpenNLP extends JCasAnnotator_ImplBase {
 
 	// TOOL NAME (may be used as componentId)

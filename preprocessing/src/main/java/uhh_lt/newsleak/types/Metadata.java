@@ -11,7 +11,7 @@ import org.apache.uima.jcas.tcas.DocumentAnnotation;
 
 
 /** 
- * Updated by JCasGen Thu Jan 04 14:37:05 CET 2018
+ * Updated by JCasGen Thu Jan 04 17:10:59 CET 2018
  * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
 public class Metadata extends DocumentAnnotation {
@@ -250,6 +250,28 @@ public class Metadata extends DocumentAnnotation {
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_timestamp == null)
       jcasType.jcas.throwFeatMissing("timestamp", "uhh_lt.newsleak.types.Metadata");
     jcasType.ll_cas.ll_setStringValue(addr, ((Metadata_Type)jcasType).casFeatCode_timestamp, v);}    
+   
+    
+  //*--------------*
+  //* Feature: keyterms
+
+  /** getter for keyterms - gets List of key terms
+   * @generated
+   * @return value of the feature 
+   */
+  public String getKeyterms() {
+    if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_keyterms == null)
+      jcasType.jcas.throwFeatMissing("keyterms", "uhh_lt.newsleak.types.Metadata");
+    return jcasType.ll_cas.ll_getStringValue(addr, ((Metadata_Type)jcasType).casFeatCode_keyterms);}
+    
+  /** setter for keyterms - sets List of key terms 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setKeyterms(String v) {
+    if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_keyterms == null)
+      jcasType.jcas.throwFeatMissing("keyterms", "uhh_lt.newsleak.types.Metadata");
+    jcasType.ll_cas.ll_setStringValue(addr, ((Metadata_Type)jcasType).casFeatCode_keyterms, v);}    
   }
 
     

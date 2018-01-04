@@ -1,24 +1,24 @@
 
 
-/* First created by JCasGen Thu Jan 04 14:37:05 CET 2018 */
-package de.unihd.dbs.uima.types.heideltime;
+/* First created by JCasGen Thu Jan 04 16:52:18 CET 2018 */
 
 import org.apache.uima.jcas.JCas; 
 import org.apache.uima.jcas.JCasRegistry;
 import org.apache.uima.jcas.cas.TOP_Type;
 
+import org.apache.uima.jcas.cas.StringList;
 
 
 /** 
- * Updated by JCasGen Thu Jan 04 17:10:59 CET 2018
+ * Updated by JCasGen Thu Jan 04 16:52:18 CET 2018
  * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
-public class GoldEvent extends Event {
+public class keytermList extends StringList {
   /** @generated
    * @ordered 
    */
   @SuppressWarnings ("hiding")
-  public final static int typeIndexID = JCasRegistry.register(GoldEvent.class);
+  public final static int typeIndexID = JCasRegistry.register(keytermList.class);
   /** @generated
    * @ordered 
    */
@@ -32,14 +32,14 @@ public class GoldEvent extends Event {
  
   /** Never called.  Disable default constructor
    * @generated */
-  protected GoldEvent() {/* intentionally empty block */}
+  protected keytermList() {/* intentionally empty block */}
     
   /** Internal - constructor used by generator 
    * @generated
    * @param addr low level Feature Structure reference
    * @param type the type of this Feature Structure 
    */
-  public GoldEvent(int addr, TOP_Type type) {
+  public keytermList(int addr, TOP_Type type) {
     super(addr, type);
     readObject();
   }
@@ -47,22 +47,10 @@ public class GoldEvent extends Event {
   /** @generated
    * @param jcas JCas to which this Feature Structure belongs 
    */
-  public GoldEvent(JCas jcas) {
+  public keytermList(JCas jcas) {
     super(jcas);
     readObject();   
   } 
-
-  /** @generated
-   * @param jcas JCas to which this Feature Structure belongs
-   * @param begin offset to the begin spot in the SofA
-   * @param end offset to the end spot in the SofA 
-  */  
-  public GoldEvent(JCas jcas, int begin, int end) {
-    super(jcas);
-    setBegin(begin);
-    setEnd(end);
-    readObject();
-  }   
 
   /** 
    * <!-- begin-user-doc -->

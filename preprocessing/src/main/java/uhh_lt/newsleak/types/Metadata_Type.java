@@ -11,7 +11,7 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.jcas.tcas.DocumentAnnotation_Type;
 
 /** 
- * Updated by JCasGen Thu Jan 04 14:37:05 CET 2018
+ * Updated by JCasGen Thu Jan 04 17:10:59 CET 2018
  * @generated */
 public class Metadata_Type extends DocumentAnnotation_Type {
   /** @generated */
@@ -222,6 +222,30 @@ public class Metadata_Type extends DocumentAnnotation_Type {
     ll_cas.ll_setStringValue(addr, casFeatCode_timestamp, v);}
     
   
+ 
+  /** @generated */
+  final Feature casFeat_keyterms;
+  /** @generated */
+  final int     casFeatCode_keyterms;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public String getKeyterms(int addr) {
+        if (featOkTst && casFeat_keyterms == null)
+      jcas.throwFeatMissing("keyterms", "uhh_lt.newsleak.types.Metadata");
+    return ll_cas.ll_getStringValue(addr, casFeatCode_keyterms);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setKeyterms(int addr, String v) {
+        if (featOkTst && casFeat_keyterms == null)
+      jcas.throwFeatMissing("keyterms", "uhh_lt.newsleak.types.Metadata");
+    ll_cas.ll_setStringValue(addr, casFeatCode_keyterms, v);}
+    
+  
 
 
 
@@ -253,6 +277,10 @@ public class Metadata_Type extends DocumentAnnotation_Type {
  
     casFeat_timestamp = jcas.getRequiredFeatureDE(casType, "timestamp", "uima.cas.String", featOkTst);
     casFeatCode_timestamp  = (null == casFeat_timestamp) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_timestamp).getCode();
+
+ 
+    casFeat_keyterms = jcas.getRequiredFeatureDE(casType, "keyterms", "uima.cas.String", featOkTst);
+    casFeatCode_keyterms  = (null == casFeat_keyterms) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_keyterms).getCode();
 
   }
 }

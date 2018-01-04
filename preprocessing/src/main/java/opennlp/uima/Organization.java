@@ -11,7 +11,7 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 
 /** 
- * Updated by JCasGen Thu Jan 04 14:37:05 CET 2018
+ * Updated by JCasGen Thu Jan 04 17:10:59 CET 2018
  * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
 public class Organization extends Annotation {

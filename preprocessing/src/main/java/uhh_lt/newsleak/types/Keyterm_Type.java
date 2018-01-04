@@ -1,23 +1,24 @@
 
-/* First created by JCasGen Thu Jan 04 14:37:05 CET 2018 */
-package de.unihd.dbs.uima.types.heideltime;
+/* First created by JCasGen Thu Jan 04 16:50:42 CET 2018 */
+package uhh_lt.newsleak.types;
 
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.JCasRegistry;
 import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
+import org.apache.uima.jcas.tcas.Annotation_Type;
 
-/** 
+/** Key terms of the document
  * Updated by JCasGen Thu Jan 04 17:10:59 CET 2018
  * @generated */
-public class IntervalCandidateSentence_Type extends Sentence_Type {
+public class Keyterm_Type extends Annotation_Type {
   /** @generated */
   @SuppressWarnings ("hiding")
-  public final static int typeIndexID = IntervalCandidateSentence.typeIndexID;
+  public final static int typeIndexID = Keyterm.typeIndexID;
   /** @generated 
      @modifiable */
   @SuppressWarnings ("hiding")
-  public final static boolean featOkTst = JCasRegistry.getFeatOkTst("de.unihd.dbs.uima.types.heideltime.IntervalCandidateSentence");
+  public final static boolean featOkTst = JCasRegistry.getFeatOkTst("uhh_lt.newsleak.types.Keyterm");
 
 
 
@@ -26,7 +27,7 @@ public class IntervalCandidateSentence_Type extends Sentence_Type {
 	 * @param jcas JCas
 	 * @param casType Type 
 	 */
-  public IntervalCandidateSentence_Type(JCas jcas, Type casType) {
+  public Keyterm_Type(JCas jcas, Type casType) {
     super(jcas, casType);
     casImpl.getFSClassRegistry().addGeneratorForType((TypeImpl)this.casType, getFSGenerator());
 

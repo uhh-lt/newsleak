@@ -87,11 +87,14 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 				}
 			}
 			
-			
 			// terms
-			postgresResource.insertKeyterms(docId, "Keyterm1", 5);
-			postgresResource.insertKeyterms(docId, "Keyterm2", 2);
-			
+			String keytermList = metadata.getKeyterms();
+			if (keytermList != null) {
+				for (String item : metadata.getKeyterms().split("\t")) {
+					String[] termFrq = item.split(":");
+					postgresResource.insertKeyterms(docId, termFrq[0], Integer.parseInt(termFrq[1]));
+				}
+			}			
 
 
 		} catch (SQLException e) {

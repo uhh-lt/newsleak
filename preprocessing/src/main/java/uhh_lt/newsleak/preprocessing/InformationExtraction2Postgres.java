@@ -54,6 +54,7 @@ import opennlp.uima.tokenize.Tokenizer;
 import opennlp.uima.tokenize.TokenizerModelResourceImpl;
 import opennlp.uima.util.UimaUtil;
 import uhh_lt.newsleak.annotator.HeidelTimeOpenNLP;
+import uhh_lt.newsleak.annotator.KeytermExtractor;
 import uhh_lt.newsleak.annotator.LanguageDetector;
 import uhh_lt.newsleak.reader.NewsleakCsvStreamReader;
 import uhh_lt.newsleak.reader.NewsleakElasticsearchReader;
@@ -238,6 +239,12 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		AnalysisEngineDescription nerLoc = getOpennlpNerAed("LOC", "opennlp.uima.Location", "./resources/eng/en-ner-location.bin");
 		
 
+		// keyterms
+		AnalysisEngineDescription keyterms = AnalysisEngineFactory.createEngineDescription(
+				KeytermExtractor.class
+				);
+		
+		
 		// writer
 		ExternalResourceDescription resourceLinewriter = ExternalResourceFactory.createExternalResourceDescription(
 				TextLineWriterResource.class, 
@@ -277,6 +284,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 				nerPer, 
 				nerOrg,
 				nerLoc,
+				keyterms,
 				// writer,
 				// xmi,
 				// esWriter
