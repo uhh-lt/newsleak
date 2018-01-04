@@ -115,7 +115,6 @@ public class NewsleakElasticsearchReader extends CasCollectionReader_ImplBase {
 
 
 	public void getNext(CAS cas) throws IOException, CollectionException {
-		currentRecord++;
 		JCas jcas;
 		try {
 			jcas = cas.getJCas();
@@ -142,6 +141,8 @@ public class NewsleakElasticsearchReader extends CasCollectionReader_ImplBase {
 		Dct dct = new Dct(jcas);
 		dct.setValue(docDate);
 		dct.addToIndexes();
+		
+		currentRecord++;
 
 	}
 
@@ -157,7 +158,7 @@ public class NewsleakElasticsearchReader extends CasCollectionReader_ImplBase {
 	}
 
 	public boolean hasNext() throws IOException, CollectionException {
-		return (currentRecord + 1) < totalRecords ? true : false;
+		return currentRecord < totalRecords ? true : false;
 	}
 
 }

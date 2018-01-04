@@ -11,7 +11,7 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 
 /** 
- * Updated by JCasGen Wed Dec 13 13:13:22 CET 2017
+ * Updated by JCasGen Thu Jan 04 14:37:05 CET 2018
  * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
 public class Timex3 extends Annotation {
@@ -338,6 +338,28 @@ public class Timex3 extends Annotation {
     if (Timex3_Type.featOkTst && ((Timex3_Type)jcasType).casFeat_timexMod == null)
       jcasType.jcas.throwFeatMissing("timexMod", "de.unihd.dbs.uima.types.heideltime.Timex3");
     jcasType.ll_cas.ll_setStringValue(addr, ((Timex3_Type)jcasType).casFeatCode_timexMod, v);}    
+   
+    
+  //*--------------*
+  //* Feature: emptyValue
+
+  /** getter for emptyValue - gets attribute to hold a value for "empty" timex3 tags
+   * @generated
+   * @return value of the feature 
+   */
+  public String getEmptyValue() {
+    if (Timex3_Type.featOkTst && ((Timex3_Type)jcasType).casFeat_emptyValue == null)
+      jcasType.jcas.throwFeatMissing("emptyValue", "de.unihd.dbs.uima.types.heideltime.Timex3");
+    return jcasType.ll_cas.ll_getStringValue(addr, ((Timex3_Type)jcasType).casFeatCode_emptyValue);}
+    
+  /** setter for emptyValue - sets attribute to hold a value for "empty" timex3 tags 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setEmptyValue(String v) {
+    if (Timex3_Type.featOkTst && ((Timex3_Type)jcasType).casFeat_emptyValue == null)
+      jcasType.jcas.throwFeatMissing("emptyValue", "de.unihd.dbs.uima.types.heideltime.Timex3");
+    jcasType.ll_cas.ll_setStringValue(addr, ((Timex3_Type)jcasType).casFeatCode_emptyValue, v);}    
   }
 
     

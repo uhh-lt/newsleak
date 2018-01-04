@@ -10,7 +10,7 @@ public class NewsleakStatusCallbackListener implements StatusCallbackListener {
 
 	private static final int ENTITY_CNT_FOR_LOG = 1;
 	private Logger logger;
-	public boolean isProcessing = true;
+	private boolean isProcessing = true;
 	private int entityProcessCount;
 
 	public NewsleakStatusCallbackListener(Logger logger) {
@@ -50,5 +50,11 @@ public class NewsleakStatusCallbackListener implements StatusCallbackListener {
 			logger.log(Level.INFO, "CPM entity process completed - " + entityProcessCount + " entities");
 		}
 	}
+
+	public boolean isProcessing() {
+		return isProcessing;
+	}
+	
+	
 
 }

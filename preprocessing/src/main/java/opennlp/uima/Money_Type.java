@@ -9,7 +9,7 @@ import org.apache.uima.cas.Type;
 import org.apache.uima.jcas.tcas.Annotation_Type;
 
 /** 
- * Updated by JCasGen Wed Dec 13 13:13:22 CET 2017
+ * Updated by JCasGen Thu Jan 04 14:37:05 CET 2018
  * @generated */
 public class Money_Type extends Annotation_Type {
   /** @generated */

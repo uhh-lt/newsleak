@@ -1,25 +1,24 @@
 
 
-/* First created by JCasGen Thu Nov 23 14:25:03 CET 2017 */
-package opennlp.uima;
+/* First created by JCasGen Thu Jan 04 14:37:05 CET 2018 */
+package de.unihd.dbs.uima.types.heideltime;
 
 import org.apache.uima.jcas.JCas; 
 import org.apache.uima.jcas.JCasRegistry;
 import org.apache.uima.jcas.cas.TOP_Type;
 
-import org.apache.uima.jcas.tcas.Annotation;
 
 
 /** 
  * Updated by JCasGen Thu Jan 04 14:37:05 CET 2018
  * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
-public class Organization extends Annotation {
+public class GoldEvent extends Event {
   /** @generated
    * @ordered 
    */
   @SuppressWarnings ("hiding")
-  public final static int typeIndexID = JCasRegistry.register(Organization.class);
+  public final static int typeIndexID = JCasRegistry.register(GoldEvent.class);
   /** @generated
    * @ordered 
    */
@@ -33,14 +32,14 @@ public class Organization extends Annotation {
  
   /** Never called.  Disable default constructor
    * @generated */
-  protected Organization() {/* intentionally empty block */}
+  protected GoldEvent() {/* intentionally empty block */}
     
   /** Internal - constructor used by generator 
    * @generated
    * @param addr low level Feature Structure reference
    * @param type the type of this Feature Structure 
    */
-  public Organization(int addr, TOP_Type type) {
+  public GoldEvent(int addr, TOP_Type type) {
     super(addr, type);
     readObject();
   }
@@ -48,7 +47,7 @@ public class Organization extends Annotation {
   /** @generated
    * @param jcas JCas to which this Feature Structure belongs 
    */
-  public Organization(JCas jcas) {
+  public GoldEvent(JCas jcas) {
     super(jcas);
     readObject();   
   } 
@@ -58,7 +57,7 @@ public class Organization extends Annotation {
    * @param begin offset to the begin spot in the SofA
    * @param end offset to the end spot in the SofA 
   */  
-  public Organization(JCas jcas, int begin, int end) {
+  public GoldEvent(JCas jcas, int begin, int end) {
     super(jcas);
     setBegin(begin);
     setEnd(end);

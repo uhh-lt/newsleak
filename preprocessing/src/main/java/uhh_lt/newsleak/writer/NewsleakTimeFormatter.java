@@ -1,11 +1,13 @@
 package uhh_lt.newsleak.writer;
 
-import de.unihd.dbs.heideltime.standalone.components.ResultFormatter;
 import de.unihd.dbs.uima.types.heideltime.Timex3;
 import de.unihd.dbs.uima.types.heideltime.Timex3Interval;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.TreeMap;
@@ -14,11 +16,32 @@ import java.util.logging.Logger;
 
 import org.apache.uima.cas.FSIterator;
 import org.apache.uima.jcas.JCas;
-public class NewsleakTimeFormatter implements ResultFormatter {
+public class NewsleakTimeFormatter {
+	
+	private DateFormat formatter;
+	Date lowerBound;
+	Date upperBound;
 
-	public String format(JCas jcas) throws Exception {
+	/*
+	 * Extracts time expressions from 1900 to NOW + 20 years
+	 */
+	public NewsleakTimeFormatter() {
+		super();
+		formatter = new SimpleDateFormat("yyyy-MM-dd");
+		try {
+			lowerBound = formatter.parse("1900-01-01");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.YEAR, 20);
+		upperBound = cal.getTime();
+	}
+
+	public ArrayList<String> format(JCas jcas) throws Exception {
 		final String documentText = jcas.getDocumentText();
-		String outText = new String();
+		ArrayList<String> outList = new ArrayList<String>();
+		String outText = "";
 
 		// get the timex3 intervals, do some pre-selection on them
 		FSIterator iterIntervals = jcas.getAnnotationIndex(Timex3Interval.type).iterator();
@@ -96,11 +119,13 @@ public class NewsleakTimeFormatter implements ResultFormatter {
 			 *  see if we have to finish off old timexes/intervals
 			 */
 			if (timex != null && timex.getEnd() == docOffset) {
-				outText += "\n";
+				if (!outText.isEmpty()) outList.add(outText);
+				outText = "";
 				timex = null;
 			}
 			if (interval != null && interval.getEnd() == docOffset) {
-				outText += "\n";
+				if (!outText.isEmpty()) outList.add(outText);
+				outText = "";
 				interval = null;
 			}
 
@@ -122,34 +147,32 @@ public class NewsleakTimeFormatter implements ResultFormatter {
 					timexTag += "\t" + timex.getTimexValue() ;
 
 				outText += timex.getBegin() +"\t"+ timex.getEnd() +"\t"+ timex.getCoveredText()+"\t"+ timexTag;
+				outList.add(outText);
 			}
 
 		}
 
-		return outText;
+		return outList;
 	}
 
 	public String filterDate(String timexvalue) {
+		
+		Date timexDateValPars = null;
 		String timexDateValFormatted = null;
-		String timexDateVal;
-		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		
 		try {
-			Date timexDateValPars = null;
 			try {
 				timexDateValPars = formatter.parse(timexvalue);
-				timexDateVal = formatter.format(timexDateValPars);
 				timexDateValFormatted = formatter.format(timexDateValPars);
 			} catch (Exception e) {
 				try {
 					formatter = new SimpleDateFormat("yyyy-MM");
 					timexDateValPars = formatter.parse(timexvalue);
-					timexDateVal = timexvalue + "-00";
 					timexDateValFormatted = formatter.format(timexDateValPars);
 				} catch (Exception e2) {
 					try {
 						formatter = new SimpleDateFormat("yyyy");
 						timexDateValPars = formatter.parse(timexvalue);
-						timexDateVal = timexvalue + "-00-00";
 						timexDateValFormatted = formatter.format(timexDateValPars);
 					} catch (Exception e3) {
 						// do nothing
@@ -160,6 +183,14 @@ public class NewsleakTimeFormatter implements ResultFormatter {
 		} catch (Exception e) {
 			// do nothing
 		}
+		
+		// filter
+		if (timexDateValFormatted != null) {
+			if (timexDateValPars.before(lowerBound) || timexDateValPars.after(upperBound)) {
+				timexDateValFormatted = null;
+			}
+		}
+		
 		return timexDateValFormatted;
 	}
 }

@@ -37,7 +37,7 @@
               
   
     
-    <import location="HeidelTime.xml"/>
+    <import location="HeidelTime_TypeSystem.xml"/>
       
   </imports>
       

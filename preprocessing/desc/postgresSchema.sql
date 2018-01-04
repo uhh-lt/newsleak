@@ -138,7 +138,6 @@ CREATE TABLE terms (
 );
 
 
-
 COMMENT ON TABLE terms IS 'Important terms extracted from the document';
 
 

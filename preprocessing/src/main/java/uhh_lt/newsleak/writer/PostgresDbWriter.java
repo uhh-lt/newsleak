@@ -71,14 +71,18 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 			processEntities(locs, "LOC", docId);
 			
 			// eventtime
-			String extractedTimes = timeFormatter.format(jcas);
-			if (extractedTimes.length() > 1) {
-				String[] lines = extractedTimes.split("\n");
-				for (String line : lines) {
+			ArrayList<String> extractedTimes = timeFormatter.format(jcas);
+			if (extractedTimes.size() > 0) {
+				for (String line : extractedTimes) {
 					String[] items = line.split("\t");
-					String formattedDate = timeFormatter.filterDate(items[4]);
-					if (formattedDate != null) {
-						postgresResource.insertEventtime(docId, Integer.parseInt(items[0]), Integer.parseInt(items[1]), items[2], items[3], formattedDate);
+					try {
+						String formattedDate = timeFormatter.filterDate(items[4]);
+						if (formattedDate != null) {
+							postgresResource.insertEventtime(docId, Integer.parseInt(items[0]), Integer.parseInt(items[1]), items[2], items[3], formattedDate);
+						}
+					}
+					catch (Exception e) {
+						System.out.println(items);
 					}
 				}
 			}

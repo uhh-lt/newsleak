@@ -15,6 +15,7 @@ package uhh_lt.newsleak.annotator;
  * For details, see http://dbs.ifi.uni-heidelberg.de/heideltime
  */
 
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,8 +27,9 @@ import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
 import org.apache.uima.UimaContext;
-import org.apache.uima.analysis_component.JCasAnnotator_ImplBase;
 import org.apache.uima.cas.FSIterator;
+import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
+import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 
@@ -76,13 +78,26 @@ public class HeidelTimeOpenNLP extends JCasAnnotator_ImplBase {
 	private int timexID = 0;
 	
 	// INPUT PARAMETER HANDLING WITH UIMA
-	private String PARAM_LANGUAGE         = "Language";
 	// supported languages (2012-05-19): english, german, dutch, englishcoll, englishsci
-	private String PARAM_TYPE_TO_PROCESS  = "Type";
+	public static final String PARAM_LANGUAGE   = "requestedLanguage";
+	@ConfigurationParameter(
+			name = PARAM_LANGUAGE, 
+			mandatory = true,
+			description = "document language")
+	private String requestedLanguage;
+	private Language language;
+	
 	// chosen locale parameter name
-	private String PARAM_LOCALE			   = "locale";
+	public static final String PARAM_LOCALE     = "locale";
+	@ConfigurationParameter(
+			name = PARAM_LOCALE, 
+			mandatory = false,
+			defaultValue = "en_GB",
+			description = "document locale")
+	private String requestedLocale;
+	
 	// supported types (2012-05-19): news (english, german, dutch), narrative (english, german, dutch), colloquial
-	private Language language       = Language.ENGLISH;
+	private String PARAM_TYPE_TO_PROCESS  = "Type";
 	private String typeToProcess  = "news";
 	
 	// INPUT PARAMETER HANDLING WITH UIMA (which types shall be extracted)
@@ -119,7 +134,6 @@ public class HeidelTimeOpenNLP extends JCasAnnotator_ImplBase {
 		/////////////////////////////////
 		// HANDLE LOCALE    		   //
 		/////////////////////////////////
-		String requestedLocale = (String) aContext.getConfigParameterValue(PARAM_LOCALE);
 		if(requestedLocale == null || requestedLocale.length() == 0) { // if the PARAM_LOCALE setting was left empty, 
 			Locale.setDefault(Locale.UK); // use a default, the ISO8601-adhering UK locale (equivalent to "en_GB")
 		} else { // otherwise, check if the desired locale exists in the JVM's available locale repertoire
@@ -140,8 +154,8 @@ public class HeidelTimeOpenNLP extends JCasAnnotator_ImplBase {
 		//////////////////////////////////
 		// GET CONFIGURATION PARAMETERS //
 		//////////////////////////////////
-//		language = Language.getLanguageFromString((String) aContext.getConfigParameterValue(PARAM_LANGUAGE));
-//		
+		language = Language.getLanguageFromString(requestedLanguage);
+		
 //		typeToProcess  = (String)  aContext.getConfigParameterValue(PARAM_TYPE_TO_PROCESS);
 //		find_dates     = (Boolean) aContext.getConfigParameterValue(PARAM_DATE);
 //		find_times     = (Boolean) aContext.getConfigParameterValue(PARAM_TIME);
@@ -347,7 +361,7 @@ public class HeidelTimeOpenNLP extends JCasAnnotator_ImplBase {
 //		annotation.setFilename(sentence.getFilename());
 //		annotation.setSentId(sentence.getSentenceId());
 		
-		// annotation.setEmptyValue(emptyValue);
+		annotation.setEmptyValue(emptyValue);
 
 		FSIterator iterToken = jcas.getAnnotationIndex(Token.type).subiterator(sentence);
 		String allTokIds = "";
@@ -1883,9 +1897,9 @@ public class HeidelTimeOpenNLP extends JCasAnnotator_ImplBase {
 				linearDates.add(timex);
 			}
 			
-//			if(timex.getTimexType().equals("DURATION") && !timex.getEmptyValue().equals("")) {
-//				linearDates.add(timex);
-//			}
+			if(timex.getTimexType().equals("DURATION") && !timex.getEmptyValue().equals("")) {
+				linearDates.add(timex);
+			}
 		}
 		
 		//////////////////////////////////////////////
@@ -1900,11 +1914,11 @@ public class HeidelTimeOpenNLP extends JCasAnnotator_ImplBase {
 			if(t_i.getTimexType().equals("TIME") || t_i.getTimexType().equals("DATE"))
 					valueNew = specifyAmbiguousValuesString(value_i, t_i, i, linearDates, jcas);
 			
-//			// handle the emptyValue attribute for any type
-//			if(t_i.getEmptyValue() != null && t_i.getEmptyValue().length() > 0) {
-//				String emptyValueNew = specifyAmbiguousValuesString(t_i.getEmptyValue(), t_i, i, linearDates, jcas);
-//				t_i.setEmptyValue(emptyValueNew);
-//			}
+			// handle the emptyValue attribute for any type
+			if(t_i.getEmptyValue() != null && t_i.getEmptyValue().length() > 0) {
+				String emptyValueNew = specifyAmbiguousValuesString(t_i.getEmptyValue(), t_i, i, linearDates, jcas);
+				t_i.setEmptyValue(emptyValueNew);
+			}
 			
 			t_i.removeFromIndexes();
 			Logger.printDetail(t_i.getTimexId()+" DISAMBIGUATION PHASE: foundBy:"+t_i.getFoundByRule()+" text:"+t_i.getCoveredText()+" value:"+t_i.getTimexValue()+" NEW value:"+valueNew);
@@ -1949,9 +1963,9 @@ public class HeidelTimeOpenNLP extends JCasAnnotator_ImplBase {
 						hsTimexesToRemove.add(t2);
 					}
 					// remove timexes that are identical, but one has an emptyvalue
-//					else if(t2.getEmptyValue().equals("") && !t1.getEmptyValue().equals("")) {
-//						hsTimexesToRemove.add(t2);
-//					}
+					else if(t2.getEmptyValue().equals("") && !t1.getEmptyValue().equals("")) {
+						hsTimexesToRemove.add(t2);
+					}
 					// REMOVE REAL DUPLICATES (the one with the lower timexID)
 					else if ((Integer.parseInt(t1.getTimexId().substring(1)) < Integer.parseInt(t2.getTimexId().substring(1)))) {
 						hsTimexesToRemove.add(t1);
@@ -2209,10 +2223,8 @@ public class HeidelTimeOpenNLP extends JCasAnnotator_ImplBase {
             
 			if (fastCheckOK) {
 				for (MatchResult r : Toolbox.findMatches(p, s.getCoveredText())) {
-//					boolean infrontBehindOK = ContextAnalyzer.checkTokenBoundaries(r, s, jcas) // improved token boundary checking
-//										&& ContextAnalyzer.checkInfrontBehind(r, s);
-					
-					boolean infrontBehindOK = true;
+					boolean infrontBehindOK = checkTokenBoundaries(r, s, jcas) // improved token boundary checking
+										&& checkInfrontBehind(r, s);
 	
 					
 					// CHECK POS CONSTRAINTS
@@ -2568,5 +2580,109 @@ public class HeidelTimeOpenNLP extends JCasAnnotator_ImplBase {
 				return false;
 			}
 		}
+	}
+	
+	/**
+	* Check token boundaries using token information
+	* @param r MatchResult
+	* @param s respective Sentence
+	* @param jcas current CAS object
+	* @return whether or not the MatchResult is a clean one
+	*/
+	public static Boolean checkTokenBoundaries(MatchResult r, Sentence s, JCas jcas){
+		Boolean beginOK = false;
+		Boolean endOK = false;
+	
+		// whole expression is marked as a sentence
+		if ((r.end() - r.start()) == (s.getEnd() -s.getBegin())){
+			return true;
+		}
+		
+		// Only check Token boundaries if no white-spaces in front of and behind the match-result
+		if ((r.start() > 0) 
+				&& ((s.getCoveredText().subSequence(r.start()-1, r.start()).equals(" ")))
+				&& ((r.end() < s.getCoveredText().length()) && ((s.getCoveredText().subSequence(r.end(), r.end()+1).equals(" "))))) {
+			return true;
+		}
+	
+		// other token boundaries than white-spaces
+		else {
+			FSIterator iterToken = jcas.getAnnotationIndex(Token.type).subiterator(s);
+			while (iterToken.hasNext()) {
+				Token t = (Token) iterToken.next();
+			
+				// Check begin
+				if ((r.start() + s.getBegin()) == t.getBegin()){
+					beginOK = true;
+				}
+				// Tokenizer does not split number from some symbols (".", "/", "-", "–"),
+				// e.g., "...12 August-24 Augsut..."
+				else if ((r.start() > 0)
+						&& ((s.getCoveredText().subSequence(r.start()-1, r.start()).equals("."))
+						|| (s.getCoveredText().subSequence(r.start()-1, r.start()).equals("/")) 
+						|| (s.getCoveredText().subSequence(r.start()-1, r.start()).equals("–"))
+						|| (s.getCoveredText().subSequence(r.start()-1, r.start()).equals("-")))) {
+					beginOK = true;
+				}
+			
+				// Check end
+				if ((r.end() + s.getBegin()) == t.getEnd()) {
+					endOK = true;
+				}
+				// Tokenizer does not split number from some symbols (".", "/", "-", "–"),
+				// e.g., "... in 1990. New Sentence ..."
+				else if ((r.end() < s.getCoveredText().length()) 
+						&& ((s.getCoveredText().subSequence(r.end(), r.end()+1).equals("."))
+								|| (s.getCoveredText().subSequence(r.end(), r.end()+1).equals("/"))
+								|| (s.getCoveredText().subSequence(r.end(), r.end()+1).equals("–")) 
+								|| (s.getCoveredText().subSequence(r.end(), r.end()+1).equals("-")))) {
+					endOK = true;
+				}
+			
+				if (beginOK && endOK)
+					return true;
+			}
+		}
+		return false;
+	}
+	
+	
+	/**
+	 * Check token boundaries of expressions.
+	 * @param r MatchResult 
+	 * @param s Respective sentence
+	 * @return whether or not the MatchResult is a clean one
+	 */
+	public static Boolean checkInfrontBehind(MatchResult r, Sentence s) {
+		Boolean ok = true;
+		
+		// get rid of expressions such as "1999" in 53453.1999
+		if (r.start() > 1) {
+			if ((s.getCoveredText().substring(r.start() - 2, r.start()).matches("\\d\\."))){
+				ok = false;
+			}
+		}
+		
+		// get rid of expressions if there is a character or symbol ($+) directly in front of the expression
+		if (r.start() > 0) {
+			if (((s.getCoveredText().substring(r.start() - 1, r.start()).matches("[\\w\\$\\+]"))) &&
+					(!(s.getCoveredText().substring(r.start() - 1, r.start()).matches("\\(")))){
+				ok = false;
+			}
+		}
+		
+		if (r.end() < s.getCoveredText().length()) {
+			if ((s.getCoveredText().substring(r.end(), r.end() + 1).matches("[°\\w]")) &&
+					(!(s.getCoveredText().substring(r.end(), r.end() + 1).matches("\\)")))){
+				ok = false;
+			}
+			if (r.end() + 1 < s.getCoveredText().length()) {
+				if (s.getCoveredText().substring(r.end(), r.end() + 2).matches(
+						"[\\.,]\\d")) {
+					ok = false;
+				}
+			}
+		}
+		return ok;
 	}
 }

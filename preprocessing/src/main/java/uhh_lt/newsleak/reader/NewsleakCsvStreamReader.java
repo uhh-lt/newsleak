@@ -52,6 +52,7 @@ public class NewsleakCsvStreamReader extends CasCollectionReader_ImplBase {
 
 	private int totalRecords = 0;
 	private int currentRecord = 0;
+	private int maxRecords = 100;
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
@@ -130,6 +131,7 @@ public class NewsleakCsvStreamReader extends CasCollectionReader_ImplBase {
 	}
 
 	public boolean hasNext() throws IOException, CollectionException {
+		if (currentRecord > maxRecords) return false;
 		return recordsIterator.hasNext();
 	}
 

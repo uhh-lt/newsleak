@@ -11,7 +11,7 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 
 /** 
- * Updated by JCasGen Wed Dec 13 13:13:22 CET 2017
+ * Updated by JCasGen Thu Jan 04 14:37:05 CET 2018
  * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
 public class Money extends Annotation {
