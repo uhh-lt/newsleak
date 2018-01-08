@@ -28,6 +28,9 @@ public class ElasticsearchResource extends Resource_ImplBase {
 	private Logger logger;
 	private static final String DOCUMENT_TYPE = "document";
 
+	public static final String PARAM_HOST = "mHost";
+	@ConfigurationParameter(name = PARAM_HOST)
+	private String mHost;
 	public static final String PARAM_PORT = "mPort";
 	@ConfigurationParameter(name = PARAM_PORT)
 	private Integer mPort;
@@ -65,7 +68,7 @@ public class ElasticsearchResource extends Resource_ImplBase {
 			//			client = new PreBuiltTransportClient(settings)
 			//			        .addTransportAddress(new TransportAddress(InetAddress.getLocalHost(), mPort));
 			client = TransportClient.builder().settings(settings).build()
-					.addTransportAddress(new InetSocketTransportAddress(InetAddress.getLocalHost(), mPort));
+					.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(mHost), mPort));
 			if (createIndex) {
 				createIndex();
 			}

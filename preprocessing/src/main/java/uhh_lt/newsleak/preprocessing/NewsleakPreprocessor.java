@@ -73,6 +73,7 @@ public abstract class NewsleakPreprocessor
 	protected String documentFile;
 	protected String metadataFile;
 
+	protected String esHost;
 	protected String esClustername;
 	protected String esIndex;
 	protected String esPort;
@@ -112,6 +113,7 @@ public abstract class NewsleakPreprocessor
 			documentFile = prop.getProperty("documentfile");
 			metadataFile = prop.getProperty("metadatafile");
 
+			esHost = prop.getProperty("esurl");
 			esClustername = prop.getProperty("esclustername");
 			esIndex = prop.getProperty("esindex");
 			esPort = prop.getProperty("esport");

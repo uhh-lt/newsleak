@@ -144,6 +144,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 				ElasticsearchResource.PARAM_CREATE_INDEX, "true",
 				ElasticsearchResource.PARAM_CLUSTERNAME, this.esClustername,
 				ElasticsearchResource.PARAM_INDEX, this.esIndex,
+				ElasticsearchResource.PARAM_HOST, this.esHost,
 				ElasticsearchResource.PARAM_PORT, this.esPort,
 				ElasticsearchResource.PARAM_DOCUMENT_MAPPING_FILE, "desc/elasticsearch_mapping_document_2.4.json");
 		AnalysisEngineDescription esWriter = AnalysisEngineFactory.createEngineDescription(
@@ -174,6 +175,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		ExternalResourceDescription esResource = ExternalResourceFactory.createExternalResourceDescription(
 				ElasticsearchResource.class, 
 				ElasticsearchResource.PARAM_CREATE_INDEX, "false",
+				ElasticsearchResource.PARAM_HOST, this.esHost,
 				ElasticsearchResource.PARAM_CLUSTERNAME, this.esClustername,
 				ElasticsearchResource.PARAM_INDEX, this.esIndex,
 				ElasticsearchResource.PARAM_PORT, this.esPort,
