@@ -90,7 +90,7 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 		}
 		while (docSt.next()) {
 			List<NamedEntity> namedEntity = new ArrayList<>();
-			String content = docSt.getString("content").replace("\r", "");
+			String content = docSt.getString("content");
 			// content = content.substring(0,content.length()/10);
 			Date dbCreated = docSt.getDate("created");
 
