@@ -41,6 +41,10 @@ public class NewsleakCsvStreamReader extends CasCollectionReader_ImplBase {
 	public static final String PARAM_DEFAULT_LANG = "defaultLanguage";
 	@ConfigurationParameter(name=PARAM_DEFAULT_LANG, mandatory=false, defaultValue="en")
 	private String defaultLanguage;
+	
+	public static final String PARAM_DEBUG_MAX_DOCS = "maxRecords";
+	@ConfigurationParameter(name=PARAM_DEBUG_MAX_DOCS, mandatory=false)
+	private Integer maxRecords = Integer.MAX_VALUE;
 
 	private Reader csvReader;
 	private Iterable<CSVRecord> records;
@@ -52,7 +56,6 @@ public class NewsleakCsvStreamReader extends CasCollectionReader_ImplBase {
 
 	private int totalRecords = 0;
 	private int currentRecord = 0;
-	private int maxRecords = 100;
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {

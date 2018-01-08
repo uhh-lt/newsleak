@@ -86,6 +86,7 @@ public abstract class NewsleakPreprocessor
 	protected String dbIndices;
 
 	protected Integer threads;
+	protected Integer debugMaxDocuments;
 
 	protected TypeSystemDescription typeSystem;
 	protected NewsleakStatusCallbackListener statusListener;
@@ -126,6 +127,8 @@ public abstract class NewsleakPreprocessor
 			dbIndices = prop.getProperty("dbindices");
 
 			threads = Integer.valueOf(prop.getProperty("threads"));
+			debugMaxDocuments = Integer.valueOf(prop.getProperty("debugMaxDocuments"));
+			if (debugMaxDocuments <= 0) debugMaxDocuments = null;
 			input.close();
 		}
 		catch (IOException e) {

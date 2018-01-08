@@ -126,7 +126,8 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 				NewsleakCsvStreamReader.PARAM_DOCUMENT_FILE, this.documentFile,
 				NewsleakCsvStreamReader.PARAM_METADATA_FILE, this.metadataFile,
 				NewsleakCsvStreamReader.PARAM_INPUTDIR, this.dataDirectory,
-				NewsleakCsvStreamReader.PARAM_DEFAULT_LANG, this.defaultLanguage
+				NewsleakCsvStreamReader.PARAM_DEFAULT_LANG, this.defaultLanguage,
+				NewsleakCsvStreamReader.PARAM_DEBUG_MAX_DOCS, this.debugMaxDocuments
 				);
 
 		// language detection
