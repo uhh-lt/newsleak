@@ -47,7 +47,7 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 		st.setFetchSize(BATCH_SIZE);
 		try {
 			client = TransportClient.builder().settings(settings).build()
-					.addTransportAddress(new InetSocketTransportAddress(InetAddress.getLocalHost(), Integer.parseInt(indexer.esPort)));
+					.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(indexer.esHost), Integer.parseInt(indexer.esPort)));
 			// remove existing index
 			client.admin().indices().delete(new DeleteIndexRequest(indexer.esIndex)).actionGet();
 			// create index with all extracted data
