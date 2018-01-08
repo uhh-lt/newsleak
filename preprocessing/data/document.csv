@@ -1,0 +1,55 @@
+"11","Group,
+EES and I have not been receiving emails detailing our marketing of power for them. Please send this information to them and cc me on it. If your emai
+l is not working...find someone to make it work. We have plenty of IT help in the office, and should call on it. That is so rad Bill.
+Thanks, 
+Bill 
+Group,
+EES and I have not been receiving emails detailing our marketing of power for them. Please send this information to them and cc me on it. If your emai
+l is not working...find someone to make it work. We have plenty of IT help in the office, and should call on it. That is so rad Bill.
+Thanks, 
+Bill","2001-05-04 14:58:07"
+"12","That is so rad Bill. I'm pretty jealous, but at least one of us will get to enjoy this amazing day! What happened to the drive up to St Helens on your motorcycle?? I think that sounds like a rad time. Maybe you will take me up there one day during the summer when the sun is shining?? Kathy at El Paso and/or those on shift the next day are having to correct mistakes with 
+these formulas. That woul
+d totally rule. I would be so into that. Anyhow, have a great time playing golf. Try to shoot a birdie for me. hee hee","2001-05-03 13:13:23"
+"13","Group. That is so rad Bill.
+We are short 25 mws under ST-WBOM in NP-15 for HE 7-22 on FRIDAY and SATURDAY(05/04 and 05/05 respectively). We are short at $150. Please make a purch
+ase to fill this under ST-WBOM and a sale to the imbalance under ST-WBOM. ST-CALI/EES also has some odd lots on and off peak that we should try to mov
+e/fill.
+Bill","2001-05-03 12:58:09"
+"14","That is so rad Bill. A quick reminder for the newer members of the group. The bottom of the El Paso model is divided into five different regions. Prescheduled sales,
+ real time sales, then prescheduled purchases, real time purchases and finally ancillary services. Each group of purchases, sales and ancillary servic
+es need to be seperate. The purchases and sales should each pull in to the summary portion at the bottom of the model. Likewise the ancillary services
+ should pull into the blue ancillary service summary section. Kathy at El Paso and/or those on shift the next day are having to correct mistakes with 
+these formulas. As always, if you have questions regarding the El Paso model, please ask a more experienced member of the group or myself. Otherwise, 
+mistakes on simple formulas should be expected not to happen.
+
+Thanks,
+Bill","2001-05-03 11:24:24"
+"15","
+Bill, Thank you so much for writing back to me. I have been missing you like crazy without any way of getting in touch with you. How are things going? We ha
+ve so much catching up to do. I realize more than ever what a special friend you are and how much I have missed our conversations. I hope all is going
+ wonderful with you. Things here are great. I am almost done with my second year of school (only 2 more weeks) I just took a comprehensive exam over t
+he last 2 years and I think I passed. I am constantly amazed that I am almost done with school and will soon be practicing medicine on poor innocent p
+eople. I'll actually be in Seattle all of August and September, so hopefully we can arrange some kind of meeting so I can give you a big hug.
+How is work? Are you still doing the same job? I know last time we talked you had all kinds of crazy ideas floating around about moving to Europe or J
+apan or something crazy like that. In fact, that is what I thought had happened and I was so scared that i would not be able to find you. Do you still
+ have your wonderful motorcycle? I know you were moving to a new home the last time we talked, but I know nothing about it. are you living by yourself
+, in a condo, a home, an apartment? Anything else wild and crazy that I have missed hearing about? I'm sure there is....
+Well, I just had to check something quickly off the internet before class today, and unfortunately I must go. But it was wonderful to see your name an
+d hear that you are alive and well. I will definately be calling you this week to catch up.
+I have missed you my friend, take care,
+Sara
+
+Get your FREE download of MSN Explorer at http://explorer.msn.com ","2001-04-30 19:59:00"
+"16","Liebe alle,
+
+ja das klingt doch ganz klasse! Tatsächlich habe ich auch so meine Schwierigkeiten, den Punkt von Reviewer 1 zu verstehen. Natürlich würde sich das Ergebnis stark verändern, wenn wir andere Modellparameter wählen. Das ist doch der Hintergrund des ganzen Papieres, warum wir argumentieren, dass wir Parameter einerseits optimieren und andererseits manuell ein best-passendes Ergebnis auswählen.
+
+Das was aus Denny&Spirling meiner Meinung nach hauptsächlich zu entnehmen ist, ist dass unterschiedliche Vokabulare (also die Verwendung von Pruning und Stoppwortentfernung) zu unterschiedlichen optimalen K führen (optimiert anhand des nicht allzu geeigneten Perplexity-Maßes). Entsprechend sehen dann deren Topics auch recht unterschiedlich aus, wenn sie unterschiedliche Vorverarbeitungen verwenden. Ich halte das ganzer darum übrigens gerade nicht für eine gute Validierung, weil mehrere Parameter gleichzeitig verändert werden (Vorverarveitung und K) und damit der Einfluss der einzelnen Parameter verschleiert wird.
+
+Lange Rede kurzer Sinn, den Vorschlag in der Diskussion nochmal aufzugreifen, dass Vorverarbeitung einen großen Einfluss haben kann, ist wahrscheinlich am besten. Wir sollten dann aber gleichzeitig argumentieren, dass es stichhaltige Begründungen für eine optimale Vorverarbeitungskette gibt, die wir ja vorschlagen (Lemmatisierung, um interpretierbare Worte zu behalten und das Vokabular zu unifizieren; Pruning um eine handhabbare und stabile Vokabulargröße zu erhalten, die uns auch ermöglicht mit dem Sampling-Ansatz zu arbeiten; und Stoppwortentfernung, weil die interpretierbare Topics ohnehin stört). Hier viel zu varrieren, macht also wenig Sinn. Letztendlich ausschlaggebend für die Modellselektion ist dann ja die manuelle Bewertung des Modelle, die mit unterschiedlichen LDA-Hyperparametern berechnet werden.
+
+Achso, und zumindest für das Reliabilitätsexperiment vergleichen wir ja auch 3 Datensätze...
+
+Viele Grüße,
+Gregor","2001-05-03 11:24:24"

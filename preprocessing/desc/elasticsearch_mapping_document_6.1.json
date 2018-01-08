@@ -1,0 +1,38 @@
+{
+	"document": {
+		"properties": {
+			"Content": {
+				"type": "text",
+				"analyzer": "standard"
+			},
+			"Created": {
+				"type": "date",
+				"format": "yyyy-MM-dd",
+				"fields": {
+					"raw": {
+						"type": "date",
+						"format": "yyyy-MM-dd"
+					}
+				}
+			},
+			"DocumentLanguage": {
+				"type": "keyword"
+			},
+			"ParagraphLanguages": {
+				"properties": {
+					"lang": {
+						"type": "keyword"
+					},
+					"begin": {
+						"type": "long",
+						"index": false
+					},
+					"end": {
+						"type": "long",
+						"index": false
+					}
+				}
+			}
+		}
+	}
+}
