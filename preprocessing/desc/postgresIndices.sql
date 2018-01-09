@@ -8,10 +8,7 @@ ALTER TABLE ONLY labels
 
 ALTER TABLE ONLY tags
     ADD CONSTRAINT tags_pkey PRIMARY KEY (id);
-
-
-CREATE INDEX "Entity_Name_idx" ON entity USING btree ("left"((name)::text, 60));
-
+    
 
 CREATE INDEX "Inv_so_s_id_idx" ON inv_so USING btree (s_id);
 
@@ -69,13 +66,6 @@ CREATE INDEX documententity_docid_idx ON documententity USING btree (docid);
 
 
 CREATE INDEX documententity_entityid_idx ON documententity USING btree (entityid);
-
-
-
-CREATE INDEX entity_id_idx ON entity USING btree (id);
-
-
-CREATE INDEX entity_id_name_idx ON entity USING btree (id, "left"((name)::text, 60));
 
 
 CREATE INDEX entityoffset_docid_entid_idx ON entityoffset USING btree (docid, entid);

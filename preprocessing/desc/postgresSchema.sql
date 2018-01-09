@@ -43,6 +43,11 @@ CREATE TABLE entity (
 );
 
 
+CREATE INDEX entity_id_idx ON entity USING btree (id);
+CREATE INDEX "Entity_Name_idx" ON entity USING btree ("left"((name)::text, 60));
+CREATE INDEX entity_id_name_idx ON entity USING btree (id, "left"((name)::text, 60));
+
+
 CREATE TABLE entityoffset (
     docid bigint NOT NULL,
     entid bigint NOT NULL,
