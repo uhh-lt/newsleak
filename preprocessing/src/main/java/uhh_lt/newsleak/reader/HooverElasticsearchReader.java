@@ -1,22 +1,14 @@
 package uhh_lt.newsleak.reader;
 
-import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
-import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
@@ -42,10 +34,8 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.elasticsearch.search.sort.SortParseElement;
 
 import de.unihd.dbs.uima.types.heideltime.Dct;
-import uhh_lt.newsleak.resources.ElasticsearchResource;
 import uhh_lt.newsleak.resources.HooverResource;
 import uhh_lt.newsleak.types.Metadata;
-import uhh_lt.newsleak.writer.ElasticsearchDocumentWriter;
 
 public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 
@@ -116,9 +106,6 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 
 
 	public void getNext(CAS cas) throws IOException, CollectionException {
-
-		currentRecord++;
-
 		JCas jcas;
 		try {
 			jcas = cas.getJCas();
@@ -174,7 +161,18 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 
 		// write external metadata
 		ArrayList<List<String>> metadata = new ArrayList<List<String>>();
-		
+
+		// subject, filename, path
+		field = response.getField("subject");
+		if (field != null)
+			metadata.add(createTextMetadata(docId, "subject", ((String) field.getValue()).toString()));
+		field = response.getField("filename");
+		if (field != null)
+			metadata.add(createTextMetadata(docId, "filename", ((String) field.getValue()).toString()));
+		field = response.getField("path");
+		if (field != null)
+			metadata.add(createTextMetadata(docId, "path", ((String) field.getValue()).toString()));
+
 		// attachments
 		field = response.getField("attachments");
 		if (field != null)
@@ -220,9 +218,9 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 	private ArrayList<String> createTextMetadata(String docId, String key, String value) {
 		ArrayList<String> meta = new ArrayList<String>();
 		meta.add(docId);
-		meta.add(key);
+		meta.add(StringUtils.capitalize(key));
 		meta.add(value.replaceAll("\\r|\\n", " "));
-		meta.add("text");
+		meta.add("Text");
 		return meta;
 	}
 
@@ -230,7 +228,7 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 	public Progress[] getProgress() {
 		return new Progress[] {
 				new ProgressImpl(
-						Long.valueOf(currentRecord).intValue(),
+						Long.valueOf(currentRecord).intValue() - 1,
 						Long.valueOf(totalRecords).intValue(),
 						Progress.ENTITIES
 						)
@@ -239,7 +237,12 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 
 	public boolean hasNext() throws IOException, CollectionException {
 		if (currentRecord > maxRecords) return false;
-		return currentRecord < totalRecords ? true : false;
+		if (currentRecord < totalRecords) {
+			currentRecord++;
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 }
