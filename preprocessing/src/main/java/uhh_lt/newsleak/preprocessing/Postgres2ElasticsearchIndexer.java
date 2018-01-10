@@ -12,6 +12,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import uhh_lt.newsleak.util.ResultSetIterable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.util.Level;
@@ -23,6 +27,7 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.client.transport.TransportClient;
@@ -73,187 +78,192 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 				System.out.println("Index " + indexName + " is created.");
 			}
 		} catch (Exception e) {
-			// starnange error
 			System.out.println(e);
 			logger.log(Level.SEVERE, e.getMessage());
 		}
 
 		System.out.println("Start indexing");
 		ResultSet docSt = st.executeQuery("select * from document;");
-		BulkRequestBuilder bulkRequest = client.prepareBulk();
-		int bblen = 0;
+		
+		BulkRequestConcurrent bulkRequestConcurrent = new BulkRequestConcurrent(client);
+		AtomicCounter bblen = new AtomicCounter();
 
 		ResultSet entTypes = conn.createStatement().executeQuery("select distinct type from entity;");
 		Set<String> types = new HashSet<>();
 		while(entTypes.next()){
 			types.add(entTypes.getString("type").toLowerCase());
 		}
-		while (docSt.next()) {
-			List<NamedEntity> namedEntity = new ArrayList<>();
-			String content = docSt.getString("content");
-			// content = content.substring(0,content.length()/10);
-			Date dbCreated = docSt.getDate("created");
-
-			SimpleDateFormat simpleCreated = new SimpleDateFormat("yyyy-MM-dd");
-			String created = simpleCreated.format(dbCreated);
-			Integer docId = docSt.getInt("id");
-
-			ResultSet docEntSt = conn.createStatement()
-					.executeQuery("select entid from entityoffset where  docid = " + docId + ";");
-			Set<Long> ids = new HashSet<>();
-			while (docEntSt.next()) {
-				long entId = docEntSt.getLong("entid");
-				if(ids.contains(entId)){
-					continue;
-				}
-				ids.add(entId);
-				ResultSet entSt = conn.createStatement()
-						.executeQuery("select * from entity where  id = " + entId + ";");
-				if (entSt.next()) {
-					NamedEntity ne = new NamedEntity(entSt.getLong("id"), entSt.getString("name"),
-							entSt.getString("type"), 1 /*docEntSt.getInt("frequency")*/);
-					namedEntity.add(ne);
-				}
-
-			}
-
-			///// Adding important terms to the index - ONLY top 10
-
-			ResultSet docTermSt = conn.createStatement()
-					.executeQuery("select * from terms where  docid = " + docId + " limit 10;");
-
-			Map<String, Integer> termMap = new HashMap<>();
-			while (docTermSt.next()) {
-				String term = docTermSt.getString("term");
-				int freq = docTermSt.getInt("frequency");
-				termMap.put(term, freq);
-			}
-			//// Adding Timex to ES index
 
 
-			ResultSet docTimexSt = conn.createStatement()
-					.executeQuery("select * from eventtime where  docid = " + docId + ";");
+		Function<ResultSet, String> indexDoc = new Function<ResultSet, String>() {
 
-			List<TimeX> timexs = new ArrayList<>();
-			Set<String> simpeTimex = new HashSet<>();
-			while (docTimexSt.next()) {
-				String timeXValue = docTimexSt.getString("timexvalue");
-				TimeX t = new TimeX(docTimexSt.getInt("beginoffset"), docTimexSt.getInt("endoffset"),
-						docTimexSt.getString("timex"), docTimexSt.getString("type"), timeXValue);
-				timexs.add(t);
-				simpeTimex.add(timeXValue);
-			}
+			@Override
+			public String apply(ResultSet docSt) {
+				List<NamedEntity> namedEntity = new ArrayList<>();
+				String content;
+				Integer docId = 0;
+				try {
+					content = docSt.getString("content");
+					Date dbCreated = docSt.getDate("created");
 
-			ResultSet metadataSt = conn.createStatement()
-					.executeQuery("select * from metadata where docid =" + docId + ";");
+					SimpleDateFormat simpleCreated = new SimpleDateFormat("yyyy-MM-dd");
+					String created = simpleCreated.format(dbCreated);
+					docId = docSt.getInt("id");
 
-			XContentBuilder xb = XContentFactory.jsonBuilder().startObject();
-			xb.field("Content", content).field("Created", created);
-			Map<String, List<String>> metas = new HashMap<>();
-			while (metadataSt.next()) {
-				// we capitalize the first character on purpose
-				String key = StringUtils.capitalize(metadataSt.getString("key").replace(".", "_"));
-				String value = metadataSt.getString("value");
-				// Object type = metadataSt.getObject("type");
-				// xb.field(key, value)/* .field("value",
-				// value).field("type",type) */;
-				metas.putIfAbsent(key, new ArrayList<>());
-				metas.get(key).add(value);
-			}
-			for (String key : metas.keySet()) {
-				if (metas.get(key).size() > 1) { // array field
-					xb.field(key, metas.get(key));
-				} else {
-					xb.field(key, metas.get(key).get(0));
-				}
-			}
-			///// Adding entities
-			if (namedEntity.size() > 0) {
-				xb.startArray("Entities");
-				for (NamedEntity ne : namedEntity) {
-					xb.startObject();
-					xb.field("EntId", ne.id);
-					xb.field("Entname", ne.name);
-					xb.field("EntType", ne.type);
-					xb.field("EntFrequency", ne.frequency);
-					xb.endObject();
-				}
-				xb.endArray();
+					ResultSet docEntSt = conn.createStatement()
+							.executeQuery("select entid from entityoffset where  docid = " + docId + ";");
+					Set<Long> ids = new HashSet<>();
+					while (docEntSt.next()) {
+						long entId = docEntSt.getLong("entid");
+						if(ids.contains(entId)){
+							continue;
+						}
+						ids.add(entId);
+						ResultSet entSt = conn.createStatement()
+								.executeQuery("select * from entity where  id = " + entId + ";");
+						if (entSt.next()) {
+							NamedEntity ne = new NamedEntity(entSt.getLong("id"), entSt.getString("name"),
+									entSt.getString("type"), 1 /*docEntSt.getInt("frequency")*/);
+							namedEntity.add(ne);
+						}
 
+					}
 
+					///// Adding important terms to the index - ONLY top 10
 
-				for (String type:types){			
-					xb.startArray("Entities"+type);
-					for (NamedEntity ne : namedEntity) {
-						if (ne.type.toLowerCase().equals(type)) {
+					ResultSet docTermSt = conn.createStatement()
+							.executeQuery("select * from terms where  docid = " + docId + " limit 10;");
+
+					Map<String, Integer> termMap = new HashMap<>();
+					while (docTermSt.next()) {
+						String term = docTermSt.getString("term");
+						int freq = docTermSt.getInt("frequency");
+						termMap.put(term, freq);
+					}
+
+					ResultSet docTimexSt = conn.createStatement()
+							.executeQuery("select * from eventtime where  docid = " + docId + ";");
+
+					List<TimeX> timexs = new ArrayList<>();
+					Set<String> simpeTimex = new HashSet<>();
+					while (docTimexSt.next()) {
+						String timeXValue = docTimexSt.getString("timexvalue");
+						TimeX t = new TimeX(docTimexSt.getInt("beginoffset"), docTimexSt.getInt("endoffset"),
+								docTimexSt.getString("timex"), docTimexSt.getString("type"), timeXValue);
+						timexs.add(t);
+						simpeTimex.add(timeXValue);
+					}
+
+					ResultSet metadataSt = conn.createStatement()
+							.executeQuery("select * from metadata where docid =" + docId + ";");
+
+					XContentBuilder xb = XContentFactory.jsonBuilder().startObject();
+					xb.field("Content", content).field("Created", created);
+					Map<String, List<String>> metas = new HashMap<>();
+					while (metadataSt.next()) {
+						// we capitalize the first character on purpose
+						String key = StringUtils.capitalize(metadataSt.getString("key").replace(".", "_"));
+						String value = metadataSt.getString("value");
+						metas.putIfAbsent(key, new ArrayList<>());
+						metas.get(key).add(value);
+					}
+					for (String key : metas.keySet()) {
+						if (metas.get(key).size() > 1) { // array field
+							xb.field(key, metas.get(key));
+						} else {
+							xb.field(key, metas.get(key).get(0));
+						}
+					}
+					// Adding entities
+					if (namedEntity.size() > 0) {
+						xb.startArray("Entities");
+						for (NamedEntity ne : namedEntity) {
 							xb.startObject();
 							xb.field("EntId", ne.id);
 							xb.field("Entname", ne.name);
+							xb.field("EntType", ne.type);
 							xb.field("EntFrequency", ne.frequency);
 							xb.endObject();
 						}
+						xb.endArray();
+
+
+
+						for (String type:types){			
+							xb.startArray("Entities"+type);
+							for (NamedEntity ne : namedEntity) {
+								if (ne.type.toLowerCase().equals(type)) {
+									xb.startObject();
+									xb.field("EntId", ne.id);
+									xb.field("Entname", ne.name);
+									xb.field("EntFrequency", ne.frequency);
+									xb.endObject();
+								}
+							}
+							xb.endArray();
+						}
+
+
 					}
-					xb.endArray();
-				}
 
+					// Adding terms
+					if (termMap.size() > 0) {
+						xb.startArray("Keywords");
+						for (String term : termMap.keySet()) {
+							xb.startObject();
+							xb.field("Keyword", term);
+							xb.field("TermFrequency", termMap.get(term));
+							xb.endObject();
+						}
+						xb.endArray();
+					}
 
-			}
-
-			//// Adding terms
-			if (termMap.size() > 0) {
-				xb.startArray("Keywords");
-				for (String term : termMap.keySet()) {
-					xb.startObject();
-					xb.field("Keyword", term);
-					xb.field("TermFrequency", termMap.get(term));
+					// Adding TimeX
+					if (timexs.size() > 0) {
+						xb.startArray("EventTimes");
+						for (TimeX t : timexs) {
+							xb.startObject();
+							xb.field("Beginoffset", t.beginOffset);
+							xb.field("Endoffset", t.endOffset);
+							xb.field("Timex", t.timeX);
+							xb.field("TimeXType", t.timeXType);
+							xb.field("Timexvalue", t.timexValue);
+							xb.endObject();
+						}
+						xb.endArray();
+						xb.field("SimpleTimeExpresion", new ArrayList<>(simpeTimex));
+					}
+					
 					xb.endObject();
+					metadataSt.close();
+					
+					synchronized (bulkRequestConcurrent) {
+						bulkRequestConcurrent.add(client.prepareIndex(indexName, documentType, docId.toString()).setSource(xb));
+						bblen.increment();
+
+						if (bblen.value() % BATCH_SIZE == 0) {
+							logger.log(Level.INFO, "##### " + bblen.value() + " documents are indexed.");
+							bulkRequestConcurrent.execute();
+						}
+					}
+					
+
+				} catch (SQLException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-				xb.endArray();
+				return docId.toString();
 			}
 
-			//// Adding TimeX
-			if (timexs.size() > 0) {
-				xb.startArray("EventTimes");
-				for (TimeX t : timexs) {
-					xb.startObject();
-					xb.field("Beginoffset", t.beginOffset);
-					xb.field("Endoffset", t.endOffset);
-					xb.field("Timex", t.timeX);
-					xb.field("TimeXType", t.timeXType);
-					xb.field("Timexvalue", t.timexValue);
-					xb.endObject();
-				}
-				xb.endArray();
-				xb.field("SimpleTimeExpresion", new ArrayList<>(simpeTimex));
-			}
-			/*
-			 * if (rels.size() > 0) { xb.startArray("relations"); for (Long
-			 * relId : rels.keySet()) { xb.startObject(); xb.field("id", relId);
-			 * xb.field("relation", rels.get(relId)); xb.field("frequency",
-			 * relIds.get(relId)); xb.endObject(); } xb.endArray(); }
-			 */
-			xb.endObject();
-			metadataSt.close();
-			bulkRequest.add(client.prepareIndex(indexName, documentType, docId.toString()).setSource(xb));
-			bblen++;
+		};
 
-			if (bblen % BATCH_SIZE == 0) {
-				logger.log(Level.INFO, "##### " + bblen + " documents are indexed.");
-				BulkResponse bulkResponse = bulkRequest.execute().actionGet();
-				if (bulkResponse.hasFailures()) {
-					logger.log(Level.SEVERE, "##### Bulk Request failure with error: " + bulkResponse.buildFailureMessage());
-				}
-				bulkRequest = client.prepareBulk();
-			}
-		}
+		// parallel execution
+		List<String> userIdList = new ResultSetIterable<String>(docSt, indexDoc).stream().collect(Collectors.toList());
+		// index last requests
+		bulkRequestConcurrent.execute();
+
 		docSt.close();
-		if (bulkRequest.numberOfActions() > 0) {
-			logger.log(Level.INFO, "##### " + bblen + " data indexed.");
-			BulkResponse bulkRes = bulkRequest.execute().actionGet();
-			if (bulkRes.hasFailures()) {
-				logger.log(Level.SEVERE, "##### Bulk Request failure with error: " + bulkRes.buildFailureMessage());
-			}
-		}
 
 	}
 
@@ -298,16 +308,8 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 			createEntitesPerTypeMappings(mappingBuilder, "Entities"+type);
 		}
 		System.out.println("creating nested entities mapping ... done");
-		/*createEntitesPerTypeMappings(mappingBuilder, "Entitiesloc");
-
-		createEntitesPerTypeMappings(mappingBuilder, "Entitiesmisc");
-
-		createEntitesPerTypeMappings(mappingBuilder, "Entitiesorg");
-
-		createEntitesPerTypeMappings(mappingBuilder, "Entitiesper");*/
 
 		createKeywordsMappings(mappingBuilder);
-
 		createEventTimeMappings(mappingBuilder);
 		createSimpleTimexMappings(mappingBuilder);
 
@@ -386,9 +388,7 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 		mappingBuilder.startObject("TermFrequency").field("type", "long").endObject().endObject().endObject();
 	}
 
-
-
-
+	
 	private static void createSimpleTimexMappings(XContentBuilder mappingBuilder) throws IOException {
 		mappingBuilder.startObject("SimpleTimeExpresion").field("type", "date")
 		.field("format", "yyyy-MM-dd || yyyy || yyyy-MM").startObject("fields").startObject("raw")
@@ -396,104 +396,13 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 		.endObject();
 
 	}
+	
 
 	private static void createMetadataMappings(XContentBuilder mappingBuilder, String meta, String type)
 			throws IOException {
 		mappingBuilder.startObject(meta).field("type", type).startObject("fields").startObject("raw")
 		.field("type", type).field("index", "not_analyzed").endObject().endObject().endObject();
 
-	}
-
-	public static void createcableIndex(Client client, String indexName,
-			String documentType/* , String mapping */) throws IOException {
-
-		IndicesExistsResponse res = client.admin().indices().prepareExists(indexName).execute().actionGet();
-		if (res.isExists()) {
-			DeleteIndexRequestBuilder delIdx = client.admin().indices().prepareDelete(indexName);
-			delIdx.execute().actionGet();
-		}
-
-		CreateIndexRequestBuilder createIndexRequestBuilder = client.admin().indices().prepareCreate(indexName);
-
-		XContentBuilder mappingBuilder = XContentFactory.jsonBuilder().startObject().startObject(documentType)
-				.startObject("properties").startObject("Content").field("type", "string").field("analyzer", "english")
-				.endObject().startObject("Subject").field("type", "string").field("analyzer", "english").endObject()
-				.startObject("Header").field("type", "string").field("analyzer", "english").endObject()
-				.startObject("Origin").field("type", "string").field("index", "not_analyzed").endObject()
-				.startObject("Classification").field("type", "string").field("index", "not_analyzed").endObject()
-				.startObject("ReferenceId").field("type", "string").field("index", "not_analyzed").endObject()
-				.startObject("References").field("type", "string").field("store", "yes").field("index", "not_analyzed")
-				.endObject().startObject("SignedBy").field("type", "string").field("store", "yes")
-				.field("index", "not_analyzed").endObject().startObject("Tags").field("type", "string")
-				.field("store", "yes").field("index", "not_analyzed").endObject()
-
-				.startArray("Entities").startObject("EntId").field("type", "long").endObject().startObject("Entname")
-				.field("type", "string").field("index", "not_analyzed").endObject().startObject("EntType")
-				.field("type", "string").field("index", "not_analyzed").endObject().startObject("EntFrequency")
-				.field("type", "long").endObject().endArray()
-
-				.endObject().endObject();
-
-		/*
-		 * String mappingFile = new
-		 * String(Files.readAllBytes(Paths.get(mapping)));
-		 * 
-		 * createIndexRequestBuilder.addMapping(documentType, mappingFile);
-		 */
-		createIndexRequestBuilder.addMapping(documentType, mappingBuilder);
-
-		createIndexRequestBuilder.execute().actionGet();
-	}
-
-	public static void createEnronIndex(Client client, String indexName, String documentType) throws Exception {
-
-		IndicesExistsResponse res = client.admin().indices().prepareExists(indexName).execute().actionGet();
-		if (res.isExists()) {
-			DeleteIndexRequestBuilder delIdx = client.admin().indices().prepareDelete(indexName);
-			delIdx.execute().actionGet();
-		}
-
-		CreateIndexRequestBuilder createIndexRequestBuilder = client.admin().indices().prepareCreate(indexName);
-
-		XContentBuilder mappingBuilder = XContentFactory.jsonBuilder().startObject().startObject(documentType)
-				.startObject("properties").startObject("Content").field("type", "string").field("analyzer", "english")
-				.endObject().startObject("Subject").field("type", "string").field("analyzer", "english").endObject()
-
-				.startObject("Timezone").field("type", "string").field("index", "not_analyzed").endObject()
-				.startObject("Recipients_name").field("type", "string").field("index", "not_analyzed").endObject()
-				.startObject("Recipients_email").field("type", "string").field("index", "not_analyzed").endObject()
-				.startObject("Recipients_order").field("type", "short").field("index", "not_analyzed").endObject()
-				.startObject("Recipients_type").field("type", "string").field("index", "not_analyzed").endObject()
-				.startObject("Recipients_id").field("type", "long").field("index", "not_analyzed").endObject()
-
-				.startObject("sender_id").field("type", "long").field("index", "not_analyzed").endObject()
-				.startObject("sender_email").field("type", "string").field("index", "not_analyzed").endObject()
-				.startObject("sender_name").field("type", "string").field("index", "not_analyzed")
-
-				.startArray("Entities").startObject("EntId").field("type", "long").endObject().startObject("Entname")
-				.field("type", "string").field("index", "not_analyzed").endObject().startObject("EntType")
-				.field("type", "string").field("index", "not_analyzed").endObject().startObject("EntFrequency")
-				.field("type", "long").endObject().endArray()
-
-				/*
-				 * .startArray("relations").startObject("id") .field("type",
-				 * "integer").field("index", "not_analyzed").endObject()
-				 * .startObject("relation").field("type",
-				 * "string").field("index", "not_analyzed")
-				 * .endObject().startObject("frequency").field("type",
-				 * "integer") .field("index",
-				 * "not_analyzed").endObject().endArray()
-				 */.endObject().endObject();
-		createIndexRequestBuilder.addMapping(documentType, mappingBuilder);
-
-		try {
-			CreateIndexResponse response = createIndexRequestBuilder.execute().actionGet();
-			if (!response.isAcknowledged()) {
-				throw new Exception("Failed to delete index " + indexName);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 
@@ -526,6 +435,43 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 			this.timeXType = aTimexType;
 			this.timexValue = aTimexValue;
 
+		}
+	}
+	
+	
+	class AtomicCounter {
+	    private AtomicInteger c = new AtomicInteger(0);
+
+	    public void increment() {
+	        c.incrementAndGet();
+	    }
+
+	    public void decrement() {
+	        c.decrementAndGet();
+	    }
+
+	    public int value() {
+	        return c.get();
+	    }
+	}
+	
+	class BulkRequestConcurrent {
+		private BulkRequestBuilder bulkRequest;
+		private Client client;
+		public BulkRequestConcurrent(Client client) {
+			super();
+			this.client = client;
+			this.bulkRequest = this.client.prepareBulk();
+		}
+		public synchronized void add(IndexRequestBuilder request) {
+			this.bulkRequest.add(request);
+		}
+		public synchronized void execute() {
+			BulkResponse bulkResponse = bulkRequest.execute().actionGet();
+			if (bulkResponse.hasFailures()) {
+				logger.log(Level.SEVERE, "##### Bulk Request failure with error: " + bulkResponse.buildFailureMessage());
+			}
+			this.bulkRequest = client.prepareBulk();
 		}
 	}
 
