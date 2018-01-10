@@ -67,6 +67,8 @@ public abstract class NewsleakPreprocessor
 
 	private Options cliOptions;
 	private String configfile;
+	
+	protected String readerType;
 
 	protected String defaultLanguage;
 	protected String dataDirectory;
@@ -77,6 +79,12 @@ public abstract class NewsleakPreprocessor
 	protected String esClustername;
 	protected String esIndex;
 	protected String esPort;
+	
+	protected String hooverHost;
+	protected String hooverClustername;
+	protected String hooverIndex;
+	protected String hooverPort;
+	protected String hooverTmpMetadata;
 	
 	protected String dbUrl;
 	protected String dbName;
@@ -108,12 +116,20 @@ public abstract class NewsleakPreprocessor
 		try {
 			InputStream input = new FileInputStream(configfile);
 			prop.load(input);
+			
+			readerType = prop.getProperty("datareader");
 
 			defaultLanguage = prop.getProperty("lang");
 			dataDirectory = prop.getProperty("datadirectory");
 			documentFile = prop.getProperty("documentfile");
 			metadataFile = prop.getProperty("metadatafile");
-
+			
+			hooverHost = prop.getProperty("hooverurl");
+			hooverClustername = prop.getProperty("hooverclustername");
+			hooverIndex = prop.getProperty("hooverindex");
+			hooverPort = prop.getProperty("hooverport");
+			hooverTmpMetadata = prop.getProperty("hoovertmpmetadata");
+			
 			esHost = prop.getProperty("esurl");
 			esClustername = prop.getProperty("esclustername");
 			esIndex = prop.getProperty("esindex");

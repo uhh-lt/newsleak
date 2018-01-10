@@ -56,9 +56,11 @@ import opennlp.uima.util.UimaUtil;
 import uhh_lt.newsleak.annotator.HeidelTimeOpenNLP;
 import uhh_lt.newsleak.annotator.KeytermExtractor;
 import uhh_lt.newsleak.annotator.LanguageDetector;
+import uhh_lt.newsleak.reader.HooverElasticsearchReader;
 import uhh_lt.newsleak.reader.NewsleakCsvStreamReader;
 import uhh_lt.newsleak.reader.NewsleakElasticsearchReader;
 import uhh_lt.newsleak.resources.ElasticsearchResource;
+import uhh_lt.newsleak.resources.HooverResource;
 import uhh_lt.newsleak.resources.LanguageDetectorResource;
 import uhh_lt.newsleak.resources.PostgresResource;
 import uhh_lt.newsleak.resources.TextLineWriterResource;
@@ -89,7 +91,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		// import metadata.csv
 		np.initDb(np.dbName, np.dbUrl, np.dbUser, np.dbPass);
 		np.metadataToPostgres();
-		
+
 		// create postgres indices
 		String indexSql = FileUtils.readFileToString(new File(np.dbIndices)).replace("\n", "");
 		try {
@@ -98,10 +100,10 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		conn.close();
 	}
-	
+
 	private void metadataToPostgres() {
 		try {
 			CopyManager cpManager = new CopyManager((BaseConnection) conn);
@@ -116,19 +118,44 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		}
 	}
 
-
+	public CollectionReaderDescription getReader(String type) throws ResourceInitializationException {
+		CollectionReaderDescription reader = null;
+		if (type.equals("csv")) {
+			reader = CollectionReaderFactory.createReaderDescription(
+					NewsleakCsvStreamReader.class, this.typeSystem,
+					NewsleakCsvStreamReader.PARAM_DOCUMENT_FILE, this.documentFile,
+					NewsleakCsvStreamReader.PARAM_METADATA_FILE, this.metadataFile,
+					NewsleakCsvStreamReader.PARAM_INPUTDIR, this.dataDirectory,
+					NewsleakCsvStreamReader.PARAM_DEFAULT_LANG, this.defaultLanguage,
+					NewsleakCsvStreamReader.PARAM_DEBUG_MAX_DOCS, this.debugMaxDocuments
+					);
+		} else if (type.equals("hoover")) {
+			this.metadataFile = this.hooverTmpMetadata;
+			ExternalResourceDescription hooverResource = ExternalResourceFactory.createExternalResourceDescription(
+					HooverResource.class, 
+					HooverResource.PARAM_METADATA_FILE, this.dataDirectory + File.separator + this.metadataFile,
+					HooverResource.PARAM_HOST, this.hooverHost,
+					HooverResource.PARAM_CLUSTERNAME, this.hooverClustername,
+					HooverResource.PARAM_INDEX, this.hooverIndex,
+					HooverResource.PARAM_PORT, this.hooverPort
+					);
+			reader = CollectionReaderFactory.createReaderDescription(
+					HooverElasticsearchReader.class, this.typeSystem,
+					HooverElasticsearchReader.RESOURCE_HOOVER, hooverResource,
+					HooverElasticsearchReader.PARAM_DEFAULT_LANG, this.defaultLanguage,
+					HooverElasticsearchReader.PARAM_DEBUG_MAX_DOCS, this.debugMaxDocuments
+					);
+		} else {
+			this.logger.log(Level.SEVERE, "Unknown reader type: " + type);
+			System.exit(1);
+		}
+		return reader;
+	}
 	public void pipelineLanguageDetection() throws Exception {
 		statusListener = new NewsleakStatusCallbackListener(this.logger);
-		
+
 		// reader
-		CollectionReaderDescription csvReader = CollectionReaderFactory.createReaderDescription(
-				NewsleakCsvStreamReader.class, this.typeSystem,
-				NewsleakCsvStreamReader.PARAM_DOCUMENT_FILE, this.documentFile,
-				NewsleakCsvStreamReader.PARAM_METADATA_FILE, this.metadataFile,
-				NewsleakCsvStreamReader.PARAM_INPUTDIR, this.dataDirectory,
-				NewsleakCsvStreamReader.PARAM_DEFAULT_LANG, this.defaultLanguage,
-				NewsleakCsvStreamReader.PARAM_DEBUG_MAX_DOCS, this.debugMaxDocuments
-				);
+		CollectionReaderDescription reader = getReader(this.readerType);
 
 		// language detection
 		ExternalResourceDescription resourceLangDect = ExternalResourceFactory.createExternalResourceDescription(
@@ -138,7 +165,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 				LanguageDetector.MODEL_FILE, resourceLangDect,
 				LanguageDetector.DOCLANG_FILE, "data/documentLanguages.ser"
 				);
-		
+
 		// elasticsearch writer
 		ExternalResourceDescription esResource = ExternalResourceFactory.createExternalResourceDescription(
 				ElasticsearchResource.class, 
@@ -157,13 +184,13 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 				langDetect,
 				esWriter
 				);
-		
+
 		CpeBuilder ldCpeBuilder = new CpeBuilder();
-		ldCpeBuilder.setReader(csvReader);
+		ldCpeBuilder.setReader(reader);
 		ldCpeBuilder.setMaxProcessingUnitThreadCount(this.threads);
 		ldCpeBuilder.setAnalysisEngine(ldPipeline);
 		ldCpeBuilder.createCpe(statusListener).process();
-		
+
 		while (statusListener.isProcessing()) {
 			Thread.sleep(500);
 		}
@@ -171,7 +198,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 
 	public void pipelineAnnotation() throws Exception {
 		statusListener = new NewsleakStatusCallbackListener(this.logger);
-		
+
 		// reader
 		ExternalResourceDescription esResource = ExternalResourceFactory.createExternalResourceDescription(
 				ElasticsearchResource.class, 
@@ -185,9 +212,9 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 				NewsleakElasticsearchReader.class, this.typeSystem,
 				NewsleakElasticsearchReader.RESOURCE_ESCLIENT, esResource,
 				NewsleakElasticsearchReader.PARAM_LANGUAGE, "eng"
-		);
-		
-		
+				);
+
+
 		/* openNLP base annotations: Sentence, Token, POS */
 
 		/* Strategy for Multi-Language-Support:
@@ -240,14 +267,14 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		AnalysisEngineDescription nerPer = getOpennlpNerAed("PER", "opennlp.uima.Person", "./resources/eng/en-ner-person.bin");
 		AnalysisEngineDescription nerOrg = getOpennlpNerAed("ORG", "opennlp.uima.Organization", "./resources/eng/en-ner-organization.bin");
 		AnalysisEngineDescription nerLoc = getOpennlpNerAed("LOC", "opennlp.uima.Location", "./resources/eng/en-ner-location.bin");
-		
+
 
 		// keyterms
 		AnalysisEngineDescription keyterms = AnalysisEngineFactory.createEngineDescription(
 				KeytermExtractor.class
 				);
-		
-		
+
+
 		// writer
 		ExternalResourceDescription resourceLinewriter = ExternalResourceFactory.createExternalResourceDescription(
 				TextLineWriterResource.class, 
@@ -261,7 +288,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 				XmiWriter.class,
 				XmiWriter.PARAM_OUTPUT_DIRECTORY, this.dataDirectory + File.separator + "xmi"
 				);
-		
+
 		ExternalResourceDescription resourcePostgres = ExternalResourceFactory.createExternalResourceDescription(
 				PostgresResource.class, 
 				PostgresResource.PARAM_DBURL, this.dbUrl,
@@ -275,8 +302,8 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 				PostgresDbWriter.class,
 				PostgresDbWriter.RESOURCE_POSTGRES, resourcePostgres
 				);
-		
-		
+
+
 		// define pipeline
 
 		AnalysisEngineDescription pipeline = AnalysisEngineFactory.createEngineDescription(
@@ -308,7 +335,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 			Thread.sleep(500);
 		}
 	}
-	
+
 	private AnalysisEngineDescription getOpennlpNerAed(String shortType, String type, String modelFile) throws ResourceInitializationException {
 		ExternalResourceDescription resourceNer = ExternalResourceFactory.createExternalResourceDescription(
 				TokenNameFinderModelResourceImpl.class, new File(modelFile));
