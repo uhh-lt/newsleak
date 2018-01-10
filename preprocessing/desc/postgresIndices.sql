@@ -111,8 +111,7 @@ CREATE INDEX words_w_id_idx ON words USING btree (w_id);
 CREATE INDEX words_word_idx ON words USING hash (word);
 
 
-ALTER TABLE ONLY metadata
-    ADD CONSTRAINT metadata_docid_fkey FOREIGN KEY (docid) REFERENCES document(id);
+/* ALTER TABLE ONLY metadata ADD CONSTRAINT metadata_docid_fkey FOREIGN KEY (docid) REFERENCES document(id); */
 
 
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
@@ -131,23 +130,19 @@ REVOKE ALL ON TABLE documententity FROM PUBLIC;
 
 REVOKE ALL ON TABLE entity FROM PUBLIC;
 
-
 REVOKE ALL ON TABLE eventtime FROM PUBLIC;
 
 REVOKE ALL ON TABLE inv_so FROM PUBLIC;
-REVOKE ALL ON TABLE inv_w FROM PUBLIC;
 
+REVOKE ALL ON TABLE inv_w FROM PUBLIC;
 
 REVOKE ALL ON TABLE labels FROM PUBLIC;
 
 REVOKE ALL ON TABLE metadata FROM PUBLIC;
 
-
 REVOKE ALL ON TABLE relationship FROM PUBLIC;
 
-
 REVOKE ALL ON TABLE sentences FROM PUBLIC;
-
 
 REVOKE ALL ON TABLE sources FROM PUBLIC;
 
