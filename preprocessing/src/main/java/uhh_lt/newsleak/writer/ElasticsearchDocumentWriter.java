@@ -68,6 +68,9 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 		} catch (ParseException e) {
 			logger.log(Level.SEVERE, "Could not parse document date from document " + metadata.getDocId());
 			e.printStackTrace();
+		} catch (NullPointerException e) {
+			logger.log(Level.SEVERE, "No date for document " + metadata.getDocId());
+			e.printStackTrace();
 		}
 	}
 

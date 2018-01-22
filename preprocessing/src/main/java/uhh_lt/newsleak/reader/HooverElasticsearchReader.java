@@ -50,6 +50,8 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 	private String defaultLanguage;
 
 	public static final String PARAM_DEBUG_MAX_DOCS = "maxRecords";
+
+	private static final int MAXIMUM_DOCUMENT_LENGTH = 1500 * 50; // 50 norm pages
 	@ConfigurationParameter(name=PARAM_DEBUG_MAX_DOCS, mandatory=false)
 	private Integer maxRecords = Integer.MAX_VALUE;
 
@@ -61,6 +63,7 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 
 	private ArrayList<String> totalIdList;
 	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	SimpleDateFormat dateCreated = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	SimpleDateFormat dateJson = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
 	Pattern emailPattern = Pattern.compile("[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+");
 
@@ -123,14 +126,23 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 				.get();
 
 		String docText = "";
-		// email subject
+		// put email header information in main text
+		field = response.getField("from");
+		if (field != null) {
+			docText += (String) field.getValue() + "\n";
+		}
+		field = response.getField("to");
+		if (field != null) {
+			docText += (String) field.getValue() + "\n";
+		}
 		field = response.getField("subject");
 		if (field != null) {
 			docText += (String) field.getValue() + "\n\n";
 		}
 		field = response.getField("text");
 		if (field != null) {
-			docText += (String) field.getValue();
+			String completeText = (String) field.getValue();
+			docText += completeText.substring(0, Math.min(completeText.length(), MAXIMUM_DOCUMENT_LENGTH));
 		}
 		jcas.setDocumentText(docText);
 
@@ -139,13 +151,18 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		metaCas.setDocId(docId);
 
 		// date
-		GetField date = response.getField("date");
-		if (date == null) {
-			date = response.getField("date-created");
-		}
-		String docDate;
+		String docDate = "1900-01-01";
 		try {
-			docDate = date != null ? dateFormat.format(dateJson.parse((String) date.getValue())) : "1900-01-01";
+			GetField date = response.getField("date");
+			if (date != null) {
+				docDate = dateFormat.format(dateCreated.parse((String) date.getValue()));
+			} else {
+				date = response.getField("date-created");
+				if (date != null) {
+					docDate = dateFormat.format(dateJson.parse((String) date.getValue())) ;
+				}
+			}
+			
 			metaCas.setTimestamp(docDate);
 
 			// heideltime
