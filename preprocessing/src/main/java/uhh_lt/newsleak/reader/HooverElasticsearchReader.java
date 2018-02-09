@@ -23,6 +23,7 @@ import org.apache.uima.util.Logger;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.unit.TimeValue;
@@ -83,20 +84,27 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 					.startObject()
 					.endObject().endObject();
 			totalIdList = new ArrayList<String>();
-			SearchResponse scrollResp = client.prepareSearch(esIndex)
+			logger.log(Level.INFO, "Start scroll request on " + esIndex);
+			SearchRequestBuilder sb = client.prepareSearch(esIndex)
 					.addSort(SortParseElement.DOC_FIELD_NAME, SortOrder.ASC)
-					.setScroll(new TimeValue(60000))
+					.setScroll(TimeValue.timeValueSeconds(15L))
 					.setQuery(builder)
-					.setSize(10000).execute().actionGet(); 
+					.setFetchSource(false)
+					.setSize(10000); 
+			System.out.println(sb.toString());
+			SearchResponse scrollResp = sb.execute().actionGet();
 			while (true) {
+				logger.log(Level.INFO, "Continuing scroll request on " + esIndex);
 				for (SearchHit hit : scrollResp.getHits().getHits()) {
 					totalIdList.add(hit.getId());
 				}
-				scrollResp = client.prepareSearchScroll(scrollResp.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
+				scrollResp = client.prepareSearchScroll(scrollResp.getScrollId()).setScroll(TimeValue.timeValueSeconds(15L)).execute().actionGet();
 				//Break condition: No hits are returned
-				if (scrollResp.getHits().getHits().length == 0) {
+				int nHits = scrollResp.getHits().getHits().length;
+				if (nHits == 0) {
 					break;
 				}
+				logger.log(Level.INFO, "Added hits " + nHits);
 			}
 
 			totalRecords = totalIdList.size();
