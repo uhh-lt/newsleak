@@ -22,6 +22,7 @@ define([
     './components/sources/SourceController',
     './components/sources/DocumentController',
     './components/network/NetworkController',
+    './components/network/KeywordNetworkController',
     './components/network/GraphConfig',
     './components/metadata/MetadataController',
     './components/sources/SearchController',
@@ -47,7 +48,7 @@ define([
     var app = angular.module('myApp', [
             'ui.layout', 'ui.router', 'ui.bootstrap', 'play.routing','angularResizable', 'ngSanitize', 'ngMaterial',
             'underscore', 'myApp.observer', 'myApp.history', 'myApp.graphConfig', 'angularScreenfull',
-            'myApp.network', 'myApp.search', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.metafactory',
+            'myApp.network', 'myApp.keywordNetwork', 'myApp.search', 'myApp.metadata', 'myApp.source', 'myApp.sourcefactory', 'myApp.metafactory',
             'myApp.document', 'myApp.histogram', 'myApp.histogramX', 'ngVis', 'myApp.entityservice']
     );
 
@@ -78,6 +79,10 @@ define([
                 'network': {
                     templateUrl: 'assets/partials/network.html',
                     controller: 'NetworkController'
+                },
+                'keywordNetwork': {
+                    templateUrl: 'assets/partials/keywordNetwork.html',
+                    controller: 'KeywordNetworkController'
                 },
                 'histogram': {
                     templateUrl: 'assets/partials/histogram.html',
@@ -114,13 +119,17 @@ define([
         return uiProperties;
     });
 
-    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', '$mdDialog', 'uiShareService', 'ObserverService', 'playRoutes', 'historyFactory',
-        function ($scope, $state, $timeout, $window, $mdDialog, uiShareService, ObserverService, playRoutes, historyFactory) {
+    app.controller('AppController', ['$scope', '$state', '$timeout', '$window', '$mdDialog', 'uiShareService', 'ObserverService', 'playRoutes', 'historyFactory', 'EntityService',
+        function ($scope, $state, $timeout, $window, $mdDialog, uiShareService, ObserverService, playRoutes, historyFactory, EntityService) {
 
             // Select graph tab on startup. In order to update the value from the child scope we need an object here.
             $scope.selectedTab = { index: 0 };
             $scope.selectedDataset = '';
             $scope.datasets = [];
+
+            // initial values of graph checkboxes
+            $scope.showEntityGraph = true;
+            $scope.showKeywordGraph = true;
 
             $scope.historyFactory = historyFactory;
 
@@ -149,7 +158,9 @@ define([
                 $("#histogram").highcharts().reflow();
                 $("#histogramX").highcharts().reflow();
                 $(".scroll-chart").css("height",$("#metadata").height()-150);
-                $("#metadata-view .md-active .meta-chart").highcharts().reflow();
+                if($("#metadata-view .md-active .meta-chart").highcharts()){
+                    $("#metadata-view .md-active .meta-chart").highcharts().reflow();
+                }
             };
 
             $scope.$on("angular-resizable.resizeEnd", function (event, args) {
@@ -164,6 +175,22 @@ define([
                // setUILayoutProperties(parseInt($('#network-maps-container').css('width')), parseInt($('#network-maps-container').css('height'))-96);
                 $scope.resizeUI();
             });
+
+            $scope.toggleEntityGraph = function () {
+                EntityService.toggleEntityGraph();
+            };
+
+            $scope.toggleKeywordGraph = function () {
+                EntityService.toggleKeywordGraph();
+            };
+
+            $scope.getDisplayEntityGraph = function () {
+                return EntityService.getToggleEntityGraph();
+            };
+
+            $scope.getDisplayKeywordGraph = function () {
+                return EntityService.getToggleKeywordGraph();
+            };
 
             /**
              * This function sets properties that describe the dimensions of the UI layout.
@@ -221,10 +248,27 @@ define([
             function fetchBlacklist() {
                  playRoutes.controllers.EntityController.getBlacklistedEntities().get().then(function (response) {
                      $scope.blacklist = response.data;
+                     playRoutes.controllers.EntityController.getBlacklistedKeywords().get().then(function (response) {
+
+                         let i = 1;
+                         for(let item of response.data){
+                             $scope.blacklist.push({
+                                 // id: Long, name: String, entityType: String, freq: Int
+                                 id: i,
+                                 name: item,
+                                 entityType: 'KEYWORD',
+                                 freq: 1
+                             });
+                             i++;
+                         }
+                     });
                 });
             }
 
             function fetchMergelist() {
+                playRoutes.controllers.EntityController.getMergedEntities().get().then(function (response) {
+                    $scope.mergelist = response.data;
+                });
                 playRoutes.controllers.EntityController.getMergedEntities().get().then(function (response) {
                     $scope.mergelist = response.data;
                 });
@@ -248,6 +292,23 @@ define([
             };
 
             $scope.removeFromBlacklist = function() {
+
+                var blacklist = [];
+                for(let item of $scope.blacklistSelection) {
+                    if(item.entityType && item.entityType == 'KEYWORD'){
+                        blacklist.push(item.name);
+                    }
+                }
+
+                if(blacklist.length > 0) {
+                    playRoutes.controllers.KeywordNetworkController.undoBlacklistingKeywords(blacklist).get().then(function () {
+                        for(let item of blacklist){
+                            var index = $scope.blacklistSelection.indexOf(item);
+                            $scope.blacklistSelection.splice(index, 1);
+                        }
+                    });
+                }
+
                 // TODO: Enhancement update only special parts of the application
                 removeSelection(
                     $scope.blacklist,
@@ -255,7 +316,8 @@ define([
                     function(ids, observer) {
                         // Update network and frequency chart
                         playRoutes.controllers.EntityController.undoBlacklistingByIds(ids).get().then(function(response) {  observer.notifyObservers(); })
-                    });
+                    },
+                    null);
             };
 
             $scope.removeFromMergelist = function() {
@@ -264,12 +326,38 @@ define([
                     $scope.mergelistSelection,
                     function(ids, observer) {
                         playRoutes.controllers.EntityController.undoMergeByIds(ids).get().then(function(response) {  observer.notifyObservers(); })
+                    },
+                    function(terms, observer) {
+                        playRoutes.controllers.EntityController.undoMergeKeywords(terms).get().then(function(response) {  observer.notifyObservers(); })
                     });
             };
 
-            function removeSelection(list, selection, callback) {
-                var ids = selection.map(function(e) { return e.id });
-                callback(ids, ObserverService);
+            function removeSelection(list, selection, callbackIds, callbackTerms) {
+                var ids = [];
+                var terms = [];
+                for(let item of selection){
+                    if(item.origin && item.origin.entityType == "KEYWORD"){
+                        terms.push(item.origin.name);
+                        item.duplicates.forEach(x => terms.push(x.name));
+                    }
+                    else {
+                        if(item.origin){
+                            ids.push(item.origin.id);
+                            item.duplicates.forEach(x => ids.push(x.id));
+                        }
+                        else {
+                            ids.push(item.id);
+                        }
+                    }
+                }
+
+                if(ids.length > 0){
+                    callbackIds(ids, ObserverService);
+                }
+                if(terms.length > 0){
+                    callbackTerms(terms, ObserverService);
+                }
+
                 // Remove selected items from the list in-place
                 selection.forEach(function(el) {
                     var index = list.indexOf(el);

@@ -56,7 +56,7 @@ class HistogramController @Inject() (timelineService: TimelineService, dateUtils
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
     val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
-    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+    val facets = Facets(fullText, generic, entities, List(), from, to, timeExprFrom, timeExprTo)
 
     val res = timelineService.createTimeline(facets, LoD.withName(lod))(currentDataset).buckets.map {
       case MetaDataBucket(key, count) => Json.obj("range" -> key, "count" -> count)
@@ -86,7 +86,7 @@ class HistogramController @Inject() (timelineService: TimelineService, dateUtils
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
     val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
-    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+    val facets = Facets(fullText, generic, entities, List(), from, to, timeExprFrom, timeExprTo)
 
     val res = timelineService.createTimeExpressionTimeline(facets, LoD.withName(lod))(currentDataset).buckets.map {
       case MetaDataBucket(key, count) => Json.obj("range" -> key, "count" -> count)

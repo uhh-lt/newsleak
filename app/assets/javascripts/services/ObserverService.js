@@ -37,8 +37,8 @@ define([
             var items = {};
             //types of tracked items
             // TODO: expandNode, egoNetwork not used. Remove them. Make sure index of types still fits! Better don't access via index ...
-            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset", "delete", "openDoc", "timeX"];
-            var notfiyTypes = ["entity", "metadata", "time", "timeX", "fulltext", "reset"];
+            var types = ["entity", "metadata", "time", "expandNode", "egoNetwork", "merge", "hide", "edit", "annotate", "fulltext", "reset", "delete", "openDoc", "timeX", "keyword"];
+            var notfiyTypes = ["entity", "metadata", "time", "timeX", "fulltext", "reset", "keyword"];
             var metadataTypes = [];
             var entityTypes = [];
             var histogramLoD = [];
@@ -430,7 +430,6 @@ define([
                  * @param input json object holding items and history array
                  */
                 loadState: function(input) {
-                    console.log(input);
                     var rootThis = this;
                     history.splice(0);
                     history.length = 0;
@@ -444,7 +443,6 @@ define([
                     this.initTypes();
 
                     //history = angular.copy(input.history);
-                    console.log(history);
                     $q.all([
                         promiseEntities, promiseLoD, promiseMetadata
                     ]).then(function() {
@@ -462,7 +460,6 @@ define([
                                     }
                                 });
                             });
-                        console.log(items);
 
                         lastAdded = history[history.length-1].id;
                         lastRemoved = -1;

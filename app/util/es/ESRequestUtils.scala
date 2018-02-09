@@ -78,6 +78,7 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
       addFulltextQuery(facets).map(request.must)
       addGenericFilter(facets).map(request.must)
       addEntitiesFilter(facets).map(request.must)
+      addKeywordsFilter(facets).map(request.must)
       addDateFilter(facets).map(request.must)
       addDateXFilter(facets).map(request.must)
 
@@ -115,6 +116,12 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
   private def addEntitiesFilter(facets: Facets): List[TermQueryBuilder] = {
     facets.entities.map {
       QueryBuilders.termQuery(entityIdsField._2, _)
+    }
+  }
+
+  private def addKeywordsFilter(facets: Facets): List[TermQueryBuilder] = {
+    facets.keywords.map {
+      QueryBuilders.termQuery(keywordsField._2, _)
     }
   }
 
