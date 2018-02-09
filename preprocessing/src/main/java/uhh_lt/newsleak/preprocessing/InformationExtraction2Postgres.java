@@ -189,7 +189,8 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		ldCpeBuilder.setReader(reader);
 		ldCpeBuilder.setMaxProcessingUnitThreadCount(this.threads);
 		ldCpeBuilder.setAnalysisEngine(ldPipeline);
-		ldCpeBuilder.createCpe(statusListener).process();
+		CollectionProcessingEngine engine = ldCpeBuilder.createCpe(statusListener); 
+		engine.process();
 
 		while (statusListener.isProcessing()) {
 			Thread.sleep(500);
@@ -279,7 +280,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		ExternalResourceDescription resourceLinewriter = ExternalResourceFactory.createExternalResourceDescription(
 				TextLineWriterResource.class, 
 				TextLineWriterResource.PARAM_OUTPUT_FILE, this.dataDirectory + File.separator + "output.txt");
-		AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
+		AnalysisEngineDescription linewriter = AnalysisEngineFactory.createEngineDescription(
 				TextLineWriter.class,
 				TextLineWriter.RESOURCE_LINEWRITER, resourceLinewriter
 				);
@@ -315,7 +316,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 				nerOrg,
 				nerLoc,
 				keyterms,
-				// writer,
+				linewriter,
 				// xmi,
 				// esWriter
 				postgresWriter

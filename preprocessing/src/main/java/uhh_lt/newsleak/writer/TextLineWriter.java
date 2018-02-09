@@ -2,8 +2,10 @@ package uhh_lt.newsleak.writer;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.uima.UimaContext;
@@ -25,6 +27,8 @@ import uhh_lt.newsleak.types.Metadata;
 
 @OperationalProperties(multipleDeploymentAllowed=true, modifiesCas=false)
 public class TextLineWriter extends JCasAnnotator_ImplBase {
+	
+	private HashSet<String> sampleIdHash = new HashSet<String>();
 
 	Logger logger;
 
@@ -39,6 +43,9 @@ public class TextLineWriter extends JCasAnnotator_ImplBase {
 		super.initialize(context);
 		langStats = new HashMap<String, String>();
 		logger = context.getLogger();
+		// restrict to samples
+		String[] sampleIds = {"9141", "9099", "10779", "6823", "7455", "8078", "9538", "10051", "9660", "10521"};
+		sampleIdHash.addAll(Arrays.asList(sampleIds));
 	}
 
 
@@ -64,10 +71,24 @@ public class TextLineWriter extends JCasAnnotator_ImplBase {
 		// text
 		outputText += docText.replaceAll("\n", " ");
 
-		linewriter.append(outputText);
+//		linewriter.append(outputText);
 
 		Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
 		langStats.put(metadata.getDocId(), jcas.getDocumentLanguage());
+		
+		if (sampleIdHash.contains(metadata.getDocId())) {
+			int i = 0;
+			for (Sentence s : sentences) {
+				i++;
+				String sOut = metadata.getDocId() + "\t" + i + "\t";
+				String tOut = "";
+				for (Token t : JCasUtil.selectCovered(jcas, Token.class, s.getBegin(), s.getEnd())) {
+					tOut += t.getCoveredText() + " ";
+				}
+				sOut += tOut.trim();
+				linewriter.append(sOut);
+			}
+		}
 
 	}
 
