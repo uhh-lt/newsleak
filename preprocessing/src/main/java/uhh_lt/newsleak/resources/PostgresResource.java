@@ -57,7 +57,7 @@ public class PostgresResource extends Resource_ImplBase {
 	private Statement dbStatement;
 	
 	private PreparedStatement preparedStatementDocument;
-	private PreparedStatement preparedStatementMetadata;
+	// private PreparedStatement preparedStatementMetadata;
 	private PreparedStatement preparedStatementEntity;
 	private PreparedStatement preparedStatementEntitySelect;
 	private PreparedStatement preparedStatementEntityUpdate;
@@ -132,6 +132,15 @@ public class PostgresResource extends Resource_ImplBase {
 		String url = "jdbc:postgresql://" + dbUrl + "/";
 		dbConnection = DriverManager.getConnection(url + dbName, dbUser, dbPass);
 		dbStatement = dbConnection.createStatement();
+		dbConnection.setAutoCommit(false);
+	}
+	
+	public void commit() {
+		try {
+			dbConnection.commit();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void createSchema(String tableSchemaFile) {

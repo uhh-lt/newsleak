@@ -1,9 +1,6 @@
 package uhh_lt.newsleak.writer;
 
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,34 +20,41 @@ import org.apache.uima.util.Logger;
 import opennlp.uima.Location;
 import opennlp.uima.Organization;
 import opennlp.uima.Person;
-import opennlp.uima.Sentence;
 import uhh_lt.newsleak.resources.PostgresResource;
 import uhh_lt.newsleak.types.Metadata;
-import uhh_lt.newsleak.types.TimeX;
 
 @OperationalProperties(multipleDeploymentAllowed=true, modifiesCas=false)
 public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 
 	private Logger logger;
+	
+	private int counter = 0;
+	private int INTERNAL_BATCH_SIZE = 100;
 
 	public static final String RESOURCE_POSTGRES = "postgresResource";
 	@ExternalResource(key = RESOURCE_POSTGRES)
 	private PostgresResource postgresResource;
 
-	private Statement dbStatement;
-	private StringBuilder sql;
 	private NewsleakTimeFormatter timeFormatter;
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		super.initialize(context);
 		logger = context.getLogger();
-		dbStatement = postgresResource.getDbStatement();
 		timeFormatter = new NewsleakTimeFormatter();
+	}
+
+
+	@Override
+	public void collectionProcessComplete() throws AnalysisEngineProcessException {
+		super.collectionProcessComplete();
+		postgresResource.commit();
 	}
 
 	@Override
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
+		
+		counter++;
 
 		Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
 		Integer docId = Integer.parseInt(metadata.getDocId());
@@ -104,16 +108,10 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 			e.printStackTrace();
 		}
 
-
-		// entityoffset
-
-		// eventtime
-
-		// terms
-
-		// metadata: HANDLE EXTRA!!!
-
-
+		if (counter % INTERNAL_BATCH_SIZE == 0) {
+			postgresResource.commit();
+		}
+		
 	}
 
 	private void processEntities(Collection<? extends Annotation> matches, String type, Integer docId) throws SQLException {
