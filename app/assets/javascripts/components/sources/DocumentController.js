@@ -18,7 +18,10 @@
 define([
     'angular',
     'ngSanitize',
-    'ngMaterial'
+    'ngMaterial',
+    'contextMenu',
+    'elasticsearch',
+    'ui-bootstrap'
 ], function (angular) {
     'use strict';
     /**
@@ -26,26 +29,27 @@ define([
      * - render document content
      * - load additional metdata/keywords for loaded document
      */
-    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial'])
-        .directive('docContent', ['$compile', 'ObserverService', 'graphProperties',  '_', function($compile, ObserverService, graphProperties, _) {
+    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ui.bootstrap.contextMenu', 'elasticsearch', 'ui.bootstrap'])
+        .directive('docContent', ['$compile', 'ObserverService', 'EntityService', 'graphProperties',  '_', function($compile, ObserverService, EntityService, graphProperties, _) {
             return {
                 restrict: 'E',
                 transclude: true,
                 //replace: true,
                 scope: {
                     // Need to set-up a bi-directional binding in order to pass an object not a string
-                    document: '='
+                    document: '=',
+                    reloadDoc: '&withparam'
                 },
                 link: function(scope, element, attrs) {
                     var content = scope.document.content;
                     var entities = scope.document.entities;
-                    
                     scope.addEntityFilter = function(id) {
                         var el = _.find(entities, function(e) { return e.id == id });
                         ObserverService.addItem({ type: 'entity', data: { id: id, description: el.name, item: el.name, type: el.type }});
                     };
 
                     scope.renderDoc = function() {
+
                         var highlights = scope.document.highlighted !== null ? calcHighlightOffsets(scope.document.highlighted, '<em>', '</em>') : [];
                         // The plain highlighter with query_string search highlights phrases as multiple words
                         // i.e. "Angela Merkel" -> <em> Angela </em> <em> Merkel </em>. Thus, we need to group
@@ -182,7 +186,7 @@ define([
                         var color = graphProperties.options['groups'][typeId]['color']['background'];
                         var innerElement = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none, \'border-bottom\': \'3px solid ' + color + '\'}"></span>');
                         innerElement.className = 'highlight-general';
-                        var addFilter = angular.element('<a ng-click="addEntityFilter(' + id +')" style="text-decoration: none;"></a>');
+                        var addFilter = angular.element('<a id='+ id +' ng-click="addEntityFilter(' + id +')" context-menu="contextMenu" style="text-decoration: none;"></a>');
 
                         addFilter.append(document.createTextNode(name));
                         innerElement.append(addFilter);
@@ -195,6 +199,19 @@ define([
                         outerElement.append(document.createTextNode(name));
                         return outerElement;
                     }
+                    // contextMenu for Blacklisting
+                    scope.contextMenu = [
+                      ['Blacklist', function (scope, event) {
+                        EntityService
+                          .blacklist([
+                            event.target.id
+                          ]);
+                        scope.$parent.observer.notifyObservers();
+                        scope.$parent.reloadDoc(scope.document);
+                      }],
+                    ];
+
+                    scope.$parent.loadBlacklists(scope.document);
 
                     // Init component
                     scope.renderDoc();
@@ -212,6 +229,11 @@ define([
                 '_',
                 'sourceShareService',
                 'ObserverService',
+                'EntityService',
+                'esFactory',
+                '$uibModal',
+                '$log',
+                '$document',
                 function ($scope,
                           $http,
                           $templateRequest,
@@ -220,7 +242,12 @@ define([
                           playRoutes,
                           _,
                           sourceShareService,
-                          ObserverService) {
+                          ObserverService,
+                          EntityService,
+                          esFactory,
+                          $uibModal,
+                          $log,
+                          $document) {
 
                     var self = this;
 
@@ -238,6 +265,10 @@ define([
                     $scope.removeTab = function (tab) {
                         var index = $scope.tabs.indexOf(tab);
                         $scope.tabs.splice(index, 1);
+                        if($scope.tabs.length == 0){
+                            EntityService.setToggleEntityGraph(true);
+                            EntityService.setToggleKeywordGraph(true);
+                        }
                     };
 
                     $scope.observer = ObserverService;
@@ -249,17 +280,110 @@ define([
                         updateTagLabels();
                     });
 
+                    function init() {
+                        updateTagLabels();
+                        initES();
+                    }
+
+                    function initES() {
+                        playRoutes.controllers.KeywordNetworkController.getHostAddress().get().then(function (response) {
+                            if(response && response.data){
+                                $scope.client = esFactory({
+                                    host: response.data,
+                                    apiVersion: '5.5',
+                                    log: 'trace'
+                                });
+                            }
+                        });
+                    }
 
                     init();
 
-                    function init() {
-                        updateTagLabels();
-                    }
+                    $scope.open = function ($scope, doc, backdrop) {
+                      var modalInstance = $uibModal.open({
+                        templateUrl: 'whitelistModal.html',
+                        animation: true,
+                        component: 'modalComponent',
+                        size: 'sm',
+                        backdrop: backdrop,
+                        resolve: {
+                          parentScope: function() {
+                            return $scope;
+                          },
+                          doc: function() {
+                            return doc;
+                          }
+                        },
+                        controller: ('ModalController', ['$scope', function($scope) {
+
+                            var selectedEntity = $scope.$resolve.parentScope.selectedEntity;
+                            var entityTypes = $scope.$resolve.parentScope.entityTypes;
+                            var doc = $scope.$resolve.doc;
+
+                            $scope.entityName = selectedEntity.text
+                            $scope.entityTypes = entityTypes;
+                            $scope.selectedType = '';
+                            $scope.isEntityInDoc = $scope.$resolve.parentScope.isEntityInDoc;
+                            $scope.isKeyword = $scope.$resolve.parentScope.isKeyword;
+                            $scope.isKeyword = false;
+
+                            $scope.toggleType = function (state) {
+                              this.$resolve.parentScope.isNewType = !state;
+                              $scope.selectedType = '';
+                            }
+
+                            $scope.toggleKeyword = function (state) {
+                              this.$resolve.parentScope.isKeyword = !state;
+                              $scope.selectedType = state === false ? 'key' : '';
+                            }
+
+                            $scope.ok = function () {
+                              this.$resolve.parentScope.whitelist(selectedEntity, $scope.selectedType, doc);
+                              this.modalClose();
+                            };
+
+                            $scope.cancel = function () {
+                              this.$resolve.parentScope.isKeyword = false;
+                              this.$resolve.parentScope.isNewType = false;
+                              this.modalClose();
+                            };
+
+                            $scope.modalClose = function() {
+                              this.$resolve.parentScope.isKeyword = false;
+                              this.$close();
+                            };
+                          }
+                        ])
+                      });
+                      modalInstance.result.then(function () {
+                      }, function () {
+                        $log.info('Modal dismissed at: ' + new Date());
+                      });
+                    };
 
                     $scope.retrieveKeywords = function(doc) {
                         var terms =  [];
-                        playRoutes.controllers.DocumentController.getKeywordsById(doc.id, self.numKeywords).get().then(function(response) {
-                            response.data.forEach(function(t) { return terms.push(t.term); });
+                        // playRoutes.controllers.DocumentController.getKeywordsById(doc.id, self.numKeywords).get().then(function(response) {
+                        //    response.data.forEach(function(t) { return terms.push(t.term); });
+                        //});
+                        $scope.client.search({
+                            index: $scope.indexName,
+                            type: 'document',
+                            id: doc.id,
+                            body: {
+                                query: {
+                                    match: {
+                                        _id: doc.id
+                                    }
+                                }
+                            }
+
+                        }).then(function (resp) {
+                            if(resp.hits.hits[0]._source.Keywords){
+                                for(let keyword of resp.hits.hits[0]._source.Keywords) {
+                                    terms.push(keyword.Keyword);
+                                }
+                            }
                         });
                         return terms;
                     };
@@ -291,6 +415,17 @@ define([
                         });
                     }
 
+                    $scope.indexName = '';
+                    function getIndexName() {
+                      playRoutes.controllers.DocumentController.getIndexName().get().then(function(response) {
+                          $scope.indexName = response.data.index;
+                          console.log('index name: ' + $scope.indexName);
+                      });
+                    }
+
+                    // get index name from the back end and print to the console
+                    getIndexName();
+
                     $scope.initTags = function(doc) {
                         $scope.tags[doc.id] = [];
                         playRoutes.controllers.DocumentController.getTagsByDocId(doc.id).get().then(function(response) {
@@ -311,6 +446,9 @@ define([
                             $scope.tags[doc.id].push({ id: response.data.id , label: tag.label });
                             // Update labels
                             updateTagLabels();
+                            if(EntityService.getTagsSelected()){
+                                EntityService.reloadKeywordGraph(true);
+                            }
                         });
                     };
 
@@ -318,12 +456,423 @@ define([
                         playRoutes.controllers.DocumentController.removeTagById(tag.id).get().then(function(response) {
                             // Update labels
                             updateTagLabels();
+                            if(EntityService.getTagsSelected()){
+                                EntityService.reloadKeywordGraph(true);
+                            }
                         });
                     };
 
                     $scope.querySearch = function(doc, query) {
                         var results = query ? $scope.labels.filter(createFilterFor(query)) : [];
                         return results;
+                    };
+
+                    $scope.isNewType = false;
+                    $scope.isEntityInDoc = false;
+                    $scope.isKeyword = false;
+
+                    // Enable to select Entity and activate whitelisting modal
+                    $scope.showSelectedEntity = function(doc) {
+                        $scope.selectedEntity =  $scope.getSelectionEntity(doc.content);
+                        var selectedDoc = $scope.tabs.find((t) => { return t.id === doc.id; });
+                        var isInDoc = isEntityInDoc(selectedDoc, $scope.selectedEntity);
+                        if (!isInDoc && ($scope.selectedEntity.text.length) > 0 && ($scope.selectedEntity.text !== ' ')) {
+                          $scope.isEntityInDoc = false;
+                          $scope.open($scope, doc, 'static');
+                        } else if (isInDoc && ($scope.selectedEntity.text.length) > 0 && ($scope.selectedEntity.text !== ' ')){
+                          $scope.isEntityInDoc = true;
+                          $scope.open($scope, doc, 'true');
+                        }
+                    };
+
+                    function isEntityInDoc(selectedDoc, selectedEntity) {
+                      var entities = selectedDoc.entities.filter((e) =>
+                        {
+                          //avoids new entity contains / intersects / inside an existed entity
+                          if (((e.start >= selectedEntity.start) &&
+                              (e.end <= selectedEntity.end)) ||
+                              ((e.start <= selectedEntity.start) &&
+                              (e.end >= selectedEntity.end)) ||
+                              ((e.start <= selectedEntity.start) &&
+                              (e.end >= selectedEntity.start)) ||
+                              ((e.start <= selectedEntity.end) &&
+                              (e.end >= selectedEntity.end))
+                            ) {
+                              return e;
+                            }
+                        }
+                      );
+                      return entities.length > 0 ? true : false;
+                    }
+
+                    // Whitelist: Entiy Annotation and Keyword Insertion
+                    $scope.whitelist = function(entity, type, doc){
+                      type = type.replace(/\s/g,'');
+                      $scope.isKeyword;
+                      var blacklists = isBlacklisted(entity, type, $scope.isKeyword);
+                      // Check whether it is an entity or keyword
+                      if ($scope.isKeyword === true) {
+                        // Keyword Insertion / Whitelisting
+                        if (blacklists.length > 0) {
+                          // If a keyword has already been listed in blacklists, we undoBlacklistingKeywords
+                          playRoutes.controllers.KeywordNetworkController.undoBlacklistingKeywords(blacklists).get().then(function (response) {
+                            $scope.observer.notifyObservers();
+                            $scope.reloadDoc(doc);
+                            EntityService.reloadKeywordGraph(true);
+                          });
+                        } else {
+                          // Keyword insertion
+                          $scope.esKeyWhitelist(entity.text, doc);
+                        }
+                      } else {
+                        // The text is an entity
+                        if (blacklists.length > 0) {
+                          // If an entity has already been listed in blacklists, we undoBlacklistingByIds
+                          playRoutes.controllers.EntityController.undoBlacklistingByIds([blacklists[0].id]).get().then(function(response) {
+                            $scope.observer.notifyObservers();
+                            $scope.reloadDoc(doc);
+                            EntityService.reloadEntityGraph();
+                          });
+                        } else {
+                          // Entity Annotation / Whitelisting
+                          playRoutes.controllers.EntityController.getRecordedEntity(entity.text, type).get().then(function (response) {
+                            // Checking if an entity has already in database
+                            if (response.data.length > 0) {
+                              // If yes, update the frequency of that entity
+                              EntityService.whitelist(entity, type, doc.id, response.data[0].id);
+                              $scope.createNewEntity(entity, type, doc, response.data[0].id);
+                            } else {
+                              // The entity is new, we need to create a new record and give it a new ID.
+                              playRoutes.controllers.EntityController.whitelistEntity(entity.text, entity.start, entity.end, type, doc.id, "empty")
+                              .get().then(function(response) {
+                                  $scope.$emit('notifying-service-event', { parameter: entity, response: response });
+                                  playRoutes.controllers.EntityController.getRecordedEntity(entity.text, type).get().then(function (response) {
+                                    $scope.esNewId = response.data[0].id;
+                                    $scope.esWhitelist(entity, type, doc);
+                                  });
+                              });
+                            }
+                          });
+                        }
+                      }
+                    };
+
+                    // Get entityTypes from observer service
+                    $scope.entityTypes = [];
+                    $scope.observer.getEntityTypes().then(function (types) {
+                        types.map(function (e) {
+                            if (e.name !== null) {
+                                $scope.entityTypes.push(e);
+                            }
+                        });
+                    });
+
+                    $scope.selectedType = '';
+                    var doc = $scope.tabs;
+                    $scope.getSelectionEntity = function(doc) {
+                      var text = "";
+                      var start = 0;
+                      var end = 0;
+                      if (window.getSelection) {
+                         text = window.getSelection().toString();
+                         start = doc.match(text).index;
+                         end = start + text.length;
+                      } else if (document.selection && document.selection.type != "Control") {
+                         text = document.selection.createRange().text;
+                      }
+                      text = text.trim();
+                      return {
+                        text,
+                        start,
+                        end
+                      };
+                    };
+
+                    $scope.esKeyWhitelist = function(keyword, doc) {
+                        $scope.client.get({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        source: 'Keywords'
+                      }).then(function (response) {
+                        var key = response._source.Keywords;
+                        if (key !== undefined) {
+                          $scope.createNewKeyword(keyword, doc);
+                        } else {
+                          $scope.createInitKeyword(keyword, doc);
+                        }
+                      }, function (err, response) {
+                        console.trace(err.message);
+                      });
+                    }
+
+                    $scope.createInitKeyword = function(keyword, doc) {
+                        $scope.client.update({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        body: {
+                          script: "ctx._source.Keywords = [(keyword)]",
+                          params: {
+                            keyword:  {
+                              Keyword: keyword,
+                              EntFrequency: 1
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                          $scope.observer.notifyObservers();
+                          $scope.reloadDoc(doc);
+                          EntityService.reloadKeywordGraph(true);
+                      }, function (err) {
+                          console.trace(err.message);
+                      });
+                    }
+
+                    $scope.createNewKeyword = function(keyword, doc) {
+                        $scope.client.update({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        body: {
+                          script: "ctx._source.Keywords.add(keyword)",
+                          params: {
+                            keyword:  {
+                              Keyword: keyword,
+                              EntFrequency: 1
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                          $scope.observer.notifyObservers();
+                          $scope.reloadDoc(doc);
+                          EntityService.reloadKeywordGraph(true);
+                      }, function (err) {
+                          console.trace(err.message);
+                      });
+                    }
+
+                    $scope.esWhitelist = function(entity, typeEnt, doc) {
+                      $scope.client.get({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        source: 'Entities'
+                      }).then(function (response) {
+                        var key = response._source.Entities;
+                        if (key !== undefined) {
+                          $scope.createNewEntity(entity, typeEnt, doc);
+                        } else {
+                          $scope.createInitEntity(entity, typeEnt, doc);
+                        }
+                      }, function (error, response) {
+                        console.trace(err.message);
+                      });
+                    }
+
+                    $scope.createInitEntity = function(entity, typeEnt, doc, entId = null) {
+                        $scope.client.update({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        body: {
+                          script: "ctx._source.Entities = [(Entities)]",
+                          params: {
+                            Entities:  {
+                              EntId: entId === null ? $scope.esNewId : entId,
+                              Entname: entity.text,
+                              EntType: typeEnt,
+                              EntFrequency: 1
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                          $scope.esNewEntity = resp;
+                          $scope.isNewType === false ?
+                            $scope.checkNewEntityType(entity, typeEnt, doc, entId)
+                            :
+                            $scope.createNewEntityType(entity, typeEnt, doc);
+                      }, function (err) {
+                          $scope.esNewEntity = null;
+                          console.trace(err.message);
+                      });
+                    }
+
+                    $scope.createNewEntity = function(entity, typeEnt, doc, entId = null) {
+                        $scope.client.update({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        body: {
+                          script: "ctx._source.Entities.add(Entities)",
+                          params: {
+                            Entities:  {
+                              EntId: entId === null ? $scope.esNewId : entId,
+                              Entname: entity.text,
+                              EntType: typeEnt,
+                              EntFrequency: 1
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                          $scope.esNewEntity = resp;
+                          $scope.isNewType === false ?
+                            $scope.checkNewEntityType(entity, typeEnt, doc, entId)
+                            :
+                            $scope.createNewEntityType(entity, typeEnt, doc);
+                      }, function (err) {
+                          $scope.esNewEntity = null;
+                          console.trace(err.message);
+                      });
+                    }
+
+                    $scope.checkNewEntityType = function(entity, typeEnt, doc, entId = null) {
+                      var suffixType = typeEnt.toLowerCase();
+                      var newType = 'Entities' + suffixType;
+                        $scope.client.get({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        source: 'Entities'+ suffixType
+                      }).then(function (response) {
+                        var type = response._source[newType];
+                        if (type !== undefined) {
+                          $scope.insertNewEntityType(entity, typeEnt, doc)
+                        } else {
+                          $scope.createNewEntityType(entity, typeEnt, doc);
+                        }
+                      }, function (err, response) {
+                        console.trace(err.message);
+                      });
+                    }
+
+                    $scope.insertNewEntityType = function(entity, typeEnt, doc, entId = null) {
+                      var suffixType = typeEnt.toLowerCase();
+                        $scope.client.update({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        body: {
+                          script: "ctx._source.Entities" + suffixType + ".add(Entities)",
+                          params: {
+                            Entities:  {
+                              EntId: entId === null ? $scope.esNewId : entId,
+                              Entname: entity.text,
+                              EntFrequency: 1
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                          $scope.esNewEntityType = resp;
+                          $scope.observer.notifyObservers();
+                          $scope.reloadDoc(doc);
+                          EntityService.reloadEntityGraph();
+                      }, function (err) {
+                          $scope.esNewEntityType = null;
+                          console.trace(err.message);
+                      });
+                    }
+
+
+                    $scope.createNewEntityType = function(entity, typeEnt, doc) {
+                      var suffixType = typeEnt.toLowerCase();
+                        $scope.client.update({
+                        index: $scope.indexName,
+                        type: 'document',
+                        id: doc.id,
+                        body: {
+                          script: "ctx._source.Entities" + suffixType + " = [(Entities)]",
+                          params: {
+                            Entities:  {
+                              EntId: $scope.esNewId,
+                              Entname: entity.text,
+                              EntFrequency: 1
+                            }
+                          }
+                        }
+                      }).then(function (resp) {
+                          $scope.esNewEntityType = resp;
+                          $scope.observer.notifyObservers();
+                          $scope.reloadDoc(doc);
+                          EntityService.reloadEntityGraph();
+                      }, function (err) {
+                          $scope.esNewEntityType = null;
+                          console.trace(err.message);
+                      });
+                    }
+
+                    $scope.blacklists = [];
+                    $scope.loadBlacklists = function(doc) {
+                      playRoutes.controllers.EntityController.getBlacklistsByDoc(doc.id).get().then(function (response) {
+                        $scope.blacklists = response.data;
+                        playRoutes.controllers.EntityController.getBlacklistedKeywords(doc.id).get().then(function (response) {
+                            let i = 1;
+                            for(let item of response.data){
+                                $scope.blacklists.push({
+                                    // id: Long, name: String, entityType: String, freq: Int
+                                    id: i,
+                                    name: item,
+                                    entityType: 'KEYWORD',
+                                    freq: 1
+                                });
+                                i++;
+                            }
+                        });
+                      });
+                    }
+
+                    function isBlacklisted(entity, type, isKeyword) {
+                      var isBlacklisted = [];
+                      if (isKeyword) {
+                        $scope.blacklists.filter((e) =>
+                          {
+                            if((e.entityType === 'KEYWORD') && (e.name === entity.text)){
+                                return isBlacklisted.push(e.name);
+                            }
+                          }
+                        );
+                      } else {
+                        isBlacklisted = $scope.blacklists.filter((e) =>
+                          {
+                            if ((e.name === entity.text) &&
+                                (e.start === entity.start) &&
+                                (e.end === entity.end) &&
+                                (e.type === type)
+                              ) {
+                                return e;
+                              }
+                          }
+                        );
+                      }
+                      return isBlacklisted;
+                    }
+
+                    $scope.reloadDoc = function(doc) {
+                      $scope.removeTab(doc);
+                      var editItem = {
+                          type: 'openDoc',
+                          data: {
+                              id: doc.id,
+                              description: "#" + doc.id,
+                              item: "#" + doc.id
+                          }
+                      };
+
+                      $scope.observer.addItem(editItem);
+
+                      playRoutes.controllers.EntityController.getEntitiesByDoc(doc.id).get().then(function (response) {
+                          // Provide document controller with document information
+                          $scope.sourceShared.tabs.push({
+                              id: doc.id,
+                              title: doc.id,
+                              content: doc.content,
+                              highlighted: doc.highlighted,
+                              meta: doc.metadata,
+                              entities: response.data
+                          });
+                      });
+
+                      EntityService.setToggleKeywordGraph(false);
                     };
 
                     function createFilterFor(query) {

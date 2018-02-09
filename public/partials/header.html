@@ -54,6 +54,16 @@
 
     <span flex></span>
 
+    <md-checkbox ng-model="showEntityGraph" ng-checked="getDisplayEntityGraph()" style="padding-right: 5px;" aria-label="Entity Graph"
+                 ng-click="toggleEntityGraph()">
+      Entity Graph
+    </md-checkbox>
+
+    <md-checkbox ng-model="showKeywordGraph" ng-checked="getDisplayKeywordGraph()" aria-label="Keyword Graph"
+                 ng-click="toggleKeywordGraph()">
+      Keyword Graph
+    </md-checkbox>
+
     <md-button class="md-raised" ng-href="https://www.volkswagenstiftung.de/" target="_blank" aria-label="VW">
       <img class="institute-logo" src="./assets/images/Logo_Volkswagenstiftung.svg.png">
     </md-button>

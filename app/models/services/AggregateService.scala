@@ -18,6 +18,7 @@
 package models.services
 
 import com.google.inject.{ ImplementedBy, Inject }
+import models.KeyTerm
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest
 import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.search.aggregations.AggregationBuilders
@@ -25,7 +26,7 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms
 // scalastyle:off
 import scala.collection.JavaConversions._
 // scalastyle:on
-import models.{ Facets, Aggregation, MetaDataBucket, NodeBucket }
+import models._
 import util.es.ESRequestUtils
 
 /**
@@ -64,6 +65,19 @@ trait AggregateService {
    * @return an instance of [[models.Aggregation]] with '''size''' [[models.MetaDataBucket]] matching the given filters and using the aggregationKey.
    */
   def aggregate(facets: Facets, aggregateKey: String, size: Int, include: List[String], exclude: List[String])(index: String): Aggregation
+
+  /**
+   * @param facets       the search query.
+   * @param aggregateKey the key that belongs to the aggregated values.
+   * @param size         the number of unique [[models.KeyTerm]] to create.
+   * @param include      a list of values to filter the result. The result will only contain the [[models.KeyTerm]] associated
+   *                     with one of the keys given in this list. The size parameter is ignored when given a non empty include list.
+   * @param exclude      a list of values that should be excluded from the result. The result will contain no [[models.KeyTerm]]
+   *                     associated with one of the keys given in this list.
+   * @param index        the data source index or database name to query.
+   * @return an instance of [[models.KeywordAggregation]] with '''size''' [[models.KeyTerm]] matching the given filters and using the aggregationKey.
+   */
+  def keywordAggregate(facets: Facets, aggregateKey: String, size: Int, include: List[String], exclude: List[String])(index: String): KeywordAggregation
 
   /**
    * Creates multiple aggregations - one for each metadata from the underlying collection.
@@ -150,6 +164,12 @@ class ESAggregateService @Inject() (clientService: SearchClientService, utils: E
     termAggregate(facets, Map(aggregateKey -> (field, size)), include, exclude, 1, index).head
   }
 
+  /** @inheritdoc**/
+  def keywordAggregate(facets: Facets, aggregateKey: String, size: Int, include: List[String], exclude: List[String])(index: String): KeywordAggregation = {
+    val field = aggregationToField(index)(aggregateKey)
+    keyTermAggregate(facets, Map(aggregateKey -> (field, size)), include, exclude, 1, index).head
+  }
+
   /** @inheritdoc */
   def aggregateAll(facets: Facets, size: Int, keyExclusion: List[String])(index: String): List[Aggregation] = {
     val validAggregations = aggregationToField(index).filterKeys(!keyExclusion.contains(_))
@@ -205,6 +225,39 @@ class ESAggregateService @Inject() (clientService: SearchClientService, utils: E
     parseResult(response, nonEmptyAggs, include) ++ aggs.collect { case ((k, (_, 0))) => Aggregation(k, List()) }
   }
 
+  private def keyTermAggregate(
+    facets: Facets,
+    aggs: Map[String, (String, Int)],
+    include: List[String],
+    exclude: List[String],
+    thresholdDocCount: Int,
+    index: String
+  ): List[KeywordAggregation] = {
+
+    var requestBuilder = utils.createSearchRequest(facets, thresholdDocCount, index, clientService)
+
+    val nonEmptyAggs = aggs.collect {
+      // Ignore aggregations with zero size since ES returns all indexed types in this case.
+      // We do not want this behaviour and return Aggregations with empty buckets instead.
+      case (entry @ (k, (v, size))) if size != 0 =>
+        // Default order is bucket size desc
+        val agg = AggregationBuilders.terms(k)
+          .field(v)
+          .size(size)
+          // Include empty buckets
+          .minDocCount(thresholdDocCount)
+
+        // Apply filter to the aggregation request
+        val includeAggOpt = if (include.isEmpty) agg else agg.include(include.toArray)
+        val excludeAggOpt = if (exclude.isEmpty) includeAggOpt else includeAggOpt.exclude(exclude.toArray)
+        requestBuilder = requestBuilder.addAggregation(excludeAggOpt)
+        entry
+    }
+    val response = utils.executeRequest(requestBuilder)
+    // There is no need to call shutdown, since this node is the only one in the cluster.
+    parseKeywordResult(response, nonEmptyAggs, include) ++ aggs.collect { case ((k, (_, 0))) => KeywordAggregation(k, List()) }
+  }
+
   private def parseResult(response: SearchResponse, aggregations: Map[String, (String, Int)], filters: List[String]): List[Aggregation] = {
     val res = aggregations.collect {
       // Create node bucket for entities
@@ -228,6 +281,33 @@ class ESAggregateService @Inject() (clientService: SearchClientService, utils: E
 
         val resBuckets = if (response.getHits.getTotalHits == 0) buckets.filter(b => filters.contains(b.key)) else buckets
         Aggregation(k, resBuckets)
+    }
+    res.toList
+  }
+
+  private def parseKeywordResult(response: SearchResponse, aggregations: Map[String, (String, Int)], filters: List[String]): List[KeywordAggregation] = {
+    val res = aggregations.collect {
+      // Create node bucket for entities
+      case (k, (v, s)) if k == utils.keywordsField._1 =>
+        val agg: Terms = response.getAggregations.get(k)
+        val buckets = agg.getBuckets.collect {
+          // If include filter is given don't add zero count entries (will be post processed)
+          case (b) if filters.nonEmpty && filters.contains(b.getKeyAsString) => KeyTerm(b.getKeyAsString, b.getDocCount, "KEYWORD")
+          case (b) if filters.isEmpty => KeyTerm(b.getKeyAsString, b.getDocCount, "KEYWORD")
+        }.toList
+        // We need to add missing zero buckets for entities filters manually,
+        // because aggregation is not able to process long ids with zero buckets
+        val addedBuckets = buckets.map(_.term)
+        val zeroEntities = filters.filterNot(s => addedBuckets.contains(s))
+
+        val resBuckets = if (response.getHits.getTotalHits == 0) List() else buckets
+        KeywordAggregation(k, resBuckets ::: zeroEntities.map(s => KeyTerm(s, 0, "KEYWORD")))
+      case (k, (v, s)) =>
+        val agg: Terms = response.getAggregations.get(k)
+        val buckets = agg.getBuckets.map(b => KeyTerm(b.getKeyAsString, b.getDocCount, "KEYWORD")).toList
+
+        val resBuckets = if (response.getHits.getTotalHits == 0) buckets.filter(b => filters.contains(b.term)) else buckets
+        KeywordAggregation(k, resBuckets)
     }
     res.toList
   }
