@@ -56,6 +56,7 @@ import opennlp.uima.util.UimaUtil;
 import uhh_lt.newsleak.annotator.HeidelTimeOpenNLP;
 import uhh_lt.newsleak.annotator.KeytermExtractor;
 import uhh_lt.newsleak.annotator.LanguageDetector;
+import uhh_lt.newsleak.annotator.SentenceCleaner;
 import uhh_lt.newsleak.reader.HooverElasticsearchReader;
 import uhh_lt.newsleak.reader.NewsleakCsvStreamReader;
 import uhh_lt.newsleak.reader.NewsleakElasticsearchReader;
@@ -242,7 +243,12 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 				UimaUtil.MODEL_PARAMETER, resourceToken,
 				UimaUtil.SENTENCE_TYPE_PARAMETER, Sentence.class,
 				UimaUtil.TOKEN_TYPE_PARAMETER, Token.class
-				);		
+				);
+		
+		// sentence cleaner
+		AnalysisEngineDescription sentenceCleaner = AnalysisEngineFactory.createEngineDescription(
+				SentenceCleaner.class
+				);
 
 		// pos
 		ExternalResourceDescription resourcePos = ExternalResourceFactory.createExternalResourceDescription(
@@ -310,6 +316,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		AnalysisEngineDescription pipeline = AnalysisEngineFactory.createEngineDescription(
 				sentence,
 				token,
+				sentenceCleaner,
 				pos,
 				heideltime,
 				nerPer, 
