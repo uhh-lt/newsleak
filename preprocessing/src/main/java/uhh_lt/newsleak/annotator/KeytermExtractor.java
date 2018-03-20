@@ -57,6 +57,7 @@ public class KeytermExtractor extends JCasAnnotator_ImplBase {
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
 
 		Collection<Token> tokens = JCasUtil.selectCovered(jcas, Token.class, 0, jcas.getDocumentText().length());
+		
 		for (Token token : tokens) {
 			if (token.getPos().startsWith("NN")) {
 				String text = token.getCoveredText().toLowerCase();

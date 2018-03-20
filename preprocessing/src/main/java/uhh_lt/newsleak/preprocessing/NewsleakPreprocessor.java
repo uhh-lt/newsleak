@@ -8,6 +8,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
@@ -60,6 +63,7 @@ public abstract class NewsleakPreprocessor
 	protected String dbSchema;
 	protected String dbIndices;
 
+	protected String nerServiceUrl;
 	protected Integer threads;
 	protected Integer debugMaxDocuments;
 
@@ -68,11 +72,24 @@ public abstract class NewsleakPreprocessor
 	
 	protected static Connection conn;
 	protected static Statement st;
+	
+	protected Map<String, Locale> localeMap;
 
 	public NewsleakPreprocessor() {
 		super();
 		logger = UIMAFramework.getLogger();
+		
+		String[] languages = Locale.getISOLanguages();
+		localeMap = new HashMap<String, Locale>(languages.length);
+		for (String language : languages) {
+		    Locale locale = new Locale(language);
+		    localeMap.put(locale.getISO3Language(), locale);
+		}
+		
 	}
+	
+	
+	
 
 
 	public void getConfiguration(String[] cliArgs) {
@@ -109,6 +126,7 @@ public abstract class NewsleakPreprocessor
 			dbSchema = prop.getProperty("dbschema");
 			dbIndices = prop.getProperty("dbindices");
 
+			nerServiceUrl = prop.getProperty("nerserviceurl");
 			threads = Integer.valueOf(prop.getProperty("threads"));
 			debugMaxDocuments = Integer.valueOf(prop.getProperty("debugMaxDocuments"));
 			if (debugMaxDocuments <= 0) debugMaxDocuments = null;

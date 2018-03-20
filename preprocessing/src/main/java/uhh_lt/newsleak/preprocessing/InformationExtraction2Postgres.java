@@ -56,6 +56,7 @@ import opennlp.uima.util.UimaUtil;
 import uhh_lt.newsleak.annotator.HeidelTimeOpenNLP;
 import uhh_lt.newsleak.annotator.KeytermExtractor;
 import uhh_lt.newsleak.annotator.LanguageDetector;
+import uhh_lt.newsleak.annotator.NerMicroservice;
 import uhh_lt.newsleak.annotator.SentenceCleaner;
 import uhh_lt.newsleak.reader.HooverElasticsearchReader;
 import uhh_lt.newsleak.reader.NewsleakCsvStreamReader;
@@ -271,11 +272,15 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 
 
 		// ner
-		AnalysisEngineDescription nerPer = getOpennlpNerAed("PER", "opennlp.uima.Person", "./resources/eng/en-ner-person.bin");
-		AnalysisEngineDescription nerOrg = getOpennlpNerAed("ORG", "opennlp.uima.Organization", "./resources/eng/en-ner-organization.bin");
-		AnalysisEngineDescription nerLoc = getOpennlpNerAed("LOC", "opennlp.uima.Location", "./resources/eng/en-ner-location.bin");
+//		AnalysisEngineDescription nerPer = getOpennlpNerAed("PER", "opennlp.uima.Person", "./resources/eng/en-ner-person.bin");
+//		AnalysisEngineDescription nerOrg = getOpennlpNerAed("ORG", "opennlp.uima.Organization", "./resources/eng/en-ner-organization.bin");
+//		AnalysisEngineDescription nerLoc = getOpennlpNerAed("LOC", "opennlp.uima.Location", "./resources/eng/en-ner-location.bin");
 
-
+		AnalysisEngineDescription nerMicroservice = AnalysisEngineFactory.createEngineDescription(
+				NerMicroservice.class,
+				NerMicroservice.NER_SERVICE_URL, this.nerServiceUrl
+				);
+		
 		// keyterms
 		AnalysisEngineDescription keyterms = AnalysisEngineFactory.createEngineDescription(
 				KeytermExtractor.class
@@ -319,9 +324,10 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 				sentenceCleaner,
 				pos,
 				heideltime,
-				nerPer, 
-				nerOrg,
-				nerLoc,
+//				nerPer, 
+//				nerOrg,
+//				nerLoc,
+				nerMicroservice,
 				keyterms,
 				linewriter,
 				// xmi,
