@@ -3,6 +3,8 @@ package uhh_lt.newsleak.annotator;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Locale;
+import java.util.Map;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -20,6 +22,7 @@ import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
+import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -45,6 +48,8 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 			description = "Url to microservice for named entity recognition (JSON API)")
 	private String nerMicroserviceUrl;
 	
+	private Map<String, Locale> localeMap;
+	
 	Logger log;
 	HttpClient httpClient;
 	HttpPost request;
@@ -55,14 +60,16 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 		log = context.getLogger();
 		httpClient = HttpClientBuilder.create().build();
 		request = new HttpPost("http://" + nerMicroserviceUrl);
+		localeMap = LanguageDetector.localeToISO(); 
 	}
 
 
 	@Override
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
 
-		String docLang = jcas.getDocumentLanguage();
-		
+		// document language in ISO-639-1 format
+		String docLang = localeMap.get(jcas.getDocumentLanguage()).getLanguage();
+
 		try {
 			
 			// create json request for microservice
@@ -144,10 +151,37 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 					}
 					prevTag = tag;
 				}
+				if (annotation != null) {
+					annotation.addToIndexes();
+				}
+				
 			}
 		}
 		catch (IOException e) {
 			e.printStackTrace();
+		}
+		
+		cleanNerAnnotations(jcas);
+		
+	}
+
+
+	private void cleanNerAnnotations(JCas jcas) {
+		Collection<Person> persons = JCasUtil.select(jcas, Person.class);
+		cleanAnnotation(persons);
+		Collection<Organization> organizations = JCasUtil.select(jcas, Organization.class);
+		cleanAnnotation(organizations);
+		Collection<Location> locations = JCasUtil.select(jcas, Location.class);
+		cleanAnnotation(locations);
+	}
+	
+	private void cleanAnnotation(Collection<?extends Annotation> annotations) {
+		for (Annotation a : annotations) {
+			String ne = a.getCoveredText();
+			if (ne.replaceAll("[\\p{L}-\\s\\.]", "").length() > 0) {
+				log.log(Level.FINEST, "Cleaning: " + ne);
+				a.removeFromIndexes();
+			}
 		}
 	}
 }

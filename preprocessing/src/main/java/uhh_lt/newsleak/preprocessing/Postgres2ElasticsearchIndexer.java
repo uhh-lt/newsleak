@@ -19,6 +19,7 @@ import uhh_lt.newsleak.util.ResultSetIterable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.util.Level;
+import org.elasticsearch.action.ActionRequestValidationException;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
@@ -261,7 +262,13 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 		// parallel execution
 		List<String> userIdList = new ResultSetIterable<String>(docSt, indexDoc).stream().collect(Collectors.toList());
 		// index last requests
-		bulkRequestConcurrent.execute();
+		try {
+			bulkRequestConcurrent.execute();
+		}
+		catch(ActionRequestValidationException e) {
+			logger.log(Level.INFO, "All data has been indexed.");
+		}
+		
 
 		docSt.close();
 

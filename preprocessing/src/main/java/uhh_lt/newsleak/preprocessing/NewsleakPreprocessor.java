@@ -30,8 +30,7 @@ import org.apache.uima.util.Logger;
  * and writes output to an ElasticSearch index.
  *
  */
-public abstract class NewsleakPreprocessor 
-{
+public abstract class NewsleakPreprocessor {
 
 	protected Logger logger;
 
@@ -41,6 +40,7 @@ public abstract class NewsleakPreprocessor
 	protected String readerType;
 
 	protected String defaultLanguage;
+	protected String[] processLanguages;
 	protected String dataDirectory;
 	protected String documentFile;
 	protected String metadataFile;
@@ -73,22 +73,10 @@ public abstract class NewsleakPreprocessor
 	protected static Connection conn;
 	protected static Statement st;
 	
-	protected Map<String, Locale> localeMap;
-
 	public NewsleakPreprocessor() {
 		super();
-		logger = UIMAFramework.getLogger();
-		
-		String[] languages = Locale.getISOLanguages();
-		localeMap = new HashMap<String, Locale>(languages.length);
-		for (String language : languages) {
-		    Locale locale = new Locale(language);
-		    localeMap.put(locale.getISO3Language(), locale);
-		}
-		
+		logger = UIMAFramework.getLogger();		
 	}
-	
-	
 	
 
 
@@ -103,7 +91,8 @@ public abstract class NewsleakPreprocessor
 			
 			readerType = prop.getProperty("datareader");
 
-			defaultLanguage = prop.getProperty("lang");
+			defaultLanguage = prop.getProperty("defaultlanguage");
+			processLanguages = prop.getProperty("processlanguages").split("[, ]+");
 			dataDirectory = prop.getProperty("datadirectory");
 			documentFile = prop.getProperty("documentfile");
 			metadataFile = prop.getProperty("metadatafile");
@@ -130,6 +119,7 @@ public abstract class NewsleakPreprocessor
 			threads = Integer.valueOf(prop.getProperty("threads"));
 			debugMaxDocuments = Integer.valueOf(prop.getProperty("debugMaxDocuments"));
 			if (debugMaxDocuments <= 0) debugMaxDocuments = null;
+			
 			input.close();
 		}
 		catch (IOException e) {

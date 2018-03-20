@@ -2,46 +2,26 @@ package uhh_lt.newsleak.preprocessing;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Properties;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
-import org.apache.uima.UIMAFramework;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionProcessingEngine;
 import org.apache.uima.collection.CollectionReaderDescription;
-import org.apache.uima.collection.StatusCallbackListener;
-import org.apache.uima.collection.metadata.CpeDescriptorException;
 import org.apache.uima.fit.cpe.CpeBuilder;
 import org.apache.uima.fit.examples.experiment.pos.XmiWriter;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.ExternalResourceFactory;
-import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.resource.ExternalResourceDescription;
 import org.apache.uima.resource.ResourceInitializationException;
-import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.apache.uima.util.Level;
-import org.apache.uima.util.Logger;
-import org.postgresql.PGConnection;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
-import org.xml.sax.SAXException;
-
-import de.unihd.dbs.uima.annotator.heideltime.resources.Language;
 import opennlp.uima.Sentence;
 import opennlp.uima.Token;
 import opennlp.uima.namefind.NameFinder;
@@ -66,7 +46,6 @@ import uhh_lt.newsleak.resources.HooverResource;
 import uhh_lt.newsleak.resources.LanguageDetectorResource;
 import uhh_lt.newsleak.resources.PostgresResource;
 import uhh_lt.newsleak.resources.TextLineWriterResource;
-import uhh_lt.newsleak.writer.ElasticsearchAnnotationWriter;
 import uhh_lt.newsleak.writer.ElasticsearchDocumentWriter;
 import uhh_lt.newsleak.writer.PostgresDbWriter;
 import uhh_lt.newsleak.writer.TextLineWriter;
@@ -144,7 +123,6 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 			reader = CollectionReaderFactory.createReaderDescription(
 					HooverElasticsearchReader.class, this.typeSystem,
 					HooverElasticsearchReader.RESOURCE_HOOVER, hooverResource,
-					HooverElasticsearchReader.PARAM_DEFAULT_LANG, this.defaultLanguage,
 					HooverElasticsearchReader.PARAM_DEBUG_MAX_DOCS, this.debugMaxDocuments
 					);
 		} else {
@@ -153,18 +131,34 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		}
 		return reader;
 	}
+
+
 	public void pipelineLanguageDetection() throws Exception {
 		statusListener = new NewsleakStatusCallbackListener(this.logger);
+
+		// check for language support
+		HashSet<String> supportedLanguages = LanguageDetector.getSupportedLanguages();
+		for (String lang : this.processLanguages) {
+			if (!supportedLanguages.contains(lang)) {
+				logger.log(Level.SEVERE, "Language " + lang + " not supported");
+				System.exit(1);
+			}
+		}
+
 
 		// reader
 		CollectionReaderDescription reader = getReader(this.readerType);
 
 		// language detection
 		ExternalResourceDescription resourceLangDect = ExternalResourceFactory.createExternalResourceDescription(
-				LanguageDetectorResource.class, new File("resources/langdetect-183.bin"));
+				LanguageDetectorResource.class, 
+				LanguageDetectorResource.PARAM_MODEL_FILE, "resources/langdetect-183.bin",
+				LanguageDetectorResource.PARAM_METADATA_FILE, this.dataDirectory + File.separator + this.metadataFile
+			    );
 		AnalysisEngineDescription langDetect = AnalysisEngineFactory.createEngineDescription(
 				LanguageDetector.class,
 				LanguageDetector.MODEL_FILE, resourceLangDect,
+				LanguageDetector.PARAM_DEFAULT_LANG, this.defaultLanguage,
 				LanguageDetector.DOCLANG_FILE, "data/documentLanguages.ser"
 				);
 
@@ -202,152 +196,195 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 	public void pipelineAnnotation() throws Exception {
 		statusListener = new NewsleakStatusCallbackListener(this.logger);
 
-		// reader
-		ExternalResourceDescription esResource = ExternalResourceFactory.createExternalResourceDescription(
-				ElasticsearchResource.class, 
-				ElasticsearchResource.PARAM_CREATE_INDEX, "false",
-				ElasticsearchResource.PARAM_HOST, this.esHost,
-				ElasticsearchResource.PARAM_CLUSTERNAME, this.esClustername,
-				ElasticsearchResource.PARAM_INDEX, this.esIndex,
-				ElasticsearchResource.PARAM_PORT, this.esPort,
-				ElasticsearchResource.PARAM_DOCUMENT_MAPPING_FILE, "desc/elasticsearch_mapping_document_2.4.json");
-		CollectionReaderDescription esReader = CollectionReaderFactory.createReaderDescription(
-				NewsleakElasticsearchReader.class, this.typeSystem,
-				NewsleakElasticsearchReader.RESOURCE_ESCLIENT, esResource,
-				NewsleakElasticsearchReader.PARAM_LANGUAGE, "eng"
-				);
 
-
-		/* openNLP base annotations: Sentence, Token, POS */
-
-		/* Strategy for Multi-Language-Support:
-		 * - 1. run language detection and write out language per document
-		 * - 2. create list of languages in corpus (intersect with available)
-		 * - 3. run annotation pipeline with language dependent config files
+		/* Proceeding for multi-language collections:
+		 * - 1. run language detection and write language per document to ES index
+		 * - 2. set document language for unsupported languages to default language
+		 * - 3. run annotation pipeline per language with lang dependent resources
 		 */
-
-		// sentences
-		ExternalResourceDescription resourceSentence = ExternalResourceFactory.createExternalResourceDescription(
-				SentenceModelResourceImpl.class, new File("./resources/eng/en-sent.bin"));
-		AnalysisEngineDescription sentence = AnalysisEngineFactory.createEngineDescription(
-				SentenceDetector.class,
-				UimaUtil.MODEL_PARAMETER, resourceSentence,
-				UimaUtil.SENTENCE_TYPE_PARAMETER, Sentence.class,
-				UimaUtil.IS_REMOVE_EXISTINGS_ANNOTAIONS, false
-				);
-
-		// tokens
-		ExternalResourceDescription resourceToken = ExternalResourceFactory.createExternalResourceDescription(
-				TokenizerModelResourceImpl.class, new File("./resources/eng/en-token.bin"));
-		AnalysisEngineDescription token = AnalysisEngineFactory.createEngineDescription(
-				Tokenizer.class,
-				UimaUtil.MODEL_PARAMETER, resourceToken,
-				UimaUtil.SENTENCE_TYPE_PARAMETER, Sentence.class,
-				UimaUtil.TOKEN_TYPE_PARAMETER, Token.class
-				);
 		
-		// sentence cleaner
-		AnalysisEngineDescription sentenceCleaner = AnalysisEngineFactory.createEngineDescription(
-				SentenceCleaner.class
-				);
+		// iterate over configured ISO-639-3 language codes
+		boolean firstLanguage = true;
+		for (String currentLanguage : processLanguages) {
 
-		// pos
-		ExternalResourceDescription resourcePos = ExternalResourceFactory.createExternalResourceDescription(
-				POSModelResourceImpl.class, new File("./resources/eng/en-pos-maxent.bin"));
-		AnalysisEngineDescription pos = AnalysisEngineFactory.createEngineDescription(
-				POSTagger.class,
-				UimaUtil.MODEL_PARAMETER, resourcePos,
-				UimaUtil.SENTENCE_TYPE_PARAMETER, Sentence.class,
-				UimaUtil.TOKEN_TYPE_PARAMETER, Token.class,
-				UimaUtil.POS_FEATURE_PARAMETER, "pos"
-				);		
+			logger.log(Level.INFO, "Processing " + currentLanguage);
+			Thread.sleep(2000);
 
+			// load language resource properties
+			Properties langResourceConfig = getLanguageRescourceProperties(currentLanguage);
+			File baseDir = new File("resources", currentLanguage);
+			File openNlpSentenceModel = new File(baseDir, langResourceConfig.getProperty("openNlpSentenceModel"));
+			File openNlpTokenModel = new File(baseDir, langResourceConfig.getProperty("openNlpTokenModel"));
+			File openNlpPosModel = new File(baseDir, langResourceConfig.getProperty("openNlpPosModel"));
+			String heideltimeLanguage = langResourceConfig.getProperty("heideltimeLanguage");
+			String heideltimeLocale = langResourceConfig.getProperty("heideltimeLocale");
+			String nounPosTag = langResourceConfig.getProperty("nounpostag");
 
-		// heideltime
-		AnalysisEngineDescription heideltime = AnalysisEngineFactory.createEngineDescription(
-				HeidelTimeOpenNLP.class,
-				HeidelTimeOpenNLP.PARAM_LANGUAGE, "english",
-				HeidelTimeOpenNLP.PARAM_LOCALE, "en_US"
-				);
-
-
-		// ner
-//		AnalysisEngineDescription nerPer = getOpennlpNerAed("PER", "opennlp.uima.Person", "./resources/eng/en-ner-person.bin");
-//		AnalysisEngineDescription nerOrg = getOpennlpNerAed("ORG", "opennlp.uima.Organization", "./resources/eng/en-ner-organization.bin");
-//		AnalysisEngineDescription nerLoc = getOpennlpNerAed("LOC", "opennlp.uima.Location", "./resources/eng/en-ner-location.bin");
-
-		AnalysisEngineDescription nerMicroservice = AnalysisEngineFactory.createEngineDescription(
-				NerMicroservice.class,
-				NerMicroservice.NER_SERVICE_URL, this.nerServiceUrl
-				);
-		
-		// keyterms
-		AnalysisEngineDescription keyterms = AnalysisEngineFactory.createEngineDescription(
-				KeytermExtractor.class
-				);
+			// reader
+			ExternalResourceDescription esResource = ExternalResourceFactory.createExternalResourceDescription(
+					ElasticsearchResource.class, 
+					ElasticsearchResource.PARAM_CREATE_INDEX, "false",
+					ElasticsearchResource.PARAM_HOST, this.esHost,
+					ElasticsearchResource.PARAM_CLUSTERNAME, this.esClustername,
+					ElasticsearchResource.PARAM_INDEX, this.esIndex,
+					ElasticsearchResource.PARAM_PORT, this.esPort,
+					ElasticsearchResource.PARAM_DOCUMENT_MAPPING_FILE, "desc/elasticsearch_mapping_document_2.4.json");
+			CollectionReaderDescription esReader = CollectionReaderFactory.createReaderDescription(
+					NewsleakElasticsearchReader.class, this.typeSystem,
+					NewsleakElasticsearchReader.RESOURCE_ESCLIENT, esResource,
+					NewsleakElasticsearchReader.PARAM_LANGUAGE, currentLanguage
+					);
 
 
-		// writer
-		ExternalResourceDescription resourceLinewriter = ExternalResourceFactory.createExternalResourceDescription(
-				TextLineWriterResource.class, 
-				TextLineWriterResource.PARAM_OUTPUT_FILE, this.dataDirectory + File.separator + "output.txt");
-		AnalysisEngineDescription linewriter = AnalysisEngineFactory.createEngineDescription(
-				TextLineWriter.class,
-				TextLineWriter.RESOURCE_LINEWRITER, resourceLinewriter
-				);
+			// sentences
+			ExternalResourceDescription resourceSentence = ExternalResourceFactory.createExternalResourceDescription(
+					SentenceModelResourceImpl.class, openNlpSentenceModel);
+			AnalysisEngineDescription sentence = AnalysisEngineFactory.createEngineDescription(
+					SentenceDetector.class,
+					UimaUtil.MODEL_PARAMETER, resourceSentence,
+					UimaUtil.SENTENCE_TYPE_PARAMETER, Sentence.class,
+					UimaUtil.IS_REMOVE_EXISTINGS_ANNOTAIONS, false
+					);
 
-		AnalysisEngineDescription xmi = AnalysisEngineFactory.createEngineDescription(
-				XmiWriter.class,
-				XmiWriter.PARAM_OUTPUT_DIRECTORY, this.dataDirectory + File.separator + "xmi"
-				);
+			// tokens
+			ExternalResourceDescription resourceToken = ExternalResourceFactory.createExternalResourceDescription(
+					TokenizerModelResourceImpl.class, openNlpTokenModel);
+			AnalysisEngineDescription token = AnalysisEngineFactory.createEngineDescription(
+					Tokenizer.class,
+					UimaUtil.MODEL_PARAMETER, resourceToken,
+					UimaUtil.SENTENCE_TYPE_PARAMETER, Sentence.class,
+					UimaUtil.TOKEN_TYPE_PARAMETER, Token.class
+					);
 
-		ExternalResourceDescription resourcePostgres = ExternalResourceFactory.createExternalResourceDescription(
-				PostgresResource.class, 
-				PostgresResource.PARAM_DBURL, this.dbUrl,
-				PostgresResource.PARAM_DBNAME, this.dbName,
-				PostgresResource.PARAM_DBUSER, this.dbUser,
-				PostgresResource.PARAM_DBPASS, this.dbPass,
-				PostgresResource.PARAM_TABLE_SCHEMA, this.dbSchema,
-				PostgresResource.PARAM_CREATE_DB, "true"
-				);
-		AnalysisEngineDescription postgresWriter = AnalysisEngineFactory.createEngineDescription(
-				PostgresDbWriter.class,
-				PostgresDbWriter.RESOURCE_POSTGRES, resourcePostgres
-				);
+			// sentence cleaner
+			AnalysisEngineDescription sentenceCleaner = AnalysisEngineFactory.createEngineDescription(
+					SentenceCleaner.class
+					);
+
+			// pos
+			ExternalResourceDescription resourcePos = ExternalResourceFactory.createExternalResourceDescription(
+					POSModelResourceImpl.class, openNlpPosModel);
+			AnalysisEngineDescription pos = AnalysisEngineFactory.createEngineDescription(
+					POSTagger.class,
+					UimaUtil.MODEL_PARAMETER, resourcePos,
+					UimaUtil.SENTENCE_TYPE_PARAMETER, Sentence.class,
+					UimaUtil.TOKEN_TYPE_PARAMETER, Token.class,
+					UimaUtil.POS_FEATURE_PARAMETER, "pos"
+					);		
 
 
-		// define pipeline
+			// heideltime
+			AnalysisEngineDescription heideltime = AnalysisEngineFactory.createEngineDescription(
+					HeidelTimeOpenNLP.class,
+					HeidelTimeOpenNLP.PARAM_LANGUAGE, heideltimeLanguage,
+					HeidelTimeOpenNLP.PARAM_LOCALE, heideltimeLocale
+					);
 
-		AnalysisEngineDescription pipeline = AnalysisEngineFactory.createEngineDescription(
-				sentence,
-				token,
-				sentenceCleaner,
-				pos,
-				heideltime,
-//				nerPer, 
-//				nerOrg,
-//				nerLoc,
-				nerMicroservice,
-				keyterms,
-				linewriter,
-				// xmi,
-				// esWriter
-				postgresWriter
-				);
 
-		CpeBuilder cpeBuilder = new CpeBuilder();
-		cpeBuilder.setReader(esReader);
-		cpeBuilder.setMaxProcessingUnitThreadCount(this.threads);
-		cpeBuilder.setAnalysisEngine(pipeline);
+			// ner
+			//			AnalysisEngineDescription nerPer = getOpennlpNerAed("PER", "opennlp.uima.Person", "./resources/eng/en-ner-person.bin");
+			//			AnalysisEngineDescription nerOrg = getOpennlpNerAed("ORG", "opennlp.uima.Organization", "./resources/eng/en-ner-organization.bin");
+			//			AnalysisEngineDescription nerLoc = getOpennlpNerAed("LOC", "opennlp.uima.Location", "./resources/eng/en-ner-location.bin");
 
-		// run processing
-		CollectionProcessingEngine engine = cpeBuilder.createCpe(statusListener);
-		engine.process();
+			AnalysisEngineDescription nerMicroservice = AnalysisEngineFactory.createEngineDescription(
+					NerMicroservice.class,
+					NerMicroservice.NER_SERVICE_URL, this.nerServiceUrl
+					);
 
-		while (statusListener.isProcessing()) {
-			// wait...
-			Thread.sleep(500);
+			// keyterms
+			AnalysisEngineDescription keyterms = AnalysisEngineFactory.createEngineDescription(
+					KeytermExtractor.class,
+					KeytermExtractor.PARAM_NOUN_TAG, nounPosTag
+					);
+
+
+			
+			
+			// writer
+			ExternalResourceDescription resourceLinewriter = ExternalResourceFactory.createExternalResourceDescription(
+					TextLineWriterResource.class, 
+					TextLineWriterResource.PARAM_OUTPUT_FILE, this.dataDirectory + File.separator + "output.txt");
+			AnalysisEngineDescription linewriter = AnalysisEngineFactory.createEngineDescription(
+					TextLineWriter.class,
+					TextLineWriter.RESOURCE_LINEWRITER, resourceLinewriter
+					);
+
+			AnalysisEngineDescription xmi = AnalysisEngineFactory.createEngineDescription(
+					XmiWriter.class,
+					XmiWriter.PARAM_OUTPUT_DIRECTORY, this.dataDirectory + File.separator + "xmi"
+					);
+
+			ExternalResourceDescription resourcePostgres = ExternalResourceFactory.createExternalResourceDescription(
+					PostgresResource.class, 
+					PostgresResource.PARAM_DBURL, this.dbUrl,
+					PostgresResource.PARAM_DBNAME, this.dbName,
+					PostgresResource.PARAM_DBUSER, this.dbUser,
+					PostgresResource.PARAM_DBPASS, this.dbPass,
+					PostgresResource.PARAM_TABLE_SCHEMA, this.dbSchema,
+					PostgresResource.PARAM_CREATE_DB, firstLanguage ? "true" : "false"
+					);
+			AnalysisEngineDescription postgresWriter = AnalysisEngineFactory.createEngineDescription(
+					PostgresDbWriter.class,
+					PostgresDbWriter.RESOURCE_POSTGRES, resourcePostgres
+					);
+			
+
+			// define pipeline
+			AnalysisEngineDescription pipeline = AnalysisEngineFactory.createEngineDescription(
+					sentence,
+					token,
+					sentenceCleaner,
+					pos,
+					heideltime,
+					// nerPer, 
+					// nerOrg,
+					// nerLoc,
+					nerMicroservice,
+					keyterms,
+					// linewriter,
+					// xmi,
+					// esWriter
+					postgresWriter
+					);
+
+			CpeBuilder cpeBuilder = new CpeBuilder();
+			cpeBuilder.setReader(esReader);
+			cpeBuilder.setMaxProcessingUnitThreadCount(this.threads);
+			cpeBuilder.setAnalysisEngine(pipeline);
+
+			// run processing
+			CollectionProcessingEngine engine = cpeBuilder.createCpe(statusListener);
+			engine.process();
+
+			while (statusListener.isProcessing()) {
+				// wait...
+				Thread.sleep(500);
+			}
+
+			firstLanguage = false;
+
 		}
+
+
+	}
+
+	public Properties getLanguageRescourceProperties(String language) {
+		// config file
+		Properties properties = new Properties();
+		File resourceConfigFile = new File("resources" + File.separator + language, "resources.conf");
+		try {
+			InputStream input = new FileInputStream(resourceConfigFile);
+			properties.load(input);
+
+			readerType = properties.getProperty("datareader");
+
+			input.close();
+		}
+		catch (IOException e) {
+			System.err.println("Could not read resource configuration file " + resourceConfigFile.getPath());
+			System.exit(1);
+		}
+		return properties;
 	}
 
 	private AnalysisEngineDescription getOpennlpNerAed(String shortType, String type, String modelFile) throws ResourceInitializationException {

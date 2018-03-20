@@ -46,14 +46,10 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 	@ExternalResource(key = RESOURCE_HOOVER)
 	private HooverResource hooverResource;
 
-	public static final String PARAM_DEFAULT_LANG = "defaultLanguage";
-	@ConfigurationParameter(name=PARAM_DEFAULT_LANG, mandatory=false, defaultValue="en")
-	private String defaultLanguage;
-
 	public static final String PARAM_DEBUG_MAX_DOCS = "maxRecords";
 
 	private static final int MAXIMUM_DOCUMENT_LENGTH = 1500 * 50; // 50 norm pages
-	@ConfigurationParameter(name=PARAM_DEBUG_MAX_DOCS, mandatory=false)
+	@ConfigurationParameter(name = PARAM_DEBUG_MAX_DOCS, mandatory = false)
 	private Integer maxRecords = Integer.MAX_VALUE;
 
 	private TransportClient client;
@@ -137,19 +133,19 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		// put email header information in main text
 		field = response.getField("from");
 		if (field != null) {
-			docText += (String) field.getValue() + "\n";
+			docText += ((String) field.getValue()).trim() + "\n";
 		}
 		field = response.getField("to");
 		if (field != null) {
-			docText += (String) field.getValue() + "\n";
+			docText += ((String) field.getValue()).trim() + "\n";
 		}
 		field = response.getField("subject");
 		if (field != null) {
-			docText += (String) field.getValue() + "\n\n";
+			docText += ((String) field.getValue()).trim() + "\n\n";
 		}
 		field = response.getField("text");
 		if (field != null) {
-			String completeText = (String) field.getValue();
+			String completeText = ((String) field.getValue()).trim();
 			docText += completeText.substring(0, Math.min(completeText.length(), MAXIMUM_DOCUMENT_LENGTH));
 		}
 		jcas.setDocumentText(docText);
