@@ -1,36 +1,18 @@
 package uhh_lt.newsleak.annotator;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
-import org.apache.uima.fit.descriptor.ExternalResource;
 import org.apache.uima.fit.descriptor.OperationalProperties;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
-import org.apache.uima.jcas.cas.StringList;
 import org.apache.uima.resource.ResourceInitializationException;
-import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 
-import opennlp.tools.langdetect.LanguageDetectorME;
 import opennlp.uima.Token;
-import uhh_lt.newsleak.resources.LanguageDetectorResource;
 import uhh_lt.newsleak.types.Metadata;
 import uhh_lt.newsleak.util.MapUtil;
 
@@ -40,6 +22,10 @@ public class KeytermExtractor extends JCasAnnotator_ImplBase {
 //	public final static String FRQ_FILE = "keyTermResource";
 //	@ExternalResource(key = FRQ_FILE)
 //	private KeyTermResource keyTermResource;
+	
+	public static final String PARAM_NOUN_TAG = "nounPosTag";
+	@ConfigurationParameter(name = PARAM_NOUN_TAG)
+	private String nounPosTag;
 
 	public HashMap<String, Integer> tokenCounts;
 
@@ -59,7 +45,7 @@ public class KeytermExtractor extends JCasAnnotator_ImplBase {
 		Collection<Token> tokens = JCasUtil.selectCovered(jcas, Token.class, 0, jcas.getDocumentText().length());
 		
 		for (Token token : tokens) {
-			if (token.getPos().startsWith("NN")) {
+			if (token.getPos().matches(nounPosTag)) {
 				String text = token.getCoveredText().toLowerCase();
 				tokenCounts.put(text, tokenCounts.containsKey(text) ? tokenCounts.get(text) + 1 : 1);
 			}
