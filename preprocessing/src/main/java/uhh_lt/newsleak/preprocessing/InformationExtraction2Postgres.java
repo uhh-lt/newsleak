@@ -194,8 +194,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 	}
 
 	public void pipelineAnnotation() throws Exception {
-		statusListener = new NewsleakStatusCallbackListener(this.logger);
-
+		
 
 		/* Proceeding for multi-language collections:
 		 * - 1. run language detection and write language per document to ES index
@@ -206,6 +205,8 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		// iterate over configured ISO-639-3 language codes
 		boolean firstLanguage = true;
 		for (String currentLanguage : processLanguages) {
+			
+			NewsleakStatusCallbackListener annotationListener = new NewsleakStatusCallbackListener(this.logger);
 
 			logger.log(Level.INFO, "Processing " + currentLanguage);
 			Thread.sleep(2000);
@@ -353,12 +354,12 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 			cpeBuilder.setAnalysisEngine(pipeline);
 
 			// run processing
-			CollectionProcessingEngine engine = cpeBuilder.createCpe(statusListener);
+			CollectionProcessingEngine engine = cpeBuilder.createCpe(annotationListener);
 			engine.process();
 
-			while (statusListener.isProcessing()) {
+			while (annotationListener.isProcessing()) {
 				// wait...
-				Thread.sleep(500);
+				Thread.sleep(1);
 			}
 
 			firstLanguage = false;

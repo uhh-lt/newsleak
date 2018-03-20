@@ -102,6 +102,10 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 				}
 				logger.log(Level.INFO, "Added hits " + nHits);
 			}
+			
+			if (maxRecords > 0 && maxRecords < totalIdList.size()) {
+				totalIdList = new ArrayList<String>(totalIdList.subList(0, maxRecords));
+			}
 
 			totalRecords = totalIdList.size();
 			logger.log(Level.INFO, "Found " + totalRecords + " in index " + esIndex);
@@ -257,7 +261,6 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 	}
 
 	public boolean hasNext() throws IOException, CollectionException {
-		if (currentRecord > maxRecords) return false;
 		if (currentRecord < totalRecords) {
 			currentRecord++;
 			return true;
