@@ -38,7 +38,7 @@ public class LanguageDetector extends JCasAnnotator_ImplBase {
 	private String documentLanguagesFile;
 
 	public HashSet<String> supportedLanguages;
-	public HashMap<String, String> documentLanguages;
+	// public HashMap<String, String> documentLanguages;
 
 	Logger log;
 
@@ -52,7 +52,7 @@ public class LanguageDetector extends JCasAnnotator_ImplBase {
 		}
 
 		languageDetector = new LanguageDetectorME(languageDetectorResource.getModel());
-		documentLanguages = new HashMap<String, String>();
+		// documentLanguages = new HashMap<String, String>();
 
 		log = context.getLogger();
 	}
@@ -72,7 +72,7 @@ public class LanguageDetector extends JCasAnnotator_ImplBase {
 		}
 
 		Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
-		documentLanguages.put(metadata.getDocId(), docLang);
+		// documentLanguages.put(metadata.getDocId(), docLang);
 
 	}
 
@@ -80,6 +80,7 @@ public class LanguageDetector extends JCasAnnotator_ImplBase {
 	@Override
 	public void collectionProcessComplete() throws AnalysisEngineProcessException {
 		super.collectionProcessComplete();
+		/*
 		File tmpFile = new File(documentLanguagesFile);
 		HashMap<String, String> mergedDocumentLanguages;
 		try {
@@ -101,6 +102,7 @@ public class LanguageDetector extends JCasAnnotator_ImplBase {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+		*/
 	}
 
 
