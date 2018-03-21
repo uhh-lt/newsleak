@@ -43,6 +43,7 @@ import uhh_lt.newsleak.reader.NewsleakCsvStreamReader;
 import uhh_lt.newsleak.reader.NewsleakElasticsearchReader;
 import uhh_lt.newsleak.resources.ElasticsearchResource;
 import uhh_lt.newsleak.resources.HooverResource;
+import uhh_lt.newsleak.resources.KeytermsResource;
 import uhh_lt.newsleak.resources.LanguageDetectorResource;
 import uhh_lt.newsleak.resources.PostgresResource;
 import uhh_lt.newsleak.resources.TextLineWriterResource;
@@ -293,13 +294,16 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 					);
 
 			// keyterms
+			ExternalResourceDescription keytermResource = ExternalResourceFactory.createExternalResourceDescription(
+					KeytermsResource.class, 
+					KeytermsResource.PARAM_N_KEYTERMS, "25",
+					KeytermsResource.PARAM_LANGUAGE_CODE, currentLanguage);
 			AnalysisEngineDescription keyterms = AnalysisEngineFactory.createEngineDescription(
 					KeytermExtractor.class,
+					KeytermExtractor.RESOURCE_KEYTERMS, keytermResource,
 					KeytermExtractor.PARAM_NOUN_TAG, nounPosTag
 					);
 
-
-			
 			
 			// writer
 			ExternalResourceDescription resourceLinewriter = ExternalResourceFactory.createExternalResourceDescription(
