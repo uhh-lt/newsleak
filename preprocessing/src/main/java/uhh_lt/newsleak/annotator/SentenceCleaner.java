@@ -1,6 +1,8 @@
 package uhh_lt.newsleak.annotator;
 
 import java.util.Collection;
+import java.util.List;
+
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
@@ -28,21 +30,28 @@ public class SentenceCleaner extends JCasAnnotator_ImplBase {
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		super.initialize(context);
 		log = context.getLogger();
+		log.setLevel(Level.ALL);
 	}
 
 
 	@Override
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
 
+		cleanTokens(jcas);
+		restructureSentences(jcas);
 
-		Collection<Sentence> sentences = JCasUtil.selectCovered(jcas, Sentence.class, 0, jcas.getDocumentText().length());
+	}
+
+
+	public void restructureSentences(JCas jcas) {
+		Collection<Sentence> sentences = JCasUtil.select(jcas, Sentence.class);
 		for (Sentence sentence : sentences) {
-			
+
 			Collection<Token> tokens = JCasUtil.selectCovered(jcas, Token.class, sentence.getBegin(), sentence.getEnd());
-			
+
 			if (tokens.size() > MAX_TOKENS_PER_SENTENCE) {
-				log.log(Level.FINEST, "Restructuring long sentence: " + sentence.getCoveredText());
-				
+				log.log(Level.FINEST, "Restructuring long sentence: " + sentence.getBegin() + " " + sentence.getEnd());
+
 				int sStart = sentence.getBegin();
 				boolean startNew = true;
 				int nTok = 0;
@@ -59,7 +68,7 @@ public class SentenceCleaner extends JCasAnnotator_ImplBase {
 						s.setEnd(token.getEnd());
 						s.addToIndexes();
 						startNew = true;	
-						log.log(Level.FINEST, "New sentence: " + s.getCoveredText());
+						log.log(Level.FINEST, "New sentence: " + sStart + " " + token.getEnd());
 					}
 				}
 				if (!startNew) {
@@ -67,39 +76,22 @@ public class SentenceCleaner extends JCasAnnotator_ImplBase {
 					s.setBegin(sStart);
 					s.setEnd(sentence.getEnd());
 					s.addToIndexes();
-					log.log(Level.FINEST, "New sentence: " + s.getCoveredText());
+					log.log(Level.FINEST, "New sentence: " + sStart + " " + sentence.getEnd());
 				}
 
 				sentence.removeFromIndexes();
 
 			}
-			
-			// remove too long tokens
-			
-			for (Token token : tokens) {
-				if (token.getCoveredText().length() > MAX_TOKEN_LENGTH) {
-					token.removeFromIndexes();
-				}
-			}
-
 		}
-
-
-
 	}
 
-	private double letterDigitRatio(String str) {
-		int counterLetter = 0;
-		int counterNonletter = 0;
-		for (int i = 0; i < str.length(); i++) {
-			if (Character.isLetter(str.charAt(i))) {
-				counterLetter++;
-			} else {
-				if (str.charAt(i) != ' ') counterNonletter++;
+	private void cleanTokens(JCas jcas) {
+		// remove too long tokens
+		Collection<Token> tokens = JCasUtil.select(jcas, Token.class);
+		for (Token token : tokens) {
+			if (token.getCoveredText().length() > MAX_TOKEN_LENGTH) {
+				token.removeFromIndexes();
 			}
 		}
-		double ratio = counterNonletter / (double) counterLetter;
-		return ratio;
 	}
-
 }
