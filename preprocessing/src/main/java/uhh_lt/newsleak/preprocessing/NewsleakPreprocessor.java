@@ -21,9 +21,14 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.uima.UIMAFramework;
+import org.apache.uima.fit.factory.ExternalResourceFactory;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
+import org.apache.uima.resource.ExternalResourceDescription;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.apache.uima.util.Logger;
+
+import uhh_lt.newsleak.resources.LanguageDetectorResource;
+import uhh_lt.newsleak.resources.MetadataResource;
 
 /**
  * Reads document.csv and metadata.csv, processes them in a UIMA pipeline
@@ -69,6 +74,7 @@ public abstract class NewsleakPreprocessor {
 
 	protected TypeSystemDescription typeSystem;
 	protected NewsleakStatusCallbackListener statusListener;
+	protected ExternalResourceDescription metadataResourceDesc = null;
 	
 	protected static Connection conn;
 	protected static Statement st;
@@ -159,6 +165,18 @@ public abstract class NewsleakPreprocessor {
 		String password = pswd;
 		conn = DriverManager.getConnection(url + dbName, userName, password);
 		st = conn.createStatement();
+	}
+	
+	
+	protected ExternalResourceDescription getMetadataResourceDescription() {
+		if (metadataResourceDesc == null) {
+			metadataResourceDesc = ExternalResourceFactory.createExternalResourceDescription(
+					MetadataResource.class, 
+					MetadataResource.PARAM_METADATA_FILE, this.dataDirectory + File.separator + this.metadataFile,
+					MetadataResource.PARAM_RESET_METADATA_FILE, "true"
+				    );
+		}
+		return metadataResourceDesc;
 	}
 
 }

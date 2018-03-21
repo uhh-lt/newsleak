@@ -114,7 +114,6 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 			this.metadataFile = this.hooverTmpMetadata;
 			ExternalResourceDescription hooverResource = ExternalResourceFactory.createExternalResourceDescription(
 					HooverResource.class, 
-					HooverResource.PARAM_METADATA_FILE, this.dataDirectory + File.separator + this.metadataFile,
 					HooverResource.PARAM_HOST, this.hooverHost,
 					HooverResource.PARAM_CLUSTERNAME, this.hooverClustername,
 					HooverResource.PARAM_INDEX, this.hooverIndex,
@@ -123,6 +122,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 			reader = CollectionReaderFactory.createReaderDescription(
 					HooverElasticsearchReader.class, this.typeSystem,
 					HooverElasticsearchReader.RESOURCE_HOOVER, hooverResource,
+					HooverElasticsearchReader.RESOURCE_METADATA, this.getMetadataResourceDescription(),
 					HooverElasticsearchReader.PARAM_DEBUG_MAX_DOCS, this.debugMaxDocuments
 					);
 		} else {
@@ -152,12 +152,12 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		// language detection
 		ExternalResourceDescription resourceLangDect = ExternalResourceFactory.createExternalResourceDescription(
 				LanguageDetectorResource.class, 
-				LanguageDetectorResource.PARAM_MODEL_FILE, "resources/langdetect-183.bin",
-				LanguageDetectorResource.PARAM_METADATA_FILE, this.dataDirectory + File.separator + this.metadataFile
+				LanguageDetectorResource.PARAM_MODEL_FILE, "resources/langdetect-183.bin"
 			    );
 		AnalysisEngineDescription langDetect = AnalysisEngineFactory.createEngineDescription(
 				LanguageDetector.class,
 				LanguageDetector.MODEL_FILE, resourceLangDect,
+				LanguageDetector.METADATA_FILE, this.getMetadataResourceDescription(),
 				LanguageDetector.PARAM_DEFAULT_LANG, this.defaultLanguage,
 				LanguageDetector.DOCLANG_FILE, "data/documentLanguages.ser"
 				);

@@ -16,10 +16,12 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.descriptor.ExternalResource;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
+import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 
 import opennlp.tools.langdetect.LanguageDetectorME;
 import uhh_lt.newsleak.resources.LanguageDetectorResource;
+import uhh_lt.newsleak.resources.MetadataResource;
 import uhh_lt.newsleak.types.Metadata;
 
 public class LanguageDetector extends JCasAnnotator_ImplBase {
@@ -29,6 +31,10 @@ public class LanguageDetector extends JCasAnnotator_ImplBase {
 	public final static String MODEL_FILE = "languageDetectorResource";
 	@ExternalResource(key = MODEL_FILE)
 	private LanguageDetectorResource languageDetectorResource;
+	
+	public final static String METADATA_FILE = "metadataResource";
+	@ExternalResource(key = METADATA_FILE)
+	private MetadataResource metadataResource;
 	
 	public static final String PARAM_DEFAULT_LANG = "defaultLanguage";
 	@ConfigurationParameter(name = PARAM_DEFAULT_LANG, mandatory = false, defaultValue = "eng")
@@ -43,7 +49,7 @@ public class LanguageDetector extends JCasAnnotator_ImplBase {
 
 	public HashSet<String> supportedLanguages;
 
-	Logger log;
+	Logger logger;
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
@@ -52,7 +58,7 @@ public class LanguageDetector extends JCasAnnotator_ImplBase {
 
 		languageDetector = new LanguageDetectorME(languageDetectorResource.getModel());
 
-		log = context.getLogger();
+		logger = context.getLogger();
 	}
 
 
@@ -68,7 +74,7 @@ public class LanguageDetector extends JCasAnnotator_ImplBase {
 
 	@Override
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
-
+		
 		String docText = jcas.getDocumentText();
 		Integer maxLength = Math.min(docText.length(), 2000);
 		String docBeginning = docText.substring(0, maxLength);
@@ -82,8 +88,8 @@ public class LanguageDetector extends JCasAnnotator_ImplBase {
 			
 			// append language information to metadata file
 			ArrayList<List<String>> langmetadata = new ArrayList<List<String>>();
-			langmetadata.add(createTextMetadata(metadata.getDocId(), "language", docLang));
-			languageDetectorResource.appendMetadata(langmetadata);
+			langmetadata.add(metadataResource.createTextMetadata(metadata.getDocId(), "language", docLang));
+			metadataResource.appendMetadata(langmetadata);
 		} 
 
 	}
@@ -100,12 +106,5 @@ public class LanguageDetector extends JCasAnnotator_ImplBase {
 		return localeMap;
 	}
 	
-	private ArrayList<String> createTextMetadata(String docId, String key, String value) {
-		ArrayList<String> meta = new ArrayList<String>();
-		meta.add(docId);
-		meta.add(StringUtils.capitalize(key));
-		meta.add(value.replaceAll("\\r|\\n", " "));
-		meta.add("Text");
-		return meta;
-	}
+
 }

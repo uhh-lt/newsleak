@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
@@ -36,6 +35,7 @@ import org.elasticsearch.search.sort.SortParseElement;
 
 import de.unihd.dbs.uima.types.heideltime.Dct;
 import uhh_lt.newsleak.resources.HooverResource;
+import uhh_lt.newsleak.resources.MetadataResource;
 import uhh_lt.newsleak.types.Metadata;
 
 public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
@@ -45,6 +45,10 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 	public static final String RESOURCE_HOOVER = "hooverResource";
 	@ExternalResource(key = RESOURCE_HOOVER)
 	private HooverResource hooverResource;
+	
+	public static final String RESOURCE_METADATA = "metadataResource";
+	@ExternalResource(key = RESOURCE_METADATA)
+	private MetadataResource metadataResource;
 
 	public static final String PARAM_DEBUG_MAX_DOCS = "maxRecords";
 
@@ -190,31 +194,31 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		// subject, filename, path
 		field = response.getField("subject");
 		if (field != null)
-			metadata.add(createTextMetadata(docId, "subject", ((String) field.getValue()).toString()));
+			metadata.add(metadataResource.createTextMetadata(docId, "subject", ((String) field.getValue()).toString()));
 		field = response.getField("filename");
 		if (field != null)
-			metadata.add(createTextMetadata(docId, "filename", ((String) field.getValue()).toString()));
+			metadata.add(metadataResource.createTextMetadata(docId, "filename", ((String) field.getValue()).toString()));
 		field = response.getField("path");
 		if (field != null)
-			metadata.add(createTextMetadata(docId, "path", ((String) field.getValue()).toString()));
+			metadata.add(metadataResource.createTextMetadata(docId, "path", ((String) field.getValue()).toString()));
 
 		// attachments
 		field = response.getField("attachments");
 		if (field != null)
-			metadata.add(createTextMetadata(docId, "attachments", ((Boolean) field.getValue()).toString()));
+			metadata.add(metadataResource.createTextMetadata(docId, "attachments", ((Boolean) field.getValue()).toString()));
 		// content-type
 		field = response.getField("content-type");
 		if (field != null)
-			metadata.add(createTextMetadata(docId, "content-type", (String) field.getValue()));
+			metadata.add(metadataResource.createTextMetadata(docId, "content-type", (String) field.getValue()));
 		// file-type
 		field = response.getField("filetype");
 		if (field != null)
-			metadata.add(createTextMetadata(docId, "filetype", (String) field.getValue()));
+			metadata.add(metadataResource.createTextMetadata(docId, "filetype", (String) field.getValue()));
 		// from
 		field = response.getField("from");
 		if (field != null) {
 			for (String email : extractEmail((String) field.getValue())) {
-				metadata.add(createTextMetadata(docId, "from", email));
+				metadata.add(metadataResource.createTextMetadata(docId, "from", email));
 			}
 		}
 		// to
@@ -222,11 +226,11 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		if (field != null) {
 			for (Object toList : field.getValues()) {
 				for (String email : extractEmail((String) toList)) {
-					metadata.add(createTextMetadata(docId, "to", email));
+					metadata.add(metadataResource.createTextMetadata(docId, "to", email));
 				}
 			}
 		}
-		hooverResource.appendMetadata(metadata);
+		metadataResource.appendMetadata(metadata);
 
 	}
 
@@ -239,15 +243,6 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		return emails;
 	}
 
-
-	private ArrayList<String> createTextMetadata(String docId, String key, String value) {
-		ArrayList<String> meta = new ArrayList<String>();
-		meta.add(docId);
-		meta.add(StringUtils.capitalize(key));
-		meta.add(value.replaceAll("\\r|\\n", " "));
-		meta.add("Text");
-		return meta;
-	}
 
 
 	public Progress[] getProgress() {
