@@ -4,14 +4,18 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
 import org.apache.uima.fit.descriptor.ExternalResource;
 import org.apache.uima.fit.descriptor.OperationalProperties;
+import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.cas.NonEmptyStringList;
+import org.apache.uima.jcas.cas.StringList;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
@@ -21,6 +25,7 @@ import opennlp.uima.Location;
 import opennlp.uima.Organization;
 import opennlp.uima.Person;
 import uhh_lt.newsleak.resources.PostgresResource;
+import uhh_lt.newsleak.types.DictTerm;
 import uhh_lt.newsleak.types.Metadata;
 
 @OperationalProperties(multipleDeploymentAllowed=true, modifiesCas=false)
@@ -67,12 +72,31 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 			postgresResource.insertDocument(docId, docText, docDate);
 
 			// entities and offsets
-			Collection<Person> persons = JCasUtil.selectCovered(jcas, Person.class, 0, jcas.getDocumentText().length());
+			Collection<Person> persons = JCasUtil.select(jcas, Person.class);
 			processEntities(persons, "PER", docId);
-			Collection<Organization> orgs = JCasUtil.selectCovered(jcas, Organization.class, 0, jcas.getDocumentText().length());
+			Collection<Organization> orgs = JCasUtil.select(jcas, Organization.class);
 			processEntities(orgs, "ORG", docId);
-			Collection<Location> locs = JCasUtil.selectCovered(jcas, Location.class, 0, jcas.getDocumentText().length());
+			Collection<Location> locs = JCasUtil.select(jcas, Location.class);
 			processEntities(locs, "LOC", docId);
+			
+			// dictionary entities
+			HashMap<String, HashSet<DictTerm>> dictAnnotations = new HashMap<String, HashSet<DictTerm>>();
+			Collection<DictTerm> dictTerms = JCasUtil.select(jcas, DictTerm.class);
+			for (DictTerm dictTerm : dictTerms) {
+				Collection<String> typeList = FSCollectionFactory.create(dictTerm.getDictType());
+				// String first = typeList.iterator().next();
+				for (String type : typeList) {
+					HashSet<DictTerm> typeTerms = dictAnnotations.containsKey(type) ? 
+							dictAnnotations.get(type) : new HashSet<DictTerm>();
+					typeTerms.add(dictTerm);
+					dictAnnotations.put(type, typeTerms);
+				}
+			}
+			for (String type : dictAnnotations.keySet()) {
+				processEntities(dictAnnotations.get(type), type, docId);
+			}
+
+			
 			
 			// eventtime
 			ArrayList<String> extractedTimes = timeFormatter.format(jcas);

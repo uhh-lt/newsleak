@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <typeSystemDescription xmlns="http://uima.apache.org/resourceSpecifier">
-                    
+                        
+  
+  
   
   
   
@@ -9,7 +11,9 @@
   
   
   <name>NewsleakDocument</name>
-                    
+                        
+  
+  
   
   
   
@@ -18,7 +22,9 @@
   
   
   <description/>
-                    
+                        
+  
+  
   
   
   
@@ -27,7 +33,9 @@
   
   
   <version>1.0</version>
-                    
+                        
+  
+  
   
   
   
@@ -36,7 +44,9 @@
   
   
   <vendor/>
-                  
+                      
+  
+  
   
   
   
@@ -45,31 +55,6 @@
   
   
   <imports>
-                            
-    
-    
-    
-    
-    
-    <import location="openNLP.xml"/>
-                          
-  
-    
-    
-    
-    
-    <import location="HeidelTime_TypeSystem.xml"/>
-                  
-  
-  
-  
-  </imports>
-            
-  
-  
-  
-  
-  <types>
                                     
     
     
@@ -78,8 +63,45 @@
     
     
     
+    <import location="openNLP.xml"/>
+                                  
+  
+    
+    
+    
+    
+    
+    
+    <import location="HeidelTime_TypeSystem.xml"/>
+                          
+  
+  
+  
+  
+  
+  </imports>
+                
+  
+  
+  
+  
+  
+  
+  <types>
+                                            
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <typeDescription>
-                                                
+                                                            
+      
+      
       
       
       
@@ -87,7 +109,9 @@
       
       
       <name>uhh_lt.newsleak.types.Metadata</name>
-                                                
+                                                            
+      
+      
       
       
       
@@ -95,7 +119,9 @@
       
       
       <description/>
-                                                
+                                                            
+      
+      
       
       
       
@@ -103,7 +129,9 @@
       
       
       <supertypeName>uima.tcas.DocumentAnnotation</supertypeName>
-                                                
+                                                            
+      
+      
       
       
       
@@ -111,7 +139,9 @@
       
       
       <features>
-                                                                
+                                                                                
+        
+        
         
         
         
@@ -119,7 +149,9 @@
         
         
         <featureDescription>
-                                                                                
+                                                                                                    
+          
+          
           
           
           
@@ -127,7 +159,9 @@
           
           
           <name>metaTripletsNames</name>
-                                                                                
+                                                                                                    
+          
+          
           
           
           
@@ -135,7 +169,9 @@
           
           
           <description/>
-                                                                                
+                                                                                                    
+          
+          
           
           
           
@@ -143,7 +179,9 @@
           
           
           <rangeTypeName>uima.cas.StringArray</rangeTypeName>
-                                                                              
+                                                                                                  
+        
+        
         
         
         
@@ -151,7 +189,9 @@
         
         
         </featureDescription>
-                                                                
+                                                                                
+        
+        
         
         
         
@@ -159,7 +199,9 @@
         
         
         <featureDescription>
-                                                                                
+                                                                                                    
+          
+          
           
           
           
@@ -167,7 +209,9 @@
           
           
           <name>metaTripletsValues</name>
-                                                                                
+                                                                                                    
+          
+          
           
           
           
@@ -175,7 +219,9 @@
           
           
           <description/>
-                                                                                
+                                                                                                    
+          
+          
           
           
           
@@ -183,7 +229,9 @@
           
           
           <rangeTypeName>uima.cas.StringArray</rangeTypeName>
-                                                                              
+                                                                                                  
+        
+        
         
         
         
@@ -191,7 +239,9 @@
         
         
         </featureDescription>
-                                                                
+                                                                                
+        
+        
         
         
         
@@ -199,7 +249,9 @@
         
         
         <featureDescription>
-                                                                                
+                                                                                                    
+          
+          
           
           
           
@@ -207,7 +259,9 @@
           
           
           <name>metaTripletsTypes</name>
-                                                                                
+                                                                                                    
+          
+          
           
           
           
@@ -215,7 +269,9 @@
           
           
           <description/>
-                                                                                
+                                                                                                    
+          
+          
           
           
           
@@ -223,7 +279,9 @@
           
           
           <rangeTypeName>uima.cas.StringArray</rangeTypeName>
-                                                                              
+                                                                                                  
+        
+        
         
         
         
@@ -231,7 +289,9 @@
         
         
         </featureDescription>
-                                                                
+                                                                                
+        
+        
         
         
         
@@ -239,7 +299,9 @@
         
         
         <featureDescription>
-                                                                                
+                                                                                                    
+          
+          
           
           
           
@@ -247,7 +309,9 @@
           
           
           <name>docId</name>
-                                                                                
+                                                                                                    
+          
+          
           
           
           
@@ -255,7 +319,9 @@
           
           
           <description/>
-                                                                                
+                                                                                                    
+          
+          
           
           
           
@@ -263,7 +329,9 @@
           
           
           <rangeTypeName>uima.cas.String</rangeTypeName>
-                                                                              
+                                                                                                  
+        
+        
         
         
         
@@ -271,7 +339,9 @@
         
         
         </featureDescription>
-                                                                
+                                                                                
+        
+        
         
         
         
@@ -279,7 +349,9 @@
         
         
         <featureDescription>
-                                                                                
+                                                                                                    
+          
+          
           
           
           
@@ -287,7 +359,9 @@
           
           
           <name>timestamp</name>
-                                                                                
+                                                                                                    
+          
+          
           
           
           
@@ -295,7 +369,9 @@
           
           
           <description/>
-                                                                                
+                                                                                                    
+          
+          
           
           
           
@@ -303,32 +379,48 @@
           
           
           <rangeTypeName>uima.cas.String</rangeTypeName>
+                                                                                                  
+        
+        
+        
+        
+        
+        
+        
+        
+        </featureDescription>
                                                                               
-        
-        
-        
-        
-        
-        
-        </featureDescription>
-                                                              
       
       
       
       
       
       
+        
+        
         <featureDescription>
-                    
+                                        
+          
+          
           <name>keyterms</name>
-                    
+                                        
+          
+          
           <description>List of key terms</description>
-                    
+                                        
+          
+          
           <rangeTypeName>uima.cas.String</rangeTypeName>
-                  
+                                      
+        
+        
         </featureDescription>
+                      
+      
       </features>
-                                              
+                                                          
+    
+    
     
     
     
@@ -336,33 +428,60 @@
     
     
     </typeDescription>
-                          
+                                  
   
   
   
+    
+    
     
     
     <typeDescription>
-                        
+                                    
       
       
-      <name>uhh_lt.newsleak.types.Keyterm</name>
-                        
       
       
-      <description>Key terms of the document</description>
-                        
+      <name>uhh_lt.newsleak.types.DictTerm</name>
+                                    
+      
+      
+      
+      
+      <description>Dictionary terms</description>
+                                    
+      
+      
       
       
       <supertypeName>uima.tcas.Annotation</supertypeName>
-                      
+                                  
     
     
-    </typeDescription>
-          
     
-  </types>
+    
+      <features>
                 
+        <featureDescription>
+                    
+          <name>dictType</name>
+                    
+          <description>Type of dictionary added</description>
+                    
+          <rangeTypeName>uima.cas.StringList</rangeTypeName>
+                  
+        </featureDescription>
+              
+      </features>
+    </typeDescription>
+                  
+    
+  
+  
+  </types>
+                    
+
+
 
 
 

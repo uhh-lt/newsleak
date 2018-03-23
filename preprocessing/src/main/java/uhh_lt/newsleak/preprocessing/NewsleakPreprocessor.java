@@ -69,6 +69,8 @@ public abstract class NewsleakPreprocessor {
 	protected String dbIndices;
 
 	protected String nerServiceUrl;
+	protected String dictionaryFiles;
+	
 	protected Integer threads;
 	protected Integer debugMaxDocuments;
 
@@ -122,6 +124,8 @@ public abstract class NewsleakPreprocessor {
 			dbIndices = prop.getProperty("dbindices");
 
 			nerServiceUrl = prop.getProperty("nerserviceurl");
+			dictionaryFiles = prop.getProperty("dictionaryfiles");
+			
 			threads = Integer.valueOf(prop.getProperty("threads"));
 			debugMaxDocuments = Integer.valueOf(prop.getProperty("debugMaxDocuments"));
 			if (debugMaxDocuments <= 0) debugMaxDocuments = null;

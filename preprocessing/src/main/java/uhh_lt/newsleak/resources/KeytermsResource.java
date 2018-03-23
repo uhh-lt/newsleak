@@ -46,13 +46,8 @@ public class KeytermsResource extends Resource_ImplBase {
 		return true;
 	}
 
-
-	public Set<String> getKeyWords(List<Token> document) {
-		List<String> tokens = new ArrayList<String>();
-		for (Token token : document) {
-			tokens.add(token.getCoveredText());
-		}
-		return extractor.extract(tokens);
+	public Extractor getExtractor() {
+		return extractor;
 	}
 
 }

@@ -1,5 +1,6 @@
 package uhh_lt.newsleak.annotator;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -15,6 +16,7 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Logger;
 
 import opennlp.uima.Token;
+import uhh_lt.keyterms.Extractor;
 import uhh_lt.newsleak.resources.KeytermsResource;
 import uhh_lt.newsleak.types.Metadata;
 
@@ -29,12 +31,14 @@ public class KeytermExtractor extends JCasAnnotator_ImplBase {
 	@ConfigurationParameter(name = PARAM_NOUN_TAG)
 	private String nounPosTag;
 
-	Logger log;
+	private Logger log;
+	private Extractor extractor;
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		super.initialize(context);
 		log = context.getLogger();
+		extractor = keyTermExtractor.getExtractor();
 	}
 
 
@@ -43,7 +47,7 @@ public class KeytermExtractor extends JCasAnnotator_ImplBase {
 
 		List<Token> tokens = JCasUtil.selectCovered(jcas, Token.class, 0, jcas.getDocumentText().length());
 		
-		Set<String> keytermSet = keyTermExtractor.getKeyWords(tokens);
+		Set<String> keytermSet = getKeyWords(tokens);
 		int pseudoCount = keytermSet.size();
 		StringBuilder keyterms = new StringBuilder();
 		String text;
@@ -57,6 +61,14 @@ public class KeytermExtractor extends JCasAnnotator_ImplBase {
 		Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
 		metadata.setKeyterms(keyterms.toString());
 		metadata.addToIndexes();
+	}
+	
+	public Set<String> getKeyWords(List<Token> document) {
+		List<String> tokens = new ArrayList<String>();
+		for (Token token : document) {
+			tokens.add(token.getCoveredText());
+		}
+		return extractor.extract(tokens);
 	}
 
 }

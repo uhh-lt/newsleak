@@ -1,25 +1,26 @@
 
 
-/* First created by JCasGen Thu Jan 04 16:50:42 CET 2018 */
+/* First created by JCasGen Thu Mar 22 16:30:30 CET 2018 */
 package uhh_lt.newsleak.types;
 
 import org.apache.uima.jcas.JCas; 
 import org.apache.uima.jcas.JCasRegistry;
 import org.apache.uima.jcas.cas.TOP_Type;
 
+import org.apache.uima.jcas.cas.StringList;
 import org.apache.uima.jcas.tcas.Annotation;
 
 
-/** Key terms of the document
- * Updated by JCasGen Thu Jan 04 17:10:59 CET 2018
+/** Dictionary terms
+ * Updated by JCasGen Thu Mar 22 16:33:35 CET 2018
  * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
-public class Keyterm extends Annotation {
+public class DictTerm extends Annotation {
   /** @generated
    * @ordered 
    */
   @SuppressWarnings ("hiding")
-  public final static int typeIndexID = JCasRegistry.register(Keyterm.class);
+  public final static int typeIndexID = JCasRegistry.register(DictTerm.class);
   /** @generated
    * @ordered 
    */
@@ -33,14 +34,14 @@ public class Keyterm extends Annotation {
  
   /** Never called.  Disable default constructor
    * @generated */
-  protected Keyterm() {/* intentionally empty block */}
+  protected DictTerm() {/* intentionally empty block */}
     
   /** Internal - constructor used by generator 
    * @generated
    * @param addr low level Feature Structure reference
    * @param type the type of this Feature Structure 
    */
-  public Keyterm(int addr, TOP_Type type) {
+  public DictTerm(int addr, TOP_Type type) {
     super(addr, type);
     readObject();
   }
@@ -48,7 +49,7 @@ public class Keyterm extends Annotation {
   /** @generated
    * @param jcas JCas to which this Feature Structure belongs 
    */
-  public Keyterm(JCas jcas) {
+  public DictTerm(JCas jcas) {
     super(jcas);
     readObject();   
   } 
@@ -58,7 +59,7 @@ public class Keyterm extends Annotation {
    * @param begin offset to the begin spot in the SofA
    * @param end offset to the end spot in the SofA 
   */  
-  public Keyterm(JCas jcas, int begin, int end) {
+  public DictTerm(JCas jcas, int begin, int end) {
     super(jcas);
     setBegin(begin);
     setEnd(end);
@@ -74,6 +75,26 @@ public class Keyterm extends Annotation {
    */
   private void readObject() {/*default - does nothing empty block */}
      
-}
+  //*--------------*
+  //* Feature: dictType
+
+  /** getter for dictType - gets Type of dictionary added
+   * @generated
+   * @return value of the feature 
+   */
+  public StringList getDictType() {
+    if (DictTerm_Type.featOkTst && ((DictTerm_Type)jcasType).casFeat_dictType == null)
+      jcasType.jcas.throwFeatMissing("dictType", "uhh_lt.newsleak.types.DictTerm");
+    return (StringList)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((DictTerm_Type)jcasType).casFeatCode_dictType)));}
+    
+  /** setter for dictType - sets Type of dictionary added 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setDictType(StringList v) {
+    if (DictTerm_Type.featOkTst && ((DictTerm_Type)jcasType).casFeat_dictType == null)
+      jcasType.jcas.throwFeatMissing("dictType", "uhh_lt.newsleak.types.DictTerm");
+    jcasType.ll_cas.ll_setRefValue(addr, ((DictTerm_Type)jcasType).casFeatCode_dictType, jcasType.ll_cas.ll_getFSRef(v));}    
+  }
 
     

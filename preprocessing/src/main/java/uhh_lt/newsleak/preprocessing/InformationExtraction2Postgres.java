@@ -33,6 +33,7 @@ import opennlp.uima.sentdetect.SentenceModelResourceImpl;
 import opennlp.uima.tokenize.Tokenizer;
 import opennlp.uima.tokenize.TokenizerModelResourceImpl;
 import opennlp.uima.util.UimaUtil;
+import uhh_lt.newsleak.annotator.DictionaryExtractor;
 import uhh_lt.newsleak.annotator.HeidelTimeOpenNLP;
 import uhh_lt.newsleak.annotator.KeytermExtractor;
 import uhh_lt.newsleak.annotator.LanguageDetector;
@@ -41,6 +42,7 @@ import uhh_lt.newsleak.annotator.SentenceCleaner;
 import uhh_lt.newsleak.reader.HooverElasticsearchReader;
 import uhh_lt.newsleak.reader.NewsleakCsvStreamReader;
 import uhh_lt.newsleak.reader.NewsleakElasticsearchReader;
+import uhh_lt.newsleak.resources.DictionaryResource;
 import uhh_lt.newsleak.resources.ElasticsearchResource;
 import uhh_lt.newsleak.resources.HooverResource;
 import uhh_lt.newsleak.resources.KeytermsResource;
@@ -304,6 +306,17 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 					KeytermExtractor.PARAM_NOUN_TAG, nounPosTag
 					);
 
+			// dictionaries
+			ExternalResourceDescription dictResource = ExternalResourceFactory.createExternalResourceDescription(
+					DictionaryResource.class, 
+					DictionaryResource.PARAM_DATADIR, this.dataDirectory,
+					DictionaryResource.PARAM_DICTIONARY_FILES, this.dictionaryFiles,
+					DictionaryResource.PARAM_LANGUAGE_CODE, currentLanguage);
+			AnalysisEngineDescription dictionaries = AnalysisEngineFactory.createEngineDescription(
+					DictionaryExtractor.class,
+					DictionaryExtractor.RESOURCE_DICTIONARIES, dictResource
+					);
+			
 			
 			// writer
 			ExternalResourceDescription resourceLinewriter = ExternalResourceFactory.createExternalResourceDescription(
@@ -346,6 +359,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 					// nerLoc,
 					nerMicroservice,
 					keyterms,
+					dictionaries,
 					// linewriter,
 					// xmi,
 					// esWriter

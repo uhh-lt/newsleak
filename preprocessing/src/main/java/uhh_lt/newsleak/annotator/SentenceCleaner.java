@@ -86,11 +86,21 @@ public class SentenceCleaner extends JCasAnnotator_ImplBase {
 	}
 
 	private void cleanTokens(JCas jcas) {
+		
 		// remove too long tokens
 		Collection<Token> tokens = JCasUtil.select(jcas, Token.class);
 		for (Token token : tokens) {
 			if (token.getCoveredText().length() > MAX_TOKEN_LENGTH) {
 				token.removeFromIndexes();
+			}
+		}
+		Collection<Sentence> sentences = JCasUtil.select(jcas, Sentence.class);
+		
+		// remove empty sentences
+		for (Sentence sentence : sentences) {
+			tokens = JCasUtil.selectCovered(jcas, Token.class, sentence.getBegin(), sentence.getEnd());
+			if (tokens.isEmpty()) {
+				sentence.removeFromIndexes();
 			}
 		}
 	}
