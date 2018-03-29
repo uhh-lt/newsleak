@@ -1,18 +1,13 @@
 package uhh_lt.newsleak.resources;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 import org.apache.uima.fit.component.Resource_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.ResourceSpecifier;
 import org.apache.uima.util.Logger;
 
-import opennlp.uima.Token;
 import uhh_lt.keyterms.Extractor;
 
 public class KeytermsResource extends Resource_ImplBase {

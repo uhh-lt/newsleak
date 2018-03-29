@@ -68,7 +68,7 @@ public class KeytermExtractor extends JCasAnnotator_ImplBase {
 		for (Token token : document) {
 			tokens.add(token.getCoveredText());
 		}
-		return extractor.extract(tokens);
+		return extractor.extractKeyTerms(tokens);
 	}
 
 }
