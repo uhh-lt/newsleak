@@ -187,7 +187,6 @@ define([
                         var innerElement = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none, \'border-bottom\': \'3px solid ' + color + '\'}"></span>');
                         innerElement.className = 'highlight-general';
                         var addFilter = angular.element('<a id='+ id +' ng-click="addEntityFilter(' + id +')" context-menu="contextMenu" style="text-decoration: none;"></a>');
-
                         addFilter.append(document.createTextNode(name));
                         innerElement.append(addFilter);
                         return innerElement;
@@ -653,20 +652,13 @@ define([
                     }
 
                     $scope.esWhitelist = function(entity, typeEnt, doc) {
-                      $scope.client.get({
-                        index: $scope.indexName,
-                        type: 'document',
-                        id: doc.id,
-                        source: 'Entities'
-                      }).then(function (response) {
-                        var key = response._source.Entities;
-                        if (key !== undefined) {
+                      playRoutes.controllers.DocumentController.getESEntitiesByDoc(doc.id).get().then(function (response) {
+                        var option = response.data.option;
+                        if (option !== 'None') {
                           $scope.createNewEntity(entity, typeEnt, doc);
                         } else {
                           $scope.createInitEntity(entity, typeEnt, doc);
                         }
-                      }, function (error, response) {
-                        console.trace(err.message);
                       });
                     }
 

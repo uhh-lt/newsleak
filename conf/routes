@@ -59,6 +59,9 @@ GET        /getTimeline                           controllers.HistogramControlle
 GET        /getTimeExprTimeline                   controllers.HistogramController.getTimeExprTimeline(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, lod: String)
 GET        /getTimelineLOD                        controllers.HistogramController.getTimelineLOD
 
+# Newsleak V.2.0.0 Routes
+GET        /getESEntitiesByDoc                       controllers.DocumentController.getESEntitiesByDoc(id: String)
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # JS ROUTING AND RESOURCES                                                                      #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

@@ -70,6 +70,17 @@ trait DocumentService {
   def searchDocuments(facets: Facets, pageSize: Int)(index: String): (Long, Iterator[Document])
 
   /**
+   * Returns an iterator with documents matching the given search query.
+   *
+   * The iterator acts lazy and queries for more documents once the number of consumed documents exceeds the page size.
+   *
+   * @param docId id of documents.
+   * @param index the data source index or database name to query.
+   * @return a tuple consisting of the total number of hits and a document iterator for the given query.
+   */
+  def getDocumentEntities(docId: String)(index: String): Object
+
+  /**
    * Annotates a document with the given label.
    *
    * This function is useful for grouping documents according to a label. Documents associated with the same label
@@ -314,6 +325,15 @@ abstract class ESDocumentService(clientService: SearchClientService, utils: ESRe
         Document(id, content, LocalDateTime.now, highlight)
       }
     })
+  }
+
+  /** newsleak version 2.0.0: document whitelisting */
+  // /** @inheritdoc */
+  override def getDocumentEntities(docId: String)(index: String): Object = {
+    val response = utils.checkEntities(index, docId, clientService)
+      .getSource()
+      .get("Entities")
+    response
   }
 }
 

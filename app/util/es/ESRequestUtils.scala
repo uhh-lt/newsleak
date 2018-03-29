@@ -19,6 +19,7 @@ package util.es
 
 import com.google.inject.Inject
 import org.elasticsearch.action.search.{ SearchRequestBuilder, SearchResponse }
+import org.elasticsearch.action.get.GetResponse
 
 import util.DateUtils
 // scalastyle:off
@@ -70,13 +71,18 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
     requestBuilder
   }
 
-
   /** newsleak version 2.0.0: document whitelisting */
-  def checkEntities(index: String, client: SearchClientService): AnyRef = {
-    val requestBuilder = client.client.prepareGet(index, "document", "11")
+  def checkEntities(index: String, docId: String, client: SearchClientService): GetResponse = {
+    val requestBuilder = client.client.prepareGet(index, "document", docId)
       .get()
-      .getSource()
-      .get("Entities")
+
+    requestBuilder
+  }
+
+  def checkEntities2(index: String, docId: Int, client: SearchClientService): SearchRequestBuilder = {
+    val requestBuilder = client.client.prepareSearch(index)
+      .setTypes("document")
+      .setQuery(QueryBuilders.termQuery("_id", docId))
 
     requestBuilder
   }

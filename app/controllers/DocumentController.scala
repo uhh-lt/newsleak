@@ -57,6 +57,23 @@ class DocumentController @Inject() (
     Ok(createJsonResponse(docs, docs.length))
   }
 
+  /**
+   * Returns a list of entities associated with the given document id.
+   *
+   * @param id the document id.
+   * @return a list of documents associated with the given tag label.
+   */
+  def getESEntitiesByDoc(id: String) = Action { implicit request =>
+    val entities = documentService.getDocumentEntities(id)(currentDataset)
+    var response = ""
+
+    if (Option(entities) == None) {
+      response = "None"
+    } else response = "Some"
+
+    Ok(Json.obj("option" -> response)).as("application/json")
+  }
+
   // TODO: Extend ES API and remove KeyTerm API
   /**
    * Returns important terms occurring in the document content for the given document id.
