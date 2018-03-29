@@ -12,7 +12,7 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 
 /** Dictionary terms
- * Updated by JCasGen Thu Mar 22 16:33:35 CET 2018
+ * Updated by JCasGen Thu Mar 29 13:29:03 CEST 2018
  * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
 public class DictTerm extends Annotation {
@@ -95,6 +95,28 @@ public class DictTerm extends Annotation {
     if (DictTerm_Type.featOkTst && ((DictTerm_Type)jcasType).casFeat_dictType == null)
       jcasType.jcas.throwFeatMissing("dictType", "uhh_lt.newsleak.types.DictTerm");
     jcasType.ll_cas.ll_setRefValue(addr, ((DictTerm_Type)jcasType).casFeatCode_dictType, jcasType.ll_cas.ll_getFSRef(v));}    
+   
+    
+  //*--------------*
+  //* Feature: dictTerm
+
+  /** getter for dictTerm - gets Base word types from dictionary list
+   * @generated
+   * @return value of the feature 
+   */
+  public StringList getDictTerm() {
+    if (DictTerm_Type.featOkTst && ((DictTerm_Type)jcasType).casFeat_dictTerm == null)
+      jcasType.jcas.throwFeatMissing("dictTerm", "uhh_lt.newsleak.types.DictTerm");
+    return (StringList)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((DictTerm_Type)jcasType).casFeatCode_dictTerm)));}
+    
+  /** setter for dictTerm - sets Base word types from dictionary list 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setDictTerm(StringList v) {
+    if (DictTerm_Type.featOkTst && ((DictTerm_Type)jcasType).casFeat_dictTerm == null)
+      jcasType.jcas.throwFeatMissing("dictTerm", "uhh_lt.newsleak.types.DictTerm");
+    jcasType.ll_cas.ll_setRefValue(addr, ((DictTerm_Type)jcasType).casFeatCode_dictTerm, jcasType.ll_cas.ll_getFSRef(v));}    
   }
 
     

@@ -16,6 +16,7 @@ import org.apache.uima.util.Logger;
 
 import opennlp.uima.Token;
 import uhh_lt.newsleak.resources.DictionaryResource;
+import uhh_lt.newsleak.resources.DictionaryResource.Dictionary;
 import uhh_lt.newsleak.types.DictTerm;
 
 @OperationalProperties(multipleDeploymentAllowed=true, modifiesCas=true)
@@ -26,7 +27,7 @@ public class DictionaryExtractor extends JCasAnnotator_ImplBase {
 	private DictionaryResource dictTermExtractor;
 	
 	private Logger log;
-	private HashMap<String, HashSet<String>> dictionaries;
+	private HashMap<String, Dictionary> dictionaries;
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
@@ -49,16 +50,22 @@ public class DictionaryExtractor extends JCasAnnotator_ImplBase {
 	
 	public void annotateDictTypes(JCas jcas, Token token) {
 		
-		String tokenValue = dictTermExtractor.stem(token.getCoveredText()).toLowerCase();
+		String tokenStem = dictTermExtractor.stem(token.getCoveredText()).toLowerCase();
+		String tokenValue = token.getCoveredText().toLowerCase();
 		
 		boolean dictTermFound = false; 
 		StringList typeList = new StringList(jcas);
+		StringList baseFormList = new StringList(jcas);
 		
 		for (String dictType : dictionaries.keySet()) {
-			HashSet<String> dict = dictionaries.get(dictType);
-			if (dict.contains(tokenValue)) {
-				typeList = typeList.push(dictType);
-				dictTermFound = true;
+			HashMap<String, String> dict = dictionaries.get(dictType);
+			if (dict.containsKey(tokenStem)) {
+				String baseForm = dict.get(tokenStem);
+				if (tokenValue.startsWith(baseForm)) {
+					typeList = typeList.push(dictType);
+					baseFormList = typeList.push(baseForm);
+					dictTermFound = true;
+				}
 			}
 		}
 		
@@ -67,9 +74,18 @@ public class DictionaryExtractor extends JCasAnnotator_ImplBase {
 			dictTerm.setBegin(token.getBegin());
 			dictTerm.setEnd(token.getEnd());
 			dictTerm.setDictType(typeList);
+			dictTerm.setDictTerm(baseFormList);
 			dictTerm.addToIndexes();
 		}
 		
 	}
 
+	private class noStemmer extends org.tartarus.snowball.SnowballStemmer {
+
+		@Override
+		public boolean stem() {
+			return true;
+		}
+
+	}
 }

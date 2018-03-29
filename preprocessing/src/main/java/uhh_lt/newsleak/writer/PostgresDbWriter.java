@@ -81,19 +81,25 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 			
 			// dictionary entities
 			HashMap<String, HashSet<DictTerm>> dictAnnotations = new HashMap<String, HashSet<DictTerm>>();
+			HashMap<String, HashMap<String, String>> baseFormMap = new HashMap<String, HashMap<String, String>>();
 			Collection<DictTerm> dictTerms = JCasUtil.select(jcas, DictTerm.class);
 			for (DictTerm dictTerm : dictTerms) {
 				Collection<String> typeList = FSCollectionFactory.create(dictTerm.getDictType());
-				// String first = typeList.iterator().next();
+				int i = 0;
 				for (String type : typeList) {
 					HashSet<DictTerm> typeTerms = dictAnnotations.containsKey(type) ? 
 							dictAnnotations.get(type) : new HashSet<DictTerm>();
+					HashMap<String, String> baseForms = baseFormMap.containsKey(type) ? 
+							baseFormMap.get(type) : new HashMap<String, String>();
 					typeTerms.add(dictTerm);
+					baseForms.put(dictTerm.getCoveredText(), dictTerm.getDictTerm().getNthElement(i));
+					i++;
 					dictAnnotations.put(type, typeTerms);
+					baseFormMap.put(type, baseForms);
 				}
 			}
 			for (String type : dictAnnotations.keySet()) {
-				processEntities(dictAnnotations.get(type), type, docId);
+				processEntities(dictAnnotations.get(type), type, docId, baseFormMap.get(type));
 			}
 
 			
@@ -137,12 +143,26 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 		}
 		
 	}
-
+	
+	
 	private void processEntities(Collection<? extends Annotation> matches, String type, Integer docId) throws SQLException {
+		processEntities(matches, type, docId, null);
+	}
+
+	private void processEntities(Collection<? extends Annotation> matches, String type, Integer docId, HashMap<String, String> baseForms) throws SQLException {
 		HashMap<String, Integer> counter = new HashMap<String, Integer>();
 		HashMap<String, ArrayList<Annotation>> offsets = new HashMap<String, ArrayList<Annotation>>();
 		for (Annotation annotation : matches) {
-			String entity = annotation.getCoveredText();
+			String entity;
+			if (baseForms == null) {
+				entity = annotation.getCoveredText();
+			} else {
+				String coveredText =  annotation.getCoveredText();
+				entity = baseForms.containsKey(coveredText) ? baseForms.get(coveredText) : coveredText;
+				if (!entity.equals(coveredText)) {
+					System.out.println("Here");
+				}
+			}
 			counter.put(entity, counter.containsKey(entity) ? counter.get(entity) + 1 : 1);
 			if (offsets.containsKey(entity)) {
 				offsets.get(entity).add(annotation);

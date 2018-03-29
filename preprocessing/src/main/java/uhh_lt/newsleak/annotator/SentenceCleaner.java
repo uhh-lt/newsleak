@@ -22,7 +22,7 @@ public class SentenceCleaner extends JCasAnnotator_ImplBase {
 
 	public static final int MAX_TOKENS_PER_SENTENCE = 150;
 	public static final int RESIZE_TOKENS_PER_SENTENCE = 25;
-	private static final int MAX_TOKEN_LENGTH = 75;
+	private static final int MAX_TOKEN_LENGTH = 70;
 
 	Logger log;
 

@@ -1,15 +1,7 @@
 package uhh_lt.newsleak.reader;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
@@ -23,17 +15,13 @@ import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
-import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.elasticsearch.search.sort.SortParseElement;
 
@@ -77,11 +65,6 @@ public class NewsleakElasticsearchReader extends CasCollectionReader_ImplBase {
 					.startObject()
 					.field("DocumentLanguage", language)
 					.endObject().endObject();
-//			SearchResponse response = client.prepareSearch(esIndex)
-//					.setTypes(ElasticsearchDocumentWriter.ES_TYPE_DOCUMENT)
-//					.setSize(0).setQuery(builder).get();
-//			totalRecords = response.getHits().getTotalHits();
-//			logger.log(Level.INFO, "Found " + totalRecords + " for language " + language + " in index");
 
 			// retrieve all ids
 			totalIdList = new ArrayList<String>();
@@ -144,6 +127,8 @@ public class NewsleakElasticsearchReader extends CasCollectionReader_ImplBase {
 		
 		currentRecord++;
 
+		logger.log(Level.FINEST, "Document ID: " + docId);
+		logger.log(Level.FINEST, "Document Length: " + jcas.getDocumentText().length());
 	}
 
 

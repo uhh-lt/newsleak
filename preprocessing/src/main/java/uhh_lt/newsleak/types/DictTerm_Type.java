@@ -11,7 +11,7 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.jcas.tcas.Annotation_Type;
 
 /** Dictionary terms
- * Updated by JCasGen Thu Mar 22 16:33:35 CET 2018
+ * Updated by JCasGen Thu Mar 29 13:29:03 CEST 2018
  * @generated */
 public class DictTerm_Type extends Annotation_Type {
   /** @generated */
@@ -47,6 +47,30 @@ public class DictTerm_Type extends Annotation_Type {
     ll_cas.ll_setRefValue(addr, casFeatCode_dictType, v);}
     
   
+ 
+  /** @generated */
+  final Feature casFeat_dictTerm;
+  /** @generated */
+  final int     casFeatCode_dictTerm;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public int getDictTerm(int addr) {
+        if (featOkTst && casFeat_dictTerm == null)
+      jcas.throwFeatMissing("dictTerm", "uhh_lt.newsleak.types.DictTerm");
+    return ll_cas.ll_getRefValue(addr, casFeatCode_dictTerm);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setDictTerm(int addr, int v) {
+        if (featOkTst && casFeat_dictTerm == null)
+      jcas.throwFeatMissing("dictTerm", "uhh_lt.newsleak.types.DictTerm");
+    ll_cas.ll_setRefValue(addr, casFeatCode_dictTerm, v);}
+    
+  
 
 
 
@@ -62,6 +86,10 @@ public class DictTerm_Type extends Annotation_Type {
  
     casFeat_dictType = jcas.getRequiredFeatureDE(casType, "dictType", "uima.cas.StringList", featOkTst);
     casFeatCode_dictType  = (null == casFeat_dictType) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_dictType).getCode();
+
+ 
+    casFeat_dictTerm = jcas.getRequiredFeatureDE(casType, "dictTerm", "uima.cas.StringList", featOkTst);
+    casFeatCode_dictTerm  = (null == casFeat_dictTerm) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_dictTerm).getCode();
 
   }
 }

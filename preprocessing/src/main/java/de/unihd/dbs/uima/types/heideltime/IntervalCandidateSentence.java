@@ -10,7 +10,7 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** 
- * Updated by JCasGen Thu Mar 22 16:33:35 CET 2018
+ * Updated by JCasGen Thu Mar 29 13:29:03 CEST 2018
  * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
 public class IntervalCandidateSentence extends Sentence {

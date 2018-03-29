@@ -11,7 +11,7 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.jcas.tcas.Annotation_Type;
 
 /** 
- * Updated by JCasGen Thu Mar 22 16:33:35 CET 2018
+ * Updated by JCasGen Thu Mar 29 13:29:03 CEST 2018
  * @generated */
 public class Timex3_Type extends Annotation_Type {
   /** @generated */

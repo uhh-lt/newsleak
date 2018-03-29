@@ -4,14 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.uima.fit.component.Resource_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
-import org.apache.uima.jcas.cas.StringList;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.ResourceSpecifier;
 import org.apache.uima.util.Level;
@@ -53,7 +50,7 @@ public class DictionaryResource extends Resource_ImplBase {
 
 	private SnowballStemmer stemmer;
 
-	private HashMap<String, HashSet<String>> dictionaries;
+	private HashMap<String, Dictionary> dictionaries;
 
 
 	@Override
@@ -118,20 +115,31 @@ public class DictionaryResource extends Resource_ImplBase {
 			stemmer = new noStemmer();
 		}
 
-		dictionaries = new HashMap<String, HashSet<String>>();
+		dictionaries = new HashMap<String, Dictionary>();
 
 		for (File f : dictionaryFiles) {
 
 			try {
 				String dictType = f.getName().replaceAll("\\..*", "").toUpperCase();
 				List<String> dictTermList = FileUtils.readLines(f);
-				HashSet<String> dictTerms = new HashSet<String>();
+				Dictionary dictTerms = new Dictionary();
 				for (String term : dictTermList) {
 					String t = term.trim();
 					if (!t.isEmpty()) {
-						stemmer.setCurrent(t);
-						stemmer.stem();
-						dictTerms.add(stemmer.getCurrent().toLowerCase());
+						String stem;
+						synchronized (stemmer) {
+							stemmer.setCurrent(t);
+							stemmer.stem();
+							stem = stemmer.getCurrent().toLowerCase();
+						}
+						
+						String shortestType;
+						if (dictTerms.containsKey(stem) && dictTerms.get(stem).length() < t.length()) {
+							shortestType = dictTerms.get(stem);
+						} else {
+							shortestType = t;
+						}
+						dictTerms.put(stem, shortestType);
 					}
 				}
 				dictionaries.put(dictType, dictTerms);
@@ -158,8 +166,9 @@ public class DictionaryResource extends Resource_ImplBase {
 						);
 				System.exit(1);
 			}
-			if (args.length == 1 || (args.length == 2 & args[1].equals(languageCode))) {
-				files.add(new File(dataDir, f));
+			if (args.length == 1 || (args.length == 2 && args[0].equals(languageCode))) {
+				String fname = args.length == 1 ? args[0] : args[1];
+				files.add(new File(dataDir, fname));
 				logger.log(Level.INFO, "Applying dictionary file " + f + " to language " + languageCode);
 			}
 		}
@@ -167,8 +176,7 @@ public class DictionaryResource extends Resource_ImplBase {
 	}
 
 
-
-	public HashMap<String, HashSet<String>> getDictionaries() {
+	public HashMap<String, Dictionary> getDictionaries() {
 		return dictionaries;
 	}
 
@@ -186,6 +194,21 @@ public class DictionaryResource extends Resource_ImplBase {
 		stemmer.setCurrent(token);
 		stemmer.stem();
 		return stemmer.getCurrent();
+	}
+	
+	
+	
+	public class Dictionary extends HashMap<String, String> {
+
+		/**
+		 * Serial ID
+		 */
+		private static final long serialVersionUID = -4395683941205467020L;
+		
+		public Dictionary() {
+			super();
+		}
+		
 	}
 	
 }
