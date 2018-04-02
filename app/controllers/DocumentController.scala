@@ -58,13 +58,37 @@ class DocumentController @Inject() (
   }
 
   /**
-   * Returns a list of entities associated with the given document id.
+   * Returns an elasticsearch GetRequest response.
    *
    * @param id the document id.
    * @return a list of documents associated with the given tag label.
    */
   def getESEntitiesByDoc(id: String) = Action { implicit request =>
     val entities = documentService.getDocumentEntities(id)(currentDataset)
+    var response = ""
+
+    if (Option(entities) == None) {
+      response = "None"
+    } else response = "Some"
+
+    Ok(Json.obj("option" -> response)).as("application/json")
+  }
+
+  /** Returns elasticsearch UpdateRequest response. */
+  def createInitEntity(docId: String, entId: Int, entName: String, entType: String) = Action { implicit request =>
+    val entities = documentService.buildInitEntity(docId, entId, entName, entType)(currentDataset)
+    var response = ""
+
+    if (Option(entities) == None) {
+      response = "None"
+    } else response = "Some"
+
+    Ok(Json.obj("option" -> response)).as("application/json")
+  }
+
+  /** Returns elasticsearch UpdateRequest response. */
+  def createNewEntity(docId: String, entId: Int, entName: String, entType: String) = Action { implicit request =>
+    val entities = documentService.buildNewEntity(docId, entId, entName, entType)(currentDataset)
     var response = ""
 
     if (Option(entities) == None) {

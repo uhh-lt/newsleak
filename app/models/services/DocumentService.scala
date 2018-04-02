@@ -70,15 +70,37 @@ trait DocumentService {
   def searchDocuments(facets: Facets, pageSize: Int)(index: String): (Long, Iterator[Document])
 
   /**
-   * Returns an iterator with documents matching the given search query.
-   *
-   * The iterator acts lazy and queries for more documents once the number of consumed documents exceeds the page size.
+   * Returns an Object to determine whether entity field in elasticsearch exists or not.
    *
    * @param docId id of documents.
    * @param index the data source index or database name to query.
-   * @return a tuple consisting of the total number of hits and a document iterator for the given query.
+   * @return an Object consisting of the total number of entity in elasticsearch
    */
   def getDocumentEntities(docId: String)(index: String): Object
+
+  /**
+   * Returns a response from update request object.
+   *
+   * @param docId id of documents.
+   * @param entId id of Entity.
+   * @param entName name of Entity.
+   * @param entType type of Entity.
+   * @param index the data source index or database name to query.
+   * @return an object consisting of the total number of hits and a document iterator for the given query.
+   */
+  def buildInitEntity(docId: String, entId: Int, entName: String, entType: String)(index: String): Object
+
+  /**
+   * Returns a response from update request object.
+   *
+   * @param docId id of documents.
+   * @param entId id of Entity.
+   * @param entName name of Entity.
+   * @param entType type of Entity.
+   * @param index the data source index or database name to query.
+   * @return an object consisting of the total number of hits and a document iterator for the given query.
+   */
+  def buildNewEntity(docId: String, entId: Int, entName: String, entType: String)(index: String): Object
 
   /**
    * Annotates a document with the given label.
@@ -328,11 +350,25 @@ abstract class ESDocumentService(clientService: SearchClientService, utils: ESRe
   }
 
   /** newsleak version 2.0.0: document whitelisting */
-  // /** @inheritdoc */
+  /** @inheritdoc */
   override def getDocumentEntities(docId: String)(index: String): Object = {
     val response = utils.checkEntities(index, docId, clientService)
       .getSource()
       .get("Entities")
+    response
+  }
+
+  /** @inheritdoc */
+  override def buildInitEntity(docId: String, entId: Int, entName: String, entType: String)(index: String): Object = {
+    val response = utils.createInitEntity(index, docId, entId, entName, entType, clientService)
+
+    response
+  }
+
+  /** @inheritdoc */
+  override def buildNewEntity(docId: String, entId: Int, entName: String, entType: String)(index: String): Object = {
+    val response = utils.createNewEntity(index, docId, entId, entName, entType, clientService)
+
     response
   }
 }
