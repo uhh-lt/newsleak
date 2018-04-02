@@ -652,7 +652,9 @@ define([
                     }
 
                     $scope.esWhitelist = function(entity, typeEnt, doc) {
-                      playRoutes.controllers.DocumentController.getESEntitiesByDoc(doc.id).get().then(function (response) {
+                      playRoutes.controllers.DocumentController
+                        .getESEntitiesByDoc(doc.id).get().then(function (response) {
+
                         var option = response.data.option;
                         if (option !== 'None') {
                           $scope.createNewEntity(entity, typeEnt, doc);
@@ -663,58 +665,24 @@ define([
                     }
 
                     $scope.createInitEntity = function(entity, typeEnt, doc, entId = null) {
-                        $scope.client.update({
-                        index: $scope.indexName,
-                        type: 'document',
-                        id: doc.id,
-                        body: {
-                          script: "ctx._source.Entities = [(Entities)]",
-                          params: {
-                            Entities:  {
-                              EntId: entId === null ? $scope.esNewId : entId,
-                              Entname: entity.text,
-                              EntType: typeEnt,
-                              EntFrequency: 1
-                            }
-                          }
-                        }
-                      }).then(function (resp) {
-                          $scope.esNewEntity = resp;
+                      entId = entId === null ? $scope.esNewId : entId;
+                      playRoutes.controllers.DocumentController
+                        .createInitEntity(doc.id, entId, entity.text, typeEnt).get().then(function (response) {
                           $scope.isNewType === false ?
                             $scope.checkNewEntityType(entity, typeEnt, doc, entId)
                             :
                             $scope.createNewEntityType(entity, typeEnt, doc);
-                      }, function (err) {
-                          $scope.esNewEntity = null;
-                          console.trace(err.message);
                       });
                     }
 
                     $scope.createNewEntity = function(entity, typeEnt, doc, entId = null) {
-                        $scope.client.update({
-                        index: $scope.indexName,
-                        type: 'document',
-                        id: doc.id,
-                        body: {
-                          script: "ctx._source.Entities.add(Entities)",
-                          params: {
-                            Entities:  {
-                              EntId: entId === null ? $scope.esNewId : entId,
-                              Entname: entity.text,
-                              EntType: typeEnt,
-                              EntFrequency: 1
-                            }
-                          }
-                        }
-                      }).then(function (resp) {
-                          $scope.esNewEntity = resp;
+                      entId = entId === null ? $scope.esNewId : entId;
+                      playRoutes.controllers.DocumentController
+                        .createNewEntity(doc.id, entId, entity.text, typeEnt).get().then(function (response) {
                           $scope.isNewType === false ?
                             $scope.checkNewEntityType(entity, typeEnt, doc, entId)
                             :
                             $scope.createNewEntityType(entity, typeEnt, doc);
-                      }, function (err) {
-                          $scope.esNewEntity = null;
-                          console.trace(err.message);
                       });
                     }
 
