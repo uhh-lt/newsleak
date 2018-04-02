@@ -60,7 +60,9 @@ GET        /getTimeExprTimeline                   controllers.HistogramControlle
 GET        /getTimelineLOD                        controllers.HistogramController.getTimelineLOD
 
 # Newsleak V.2.0.0 Routes
-GET        /getESEntitiesByDoc                       controllers.DocumentController.getESEntitiesByDoc(id: String)
+GET        /getESEntitiesByDoc                    controllers.DocumentController.getESEntitiesByDoc(id: String)
+GET        /createInitEntity                      controllers.DocumentController.createInitEntity(docId: String, entId: Int, entName: String, entType: String)
+GET        /createNewEntity                       controllers.DocumentController.createNewEntity(docId: String, entId: Int, entName: String, entType: String)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # JS ROUTING AND RESOURCES                                                                      #

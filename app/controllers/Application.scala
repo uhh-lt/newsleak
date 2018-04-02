@@ -114,6 +114,8 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         controllers.routes.javascript.DocumentController.getIndexName,
         controllers.routes.javascript.DocumentController.getDocsByLabel,
         controllers.routes.javascript.DocumentController.getESEntitiesByDoc,
+        controllers.routes.javascript.DocumentController.createInitEntity,
+        controllers.routes.javascript.DocumentController.createNewEntity,
         controllers.routes.javascript.NetworkController.blacklistEntitiesById,
         controllers.routes.javascript.NetworkController.mergeEntitiesById,
         controllers.routes.javascript.NetworkController.changeEntityNameById,
