@@ -2158,7 +2158,7 @@ public class HeidelTimeOpenNLP extends JCasAnnotator_ImplBase {
 		String pos = "";
 		if (hmTokens.containsKey(tokBegin)) {
 			Token tokenToCheck = hmTokens.get(tokBegin);
-			pos = tokenToCheck.getPos();
+			pos = tokenToCheck.getPos() == null ? "" : tokenToCheck.getPos();
 		}
 		return pos;
 	}
