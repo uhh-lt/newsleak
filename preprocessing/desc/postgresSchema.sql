@@ -152,3 +152,15 @@ CREATE TABLE words (
     freq integer
 );
 
+
+CREATE TABLE blacklistedkeywords(
+    docid bigint, 
+    term varchar(50), 
+    frequency integer, 
+    type varchar(50)
+);
+
+CREATE TABLE duplicatekeywords(
+    duplicate varchar(50), 
+    focal varchar(50)
+);
