@@ -14,8 +14,6 @@ import org.apache.uima.fit.descriptor.OperationalProperties;
 import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
-import org.apache.uima.jcas.cas.NonEmptyStringList;
-import org.apache.uima.jcas.cas.StringList;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
@@ -159,9 +157,6 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 			} else {
 				String coveredText =  annotation.getCoveredText();
 				entity = baseForms.containsKey(coveredText) ? baseForms.get(coveredText) : coveredText;
-				if (!entity.equals(coveredText)) {
-					System.out.println("Here");
-				}
 			}
 			counter.put(entity, counter.containsKey(entity) ? counter.get(entity) + 1 : 1);
 			if (offsets.containsKey(entity)) {
