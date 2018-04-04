@@ -12,7 +12,7 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 
 /** Dictionary terms
- * Updated by JCasGen Thu Mar 29 13:29:03 CEST 2018
+ * Updated by JCasGen Wed Apr 04 11:24:03 CEST 2018
  * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
 public class DictTerm extends Annotation {
