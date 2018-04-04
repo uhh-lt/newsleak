@@ -59,6 +59,14 @@ GET        /getTimeline                           controllers.HistogramControlle
 GET        /getTimeExprTimeline                   controllers.HistogramController.getTimeExprTimeline(fullText: List[String], generic: Map[String, List[String]], entities: List[Long], timeRange: String, timeExprRange: String, lod: String)
 GET        /getTimelineLOD                        controllers.HistogramController.getTimelineLOD
 
+# Newsleak V.2.0.0 Routes
+GET        /getESEntitiesByDoc                    controllers.DocumentController.getESEntitiesByDoc(id: String)
+GET        /getEntitiesTypeByDoc                  controllers.DocumentController.getEntitiesTypeByDoc(id: String, entType: String)
+GET        /createInitEntity                      controllers.DocumentController.createInitEntity(docId: String, entId: Int, entName: String, entType: String)
+GET        /createNewEntity                       controllers.DocumentController.createNewEntity(docId: String, entId: Int, entName: String, entType: String)
+GET        /createInitEntityTy1pe                  controllers.DocumentController.createInitEntityType(docId: String, entId: Int, entName: String, entType: String)
+GET        /createNewEntityType                   controllers.DocumentController.createNewEntityType(docId: String, entId: Int, entName: String, entType: String)
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # JS ROUTING AND RESOURCES                                                                      #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
