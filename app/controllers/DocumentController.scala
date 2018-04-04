@@ -58,13 +58,30 @@ class DocumentController @Inject() (
   }
 
   /**
-   * Returns an elasticsearch GetRequest response.
+   * Returns an elasticsearch GetRequest Entities Field response.
    *
    * @param id the document id.
    * @return a list of documents associated with the given tag label.
    */
   def getESEntitiesByDoc(id: String) = Action { implicit request =>
     val entities = documentService.getDocumentEntities(id)(currentDataset)
+    var response = ""
+
+    if (Option(entities) == None) {
+      response = "None"
+    } else response = "Some"
+
+    Ok(Json.obj("option" -> response)).as("application/json")
+  }
+
+  /**
+   * Returns an elasticsearch GetRequest Entities Field response.
+   *
+   * @param id the document id.
+   * @return a list of documents associated with the given tag label.
+   */
+  def getEntitiesTypeByDoc(id: String, entType: String) = Action { implicit request =>
+    val entities = documentService.getEntitiesType(id, entType)(currentDataset)
     var response = ""
 
     if (Option(entities) == None) {
@@ -89,6 +106,30 @@ class DocumentController @Inject() (
   /** Returns elasticsearch UpdateRequest response. */
   def createNewEntity(docId: String, entId: Int, entName: String, entType: String) = Action { implicit request =>
     val entities = documentService.buildNewEntity(docId, entId, entName, entType)(currentDataset)
+    var response = ""
+
+    if (Option(entities) == None) {
+      response = "None"
+    } else response = "Some"
+
+    Ok(Json.obj("option" -> response)).as("application/json")
+  }
+
+  /** Returns elasticsearch UpdateRequest response. */
+  def createInitEntityType(docId: String, entId: Int, entName: String, entType: String) = Action { implicit request =>
+    val entities = documentService.buildInitEntityType(docId, entId, entName, entType)(currentDataset)
+    var response = ""
+
+    if (Option(entities) == None) {
+      response = "None"
+    } else response = "Some"
+
+    Ok(Json.obj("option" -> response)).as("application/json")
+  }
+
+  /** Returns elasticsearch UpdateRequest response. */
+  def createNewEntityType(docId: String, entId: Int, entName: String, entType: String) = Action { implicit request =>
+    val entities = documentService.buildNewEntityType(docId, entId, entName, entType)(currentDataset)
     var response = ""
 
     if (Option(entities) == None) {

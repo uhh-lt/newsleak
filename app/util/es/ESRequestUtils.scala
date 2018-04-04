@@ -78,7 +78,7 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
   }
 
   /** newsleak version 2.0.0: document whitelisting */
-  def checkEntities(index: String, docId: String, client: SearchClientService): GetResponse = {
+  def checkDocumentFields(index: String, docId: String, client: SearchClientService): GetResponse = {
     val requestBuilder = client.client.prepareGet(index, "document", docId)
       .get()
 
@@ -130,6 +130,55 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
     val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId)
       .addScriptParam("json", jmap)
       .script("ctx._source.Entities.add(json)")
+
+    val requestBuilder = client.client.update(updateRequest).get
+
+    requestBuilder
+  }
+
+  def createInitEntityType(
+    index: String,
+    docId: String,
+    entId: Int,
+    entName: String,
+    entType: String,
+    client: SearchClientService
+  ): UpdateResponse = {
+    val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId)
+      .doc(
+        jsonBuilder
+        .startObject()
+        .startArray("Entities" + entType)
+        .startObject
+        .field("EntId", entId)
+        .field("Entname", entName)
+        .field("EntFrequency", 1)
+        .endObject
+        .endArray
+        .endObject
+      )
+
+    val requestBuilder = client.client.update(updateRequest).get()
+
+    requestBuilder
+  }
+
+  def createNewEntityType(
+    index: String,
+    docId: String,
+    entId: Int,
+    entName: String,
+    entType: String,
+    client: SearchClientService
+  ): UpdateResponse = {
+    val jmap = new java.util.HashMap[String, Any]()
+    jmap.put("EntId", entId)
+    jmap.put("Entname", entName)
+    jmap.put("EntFrequency", 1)
+
+    val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId)
+      .addScriptParam("json", jmap)
+      .script("ctx._source.Entities" + entType + ".add(json)")
 
     val requestBuilder = client.client.update(updateRequest).get
 

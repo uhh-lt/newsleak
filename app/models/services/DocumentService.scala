@@ -79,6 +79,15 @@ trait DocumentService {
   def getDocumentEntities(docId: String)(index: String): Object
 
   /**
+   * Returns an Object to determine whether entity field in elasticsearch exists or not.
+   *
+   * @param docId id of documents.
+   * @param index the data source index or database name to query.
+   * @return an Object consisting of the total number of entity in elasticsearch
+   */
+  def getEntitiesType(docId: String, entType: String)(index: String): Object
+
+  /**
    * Returns a response from update request object.
    *
    * @param docId id of documents.
@@ -101,6 +110,30 @@ trait DocumentService {
    * @return an object consisting of the total number of hits and a document iterator for the given query.
    */
   def buildNewEntity(docId: String, entId: Int, entName: String, entType: String)(index: String): Object
+
+  /**
+   * Returns a response from update request object.
+   *
+   * @param docId id of documents.
+   * @param entId id of Entity.
+   * @param entName name of Entity.
+   * @param entType type of Entity.
+   * @param index the data source index or database name to query.
+   * @return an object consisting of the total number of hits and a document iterator for the given query.
+   */
+  def buildInitEntityType(docId: String, entId: Int, entName: String, entType: String)(index: String): Object
+
+  /**
+   * Returns a response from update request object.
+   *
+   * @param docId id of documents.
+   * @param entId id of Entity.
+   * @param entName name of Entity.
+   * @param entType type of Entity.
+   * @param index the data source index or database name to query.
+   * @return an object consisting of the total number of hits and a document iterator for the given query.
+   */
+  def buildNewEntityType(docId: String, entId: Int, entName: String, entType: String)(index: String): Object
 
   /**
    * Annotates a document with the given label.
@@ -352,9 +385,17 @@ abstract class ESDocumentService(clientService: SearchClientService, utils: ESRe
   /** newsleak version 2.0.0: document whitelisting */
   /** @inheritdoc */
   override def getDocumentEntities(docId: String)(index: String): Object = {
-    val response = utils.checkEntities(index, docId, clientService)
+    val response = utils.checkDocumentFields(index, docId, clientService)
       .getSource()
       .get("Entities")
+    response
+  }
+
+  /** @inheritdoc */
+  override def getEntitiesType(docId: String, entType: String)(index: String): Object = {
+    val response = utils.checkDocumentFields(index, docId, clientService)
+      .getSource()
+      .get("Entities" + entType)
     response
   }
 
@@ -368,6 +409,20 @@ abstract class ESDocumentService(clientService: SearchClientService, utils: ESRe
   /** @inheritdoc */
   override def buildNewEntity(docId: String, entId: Int, entName: String, entType: String)(index: String): Object = {
     val response = utils.createNewEntity(index, docId, entId, entName, entType, clientService)
+
+    response
+  }
+
+  /** @inheritdoc */
+  override def buildInitEntityType(docId: String, entId: Int, entName: String, entType: String)(index: String): Object = {
+    val response = utils.createInitEntityType(index, docId, entId, entName, entType, clientService)
+
+    response
+  }
+
+  /** @inheritdoc */
+  override def buildNewEntityType(docId: String, entId: Int, entName: String, entType: String)(index: String): Object = {
+    val response = utils.createNewEntityType(index, docId, entId, entName, entType, clientService)
 
     response
   }
