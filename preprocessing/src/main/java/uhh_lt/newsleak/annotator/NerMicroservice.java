@@ -167,6 +167,11 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 
 
 	private void cleanNerAnnotations(JCas jcas) {
+		
+		// do not apply filter to chinese or japanese texts
+		if (jcas.getDocumentLanguage().equals("zho") || jcas.getDocumentLanguage().equals("jpn"))
+			return;
+		
 		Collection<Person> persons = JCasUtil.select(jcas, Person.class);
 		cleanAnnotation(persons);
 		Collection<Organization> organizations = JCasUtil.select(jcas, Organization.class);
@@ -177,9 +182,10 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 	
 	private void cleanAnnotation(Collection<?extends Annotation> annotations) {
 		for (Annotation a : annotations) {
+			// less than two letters
 			String ne = a.getCoveredText();
-			if (ne.replaceAll("[\\p{L}-\\s\\.]", "").length() > 0) {
-				log.log(Level.FINEST, "Cleaning: " + ne);
+			if (ne.replaceAll("[^\\p{L}]", "").length() < 2) {
+				log.log(Level.FINEST, "Removing Named Entity: " + ne);
 				a.removeFromIndexes();
 			}
 		}
