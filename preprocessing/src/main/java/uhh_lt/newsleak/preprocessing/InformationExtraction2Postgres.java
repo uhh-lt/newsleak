@@ -39,13 +39,13 @@ import uhh_lt.newsleak.annotator.KeytermExtractor;
 import uhh_lt.newsleak.annotator.LanguageDetector;
 import uhh_lt.newsleak.annotator.NerMicroservice;
 import uhh_lt.newsleak.annotator.SentenceCleaner;
+import uhh_lt.newsleak.annotator.SegmenterICU;
 import uhh_lt.newsleak.reader.HooverElasticsearchReader;
 import uhh_lt.newsleak.reader.NewsleakCsvStreamReader;
 import uhh_lt.newsleak.reader.NewsleakElasticsearchReader;
 import uhh_lt.newsleak.resources.DictionaryResource;
 import uhh_lt.newsleak.resources.ElasticsearchResource;
 import uhh_lt.newsleak.resources.HooverResource;
-import uhh_lt.newsleak.resources.KeytermsResource;
 import uhh_lt.newsleak.resources.LanguageDetectorResource;
 import uhh_lt.newsleak.resources.PostgresResource;
 import uhh_lt.newsleak.resources.TextLineWriterResource;
@@ -249,6 +249,11 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 					UimaUtil.SENTENCE_TYPE_PARAMETER, Sentence.class,
 					UimaUtil.IS_REMOVE_EXISTINGS_ANNOTAIONS, false
 					);
+			AnalysisEngineDescription sentenceICU = AnalysisEngineFactory.createEngineDescription(
+					SegmenterICU.class,
+					SegmenterICU.PARAM_LOCALE, currentLanguage
+					);
+
 
 			// tokens
 			ExternalResourceDescription resourceToken = ExternalResourceFactory.createExternalResourceDescription(
@@ -296,14 +301,11 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 					);
 
 			// keyterms
-			ExternalResourceDescription keytermResource = ExternalResourceFactory.createExternalResourceDescription(
-					KeytermsResource.class, 
-					KeytermsResource.PARAM_N_KEYTERMS, "25",
-					KeytermsResource.PARAM_LANGUAGE_CODE, currentLanguage);
 			AnalysisEngineDescription keyterms = AnalysisEngineFactory.createEngineDescription(
 					KeytermExtractor.class,
-					KeytermExtractor.RESOURCE_KEYTERMS, keytermResource,
-					KeytermExtractor.PARAM_NOUN_TAG, nounPosTag
+					KeytermExtractor.PARAM_NOUN_TAG, nounPosTag,
+					KeytermExtractor.PARAM_N_KEYTERMS, 15,
+					KeytermExtractor.PARAM_LANGUAGE_CODE, currentLanguage
 					);
 
 			// dictionaries
@@ -349,10 +351,11 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 
 			// define pipeline
 			AnalysisEngineDescription pipeline = AnalysisEngineFactory.createEngineDescription(
-					sentence,
-					token,
+					// sentence,
+					sentenceICU,
+					// token,
 					sentenceCleaner,
-					pos,
+					// pos,
 					heideltime,
 					// nerPer, 
 					// nerOrg,
