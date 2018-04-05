@@ -156,9 +156,14 @@
 		<dependency>
 			<groupId>com.github.uhh-lt</groupId>
 			<artifactId>lt-keyterms</artifactId>
-			<version>7373b8fc5f</version>
+			<version>22b809cfb6</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.11.2</version>
+		</dependency>
 
 	</dependencies>
 </project>

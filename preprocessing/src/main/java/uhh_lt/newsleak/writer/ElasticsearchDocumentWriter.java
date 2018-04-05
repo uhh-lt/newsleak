@@ -5,6 +5,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -19,6 +21,10 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.safety.Whitelist;
+
 import uhh_lt.newsleak.resources.ElasticsearchResource;
 import uhh_lt.newsleak.types.Metadata;
 
@@ -46,6 +52,9 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
 
 		String docText = jcas.getDocumentText();
+		
+		docText = dehyphenate(docText);
+		docText = replaceHtmlLineBreaks(docText);
 
 		Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -73,5 +82,64 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	public static String replaceHtmlLineBreaks(String html) {
+	    if (html == null)
+	    		return html;
+ 	    Document document = Jsoup.parse(html);
+	    //makes html() preserve linebreaks and spacing
+	    document.outputSettings(new Document.OutputSettings().prettyPrint(false));
+	    document.select("br").append("\\n");
+	    document.select("p").prepend("\\n\\n");
+	    String s = document.html().replaceAll("\\\\n", "\n");
+	    return Jsoup.clean(s, "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
+	}
+	
+	
+	/**
+	 * An advanced dehyphanator based on regex.
+	 *  - " -" is accepted as hyphen
+	 *  - "und"/"and" and "or"/"oder" in second line prevent dehyphenation
+	 *  - leaves the hyphen if there are a number or an upper case letter
+	 *    as first character in second line
+	 *  - deletes the first spaces in second line
+	 * @param sequence A string to dehyphenate
+	 * @return A dehyphenated string
+	 */
+	public static String dehyphenate(String sequence) {
+		if (!sequence.contains("\n")) {
+			// do nothing
+			return sequence;
+		}
+		String dehyphenatedString = sequence.replaceAll(" ", " ");
+		StringBuilder regexForDehyphenation = new StringBuilder();
+		// Before hyphen a string with letters, numbers and signs
+		regexForDehyphenation.append("(\\s)*(\\S*\\w{2,})");
+		// some spaces a hyphen some spaces a newline and some spaces
+		regexForDehyphenation.append("(\\s*-\\s*\\n{1}\\s*)");
+		// the first word starts
+		regexForDehyphenation.append("(");
+		// no 'and' or 'or' in new line
+		regexForDehyphenation.append("(?!und )(?!oder )(?!and )(?!or )");
+		// the first two characters are not allowed to be numbers or a dot
+		regexForDehyphenation.append("(?![\\p{P}\\p{N}])");
+		// the first word end ending of this group
+		regexForDehyphenation.append("\\w+)");
+		Pattern p = Pattern.compile(regexForDehyphenation.toString(), Pattern.UNICODE_CHARACTER_CLASS);
+		Matcher m = p.matcher(sequence);
+		while(m.find()){
+			String sep = "";
+			Character firstLetterOfNewline = m.group(4).toCharArray()[0];
+			// If the first character of the word in the second line is uppercase or a number leave the hyphen
+			if (Character.isUpperCase(firstLetterOfNewline) || Character.isDigit(firstLetterOfNewline)) {
+				sep = "-";
+			}
+			String replaceString =  "\n" + m.group(2) + sep + m.group(4);
+			dehyphenatedString = dehyphenatedString.replace(m.group(0), replaceString);
+		}
+		return dehyphenatedString;
+	}
+
 
 }
