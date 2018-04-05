@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,6 +59,7 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 
 	private TransportClient client;
 	private String esIndex;
+	private String clientUrl;
 
 	private int totalRecords = 0;
 	private int currentRecord = 0;
@@ -76,6 +78,8 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		client = hooverResource.getClient();
 		esIndex = hooverResource.getIndex();
 
+		clientUrl = hooverResource.getClientUrl();
+		
 		try {
 
 			XContentBuilder builder = XContentFactory.jsonBuilder()
@@ -138,19 +142,27 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 				.get();
 
 		String docText = "";
+		
 		// put email header information in main text
 		field = response.getField("from");
 		if (field != null) {
-			docText += ((String) field.getValue()).trim() + "\n";
+			String fromText = ((String) field.getValue()).trim();
+			docText += "From: " + fromText.replaceAll("<", "[").replaceAll(">", "]") + "\n";
 		}
 		field = response.getField("to");
 		if (field != null) {
-			docText += ((String) field.getValue()).trim() + "\n";
+			String toText = ((String) field.getValue()).trim();
+			docText += "To: " + toText.replaceAll("<", "[").replaceAll(">", "]") + "\n";
 		}
 		field = response.getField("subject");
 		if (field != null) {
-			docText += ((String) field.getValue()).trim() + "\n\n";
+			docText += "Subject: " + ((String) field.getValue()).trim() + "\n";
 		}
+		if (!docText.isEmpty()) {
+			docText += "\n-- \n\n";
+		}
+		
+		// add main text
 		field = response.getField("text");
 		if (field != null) {
 			String completeText = ((String) field.getValue()).trim();
@@ -164,14 +176,30 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 
 		// date
 		String docDate = "1900-01-01";
+		Date dateField = null;
+		Date dateCreatedField = null;
 		try {
+			
 			GetField date = response.getField("date");
 			if (date != null) {
-				docDate = dateFormat.format(dateCreated.parse((String) date.getValue()));
+				// docDate = dateFormat.format();
+				dateField = dateCreated.parse((String) date.getValue());
+			}
+			
+			date = response.getField("date-created");
+			if (date != null) {
+				// docDate = dateFormat.format() ;
+				dateCreatedField = dateJson.parse((String) date.getValue());
+			}
+			
+			if (dateField != null && dateCreatedField != null) {
+				docDate = dateField.before(dateCreatedField) ? dateFormat.format(dateCreatedField) : dateFormat.format(dateField);
 			} else {
-				date = response.getField("date-created");
-				if (date != null) {
-					docDate = dateFormat.format(dateJson.parse((String) date.getValue())) ;
+				if (dateField != null) {
+					docDate = dateFormat.format(dateField);
+				}
+				if (dateCreatedField != null) {
+					docDate = dateFormat.format(dateCreatedField);
 				}
 			}
 			
@@ -191,16 +219,27 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		// write external metadata
 		ArrayList<List<String>> metadata = new ArrayList<List<String>>();
 
-		// subject, filename, path
-		field = response.getField("subject");
-		if (field != null)
-			metadata.add(metadataResource.createTextMetadata(docId, "subject", ((String) field.getValue()).toString()));
+		// filename, subject, path
+		String fileName = "";
 		field = response.getField("filename");
-		if (field != null)
-			metadata.add(metadataResource.createTextMetadata(docId, "filename", ((String) field.getValue()).toString()));
+		if (field != null) {
+			fileName = ((String) field.getValue()).toString();
+			metadata.add(metadataResource.createTextMetadata(docId, "filename", fileName));
+		}
+		field = response.getField("subject");
+		if (field != null) {
+			metadata.add(metadataResource.createTextMetadata(docId, "subject", ((String) field.getValue()).toString()));
+		} else {
+			if (!fileName.isEmpty()) {
+				metadata.add(metadataResource.createTextMetadata(docId, "subject", fileName));
+			}
+		}
 		field = response.getField("path");
 		if (field != null)
 			metadata.add(metadataResource.createTextMetadata(docId, "path", ((String) field.getValue()).toString()));
+		
+		// link to hover
+		metadata.add(metadataResource.createTextMetadata(docId, "Link", clientUrl + docId));
 
 		// attachments
 		field = response.getField("attachments");

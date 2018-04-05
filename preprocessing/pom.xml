@@ -156,7 +156,7 @@
 		<dependency>
 			<groupId>com.github.uhh-lt</groupId>
 			<artifactId>lt-keyterms</artifactId>
-			<version>22b809cfb6</version>
+			<version>954710f39e</version>
 		</dependency>
 
 		<dependency>

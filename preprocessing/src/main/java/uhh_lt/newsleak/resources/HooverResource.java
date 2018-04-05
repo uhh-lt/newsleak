@@ -25,6 +25,8 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 public class HooverResource extends Resource_ImplBase {
 
 	private Logger logger;
+	
+	public static final String HOOVER_DOCUMENT_TYPE = "doc";
 
 	public static final String PARAM_HOST = "mHost";
 	@ConfigurationParameter(name = PARAM_HOST)
@@ -81,6 +83,12 @@ public class HooverResource extends Resource_ImplBase {
 	public void destroy() {
 		super.destroy();
 		client.close();
+	}
+	
+	
+	public String getClientUrl() {
+		String url = client.transportAddresses().iterator().next().getAddress();
+		return url + "/" + HOOVER_DOCUMENT_TYPE + "/" + mIndex + "/";
 	}
 
 
