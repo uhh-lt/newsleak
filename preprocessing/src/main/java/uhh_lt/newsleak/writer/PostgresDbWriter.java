@@ -30,9 +30,6 @@ import uhh_lt.newsleak.types.Metadata;
 public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 
 	private Logger logger;
-	
-	private int counter = 0;
-	private int INTERNAL_BATCH_SIZE = 100;
 
 	public static final String RESOURCE_POSTGRES = "postgresResource";
 	@ExternalResource(key = RESOURCE_POSTGRES)
@@ -56,8 +53,6 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 
 	@Override
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
-		
-		counter++;
 
 		Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
 		Integer docId = Integer.parseInt(metadata.getDocId());
@@ -124,9 +119,14 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 			if (keytermList != null) {
 				for (String item : metadata.getKeyterms().split("\t")) {
 					String[] termFrq = item.split(":");
-					postgresResource.insertKeyterms(docId, termFrq[0], Integer.parseInt(termFrq[1]));
+					if (termFrq.length == 2) {
+						postgresResource.insertKeyterms(docId, termFrq[0], Integer.parseInt(termFrq[1]));
+					}
 				}
 			}			
+			
+			// execute batches
+			postgresResource.executeBatches();
 
 
 		} catch (SQLException e) {
@@ -134,10 +134,6 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-
-		if (counter % INTERNAL_BATCH_SIZE == 0) {
-			postgresResource.commit();
 		}
 		
 	}

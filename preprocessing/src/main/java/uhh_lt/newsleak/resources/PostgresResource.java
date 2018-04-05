@@ -64,6 +64,10 @@ public class PostgresResource extends Resource_ImplBase {
 	private PreparedStatement preparedStatementEntityoffset;
 	private PreparedStatement preparedStatementEventtime;
 	private PreparedStatement preparedStatementKeyterms;
+	
+	
+	private int documentCounter = 0;
+	private int INTERNAL_BATCH_SIZE = 50;
 
 	@Override
 	public boolean initialize(ResourceSpecifier aSpecifier, Map<String, Object> aAdditionalParams)
@@ -178,6 +182,9 @@ public class PostgresResource extends Resource_ImplBase {
 	}
 	
 	public synchronized boolean insertDocument(Integer id, String content, String created) throws SQLException {
+		
+		documentCounter++;
+		
 		preparedStatementDocument.setInt(1, id);
 		preparedStatementDocument.setString(2, content);
 		preparedStatementDocument.setDate(3, Date.valueOf(created));
@@ -205,32 +212,45 @@ public class PostgresResource extends Resource_ImplBase {
 		return entityId;
 	}
 	
-	public synchronized boolean insertEntityoffset(Integer docid, Integer entid, Integer entitystart, Integer entityend) throws SQLException {
+	public synchronized void insertEntityoffset(Integer docid, Integer entid, Integer entitystart, Integer entityend) throws SQLException {
 		preparedStatementEntityoffset.setInt(1, docid);
 		preparedStatementEntityoffset.setInt(2, entid);
 		preparedStatementEntityoffset.setInt(3, entitystart);
 		preparedStatementEntityoffset.setInt(4, entityend);		
-		return preparedStatementEntityoffset.execute();
+		preparedStatementEntityoffset.addBatch();
 	}
 	
 	
-	public synchronized boolean insertEventtime(Integer docid, Integer beginoffset, Integer endoffset, String timex, String type, String timexvalue) throws SQLException {
+	public synchronized void insertEventtime(Integer docid, Integer beginoffset, Integer endoffset, String timex, String type, String timexvalue) throws SQLException {
 		preparedStatementEventtime.setInt(1, docid);
 		preparedStatementEventtime.setInt(2, beginoffset);
 		preparedStatementEventtime.setInt(3, endoffset);
 		preparedStatementEventtime.setString(4, timex);
 		preparedStatementEventtime.setString(5, type);
 		preparedStatementEventtime.setString(6, timexvalue);
-		return preparedStatementEventtime.execute();
+		preparedStatementEventtime.addBatch();
 	}
 	
-	public synchronized boolean insertKeyterms(Integer docid, String term, Integer frequency) throws SQLException {
+	public synchronized void insertKeyterms(Integer docid, String term, Integer frequency) throws SQLException {
 		preparedStatementKeyterms.setInt(1, docid);
 		preparedStatementKeyterms.setString(2, term);
 		preparedStatementKeyterms.setInt(3, frequency);
-		return preparedStatementKeyterms.execute();
+		preparedStatementKeyterms.addBatch();
 	}
 	
-	
+	public synchronized void executeBatches() throws SQLException {
+		preparedStatementEntityoffset.executeBatch();
+		preparedStatementEntityoffset.clearBatch();
+		
+		preparedStatementEventtime.executeBatch();
+		preparedStatementEventtime.clearBatch();
+		
+		preparedStatementKeyterms.executeBatch();
+		preparedStatementKeyterms.clearBatch();
+		
+		if (documentCounter % INTERNAL_BATCH_SIZE == 0) {
+			this.commit();
+		}
+	}
 
 }
