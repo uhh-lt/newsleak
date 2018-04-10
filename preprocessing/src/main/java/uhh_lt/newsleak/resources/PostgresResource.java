@@ -42,6 +42,9 @@ public class PostgresResource extends Resource_ImplBase {
 	public static final String PARAM_DBPASS = "dbPass";
 	@ConfigurationParameter(name = PARAM_DBPASS)
 	private String dbPass;
+	public static final String PARAM_INDEX_SCHEMA = "indexSqlFile";
+	@ConfigurationParameter(name = PARAM_INDEX_SCHEMA)
+	private String indexSqlFile;
 	public static final String PARAM_TABLE_SCHEMA = "tableSchemaFile";
 	@ConfigurationParameter(name = PARAM_TABLE_SCHEMA)
 	private String tableSchemaFile;
@@ -67,7 +70,7 @@ public class PostgresResource extends Resource_ImplBase {
 	
 	
 	private int documentCounter = 0;
-	private int INTERNAL_BATCH_SIZE = 50;
+	private int INTERNAL_BATCH_SIZE = 100;
 
 	@Override
 	public boolean initialize(ResourceSpecifier aSpecifier, Map<String, Object> aAdditionalParams)
@@ -129,6 +132,7 @@ public class PostgresResource extends Resource_ImplBase {
 
 		initDb(dbUrl, dbName, dbUser, dbPass);
 		createSchema(tableSchemaFile);
+		createIndices(indexSqlFile);
 	}
 
 	public void initDb(String dbUrl, String dbName, String dbUser, String dbPass)
@@ -136,16 +140,17 @@ public class PostgresResource extends Resource_ImplBase {
 		String url = "jdbc:postgresql://" + dbUrl + "/";
 		dbConnection = DriverManager.getConnection(url + dbName, dbUser, dbPass);
 		dbStatement = dbConnection.createStatement();
-		dbConnection.setAutoCommit(false);
+		dbConnection.setAutoCommit(true);
+		// dbConnection.setAutoCommit(false);
 	}
 	
-	public void commit() {
-		try {
-			dbConnection.commit();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
+//	public void commit() {
+//		try {
+//			dbConnection.commit();
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//	}
 
 	private void createSchema(String tableSchemaFile) {
 		try {
@@ -160,6 +165,21 @@ public class PostgresResource extends Resource_ImplBase {
 			e.printStackTrace();
 			System.exit(1);
 		}
+	}
+	
+	private void createIndices(String indexSqlFile) {
+		// create postgres indices
+		
+		try {
+			String indexSql = FileUtils.readFileToString(new File(indexSqlFile)).replace("\n", "");
+			dbStatement.executeUpdate(indexSql);
+			logger.log(Level.INFO, "Index created");
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Could not create DB indices.");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
 	}
 	
 	
@@ -248,9 +268,9 @@ public class PostgresResource extends Resource_ImplBase {
 		preparedStatementKeyterms.executeBatch();
 		preparedStatementKeyterms.clearBatch();
 		
-		if (documentCounter % INTERNAL_BATCH_SIZE == 0) {
-			this.commit();
-		}
+//		if (documentCounter % INTERNAL_BATCH_SIZE == 0) {
+//			this.commit();
+//		}
 	}
 
 }
