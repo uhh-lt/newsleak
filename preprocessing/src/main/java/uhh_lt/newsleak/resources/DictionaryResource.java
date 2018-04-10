@@ -2,10 +2,14 @@ package uhh_lt.newsleak.resources;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.uima.fit.component.Resource_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
@@ -30,6 +34,9 @@ import org.tartarus.snowball.ext.spanishStemmer;
 import org.tartarus.snowball.ext.swedishStemmer;
 import org.tartarus.snowball.ext.turkishStemmer;
 
+import opennlp.uima.Token;
+import uhh_lt.newsleak.annotator.LanguageDetector;
+
 public class DictionaryResource extends Resource_ImplBase {
 
 	private Logger logger;
@@ -49,8 +56,10 @@ public class DictionaryResource extends Resource_ImplBase {
 	private String languageCode;
 
 	private SnowballStemmer stemmer;
-
-	private HashMap<String, Dictionary> dictionaries;
+	private Locale locale;
+	
+	private HashMap<String, Dictionary> unigramDictionaries;
+	private HashMap<String, Dictionary> mwuDictionaries;
 
 
 	@Override
@@ -61,6 +70,7 @@ public class DictionaryResource extends Resource_ImplBase {
 		}
 
 		this.logger = this.getLogger();
+		locale = LanguageDetector.localeToISO().get(languageCode);
 
 		dictionaryFiles = getDictionaryFiles(dictionaryFilesString);
 
@@ -115,34 +125,46 @@ public class DictionaryResource extends Resource_ImplBase {
 			stemmer = new noStemmer();
 		}
 
-		dictionaries = new HashMap<String, Dictionary>();
+		unigramDictionaries = new HashMap<String, Dictionary>();
+		mwuDictionaries = new HashMap<String, Dictionary>();
 
 		for (File f : dictionaryFiles) {
 
 			try {
 				String dictType = f.getName().replaceAll("\\..*", "").toUpperCase();
 				List<String> dictTermList = FileUtils.readLines(f);
-				Dictionary dictTerms = new Dictionary();
+				Dictionary dictUnigrams = new Dictionary();
+				Dictionary dictMwu = new Dictionary();
 				for (String term : dictTermList) {
 					String t = term.trim();
 					if (!t.isEmpty()) {
-						String stem;
-						synchronized (stemmer) {
-							stemmer.setCurrent(t);
-							stemmer.stem();
-							stem = stemmer.getCurrent().toLowerCase();
+						
+						if (isMultiWord(t)) {
+							// handle dictionary entry as multiword unit
+							dictMwu.put("(?i)" + Pattern.quote(t), t);
+						} else {
+							// handle dictionary entry as unigram
+							String stem;
+							synchronized (stemmer) {
+								stemmer.setCurrent(t);
+								stemmer.stem();
+								stem = stemmer.getCurrent().toLowerCase();
+							}
+							
+							String shortestType;
+							if (dictUnigrams.containsKey(stem) && dictUnigrams.get(stem).length() < t.length()) {
+								shortestType = dictUnigrams.get(stem);
+							} else {
+								shortestType = t;
+							}
+							dictUnigrams.put(stem, shortestType);
 						}
 						
-						String shortestType;
-						if (dictTerms.containsKey(stem) && dictTerms.get(stem).length() < t.length()) {
-							shortestType = dictTerms.get(stem);
-						} else {
-							shortestType = t;
-						}
-						dictTerms.put(stem, shortestType);
+						
 					}
 				}
-				dictionaries.put(dictType, dictTerms);
+				unigramDictionaries.put(dictType, dictUnigrams);
+				mwuDictionaries.put(dictType, dictMwu);
 
 			} catch (IOException e) {
 				throw new ResourceInitializationException(e.getMessage(), null);
@@ -151,6 +173,23 @@ public class DictionaryResource extends Resource_ImplBase {
 		}
 
 		return true;
+	}
+
+
+
+	private boolean isMultiWord(String t) {
+		BreakIterator tokenBreaker = BreakIterator.getWordInstance(locale);
+		tokenBreaker.setText(t);
+
+		// count tokens
+		int pos = tokenBreaker.first();
+		int nTokens = 0;
+		while (pos != BreakIterator.DONE) {
+			nTokens++;
+			pos = tokenBreaker.next();
+		}
+		nTokens = nTokens / 2;
+		return nTokens > 1;
 	}
 
 
@@ -176,8 +215,8 @@ public class DictionaryResource extends Resource_ImplBase {
 	}
 
 
-	public HashMap<String, Dictionary> getDictionaries() {
-		return dictionaries;
+	public HashMap<String, Dictionary> getUnigramDictionaries() {
+		return unigramDictionaries;
 	}
 
 
@@ -209,6 +248,10 @@ public class DictionaryResource extends Resource_ImplBase {
 			super();
 		}
 		
+	}
+
+	public HashMap<String, Dictionary> getMwuDictionaries() {
+		return mwuDictionaries;
 	}
 	
 }

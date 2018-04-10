@@ -202,17 +202,17 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 					docDate = dateFormat.format(dateCreatedField);
 				}
 			}
-			
-			metaCas.setTimestamp(docDate);
-
-			// heideltime
-			Dct dct = new Dct(jcas);
-			dct.setValue(docDate);
-			dct.addToIndexes();
 
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
+		
+		metaCas.setTimestamp(docDate);
+
+		// heideltime
+		Dct dct = new Dct(jcas);
+		dct.setValue(docDate);
+		dct.addToIndexes();
 
 		metaCas.addToIndexes();
 

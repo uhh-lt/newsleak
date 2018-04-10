@@ -76,14 +76,14 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		np.initDb(np.dbName, np.dbUrl, np.dbUser, np.dbPass);
 		np.metadataToPostgres();
 
-		// create postgres indices
-		String indexSql = FileUtils.readFileToString(new File(np.dbIndices)).replace("\n", "");
-		try {
-			st.executeUpdate(indexSql);
-			np.logger.log(Level.INFO, "Index created");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		// create postgres indices
+//		String indexSql = FileUtils.readFileToString(new File(np.dbIndices)).replace("\n", "");
+//		try {
+//			st.executeUpdate(indexSql);
+//			np.logger.log(Level.INFO, "Index created");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 
 		conn.close();
 	}
@@ -341,6 +341,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 					PostgresResource.PARAM_DBUSER, this.dbUser,
 					PostgresResource.PARAM_DBPASS, this.dbPass,
 					PostgresResource.PARAM_TABLE_SCHEMA, this.dbSchema,
+					PostgresResource.PARAM_INDEX_SCHEMA, this.dbIndices,
 					PostgresResource.PARAM_CREATE_DB, firstLanguage ? "true" : "false"
 					);
 			AnalysisEngineDescription postgresWriter = AnalysisEngineFactory.createEngineDescription(
@@ -355,6 +356,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 					sentenceICU,
 					// token,
 					sentenceCleaner,
+					dictionaries,
 					// pos,
 					heideltime,
 					// nerPer, 
@@ -362,7 +364,6 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 					// nerLoc,
 					nerMicroservice,
 					keyterms,
-					dictionaries,
 					// linewriter,
 					// xmi,
 					// esWriter
