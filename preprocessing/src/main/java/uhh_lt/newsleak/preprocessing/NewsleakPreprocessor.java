@@ -41,6 +41,7 @@ public abstract class NewsleakPreprocessor {
 
 	private Options cliOptions;
 	private String configfile;
+	protected String configDir;
 	
 	protected String readerType;
 
@@ -94,6 +95,7 @@ public abstract class NewsleakPreprocessor {
 		// config file
 		Properties prop = new Properties();
 		try {
+			this.configDir = new File(configfile).getParentFile().getAbsolutePath();
 			InputStream input = new FileInputStream(configfile);
 			prop.load(input);
 			

@@ -311,7 +311,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 			// dictionaries
 			ExternalResourceDescription dictResource = ExternalResourceFactory.createExternalResourceDescription(
 					DictionaryResource.class, 
-					DictionaryResource.PARAM_DATADIR, this.dataDirectory,
+					DictionaryResource.PARAM_DATADIR, this.configDir + File.separator + "dictionaries",
 					DictionaryResource.PARAM_DICTIONARY_FILES, this.dictionaryFiles,
 					DictionaryResource.PARAM_LANGUAGE_CODE, currentLanguage);
 			AnalysisEngineDescription dictionaries = AnalysisEngineFactory.createEngineDescription(

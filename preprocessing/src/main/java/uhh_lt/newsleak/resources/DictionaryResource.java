@@ -41,9 +41,9 @@ public class DictionaryResource extends Resource_ImplBase {
 
 	private Logger logger;
 
-	public static final String PARAM_DATADIR = "dataDir";
+	public static final String PARAM_DATADIR = "dictionaryDir";
 	@ConfigurationParameter(name=PARAM_DATADIR, mandatory=true)
-	private String dataDir;
+	private String dictionaryDir;
 
 	public static final String PARAM_DICTIONARY_FILES = "dictionaryFilesString";
 	@ConfigurationParameter(name = PARAM_DICTIONARY_FILES)
@@ -207,7 +207,7 @@ public class DictionaryResource extends Resource_ImplBase {
 			}
 			if (args.length == 1 || (args.length == 2 && args[0].equals(languageCode))) {
 				String fname = args.length == 1 ? args[0] : args[1];
-				files.add(new File(dataDir, fname));
+				files.add(new File(dictionaryDir, fname));
 				logger.log(Level.INFO, "Applying dictionary file " + f + " to language " + languageCode);
 			}
 		}
