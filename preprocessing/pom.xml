@@ -4,7 +4,7 @@
 
 	<groupId>newsleak</groupId>
 	<artifactId>preprocessing</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.5</version>
 	<build>
 		<plugins>
 			<plugin>
