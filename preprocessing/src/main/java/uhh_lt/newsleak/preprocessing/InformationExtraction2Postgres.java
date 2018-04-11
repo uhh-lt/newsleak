@@ -76,14 +76,14 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		np.initDb(np.dbName, np.dbUrl, np.dbUser, np.dbPass);
 		np.metadataToPostgres();
 
-//		// create postgres indices
-//		String indexSql = FileUtils.readFileToString(new File(np.dbIndices)).replace("\n", "");
-//		try {
-//			st.executeUpdate(indexSql);
-//			np.logger.log(Level.INFO, "Index created");
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
+		// create postgres indices
+		String indexSql = FileUtils.readFileToString(new File(np.dbIndices)).replace("\n", "");
+		try {
+			st.executeUpdate(indexSql);
+			np.logger.log(Level.INFO, "Index created");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		conn.close();
 	}

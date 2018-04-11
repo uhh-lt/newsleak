@@ -39,7 +39,8 @@ CREATE TABLE entity (
     name character varying,
     type character varying,
     frequency integer,
-    isblacklisted boolean DEFAULT false NOT NULL
+    isblacklisted boolean DEFAULT false NOT NULL,
+    CONSTRAINT unique_name_type UNIQUE (name, type)
 );
 
 

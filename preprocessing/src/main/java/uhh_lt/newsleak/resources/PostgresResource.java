@@ -61,9 +61,9 @@ public class PostgresResource extends Resource_ImplBase {
 	
 	private PreparedStatement preparedStatementDocument;
 	// private PreparedStatement preparedStatementMetadata;
-	private PreparedStatement preparedStatementEntity;
-	private PreparedStatement preparedStatementEntitySelect;
-	private PreparedStatement preparedStatementEntityUpdate;
+	private PreparedStatement preparedStatementEntityUpsert;
+	// private PreparedStatement preparedStatementEntitySelect;
+	// private PreparedStatement preparedStatementEntityUpdate;
 	private PreparedStatement preparedStatementEntityoffset;
 	private PreparedStatement preparedStatementEventtime;
 	private PreparedStatement preparedStatementKeyterms;
@@ -132,7 +132,7 @@ public class PostgresResource extends Resource_ImplBase {
 
 		initDb(dbUrl, dbName, dbUser, dbPass);
 		createSchema(tableSchemaFile);
-		createIndices(indexSqlFile);
+		// createIndices(indexSqlFile);
 	}
 
 	public void initDb(String dbUrl, String dbName, String dbUser, String dbPass)
@@ -167,31 +167,34 @@ public class PostgresResource extends Resource_ImplBase {
 		}
 	}
 	
-	private void createIndices(String indexSqlFile) {
-		// create postgres indices
-		
-		try {
-			String indexSql = FileUtils.readFileToString(new File(indexSqlFile)).replace("\n", "");
-			dbStatement.executeUpdate(indexSql);
-			logger.log(Level.INFO, "Index created");
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Could not create DB indices.");
-			e.printStackTrace();
-			System.exit(1);
-		}
-		
-	}
 	
 	
+//	private void createIndices(String indexSqlFile) {
+//		// create postgres indices
+//		try {
+//			String indexSql = FileUtils.readFileToString(new File(indexSqlFile)).replace("\n", "");
+//			dbStatement.executeUpdate(indexSql);
+//			logger.log(Level.INFO, "Index created");
+//		} catch (Exception e) {
+//			logger.log(Level.SEVERE, "Could not create DB indices.");
+//			e.printStackTrace();
+//			System.exit(1);
+//		}
+//	}
 
 
 	private void prepareStatements() {
 		try {
 			preparedStatementDocument = dbConnection.prepareStatement("INSERT INTO " + TABLE_DOCUMENT + " (id, content, created) VALUES (?, ?, ?)");
 			// preparedStatementMetadata = dbConnection.prepareStatement("INSERT INTO " + TABLE_METADATA + " VALUES (?, ?, ?, ?)");
-			preparedStatementEntity = dbConnection.prepareStatement("INSERT INTO " + TABLE_ENTITY + " (name, type, frequency) VALUES (?, ?, ?) RETURNING id");
-			preparedStatementEntitySelect = dbConnection.prepareStatement("SELECT id, frequency FROM " + TABLE_ENTITY + " WHERE name=? AND type=?");
-			preparedStatementEntityUpdate = dbConnection.prepareStatement("UPDATE " + TABLE_ENTITY + " SET frequency=? WHERE id=?");
+			preparedStatementEntityUpsert = dbConnection.prepareStatement(
+					"INSERT INTO " + TABLE_ENTITY + " as e (name, type, frequency) VALUES (?, ?, ?) "
+							+ "ON CONFLICT ON CONSTRAINT unique_name_type DO "
+							+ "UPDATE SET frequency = e.frequency + ? "
+							+ "RETURNING id"
+			);
+			// preparedStatementEntitySelect = dbConnection.prepareStatement("SELECT id, frequency FROM " + TABLE_ENTITY + " WHERE name=? AND type=?");
+			// preparedStatementEntityUpdate = dbConnection.prepareStatement("UPDATE " + TABLE_ENTITY + " SET frequency=? WHERE id=?");
 			preparedStatementEntityoffset = dbConnection.prepareStatement("INSERT INTO " + TABLE_ENTITYOFFSET + " (docid, entid, entitystart, entityend) VALUES (?, ?, ?, ?)");
 			preparedStatementEventtime = dbConnection.prepareStatement("INSERT INTO " + TABLE_EVENTTIME + " (docid, beginoffset, endoffset, timex, type, timexvalue) VALUES (?, ?, ?, ?, ?, ?)");
 			preparedStatementKeyterms = dbConnection.prepareStatement("INSERT INTO " + TABLE_KEYTERMS + " (docid, term, frequency) VALUES (?, ?, ?)");
@@ -213,22 +216,29 @@ public class PostgresResource extends Resource_ImplBase {
 	
 	public synchronized Integer insertEntity(String name, String type, Integer frequency) throws SQLException {
 		Integer entityId;
-		preparedStatementEntitySelect.setString(1, name);
-		preparedStatementEntitySelect.setString(2, type); 
-		ResultSet rs = preparedStatementEntitySelect.executeQuery();
-		if (rs.next()) {
-			entityId = rs.getInt(1);
-			preparedStatementEntityUpdate.setInt(1, rs.getInt(2) + frequency);
-			preparedStatementEntityUpdate.setInt(2, entityId);
-			preparedStatementEntityUpdate.execute();
-		} else {
-			preparedStatementEntity.setString(1, name);
-			preparedStatementEntity.setString(2, type);
-			preparedStatementEntity.setInt(3, frequency);
-			rs = preparedStatementEntity.executeQuery();
-			rs.next();
-			entityId = rs.getInt(1);
-		}
+//		preparedStatementEntitySelect.setString(1, name);
+//		preparedStatementEntitySelect.setString(2, type); 
+//		ResultSet rs = preparedStatementEntitySelect.executeQuery();
+//		if (rs.next()) {
+//			entityId = rs.getInt(1);
+//			preparedStatementEntityUpdate.setInt(1, rs.getInt(2) + frequency);
+//			preparedStatementEntityUpdate.setInt(2, entityId);
+//			preparedStatementEntityUpdate.execute();
+//		} else {
+//			preparedStatementEntity.setString(1, name);
+//			preparedStatementEntity.setString(2, type);
+//			preparedStatementEntity.setInt(3, frequency);
+//			rs = preparedStatementEntity.executeQuery();
+//			rs.next();
+//			entityId = rs.getInt(1);
+//		}
+		preparedStatementEntityUpsert.setString(1, name);
+		preparedStatementEntityUpsert.setString(2, type);
+		preparedStatementEntityUpsert.setInt(3, frequency);
+		preparedStatementEntityUpsert.setInt(4, frequency);
+		ResultSet rs = preparedStatementEntityUpsert.executeQuery();
+		rs.next();
+		entityId = rs.getInt(1);
 		return entityId;
 	}
 	
