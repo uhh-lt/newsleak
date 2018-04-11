@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
+import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.descriptor.ExternalResource;
 import org.apache.uima.fit.descriptor.OperationalProperties;
 import org.apache.uima.fit.util.JCasUtil;
@@ -37,6 +38,19 @@ public class DictionaryExtractor extends JCasAnnotator_ImplBase {
 	public final static String RESOURCE_DICTIONARIES = "dictTermExtractor";
 	@ExternalResource(key = RESOURCE_DICTIONARIES)
 	private DictionaryResource dictTermExtractor;
+	
+	public static final String PARAM_EXTRACT_EMAIL = "extractEmail";
+	@ConfigurationParameter(name = PARAM_EXTRACT_EMAIL, mandatory = false, defaultValue = "true")
+	private boolean extractEmail;
+	public static final String PARAM_EXTRACT_URL = "extractUrl";
+	@ConfigurationParameter(name = PARAM_EXTRACT_URL, mandatory = false, defaultValue = "true")
+	private boolean extractUrl;
+	public static final String PARAM_EXTRACT_IP = "extractIp";
+	@ConfigurationParameter(name = PARAM_EXTRACT_IP, mandatory = false, defaultValue = "false")
+	private boolean extractIp;
+	public static final String PARAM_EXTRACT_PHONE = "extractPhone";
+	@ConfigurationParameter(name = PARAM_EXTRACT_PHONE, mandatory = false, defaultValue = "false")
+	private boolean extractPhone;
 
 	private Logger log;
 	private HashMap<String, Dictionary> unigramDictionaries;
@@ -55,18 +69,22 @@ public class DictionaryExtractor extends JCasAnnotator_ImplBase {
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
 		
 		ArrayList<DictTerm> termsToTokenList = new ArrayList<DictTerm>();
-		
-		// IP
-		termsToTokenList.addAll(annotateRegex(jcas, REGEX_IP, "IP"));
-		
+
 		// EMAIL
-		termsToTokenList.addAll(annotateRegex(jcas, REGEX_EMAIL, "EMAIL"));
+		if (extractEmail)
+			termsToTokenList.addAll(annotateRegex(jcas, REGEX_EMAIL, "EMAIL"));
 		
 		// URL
-		termsToTokenList.addAll(annotateRegex(jcas, REGEX_URL, "URL"));
+		if (extractUrl)
+			termsToTokenList.addAll(annotateRegex(jcas, REGEX_URL, "URL"));
 		
+		// IP
+		if (extractIp)
+			termsToTokenList.addAll(annotateRegex(jcas, REGEX_IP, "IP"));
+				
 		// PHONE
-		termsToTokenList.addAll(annotateRegex(jcas, REGEX_PHONE, "PHONE"));
+		if (extractPhone)
+			termsToTokenList.addAll(annotateRegex(jcas, REGEX_PHONE, "PHONE"));
 		
 		
 		// Set new token and sentence boundaries for pattern matches
