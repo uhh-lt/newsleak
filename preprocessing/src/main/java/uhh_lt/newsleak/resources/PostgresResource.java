@@ -140,17 +140,18 @@ public class PostgresResource extends Resource_ImplBase {
 		String url = "jdbc:postgresql://" + dbUrl + "/";
 		dbConnection = DriverManager.getConnection(url + dbName, dbUser, dbPass);
 		dbStatement = dbConnection.createStatement();
-		dbConnection.setAutoCommit(true);
-		// dbConnection.setAutoCommit(false);
+		// dbConnection.setAutoCommit(true);
+		dbConnection.setAutoCommit(false);
 	}
 	
-//	public void commit() {
-//		try {
-//			dbConnection.commit();
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//	}
+	public void commit() {
+		try {
+			dbConnection.commit();
+			logger.log(Level.INFO, "Another " + INTERNAL_BATCH_SIZE + " documents committed (total: " + documentCounter + ")");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 
 	private void createSchema(String tableSchemaFile) {
 		try {
@@ -278,9 +279,9 @@ public class PostgresResource extends Resource_ImplBase {
 		preparedStatementKeyterms.executeBatch();
 		preparedStatementKeyterms.clearBatch();
 		
-//		if (documentCounter % INTERNAL_BATCH_SIZE == 0) {
-//			this.commit();
-//		}
+		if (documentCounter % INTERNAL_BATCH_SIZE == 0) {
+			this.commit();
+		}
 	}
 
 }
