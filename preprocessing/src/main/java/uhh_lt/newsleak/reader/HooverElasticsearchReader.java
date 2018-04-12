@@ -23,6 +23,7 @@ import org.apache.uima.util.Logger;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
@@ -110,6 +111,11 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 				}
 				logger.log(Level.INFO, "Added hits " + nHits);
 			}
+			
+			// clear scroll request
+			ClearScrollRequest request = new ClearScrollRequest(); 
+			request.addScrollId(scrollResp.getScrollId());
+			client.clearScroll(request);
 			
 			if (maxRecords > 0 && maxRecords < totalIdList.size()) {
 				totalIdList = new ArrayList<String>(totalIdList.subList(0, maxRecords));

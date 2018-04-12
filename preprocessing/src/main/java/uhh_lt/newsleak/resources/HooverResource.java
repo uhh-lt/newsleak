@@ -52,8 +52,6 @@ public class HooverResource extends Resource_ImplBase {
 		this.logger = this.getLogger();
 		Settings settings = Settings.builder().put("cluster.name", mClustername).build();
 		try {
-			//			client = new PreBuiltTransportClient(settings)
-			//			        .addTransportAddress(new TransportAddress(InetAddress.getLocalHost(), mPort));
 			client = TransportClient.builder().settings(settings).build()
 					.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(mHost), mPort));
 		} catch (Exception e) {
