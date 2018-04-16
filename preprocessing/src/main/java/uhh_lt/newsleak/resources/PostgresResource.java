@@ -210,7 +210,7 @@ public class PostgresResource extends Resource_ImplBase {
 		documentCounter++;
 		
 		preparedStatementDocument.setInt(1, id);
-		preparedStatementDocument.setString(2, content);
+		preparedStatementDocument.setString(2, content.replaceAll("\u0000", ""));
 		preparedStatementDocument.setDate(3, Date.valueOf(created));
 		return preparedStatementDocument.execute();
 	}
@@ -233,7 +233,7 @@ public class PostgresResource extends Resource_ImplBase {
 //			rs.next();
 //			entityId = rs.getInt(1);
 //		}
-		preparedStatementEntityUpsert.setString(1, name);
+		preparedStatementEntityUpsert.setString(1, name.replaceAll("\u0000", ""));
 		preparedStatementEntityUpsert.setString(2, type);
 		preparedStatementEntityUpsert.setInt(3, frequency);
 		preparedStatementEntityUpsert.setInt(4, frequency);
@@ -256,15 +256,15 @@ public class PostgresResource extends Resource_ImplBase {
 		preparedStatementEventtime.setInt(1, docid);
 		preparedStatementEventtime.setInt(2, beginoffset);
 		preparedStatementEventtime.setInt(3, endoffset);
-		preparedStatementEventtime.setString(4, timex);
+		preparedStatementEventtime.setString(4, timex.replaceAll("\u0000", ""));
 		preparedStatementEventtime.setString(5, type);
-		preparedStatementEventtime.setString(6, timexvalue);
+		preparedStatementEventtime.setString(6, timexvalue.replaceAll("\u0000", ""));
 		preparedStatementEventtime.addBatch();
 	}
 	
 	public synchronized void insertKeyterms(Integer docid, String term, Integer frequency) throws SQLException {
 		preparedStatementKeyterms.setInt(1, docid);
-		preparedStatementKeyterms.setString(2, term);
+		preparedStatementKeyterms.setString(2, term.replaceAll("\u0000", ""));
 		preparedStatementKeyterms.setInt(3, frequency);
 		preparedStatementKeyterms.addBatch();
 	}
@@ -283,5 +283,6 @@ public class PostgresResource extends Resource_ImplBase {
 			this.commit();
 		}
 	}
+
 
 }

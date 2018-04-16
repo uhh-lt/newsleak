@@ -132,8 +132,10 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Could not write document " + docId);
 			e.printStackTrace();
+			System.exit(1);
 		} catch (Exception e) {
 			e.printStackTrace();
+			System.exit(1);
 		}
 		
 	}
