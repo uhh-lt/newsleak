@@ -113,6 +113,49 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
     requestBuilder
   }
 
+  def createInitKeyword(
+    index: String,
+    docId: String,
+    keyword: String,
+    client: SearchClientService
+  ): UpdateResponse = {
+    val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId)
+      .doc(
+        jsonBuilder
+        .startObject()
+        .startArray("Keywords")
+        .startObject
+        .field("Keyword", keyword)
+        .field("TermFrequency", 1)
+        .endObject
+        .endArray
+        .endObject
+      )
+
+    val requestBuilder = client.client.update(updateRequest).get()
+
+    requestBuilder
+  }
+
+  def createNewKeyword(
+    index: String,
+    docId: String,
+    keyword: String,
+    client: SearchClientService
+  ): UpdateResponse = {
+    val jmap = new java.util.HashMap[String, Any]()
+    jmap.put("Keyword", keyword)
+    jmap.put("TermFrequency", 1)
+
+    val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId)
+      .addScriptParam("json", jmap)
+      .script("ctx._source.Keywords.add(json)")
+
+    val requestBuilder = client.client.update(updateRequest).get
+
+    requestBuilder
+  }
+
   def createNewEntity(
     index: String,
     docId: String,

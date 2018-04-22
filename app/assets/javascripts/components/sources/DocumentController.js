@@ -378,6 +378,7 @@ define([
                             }
 
                         }).then(function (resp) {
+                          debugger;
                             if(resp.hits.hits[0]._source.Keywords){
                                 for(let keyword of resp.hits.hits[0]._source.Keywords) {
                                     terms.push(keyword.Keyword);
@@ -588,66 +589,32 @@ define([
                     };
 
                     $scope.esKeyWhitelist = function(keyword, doc) {
-                        $scope.client.get({
-                        index: $scope.indexName,
-                        type: 'document',
-                        id: doc.id,
-                        source: 'Keywords'
-                      }).then(function (response) {
-                        var key = response._source.Keywords;
-                        if (key !== undefined) {
+                      playRoutes.controllers.DocumentController
+                        .getKeywordsByDoc(doc.id).get().then(function (response) {
+                        var option = response.data.option;
+                        if (option !== 'None') {
                           $scope.createNewKeyword(keyword, doc);
                         } else {
                           $scope.createInitKeyword(keyword, doc);
                         }
-                      }, function (err, response) {
-                        console.trace(err.message);
                       });
                     }
 
                     $scope.createInitKeyword = function(keyword, doc) {
-                        $scope.client.update({
-                        index: $scope.indexName,
-                        type: 'document',
-                        id: doc.id,
-                        body: {
-                          script: "ctx._source.Keywords = [(keyword)]",
-                          params: {
-                            keyword:  {
-                              Keyword: keyword,
-                              EntFrequency: 1
-                            }
-                          }
-                        }
-                      }).then(function (resp) {
-                          $scope.observer.notifyObservers();
-                          $scope.reloadDoc(doc);
-                          EntityService.reloadKeywordGraph(true);
-                      }, function (err) {
-                          console.trace(err.message);
+                      playRoutes.controllers.DocumentController
+                      .createInitKeyword(doc.id, keyword).get().then(function (response) {
+                        $scope.observer.notifyObservers();
+                        $scope.reloadDoc(doc);
+                        EntityService.reloadKeywordGraph(true);
                       });
                     }
 
                     $scope.createNewKeyword = function(keyword, doc) {
-                        $scope.client.update({
-                        index: $scope.indexName,
-                        type: 'document',
-                        id: doc.id,
-                        body: {
-                          script: "ctx._source.Keywords.add(keyword)",
-                          params: {
-                            keyword:  {
-                              Keyword: keyword,
-                              EntFrequency: 1
-                            }
-                          }
-                        }
-                      }).then(function (resp) {
-                          $scope.observer.notifyObservers();
-                          $scope.reloadDoc(doc);
-                          EntityService.reloadKeywordGraph(true);
-                      }, function (err) {
-                          console.trace(err.message);
+                      playRoutes.controllers.DocumentController
+                      .createNewKeyword(doc.id, keyword).get().then(function (response) {
+                        $scope.observer.notifyObservers();
+                        $scope.reloadDoc(doc);
+                        EntityService.reloadKeywordGraph(true);
                       });
                     }
 
@@ -696,23 +663,6 @@ define([
                           $scope.createInitEntityType(entity, typeEnt, doc);
                         }
                       });
-
-                      // var newType = 'Entities' + suffixType;
-                      //   $scope.client.get({
-                      //   index: $scope.indexName,
-                      //   type: 'document',
-                      //   id: doc.id,
-                      //   source: 'Entities'+ suffixType
-                      // }).then(function (response) {
-                      //   var type = response._source[newType];
-                      //   if (type !== undefined) {
-                      //     $scope.createNewEntityType(entity, typeEnt, doc)
-                      //   } else {
-                      //     $scope.createInitEntityType(entity, typeEnt, doc);
-                      //   }
-                      // }, function (err, response) {
-                      //   console.trace(err.message);
-                      // });
                     }
 
                     $scope.createNewEntityType = function(entity, typeEnt, doc, entId = null) {
@@ -725,30 +675,6 @@ define([
                         $scope.reloadDoc(doc);
                         EntityService.reloadEntityGraph();
                       });
-
-                      //   $scope.client.update({
-                      //   index: $scope.indexName,
-                      //   type: 'document',
-                      //   id: doc.id,
-                      //   body: {
-                      //     script: "ctx._source.Entities" + suffixType + ".add(Entities)",
-                      //     params: {
-                      //       Entities:  {
-                      //         EntId: entId === null ? $scope.esNewId : entId,
-                      //         Entname: entity.text,
-                      //         EntFrequency: 1
-                      //       }
-                      //     }
-                      //   }
-                      // }).then(function (resp) {
-                      //     $scope.esNewEntityType = resp;
-                      //     $scope.observer.notifyObservers();
-                      //     $scope.reloadDoc(doc);
-                      //     EntityService.reloadEntityGraph();
-                      // }, function (err) {
-                      //     $scope.esNewEntityType = null;
-                      //     console.trace(err.message);
-                      // });
                     }
 
 
@@ -764,31 +690,6 @@ define([
                         $scope.reloadDoc(doc);
                         EntityService.reloadEntityGraph();
                       });
-
-                      // var suffixType = typeEnt.toLowerCase();
-                      //   $scope.client.update({
-                      //   index: $scope.indexName,
-                      //   type: 'document',
-                      //   id: doc.id,
-                      //   body: {
-                      //     script: "ctx._source.Entities" + suffixType + " = [(Entities)]",
-                      //     params: {
-                      //       Entities:  {
-                      //         EntId: $scope.esNewId,
-                      //         Entname: entity.text,
-                      //         EntFrequency: 1
-                      //       }
-                      //     }
-                      //   }
-                      // }).then(function (resp) {
-                      //     $scope.esNewEntityType = resp;
-                      //     $scope.observer.notifyObservers();
-                      //     $scope.reloadDoc(doc);
-                      //     EntityService.reloadEntityGraph();
-                      // }, function (err) {
-                      //     $scope.esNewEntityType = null;
-                      //     console.trace(err.message);
-                      // });
                     }
 
                     $scope.blacklists = [];
