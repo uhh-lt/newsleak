@@ -80,6 +80,23 @@ class DocumentController @Inject() (
    * @param id the document id.
    * @return a list of documents associated with the given tag label.
    */
+  def getKeywordsByDoc(id: String) = Action { implicit request =>
+    val entities = documentService.getDocumentKeywords(id)(currentDataset)
+    var response = ""
+
+    if (Option(entities) == None) {
+      response = "None"
+    } else response = "Some"
+
+    Ok(Json.obj("option" -> response)).as("application/json")
+  }
+
+  /**
+   * Returns an elasticsearch GetRequest Entities Field response.
+   *
+   * @param id the document id.
+   * @return a list of documents associated with the given tag label.
+   */
   def getEntitiesTypeByDoc(id: String, entType: String) = Action { implicit request =>
     val entities = documentService.getEntitiesType(id, entType)(currentDataset)
     var response = ""
@@ -106,6 +123,30 @@ class DocumentController @Inject() (
   /** Returns elasticsearch UpdateRequest response. */
   def createNewEntity(docId: String, entId: Int, entName: String, entType: String) = Action { implicit request =>
     val entities = documentService.buildNewEntity(docId, entId, entName, entType)(currentDataset)
+    var response = ""
+
+    if (Option(entities) == None) {
+      response = "None"
+    } else response = "Some"
+
+    Ok(Json.obj("option" -> response)).as("application/json")
+  }
+
+  /** Returns elasticsearch UpdateRequest response. */
+  def createInitKeyword(docId: String, keyword: String) = Action { implicit request =>
+    val entities = documentService.buildInitKeyword(docId, keyword)(currentDataset)
+    var response = ""
+
+    if (Option(entities) == None) {
+      response = "None"
+    } else response = "Some"
+
+    Ok(Json.obj("option" -> response)).as("application/json")
+  }
+
+  /** Returns elasticsearch UpdateRequest response. */
+  def createNewKeyword(docId: String, keyword: String) = Action { implicit request =>
+    val entities = documentService.buildNewKeyword(docId, keyword)(currentDataset)
     var response = ""
 
     if (Option(entities) == None) {
