@@ -62,6 +62,7 @@ GET        /getTimelineLOD                        controllers.HistogramControlle
 # Newsleak V.2.0.0 Routes
 GET        /getESEntitiesByDoc                    controllers.DocumentController.getESEntitiesByDoc(id: String)
 GET        /getKeywordsByDoc                      controllers.DocumentController.getKeywordsByDoc(id: String)
+GET        /retrieveKeywords                      controllers.DocumentController.retrieveKeywords(id: String)
 GET        /getEntitiesTypeByDoc                  controllers.DocumentController.getEntitiesTypeByDoc(id: String, entType: String)
 GET        /createInitEntity                      controllers.DocumentController.createInitEntity(docId: String, entId: Int, entName: String, entType: String)
 GET        /createNewEntity                       controllers.DocumentController.createNewEntity(docId: String, entId: Int, entName: String, entType: String)

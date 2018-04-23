@@ -281,19 +281,6 @@ define([
 
                     function init() {
                         updateTagLabels();
-                        initES();
-                    }
-
-                    function initES() {
-                        playRoutes.controllers.KeywordNetworkController.getHostAddress().get().then(function (response) {
-                            if(response && response.data){
-                                $scope.client = esFactory({
-                                    host: response.data,
-                                    apiVersion: '5.5',
-                                    log: 'trace'
-                                });
-                            }
-                        });
                     }
 
                     init();
@@ -362,28 +349,12 @@ define([
 
                     $scope.retrieveKeywords = function(doc) {
                         var terms =  [];
-                        // playRoutes.controllers.DocumentController.getKeywordsById(doc.id, self.numKeywords).get().then(function(response) {
-                        //    response.data.forEach(function(t) { return terms.push(t.term); });
-                        //});
-                        $scope.client.search({
-                            index: $scope.indexName,
-                            type: 'document',
-                            id: doc.id,
-                            body: {
-                                query: {
-                                    match: {
-                                        _id: doc.id
-                                    }
-                                }
-                            }
-
-                        }).then(function (resp) {
-                          debugger;
-                            if(resp.hits.hits[0]._source.Keywords){
-                                for(let keyword of resp.hits.hits[0]._source.Keywords) {
-                                    terms.push(keyword.Keyword);
-                                }
-                            }
+                        playRoutes.controllers.DocumentController.retrieveKeywords(doc.id).get().then(function(response) {
+                          if(response.data.keys){
+                              for(let keyword of response.data.keys) {
+                                  terms.push(keyword.Keyword);
+                              }
+                          }
                         });
                         return terms;
                     };
