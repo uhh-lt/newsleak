@@ -115,6 +115,7 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         controllers.routes.javascript.DocumentController.getDocsByLabel,
         controllers.routes.javascript.DocumentController.getESEntitiesByDoc,
         controllers.routes.javascript.DocumentController.getKeywordsByDoc,
+        controllers.routes.javascript.DocumentController.retrieveKeywords,
         controllers.routes.javascript.DocumentController.getEntitiesTypeByDoc,
         controllers.routes.javascript.DocumentController.createInitKeyword,
         controllers.routes.javascript.DocumentController.createNewKeyword,

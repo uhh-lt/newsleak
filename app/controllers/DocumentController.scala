@@ -109,6 +109,27 @@ class DocumentController @Inject() (
   }
 
   /** Returns elasticsearch UpdateRequest response. */
+  def retrieveKeywords(docId: String) = Action { implicit request =>
+    val keywords = documentService.getKeywordsInES(docId)(currentDataset)
+
+    var res = Array[JsValue]()
+
+    var i = 0
+    val l = keywords.length
+
+    while (i < l) {
+
+      var kwd = keywords(i)("Keyword").toString
+      var term = keywords(i)("TermFrequency").toString
+
+      res = res :+ Json.obj("Keyword" -> kwd, "TermFrequency" -> term)
+      i += 1
+    }
+
+    Ok(Json.obj("keys" -> res)).as("application/json")
+  }
+
+  /** Returns elasticsearch UpdateRequest response. */
   def createInitEntity(docId: String, entId: Int, entName: String, entType: String) = Action { implicit request =>
     val entities = documentService.buildInitEntity(docId, entId, entName, entType)(currentDataset)
     var response = ""
@@ -134,10 +155,10 @@ class DocumentController @Inject() (
 
   /** Returns elasticsearch UpdateRequest response. */
   def createInitKeyword(docId: String, keyword: String) = Action { implicit request =>
-    val entities = documentService.buildInitKeyword(docId, keyword)(currentDataset)
+    val key = documentService.buildInitKeyword(docId, keyword)(currentDataset)
     var response = ""
 
-    if (Option(entities) == None) {
+    if (Option(key) == None) {
       response = "None"
     } else response = "Some"
 
@@ -146,10 +167,10 @@ class DocumentController @Inject() (
 
   /** Returns elasticsearch UpdateRequest response. */
   def createNewKeyword(docId: String, keyword: String) = Action { implicit request =>
-    val entities = documentService.buildNewKeyword(docId, keyword)(currentDataset)
+    val key = documentService.buildNewKeyword(docId, keyword)(currentDataset)
     var response = ""
 
-    if (Option(entities) == None) {
+    if (Option(key) == None) {
       response = "None"
     } else response = "Some"
 

@@ -21,6 +21,8 @@ import com.google.inject.{ ImplementedBy, Inject }
 import org.joda.time.LocalDateTime
 // scalastyle:off
 import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+import scala.collection.mutable
 import scalikejdbc._
 // scalastyle:on
 import models.{ Document, Facets, KeyTerm, Tag }
@@ -86,6 +88,15 @@ trait DocumentService {
    * @return an Object consisting of the total number of entity in elasticsearch
    */
   def getDocumentKeywords(docId: String)(index: String): Object
+
+  /**
+   * Returns an Object to determine whether entity field in elasticsearch exists or not.
+   *
+   * @param docId id of documents.
+   * @param index the data source index or database name to query.
+   * @return an Object consisting of the total number of entity in elasticsearch
+   */
+  def getKeywordsInES(docId: String)(index: String): List[mutable.Map[String, _]]
 
   /**
    * Returns an Object to determine whether entity field in elasticsearch exists or not.
@@ -420,11 +431,25 @@ abstract class ESDocumentService(clientService: SearchClientService, utils: ESRe
     response
   }
 
+  /** @inheritdoc */
   override def getDocumentKeywords(docId: String)(index: String): Object = {
     val response = utils.checkDocumentFields(index, docId, clientService)
       .getSource()
       .get("Keywords")
     response
+  }
+
+  /** @inheritdoc */
+  override def getKeywordsInES(docId: String)(index: String): List[mutable.Map[String, _]] = {
+    val response = utils.checkDocumentFields(index, docId, clientService)
+      .getSource()
+      .get("Keywords")
+      .asInstanceOf[java.util.List[_]]
+
+    response
+      .asScala
+      .map(m => m.asInstanceOf[java.util.Map[String, _]].asScala)
+      .toList
   }
 
   /** @inheritdoc */
