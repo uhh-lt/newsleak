@@ -80,6 +80,23 @@ class DocumentController @Inject() (
    * @param id the document id.
    * @return a list of documents associated with the given tag label.
    */
+  def getKeywordsByDoc(id: String) = Action { implicit request =>
+    val entities = documentService.getDocumentKeywords(id)(currentDataset)
+    var response = ""
+
+    if (Option(entities) == None) {
+      response = "None"
+    } else response = "Some"
+
+    Ok(Json.obj("option" -> response)).as("application/json")
+  }
+
+  /**
+   * Returns an elasticsearch GetRequest Entities Field response.
+   *
+   * @param id the document id.
+   * @return a list of documents associated with the given tag label.
+   */
   def getEntitiesTypeByDoc(id: String, entType: String) = Action { implicit request =>
     val entities = documentService.getEntitiesType(id, entType)(currentDataset)
     var response = ""
@@ -89,6 +106,27 @@ class DocumentController @Inject() (
     } else response = "Some"
 
     Ok(Json.obj("option" -> response)).as("application/json")
+  }
+
+  /** Returns elasticsearch UpdateRequest response. */
+  def retrieveKeywords(docId: String) = Action { implicit request =>
+    val keywords = documentService.getKeywordsInES(docId)(currentDataset)
+
+    var res = Array[JsValue]()
+
+    var i = 0
+    val l = keywords.length
+
+    while (i < l) {
+
+      var kwd = keywords(i)("Keyword").toString
+      var term = keywords(i)("TermFrequency").toString
+
+      res = res :+ Json.obj("Keyword" -> kwd, "TermFrequency" -> term)
+      i += 1
+    }
+
+    Ok(Json.obj("keys" -> res)).as("application/json")
   }
 
   /** Returns elasticsearch UpdateRequest response. */
@@ -109,6 +147,30 @@ class DocumentController @Inject() (
     var response = ""
 
     if (Option(entities) == None) {
+      response = "None"
+    } else response = "Some"
+
+    Ok(Json.obj("option" -> response)).as("application/json")
+  }
+
+  /** Returns elasticsearch UpdateRequest response. */
+  def createInitKeyword(docId: String, keyword: String) = Action { implicit request =>
+    val key = documentService.buildInitKeyword(docId, keyword)(currentDataset)
+    var response = ""
+
+    if (Option(key) == None) {
+      response = "None"
+    } else response = "Some"
+
+    Ok(Json.obj("option" -> response)).as("application/json")
+  }
+
+  /** Returns elasticsearch UpdateRequest response. */
+  def createNewKeyword(docId: String, keyword: String) = Action { implicit request =>
+    val key = documentService.buildNewKeyword(docId, keyword)(currentDataset)
+    var response = ""
+
+    if (Option(key) == None) {
       response = "None"
     } else response = "Some"
 
