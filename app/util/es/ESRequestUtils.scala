@@ -77,7 +77,16 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
     requestBuilder
   }
 
-  /** newsleak version 2.0.0: document whitelisting */
+  /** newsleak version 2.0.0: document whitelisting, highlighting, and keyword networks*/
+  def highlightKeysByEnt(index: String, entName: String, client: SearchClientService): SearchResponse = {
+    val queryBuilder = client.client.prepareSearch(index)
+      .setSize(5)
+      .setQuery(QueryBuilders.matchQuery("Entities.Entname", entName))
+      .get()
+
+    queryBuilder
+  }
+
   def checkDocumentFields(index: String, docId: String, client: SearchClientService): GetResponse = {
     val requestBuilder = client.client.prepareGet(index, "document", docId)
       .get()

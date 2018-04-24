@@ -71,6 +71,8 @@ GET        /createNewKeyword                      controllers.DocumentController
 GET        /createInitEntityTy1pe                 controllers.DocumentController.createInitEntityType(docId: String, entId: Int, entName: String, entType: String)
 GET        /createNewEntityType                   controllers.DocumentController.createNewEntityType(docId: String, entId: Int, entName: String, entType: String)
 
+GET        /highlightKeysByEnt                    controllers.NetworkController.highlightKeysByEnt(entName: String)
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # JS ROUTING AND RESOURCES                                                                      #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

@@ -270,20 +270,7 @@ define([
                 // $scope.reloadKeywordGraphWithEdgeImportance();
             };
 
-            function initES() {
-                playRoutes.controllers.KeywordNetworkController.getHostAddress().get().then(function (response) {
-                    if(response && response.data){
-                        $scope.client = esFactory({
-                            host: response.data,
-                            apiVersion: '5.5',
-                            log: 'trace'
-                        });
-                    }
-                });
-            }
-
             function init() {
-                initES();
                 // Fetch the named entity types
                 $scope.observerService.getEntityTypes().then(function (types) {
                     $scope.types = types.map(function(t) { return _.extend(t, { sliderModel: 5 }) });
@@ -710,39 +697,17 @@ define([
                     self.nodesDataset.update({ id: node.id, title: tooltip });
                 });
 
-                $scope.client.search({
-                    index: $scope.indexName,
-                    type: 'document',
-                    size: 100,
-                    body: {
-                        query: {
-                            bool: {
-                                must: [
-                                    {
-                                        match: {
-                                            "Entities.Entname": nodeLabel
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    }
-                }).then(function (resp) {
-                    if(resp.hits.hits) {
-                        let keywords = [];
-                        for(let hit of Object.values(resp.hits.hits)){
-                            if(hit._source.Keywords) {
-                                for (let keyword of Object.values(hit._source.Keywords)) {
-                                    keywords.push(keyword);
-                                }
-                            }
-                        }
-                        if (keywords.length > 0) {
-                            EntityService.highlightKeywords(keywords);
-                        }
-                    }
-                }, function (error, resp) {
-                    console.trace(error.message);
+                playRoutes.controllers.NetworkController.highlightKeysByEnt(nodeLabel).get().then(function(response) {
+                  if(response.data.keys) {
+                      let keywords = [];
+                      for (let keyword of Object.values(response.data.keys)) {
+                          keyword.TermFrequency = parseInt(keyword.TermFrequency);
+                          keywords.push(keyword);
+                      }
+                      if (keywords.length > 0) {
+                          EntityService.highlightKeywords(keywords);
+                      }
+                  }
                 });
             }
 
