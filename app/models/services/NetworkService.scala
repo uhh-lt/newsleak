@@ -25,6 +25,10 @@ import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
 import scala.collection.mutable.ListBuffer
 // scalastyle:off
 import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+import scala.collection.immutable.$colon$colon
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 // scalastyle:on
 import models.{ Aggregation, Facets, MetaDataBucket, Network, NodeBucket, Relationship }
 import util.es.ESRequestUtils
@@ -88,6 +92,15 @@ trait NetworkService {
    * @return a map linking from the unique entity type to the number of neighbors of that type.
    */
   def getNeighborCountsPerType(facets: Facets, entityId: Long)(index: String): Map[String, Int]
+
+  /**
+   * Returns the the keywords list associated with the entity name given.
+   *
+   * @param entName Name of the entitiy which has relations to keywords.
+   * @param index the data source index or database name to query.
+   * @return a map linking from the unique entity type to the number of neighbors of that type.
+   */
+  def getHighlights(entName: String)(index: String): List[Any]
 
   /**
    * Returns important terms representing the relationship between both nodes based on the underlying document content.
@@ -214,5 +227,42 @@ class ESNetworkService @Inject() (
     // Only consider documents where the two entities occur
     val res = aggregateService.aggregateKeywords(facets.withEntities(List(source, dest)), numTerms, Nil, Nil)(index)
     res.buckets.collect { case MetaDataBucket(term, count) => KeyTerm(term, count.toInt, "KEYWORD") }
+  }
+
+  /** newsleak 2.0.0 */
+  /** @inheritdoc */
+  override def getHighlights(entName: String)(index: String): List[Any] = {
+    val response = utils.highlightKeysByEnt(index, entName, clientService)
+
+    var res = List[Any]()
+
+    var i = 0
+    val k = response.getHits.getTotalHits()
+
+    while (i < k) {
+
+      var keys = response.getHits().getAt(i).getSource().get("Keywords")
+
+      if (keys != null) {
+        val vals = keys.asInstanceOf[java.util.List[_]]
+          .asScala.map(m => m.asInstanceOf[java.util.Map[String, _]].asScala)
+
+        var it = 0
+        var ks = vals.asInstanceOf[ArrayBuffer[Object]].length
+
+        //keys = keys.asInstanceOf[java.util.List[_]]
+
+        while (it < ks) {
+          val kwd = vals(it)("Keyword")
+          val tfq = vals(it)("TermFrequency")
+          //res = res :+ keys.asInstanceOf[java.util.List[_]](it)
+          res = res :+ List(kwd, tfq)
+          it += 1
+        }
+      }
+      i += 1
+    }
+
+    res
   }
 }

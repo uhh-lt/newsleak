@@ -22,10 +22,12 @@ import javax.inject.Inject
 import models.KeyTerm.keyTermFormat
 import models.services.{ EntityService, KeywordNetworkService, NetworkService }
 import models.{ Facets, Network, NodeBucket, Relationship }
-import play.api.libs.json.{ JsObject, Json }
+import play.api.libs.json.{ JsObject, Json, JsValue }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
 import util.DateUtils
 import util.SessionUtils.currentDataset
+import scala.collection.JavaConverters._
+import scala.collection.JavaConversions._
 
 /**
  * Provides network related actions.
@@ -245,6 +247,29 @@ class NetworkController @Inject() (
   /** Changes the name of the entity corresponding to the given entity id. */
   def changeEntityNameById(id: Long, newName: String) = Action { implicit request =>
     Ok(Json.obj("result" -> entityService.changeName(id, newName)(currentDataset))).as("application/json")
+  }
+
+  /** Changes the name of the entity corresponding to the given entity id. */
+  def highlightKeysByEnt(entName: String) = Action { implicit request =>
+
+    val keywords = networkService.getHighlights(entName)(currentDataset)
+    var res = Array[JsValue]()
+
+    var i = 0
+    val l = keywords.length
+
+    while (i < l) {
+
+      val kwd = keywords(i).asInstanceOf[List[_]].get(0).toString //keywords.get(i)("kwd")
+      val term = keywords(i).asInstanceOf[List[_]].get(1).toString //keywords.get(i)("tfq")
+
+      res = res :+ Json.obj("Keyword" -> kwd, "TermFrequency" -> term)
+      i += 1
+    }
+
+    Ok(Json.obj("keys" -> res)).as("application/json")
+
+    //Ok(Json.obj("result" -> entityService.changeName(id, newName)(currentDataset))).as("application/json")
   }
 
   /** Changes the type of the entity corresponding to the given entity id. */
