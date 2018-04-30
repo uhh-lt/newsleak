@@ -116,13 +116,13 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 		StringBuilder regexForDehyphenation = new StringBuilder();
 		// Before hyphen a string with letters, numbers and signs
 		regexForDehyphenation.append("(\\s)*(\\S*\\w{2,})");
-		// some spaces a hyphen some spaces a newline and some spaces
-		regexForDehyphenation.append("(\\s*-\\s*\\n{1}\\s*)");
+		// a hyphen, some spaces, a newline and some spaces
+		regexForDehyphenation.append("(-\\s*\\n{1}\\s*)");
 		// the first word starts
 		regexForDehyphenation.append("(");
 		// no 'and' or 'or' in new line
 		regexForDehyphenation.append("(?!und )(?!oder )(?!and )(?!or )");
-		// the first two characters are not allowed to be numbers or a dot
+		// the first two characters are not allowed to be numbers or punctuation
 		regexForDehyphenation.append("(?![\\p{P}\\p{N}])");
 		// the first word end ending of this group
 		regexForDehyphenation.append("\\w+)");
