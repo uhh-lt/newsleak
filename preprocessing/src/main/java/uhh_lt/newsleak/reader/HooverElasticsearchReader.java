@@ -53,10 +53,10 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 	private MetadataResource metadataResource;
 
 	public static final String PARAM_DEBUG_MAX_DOCS = "maxRecords";
-
-	private static final int MAXIMUM_DOCUMENT_LENGTH = 1500 * 50; // 50 norm pages
 	@ConfigurationParameter(name = PARAM_DEBUG_MAX_DOCS, mandatory = false)
 	private Integer maxRecords = Integer.MAX_VALUE;
+	
+	private static final int MAXIMUM_DOCUMENT_LENGTH = 1500 * 10000; // 10000 norm pages
 
 	private TransportClient client;
 	private String esIndex;
@@ -178,7 +178,8 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 
 		// set document metadata
 		Metadata metaCas = new Metadata(jcas);
-		metaCas.setDocId(docId);
+		String docIdHash = "" + docId.hashCode();
+		metaCas.setDocId(docIdHash);
 
 		// date
 		String docDate = "1900-01-01";
@@ -230,40 +231,40 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		field = response.getField("filename");
 		if (field != null) {
 			fileName = ((String) field.getValue()).toString();
-			metadata.add(metadataResource.createTextMetadata(docId, "filename", fileName));
+			metadata.add(metadataResource.createTextMetadata(docIdHash, "filename", fileName));
 		}
 		field = response.getField("subject");
 		if (field != null) {
-			metadata.add(metadataResource.createTextMetadata(docId, "subject", ((String) field.getValue()).toString()));
+			metadata.add(metadataResource.createTextMetadata(docIdHash, "subject", ((String) field.getValue()).toString()));
 		} else {
 			if (!fileName.isEmpty()) {
-				metadata.add(metadataResource.createTextMetadata(docId, "subject", fileName));
+				metadata.add(metadataResource.createTextMetadata(docIdHash, "subject", fileName));
 			}
 		}
 		field = response.getField("path");
 		if (field != null)
-			metadata.add(metadataResource.createTextMetadata(docId, "path", ((String) field.getValue()).toString()));
+			metadata.add(metadataResource.createTextMetadata(docIdHash, "path", ((String) field.getValue()).toString()));
 		
 		// link to hover
-		metadata.add(metadataResource.createTextMetadata(docId, "Link", clientUrl + docId));
+		metadata.add(metadataResource.createTextMetadata(docIdHash, "Link", clientUrl + docId));
 
 		// attachments
 		field = response.getField("attachments");
 		if (field != null)
-			metadata.add(metadataResource.createTextMetadata(docId, "attachments", ((Boolean) field.getValue()).toString()));
+			metadata.add(metadataResource.createTextMetadata(docIdHash, "attachments", ((Boolean) field.getValue()).toString()));
 		// content-type
 		field = response.getField("content-type");
 		if (field != null)
-			metadata.add(metadataResource.createTextMetadata(docId, "content-type", (String) field.getValue()));
+			metadata.add(metadataResource.createTextMetadata(docIdHash, "content-type", (String) field.getValue()));
 		// file-type
 		field = response.getField("filetype");
 		if (field != null)
-			metadata.add(metadataResource.createTextMetadata(docId, "filetype", (String) field.getValue()));
+			metadata.add(metadataResource.createTextMetadata(docIdHash, "filetype", (String) field.getValue()));
 		// from
 		field = response.getField("from");
 		if (field != null) {
 			for (String email : extractEmail((String) field.getValue())) {
-				metadata.add(metadataResource.createTextMetadata(docId, "from", email));
+				metadata.add(metadataResource.createTextMetadata(docIdHash, "from", email));
 			}
 		}
 		// to
@@ -271,7 +272,7 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		if (field != null) {
 			for (Object toList : field.getValues()) {
 				for (String email : extractEmail((String) toList)) {
-					metadata.add(metadataResource.createTextMetadata(docId, "to", email));
+					metadata.add(metadataResource.createTextMetadata(docIdHash, "to", email));
 				}
 			}
 		}
