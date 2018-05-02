@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,6 +12,7 @@ import java.util.regex.Pattern;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
+import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.descriptor.ExternalResource;
 import org.apache.uima.fit.descriptor.OperationalProperties;
 import org.apache.uima.jcas.JCas;
@@ -24,9 +26,11 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.safety.Whitelist;
+import org.uimafit.util.JCasUtil;
 
 import uhh_lt.newsleak.resources.ElasticsearchResource;
 import uhh_lt.newsleak.types.Metadata;
+import uhh_lt.newsleak.types.Paragraph;
 
 @OperationalProperties(multipleDeploymentAllowed=true, modifiesCas=false)
 public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
@@ -40,6 +44,13 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 	private ElasticsearchResource esResource;
 
 	private TransportClient client;
+
+	public static final String PARAM_PARAGRAPHS_AS_DOCUMENTS = "splitIntoParagraphs";
+	@ConfigurationParameter(name = PARAM_PARAGRAPHS_AS_DOCUMENTS, mandatory = false, defaultValue = "false")
+	private boolean splitIntoParagraphs;
+	
+	private Pattern paragraphPattern = Pattern.compile("[?!\\.]( *\\r?\\n){2,}", Pattern.MULTILINE);
+	public static int MINIMUM_PARAGRAPH_LENGTH = 1500;
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
@@ -55,7 +66,30 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 		
 		docText = dehyphenate(docText);
 		docText = replaceHtmlLineBreaks(docText);
+		
+		Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
+		String docId = metadata.getDocId();
+		
+		if (!splitIntoParagraphs ) {
+			writeToIndex(jcas, docText, docId);
+		} else {
+			annotateParagraphs(jcas);
+			int i = 0;
+			for (Paragraph paragraph : JCasUtil.select(jcas, Paragraph.class)) {
+				i++;
+				String pId = "" + (Integer.parseInt(docId) + i);
+				writeToIndex(jcas, paragraph.getCoveredText(), pId);
+//				System.out.println("+++++++++++++++++++++++++++++++++=");
+//				System.out.println(docId);
+//				System.out.println(pId);
+//				System.out.println(paragraph.getCoveredText());
+			}
+			
+		}
+		
+	}
 
+	public void writeToIndex(JCas jcas, String docText, String docId) {
 		Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -64,21 +98,21 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 			Date created = dateFormat.parse(metadata.getTimestamp());
 			builder = XContentFactory.jsonBuilder()
 					.startObject()
-					.field("id", metadata.getDocId())
+					.field("id", docId)
 					.field("Content", docText)
 					.field("Created", dateFormat.format(created))
 					.field("DocumentLanguage", jcas.getDocumentLanguage())
 					.endObject();
-			IndexResponse response = client.prepareIndex(esResource.getIndex(), ES_TYPE_DOCUMENT, metadata.getDocId())
+			IndexResponse response = client.prepareIndex(esResource.getIndex(), ES_TYPE_DOCUMENT, docId)
 					.setSource(builder).get();
 			logger.log(Level.INFO, response.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ParseException e) {
-			logger.log(Level.SEVERE, "Could not parse document date from document " + metadata.getDocId());
+			logger.log(Level.SEVERE, "Could not parse document date from document " + docId);
 			e.printStackTrace();
 		} catch (NullPointerException e) {
-			logger.log(Level.SEVERE, "No date for document " + metadata.getDocId());
+			logger.log(Level.SEVERE, "No date for document " + docId);
 			e.printStackTrace();
 		}
 	}
@@ -117,7 +151,7 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 		// Before hyphen a string with letters, numbers and signs
 		regexForDehyphenation.append("(\\s)*(\\S*\\w{2,})");
 		// a hyphen, some spaces, a newline and some spaces
-		regexForDehyphenation.append("(-\\s*\\n{1}\\s*)");
+		regexForDehyphenation.append("([‐‑‒–]\\s*\\n{1,2}\\s*)");
 		// the first word starts
 		regexForDehyphenation.append("(");
 		// no 'and' or 'or' in new line
@@ -141,5 +175,26 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 		return dehyphenatedString;
 	}
 
+	
+	
+	private void annotateParagraphs(JCas jcas) {
+
+		Matcher matcher = paragraphPattern.matcher(jcas.getDocumentText());
+		Paragraph paragraph = new Paragraph(jcas);
+		paragraph.setBegin(0);
+		paragraph.setLanguage(jcas.getDocumentLanguage());
+		while (matcher.find()) {
+			if (matcher.start() > 0 && (matcher.start() - paragraph.getBegin()) > MINIMUM_PARAGRAPH_LENGTH) {
+				paragraph.setEnd(matcher.start() + 1);
+				paragraph.addToIndexes();
+				paragraph = new Paragraph(jcas);
+				paragraph.setBegin(matcher.end());
+				paragraph.setLanguage(jcas.getDocumentLanguage());
+			}
+		}
+		paragraph.setEnd(jcas.getDocumentText().length());
+		paragraph.addToIndexes();
+
+	}
 
 }

@@ -55,6 +55,7 @@ public abstract class NewsleakPreprocessor {
 	protected String esClustername;
 	protected String esIndex;
 	protected String esPort;
+	protected boolean paragraphsAsDocuments;
 	
 	protected String hooverHost;
 	protected String hooverClustername;
@@ -117,6 +118,7 @@ public abstract class NewsleakPreprocessor {
 			esClustername = prop.getProperty("esclustername");
 			esIndex = prop.getProperty("esindex");
 			esPort = prop.getProperty("esport");
+			paragraphsAsDocuments = Boolean.parseBoolean(prop.getProperty("paragraphsasdocuments"));
 			
 			dbUrl = prop.getProperty("dburl");
 			dbName = prop.getProperty("dbname");

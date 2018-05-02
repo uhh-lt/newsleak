@@ -176,7 +176,8 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 				ElasticsearchResource.PARAM_DOCUMENT_MAPPING_FILE, "desc/elasticsearch_mapping_document_2.4.json");
 		AnalysisEngineDescription esWriter = AnalysisEngineFactory.createEngineDescription(
 				ElasticsearchDocumentWriter.class,
-				ElasticsearchDocumentWriter.RESOURCE_ESCLIENT, esResource
+				ElasticsearchDocumentWriter.RESOURCE_ESCLIENT, esResource,
+				ElasticsearchDocumentWriter.PARAM_PARAGRAPHS_AS_DOCUMENTS, this.paragraphsAsDocuments
 				);
 
 		AnalysisEngineDescription ldPipeline = AnalysisEngineFactory.createEngineDescription(	
