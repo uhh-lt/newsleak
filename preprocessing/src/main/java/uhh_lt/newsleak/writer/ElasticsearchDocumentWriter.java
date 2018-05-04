@@ -64,6 +64,10 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 
 		String docText = jcas.getDocumentText();
 		
+		// always convert windows line breaks to unix line break
+		docText = docText.replaceAll("\\r\\n", "\n");
+		docText = docText.replaceAll("\\r", "\n");
+		
 		docText = dehyphenate(docText);
 		docText = replaceHtmlLineBreaks(docText);
 		
