@@ -98,7 +98,14 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 
 			JsonObject obj = new JsonParser().parse(responseText).getAsJsonObject();
 
-			JsonArray sentenceArray = obj.getAsJsonArray("result");
+			JsonArray sentenceArray = null;
+			try {
+				sentenceArray = obj.getAsJsonArray("result");
+			}
+			catch (Exception e) {
+				log.log(Level.SEVERE, "Could not parse NER result. May be there is no model for language " + docLang + " in the NER microservice?");
+				throw new AnalysisEngineProcessException(e);
+			}
 
 			ArrayList<String> tagList = new ArrayList<String>();
 			for (int i = 0; i < sentenceArray.size(); i++) {
