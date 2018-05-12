@@ -80,7 +80,7 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
   /** newsleak version 2.0.0: document whitelisting, highlighting, and keyword networks*/
   def highlightKeysByEnt(index: String, entName: String, client: SearchClientService): SearchResponse = {
     val queryBuilder = client.client.prepareSearch(index)
-      .setSize(5)
+      .setSize(100)
       .setQuery(QueryBuilders.matchQuery("Entities.Entname", entName))
       .get()
 
