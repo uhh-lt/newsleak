@@ -19,6 +19,8 @@ package models.services
 
 import com.google.inject.{ ImplementedBy, Inject }
 import org.joda.time.LocalDateTime
+
+import scala.collection.mutable.ArrayBuffer
 // scalastyle:off
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -96,7 +98,7 @@ trait DocumentService {
    * @param index the data source index or database name to query.
    * @return an Object consisting of the total number of entity in elasticsearch
    */
-  def getKeywordsInES(docId: String)(index: String): List[mutable.Map[String, _]]
+  def getKeywordsInES(docId: String)(index: String): List[Any]
 
   /**
    * Returns an Object to determine whether entity field in elasticsearch exists or not.
@@ -440,16 +442,33 @@ abstract class ESDocumentService(clientService: SearchClientService, utils: ESRe
   }
 
   /** @inheritdoc */
-  override def getKeywordsInES(docId: String)(index: String): List[mutable.Map[String, _]] = {
+  override def getKeywordsInES(docId: String)(index: String): List[Any] = {
     val response = utils.checkDocumentFields(index, docId, clientService)
-      .getSource()
-      .get("Keywords")
-      .asInstanceOf[java.util.List[_]]
 
-    response
-      .asScala
-      .map(m => m.asInstanceOf[java.util.Map[String, _]].asScala)
-      .toList
+    var res = List[Any]()
+
+    var keys = response.getSource().get("Keywords")
+
+    if (keys != null) {
+      val vals = keys.asInstanceOf[java.util.List[_]]
+        .asScala.map(m => m.asInstanceOf[java.util.Map[String, _]].asScala)
+
+      var it = 0
+      var ks = vals.asInstanceOf[ArrayBuffer[Object]].length
+
+      //keys = keys.asInstanceOf[java.util.List[_]]
+
+      while (it < ks) {
+        val kwd = vals(it)("Keyword")
+        val tfq = vals(it)("TermFrequency")
+        //res = res :+ keys.asInstanceOf[java.util.List[_]](it)
+        res = res :+ List(kwd, tfq)
+        it += 1
+      }
+    }
+
+    res
+
   }
 
   /** @inheritdoc */

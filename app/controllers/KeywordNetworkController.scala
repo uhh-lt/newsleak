@@ -21,14 +21,14 @@ import javax.inject.Inject
 
 import models.services.{ EntityService, KeywordNetworkService }
 import models.{ Facets, KeyTerm, KeywordNetwork, KeywordRelationship }
-import play.api.libs.json.{ JsObject, Json }
+import play.api.libs.json.{ JsObject, Json, JsValue }
 import play.api.mvc.{ Action, AnyContent, Controller, Request }
 import scalikejdbc._
 import util.{ DateUtils }
 import util.SessionUtils.currentDataset
 
 import scala.collection.mutable.ListBuffer
-
+import scala.collection.JavaConversions._
 /**
  * Provides network related actions.
  * @param entityService the service for entity backend operations.
@@ -226,4 +226,28 @@ class KeywordNetworkController @Inject() (
   def getHostAddress() = Action { implicit request =>
     Ok(keywordNetworkService.getHostAddress()).as("Text")
   }
+
+  /** hightlights entities corresponding to the given keyword name. */
+  def highlightEntsByKey(keyName: String) = Action { implicit request =>
+
+    val entities = keywordNetworkService.getHighlights(keyName)(currentDataset)
+    var res = Array[JsValue]()
+
+    var i = 0
+    val l = entities.length
+
+    while (i < l) {
+
+      val entName = entities(i).asInstanceOf[List[_]].get(0).toString //keywords.get(i)("kwd")
+      val entId = entities(i).asInstanceOf[List[_]].get(1).toString //keywords.get(i)("tfq")
+      val entType = entities(i).asInstanceOf[List[_]].get(2).toString
+      val entFreq = entities(i).asInstanceOf[List[_]].get(3).toString
+
+      res = res :+ Json.obj("Entname" -> entName, "EntId" -> entId, "EntType" -> entType, "EntFrequency" -> entFreq)
+      i += 1
+    }
+
+    Ok(Json.obj("ents" -> res)).as("application/json")
+  }
+
 }
