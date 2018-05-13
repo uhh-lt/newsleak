@@ -795,41 +795,20 @@ define([
                     self.nodesDataset.update({ id: node.id, title: tooltip });
                 });
 
-                if(node.type == 'KEYWORD'){
-                    $scope.client.search({
-                        index: $scope.indexName,
-                        type: 'document',
-                        size: 100,
-                        body: {
-                            query: {
-                                bool: {
-                                    must: [
-                                        {
-                                            match: {
-                                                "Keywords.Keyword.raw": node.label
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
+                if(node.type == 'KEYWORD') {
+                  playRoutes.controllers.KeywordNetworkController.highlightEntsByKey(node.label).get().then(function(response) {
+                    if(response.data.ents) {
+                        let entities = [];
+                        for (let entity of Object.values(response.data.ents)) {
+                            entities.push(entity);
                         }
-                    }).then(function (resp) {
-                        if(resp.hits.hits) {
-                            let entities = [];
-                            for(let hit of Object.values(resp.hits.hits)){
-                                if(hit._source.Entities) {
-                                    for (let entity of Object.values(hit._source.Entities)) {
-                                        entities.push(entity);
-                                    }
-                                }
-                            }
-                            if (entities.length > 0) {
-                                EntityService.highlightEntities(entities);
-                            }
+                        if (entities.length > 0) {
+                            EntityService.highlightEntities(entities);
                         }
-                    }, function (error) {
-                        console.trace(error.message);
-                    });
+                    }
+                  }, function (error) {
+                      console.trace(error.message);
+                  });
                 }
                 else if (node.type == 'TAG'){
                     for(let tag of $scope.currentTags){
