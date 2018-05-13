@@ -190,6 +190,7 @@ define([
                           keywords.push(item.Keyword);
                       }
                       if(item.TermFrequency){
+                          item.TermFrequency = parseInt(item.TermFrequency);
                           frequencies.push(item.TermFrequency);
                       }
                       else {
