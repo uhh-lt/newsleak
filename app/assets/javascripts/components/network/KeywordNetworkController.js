@@ -181,53 +181,36 @@ define([
             };
 
             function esSearchKeywords(res, tag) {
+              playRoutes.controllers.DocumentController.retrieveKeywords(res).get().then(function(response) {
+                if(response.data.keys) {
+                  let keywords = [];
+                  let frequencies = [];
+                  for(let item of response.data.keys) {
+                      if(item.Keyword){
+                          keywords.push(item.Keyword);
+                      }
+                      if(item.TermFrequency){
+                          frequencies.push(item.TermFrequency);
+                      }
+                      else {
+                          frequencies.push(0);
+                      }
+                  }
+                  playRoutes.controllers.KeywordNetworkController.setTagKeywordRelation(tag, keywords, frequencies).get().then(function () {
+                      $scope.tagCount++;
 
-                $scope.client.search({
-                    index: $scope.indexName,
-                    type: 'document',
-                    id: res,
-                    body: {
-                        query: {
-                            match: {
-                                _id: res
-                            }
-                        }
-                    }
+                      if($scope.tagCount == $scope.currentTags.length){
+                          EntityService.toggleTags($scope.areTagsSelected, $scope);
+                      }
+                  });
+                } else {
+                    // $scope.currentTags.slice($scope.currentTags.indexOf(tag), 1);
+                    $scope.tagCount++;
+                }
 
-                }).then(function (resp) {
-
-                    if(resp.hits.hits[0]._source.Keywords){
-                        let keywords = [];
-                        let frequencies = [];
-
-                        for(let item of resp.hits.hits[0]._source.Keywords){
-                            if(item.Keyword){
-                                keywords.push(item.Keyword);
-                            }
-                            if(item.TermFrequency){
-                                frequencies.push(item.TermFrequency);
-                            }
-                            else {
-                                frequencies.push(0);
-                            }
-                        }
-
-                        playRoutes.controllers.KeywordNetworkController.setTagKeywordRelation(tag, keywords, frequencies).get().then(function () {
-                            $scope.tagCount++;
-
-                            if($scope.tagCount == $scope.currentTags.length){
-                                EntityService.toggleTags($scope.areTagsSelected, $scope);
-                            }
-                        });
-                    }
-                    else {
-                        // $scope.currentTags.slice($scope.currentTags.indexOf(tag), 1);
-                        $scope.tagCount++;
-                    }
-
-                }, function (error) {
-                    console.trace(error.message);
-                });
+              }, function (error) {
+                  console.trace(error.message);
+              });
             }
 
             /* Background collection */
@@ -850,27 +833,19 @@ define([
                 }
                 else if (node.type == 'TAG'){
                     for(let tag of $scope.currentTags){
-                        if(tag.label == node.label){
-                            $scope.client.search({
-                                index: $scope.indexName,
-                                type: 'document',
-                                id: tag.documentId,
-                                body: {
-                                    query: {
-                                        match: {
-                                            _id: tag.documentId
-                                        }
-                                    }
-                                }
+                        if(tag.label == node.label) {
 
-                            }).then(function (resp) {
-                                if(resp.hits.hits[0]) {
-                                    let entities = resp.hits.hits[0]._source.Entities;
-                                    if (entities) {
-                                        EntityService.highlightEntities(entities);
-                                    }
-                                }
-                            });
+                          playRoutes.controllers.EntityController.getEntitiesByDoc(tag.documentId).get().then(function (response) {
+                              if(response.data) {
+                                  let entities = [];
+                                  for (let entity of response.data) {
+                                      entities.push({ Entname: entity.name, EntId: entity.id, EntType: entity.type });
+                                  }
+                                  if (entities) {
+                                      EntityService.highlightEntities(entities);
+                                  }
+                              }
+                          });;
                         }
                     }
                 }
