@@ -111,7 +111,6 @@ class DocumentController @Inject() (
   /** Returns elasticsearch UpdateRequest response. */
   def retrieveKeywords(docId: String) = Action { implicit request =>
     val keywords = documentService.getKeywordsInES(docId)(currentDataset)
-
     var res = Array[JsValue]()
 
     var i = 0
@@ -119,8 +118,8 @@ class DocumentController @Inject() (
 
     while (i < l) {
 
-      var kwd = keywords(i)("Keyword").toString
-      var term = keywords(i)("TermFrequency").toString
+      var kwd = keywords(i).asInstanceOf[List[_]](0).toString
+      var term = keywords(i).asInstanceOf[List[_]](1).toString
 
       res = res :+ Json.obj("Keyword" -> kwd, "TermFrequency" -> term)
       i += 1
