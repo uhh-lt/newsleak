@@ -132,6 +132,7 @@ class Application @Inject() (cache: CacheApi) extends Controller {
         controllers.routes.javascript.NetworkController.getNeighborCounts,
         controllers.routes.javascript.NetworkController.getNeighbors,
         controllers.routes.javascript.NetworkController.highlightKeysByEnt,
+        controllers.routes.javascript.KeywordNetworkController.highlightEntsByKey,
         controllers.routes.javascript.KeywordNetworkController.blacklistEntitiesByIdKeyword,
         controllers.routes.javascript.KeywordNetworkController.mergeKeywords,
         controllers.routes.javascript.KeywordNetworkController.changeEntityNameByIdKeyword,

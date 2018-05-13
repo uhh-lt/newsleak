@@ -87,6 +87,15 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
     queryBuilder
   }
 
+  def highlightEntsByKey(index: String, keyName: String, client: SearchClientService): SearchResponse = {
+    val queryBuilder = client.client.prepareSearch(index)
+      .setSize(100)
+      .setQuery(QueryBuilders.matchQuery("Keywords.Keyword.raw", keyName))
+      .get()
+
+    queryBuilder
+  }
+
   def checkDocumentFields(index: String, docId: String, client: SearchClientService): GetResponse = {
     val requestBuilder = client.client.prepareGet(index, "document", docId)
       .get()

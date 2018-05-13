@@ -27,6 +27,9 @@ import scalikejdbc._
 import util.NewsleakConfigReader
 // scalastyle:off
 import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+import scala.collection.immutable.$colon$colon
+import scala.collection.mutable.ArrayBuffer
 // scalastyle:on
 import models.{ Aggregation, Facets, MetaDataBucket, KeyTerm, NodeBucket, KeywordRelationship }
 import util.es.{ ESRequestUtils }
@@ -90,6 +93,15 @@ trait KeywordNetworkService {
    * @return a map linking from the unique entity type to the number of neighbors of that type.
    */
   def getNeighborCountsPerTypeKeyword(facets: Facets, entityId: Long)(index: String): Map[String, Int]
+
+  /**
+   * Returns the the entities list associated with the keyword name given.
+   *
+   * @param keyName Name of the keyword which has relations to entities.
+   * @param index the data source index or database name to query.
+   * @return a map linking from the unique entity type to the number of neighbors of that type.
+   */
+  def getHighlights(keyName: String)(index: String): List[Any]
 
   /**
    * Selects all tags from the DB
@@ -349,4 +361,44 @@ class ESKeywordNetworkService @Inject() (
   override def getHostAddress(): String = {
     NewsleakConfigReader.esSettings.address + ":" + NewsleakConfigReader.config.getInt("es.httpPort")
   }
+
+  /** newsleak 2.0.0 */
+  /** @inheritdoc */
+  override def getHighlights(keyName: String)(index: String): List[Any] = {
+    val response = utils.highlightEntsByKey(index, keyName, clientService)
+
+    var res = List[Any]()
+
+    var i = 0
+    val k = response.getHits.getTotalHits()
+
+    while (i < k) {
+
+      var ents = response.getHits().getAt(i).getSource().get("Entities")
+
+      if (ents != null) {
+        val vals = ents.asInstanceOf[java.util.List[_]]
+          .asScala.map(m => m.asInstanceOf[java.util.Map[String, _]].asScala)
+
+        var it = 0
+        var ks = vals.asInstanceOf[ArrayBuffer[Object]].length
+
+        //keys = keys.asInstanceOf[java.util.List[_]]
+
+        while (it < ks) {
+          val entName = vals(it)("Entname")
+          val entId = vals(it)("EntId")
+          val entType = vals(it)("EntType")
+          val entFreq = vals(it)("EntFrequency")
+          //res = res :+ keys.asInstanceOf[java.util.List[_]](it)
+          res = res :+ List(entName, entId, entType, entFreq)
+          it += 1
+        }
+      }
+      i += 1
+    }
+
+    res
+  }
+
 }
