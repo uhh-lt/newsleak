@@ -13,9 +13,7 @@
     "prestart": "npm update"
   },
   "config": {
-    "unsafe-perm":true
+    "unsafe-perm": true
   },
-  "dependencies": {
-    "elasticsearch": "^13.2.0"
-  }
+  "dependencies": {}
 }
