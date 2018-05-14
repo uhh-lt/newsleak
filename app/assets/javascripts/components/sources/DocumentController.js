@@ -20,7 +20,6 @@ define([
     'ngSanitize',
     'ngMaterial',
     'contextMenu',
-    'elasticsearch',
     'ui-bootstrap'
 ], function (angular) {
     'use strict';
@@ -29,7 +28,7 @@ define([
      * - render document content
      * - load additional metdata/keywords for loaded document
      */
-    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ui.bootstrap.contextMenu', 'elasticsearch', 'ui.bootstrap'])
+    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ui.bootstrap.contextMenu', 'ui.bootstrap'])
         .directive('docContent', ['$compile', 'ObserverService', 'EntityService', 'graphProperties',  '_', function($compile, ObserverService, EntityService, graphProperties, _) {
             return {
                 restrict: 'E',
@@ -229,7 +228,6 @@ define([
                 'sourceShareService',
                 'ObserverService',
                 'EntityService',
-                'esFactory',
                 '$uibModal',
                 '$log',
                 '$document',
@@ -243,7 +241,6 @@ define([
                           sourceShareService,
                           ObserverService,
                           EntityService,
-                          esFactory,
                           $uibModal,
                           $log,
                           $document) {

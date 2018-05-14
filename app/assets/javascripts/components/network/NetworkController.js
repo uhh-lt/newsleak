@@ -18,7 +18,6 @@
 define([
     'angular',
     'ngMaterial',
-    'elasticsearch',
     'ngVis'
 ], function(angular) {
     'use strict';
@@ -26,7 +25,7 @@ define([
      * network module:
      * visualization and interaction of network graph
      */
-    angular.module('myApp.network', ['ngMaterial', 'ngVis', 'play.routing', 'elasticsearch'])
+    angular.module('myApp.network', ['ngMaterial', 'ngVis', 'play.routing'])
     angular.module('myApp.network')
         // Network Legend Controller
         .controller('LegendController', ['$scope', '$timeout', 'VisDataSet', 'graphProperties', function ($scope, $timeout, VisDataSet, graphProperties) {
@@ -55,7 +54,7 @@ define([
             });
         }])
         // Network Controller
-        .controller('NetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', 'esFactory', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService, esFactory) {
+        .controller('NetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService) {
 
             var self = this;
 
