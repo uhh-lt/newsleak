@@ -94,73 +94,38 @@ define([
                             var filters = currentFilter();
 
                             if(filters.fulltext.length > 0 || filters.entities.length > 0 || filters.keywords.length > 0) {
-                                $scope.client.search({
-                                    index: $scope.indexName,
-                                    type: 'document',
-                                    body: {
-                                        query: {
-                                            bool: {
-                                                must: [
-                                                    {
-                                                        terms: {
-                                                            "_id": $scope.allTagIds
-                                                        }
-                                                    },
-                                                    {
-                                                        bool: {
-                                                            should: [
-                                                                {
-                                                                    terms: {
-                                                                        "Content": filters.fulltext
-                                                                    }
-                                                                },
-                                                                {
-                                                                    terms: {
-                                                                        "Keywords.Keyword.raw": filters.keywords
-                                                                    }
-                                                                },
-                                                                {
-                                                                    terms: {
-                                                                        "Entities.EntId": filters.entities
-
-                                                                    }
-                                                                }
-                                                            ]
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
+                                playRoutes.controllers.KeywordNetworkController
+                                .multiSearchFilters($scope.allTagIds, filters.fullText, filters.keywords, filters.entities)
+                                .get().then(function(response) {
+                                  if(response.data.docs) {
+                                    for (let item of response.data.docs) {
+                                        $scope.currentTagIds.push(item._id);
                                     }
-                                }).then(function (resp) {
-                                    if (resp.hits.hits) {
-                                        for (let item of resp.hits.hits) {
-                                            $scope.currentTagIds.push(item._id);
-                                        }
-                                    }
+                                  }
 
-                                    if($scope.currentTagIds.length == 0){
-                                        $scope.currentTags = [];
-                                        $scope.areTagsSelected = false;
-                                        // TODO add alert that no tags are available for current filter
-                                    }
-                                    else {
-                                        var tmpTags = [];
+                                  if($scope.currentTagIds.length == 0){
+                                      $scope.currentTags = [];
+                                      $scope.areTagsSelected = false;
+                                      // TODO add alert that no tags are available for current filter
+                                  }
+                                  else {
+                                      var tmpTags = [];
 
-                                        for(let t of $scope.currentTags){
-                                            for(let i of $scope.currentTagIds){
-                                                if(t.documentId == i){
-                                                    tmpTags.push(t);
-                                                }
-                                            }
-                                        }
+                                      for(let t of $scope.currentTags){
+                                          for(let i of $scope.currentTagIds){
+                                              if(t.documentId == i){
+                                                  tmpTags.push(t);
+                                              }
+                                          }
+                                      }
 
-                                        $scope.currentTags = tmpTags;
-                                    }
+                                      $scope.currentTags = tmpTags;
+                                  }
 
-                                    for(let res of $scope.currentTags) {
-                                        esSearchKeywords('' + res.documentId, res.label);
-                                    }
+                                  for(let res of $scope.currentTags) {
+                                      esSearchKeywords('' + res.documentId, res.label);
+                                  }
+
                                 });
                             }
                             else {
@@ -468,20 +433,7 @@ define([
                 });
             }
 
-            function initES() {
-                playRoutes.controllers.KeywordNetworkController.getHostAddress().get().then(function (response) {
-                    if(response && response.data){
-                        $scope.client = esFactory({
-                            host: response.data,
-                            apiVersion: '5.5',
-                            log: 'trace'
-                        });
-                    }
-                });
-            }
-
             function init() {
-                initES();
                 // init graph
                 $scope.keywordTypes = [{
                     name: "KEY",

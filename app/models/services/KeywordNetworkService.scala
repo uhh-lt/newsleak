@@ -104,6 +104,15 @@ trait KeywordNetworkService {
   def getHighlights(keyName: String)(index: String): List[Any]
 
   /**
+   * Returns the the doc ID list associated with the multiple filters given.
+   *
+   * @param keyName Name of the keyword which has relations to entities.
+   * @param index the data source index or database name to query.
+   * @return a map linking from the unique entity type to the number of neighbors of that type.
+   */
+  def getMultiFilters(keyName: List[String], txts: List[String], kwds: List[String], ents: List[String])(index: String): List[Any]
+
+  /**
    * Selects all tags from the DB
    *
    * @return a list of all Tags that are stored in the DB
@@ -394,6 +403,29 @@ class ESKeywordNetworkService @Inject() (
           res = res :+ List(entName, entId, entType, entFreq)
           it += 1
         }
+      }
+      i += 1
+    }
+
+    res
+  }
+
+  /** @inheritdoc */
+  override def getMultiFilters(keyName: List[String], txts: List[String], kwds: List[String], ents: List[String])(index: String): List[Any] = {
+    val response = utils.multiSearchFilters(index, keyName, txts, kwds, ents, clientService)
+
+    var res = List[Any]()
+
+    var i = 0
+    val k = response.getHits.getTotalHits()
+
+    while (i < k) {
+
+      var docId = response.getHits().getAt(i).getId
+
+      if (docId != null) {
+
+        res = res :+ docId
       }
       i += 1
     }
