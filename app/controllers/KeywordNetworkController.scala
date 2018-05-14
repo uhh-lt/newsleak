@@ -250,4 +250,21 @@ class KeywordNetworkController @Inject() (
     Ok(Json.obj("ents" -> res)).as("application/json")
   }
 
+  def multiSearchFilters(docIds: List[String], txts: List[String], kwds: List[String], ents: List[String]) = Action { implicit request =>
+
+    val docs = keywordNetworkService.getMultiFilters(docIds, txts, kwds, ents)(currentDataset)
+    var res = Array[JsValue]()
+
+    var i = 0
+    val l = docs.length
+
+    while (i < l) {
+      val docId = docs(i).toString
+      res = res :+ Json.obj("_id" -> docId)
+      i += 1
+    }
+
+    Ok(Json.obj("docs" -> res)).as("application/json")
+  }
+
 }

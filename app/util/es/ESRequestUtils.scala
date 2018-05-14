@@ -90,8 +90,30 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
   def highlightEntsByKey(index: String, keyName: String, client: SearchClientService): SearchResponse = {
     val queryBuilder = client.client.prepareSearch(index)
       .setSize(100)
-      .setQuery(QueryBuilders.matchQuery("Keywords.Keyword.raw", keyName))
-      .get()
+      .setQuery(QueryBuilders.boolQuery()
+        .must(
+          QueryBuilders.matchQuery("Keywords.Keyword.raw", keyName)
+        )).get()
+
+    queryBuilder
+  }
+
+  def multiSearchFilters(index: String, docIds: List[String], txts: List[String], kwds: List[String], ents: List[String], client: SearchClientService): SearchResponse = {
+
+    val docs = if (docIds.size == 0) "" else if (docIds.size == 1) docIds(0) else docIds.toArray
+    val texts = if (txts.size == 0) "" else if (txts.size == 1) txts(0) else txts.toArray
+    val keywords = if (kwds.size == 0) "" else if (kwds.size == 1) kwds(0) else kwds.toArray
+    val entities = if (ents.size == 0) "" else if (ents.size == 1) ents(0) else ents.toArray
+
+    val queryBuilder = client.client.prepareSearch(index)
+      .setQuery(QueryBuilders.boolQuery()
+        .must(QueryBuilders.termsQuery("_id", docs))
+        .must(
+          QueryBuilders.boolQuery()
+            .should(QueryBuilders.termsQuery("Content", texts))
+            .should(QueryBuilders.termsQuery("Keywords.Keyword.raw", keywords))
+            .should(QueryBuilders.termsQuery("Entities.EntId", entities))
+        )).get()
 
     queryBuilder
   }

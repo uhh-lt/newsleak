@@ -73,6 +73,7 @@ GET        /createNewEntityType                   controllers.DocumentController
 
 GET        /highlightKeysByEnt                    controllers.NetworkController.highlightKeysByEnt(entName: String)
 GET        /highlightEntsByKey                    controllers.KeywordNetworkController.highlightEntsByKey(keyName: String)
+GET        /multiSearchFilters                    controllers.KeywordNetworkController.multiSearchFilters(docIds: List[String], txts: List[String], kwds: List[String], ents: List[String])
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # JS ROUTING AND RESOURCES                                                                      #
