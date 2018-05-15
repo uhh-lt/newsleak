@@ -116,6 +116,21 @@ trait EntityService {
    * @param start the start of entity offset.
    * @param end the end of entity offset.
    * @param index the data source index or database name to query.
+   * @param docId the identifier of document
+   * @return ''true'', if all entities are successfully marked as blacklisted. ''False'' if at least one entity
+   * is not correct marked.
+   */
+  def whitelistOffset(text: String, start: Int, end: Int, entId: BigInt, docId: BigInt)(index: String): Boolean
+
+  /**
+   * Marks the entity to whitelist.
+   *
+   * Whitelist new entity
+   *
+   * @param text the entity text to whitelist.
+   * @param start the start of entity offset.
+   * @param end the end of entity offset.
+   * @param index the data source index or database name to query.
    * @param entId the identifier of entity
    * @param docId the identifier of document
    * @return ''true'', if all entities are successfully marked as blacklisted. ''False'' if at least one entity
@@ -295,6 +310,13 @@ class DBEntityService extends EntityService {
     sql"DELETE FROM entityoffset WHERE docId=${docId} AND entitystart=${start} AND entityend=${end}".update().apply()
     sql"""INSERT INTO entityoffset (docid, entid, entitystart, entityend)
          VALUES (${docId}, (SELECT coalesce(max(id),0) FROM entity), ${start}, ${end})""".update().apply()
+    true
+  }
+
+  /** @inheritdoc */
+  override def whitelistOffset(text: String, start: Int, end: Int, entId: BigInt, docId: BigInt)(index: String): Boolean = db(index).localTx { implicit session =>
+    sql"""INSERT INTO entityoffset (docid, entid, entitystart, entityend)
+         VALUES (${docId}, ${entId}, ${start}, ${end})""".update().apply()
     true
   }
 
