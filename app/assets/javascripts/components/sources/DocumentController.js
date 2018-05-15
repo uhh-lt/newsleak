@@ -515,8 +515,24 @@ define([
                               .get().then(function(response) {
                                   $scope.$emit('notifying-service-event', { parameter: entity, response: response });
                                   playRoutes.controllers.EntityController.getRecordedEntity(entity.text, type).get().then(function (response) {
-                                    $scope.esNewId = response.data[0].id;
-                                    $scope.esWhitelist(entity, type, doc);
+                                    $scope.annotations = entity.annotations;
+                                    $scope.esNewId = response.data[response.data.length-1].id;
+                                    // Checking if annotations are more than one in one document
+                                    if ($scope.annotations.length > 1) {
+                                      for (var i in $scope.annotations) {
+                                        var anno = $scope.annotations[i];
+                                        $scope.annoIter = parseInt(i);
+                                        if ($scope.annoIter !== 0) {
+                                          playRoutes.controllers.EntityController.whitelistEntityOffset(anno.text, anno.start, anno.end, doc.id, $scope.esNewId).get().then(function (response) {
+                                            if ($scope.annoIter === ($scope.annotations.length-1)) {
+                                              $scope.esWhitelist(entity, type, doc);
+                                            }
+                                          });
+                                        }
+                                      }
+                                    } else {
+                                      $scope.esWhitelist(entity, type, doc);
+                                    }
                                   });
                               });
                             }
@@ -541,18 +557,28 @@ define([
                       var text = "";
                       var start = 0;
                       var end = 0;
+                      var annotations = [];
                       if (window.getSelection) {
                          text = window.getSelection().toString();
-                         start = doc.match(text).index;
-                         end = start + text.length;
+                         // Global RegExp annotations
+                         if (text.length > 0) {
+                           text = text.trim();
+                           start = doc.match(text).index;
+                           end = start + text.length;
+                           var regexScript = RegExp(text, 'g');
+                           var iter;
+                           while ((iter = regexScript.exec(doc)) !== null) {
+                              annotations.push({text, start: iter.index, end: regexScript.lastIndex});
+                            }
+                         }
                       } else if (document.selection && document.selection.type != "Control") {
                          text = document.selection.createRange().text;
                       }
-                      text = text.trim();
                       return {
                         text,
                         start,
-                        end
+                        end,
+                        annotations
                       };
                     };
 
