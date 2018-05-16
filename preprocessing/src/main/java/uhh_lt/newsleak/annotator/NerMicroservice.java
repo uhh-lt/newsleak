@@ -103,8 +103,9 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 				sentenceArray = obj.getAsJsonArray("result");
 			}
 			catch (Exception e) {
-				log.log(Level.SEVERE, "Could not parse NER result. May be there is no model for language " + docLang + " in the NER microservice?");
-				throw new AnalysisEngineProcessException(e);
+				log.log(Level.SEVERE, "Invalid NER result. Check if there is a model for language '" + docLang + "' in the NER microservice?");
+		
+				System.exit(1);
 			}
 
 			ArrayList<String> tagList = new ArrayList<String>();
