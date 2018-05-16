@@ -195,6 +195,8 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		while (statusListener.isProcessing()) {
 			Thread.sleep(500);
 		}
+		
+		
 	}
 
 	public void pipelineAnnotation() throws Exception {
