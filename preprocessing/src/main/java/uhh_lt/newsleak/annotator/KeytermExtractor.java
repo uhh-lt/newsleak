@@ -32,10 +32,6 @@ public class KeytermExtractor extends JCasAnnotator_ImplBase {
 
 	private Extractor extractor;
 	
-	public static final String PARAM_NOUN_TAG = "nounPosTag";
-	@ConfigurationParameter(name = PARAM_NOUN_TAG)
-	private String nounPosTag;
-
 	private Logger log;
 
 	@Override
