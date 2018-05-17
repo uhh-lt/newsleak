@@ -18,22 +18,22 @@
 package models
 
 import play.api.libs.json.Json
-import scalikejdbc.WrappedResultSet
+
+// scalastyle:off
+// scalastyle:on
 
 /**
- * Representation for important terms including their importance value.
+ * Representation for a relationship.
  *
- * @param term the important term value.
- * @param score the score of the important term. Higher values represent more important terms.
+ * @param source     the first adjacent node.
+ * @param dest       the second adjacent node.
+ * @param occurrence the document occurrence i.e. in how many documents does this relationship occur.
  */
-case class KeyTerm(term: String, score: Long, termType: String)
+case class KeywordRelationship(source: String, dest: String, occurrence: Long)
 
-/** Companion object for [[models.KeyTerm]] instances. */
-object KeyTerm {
+/** Companion object for [[models.Relationship]] instances. */
+object KeywordRelationship {
 
-  /** Automatic mapping for [[models.KeyTerm]] to read and write from and to json. */
-  implicit val keyTermFormat = Json.format[KeyTerm]
-
-  /** Factory method to create key terms from database result sets. */
-  def apply(rs: WrappedResultSet): KeyTerm = KeyTerm(rs.string("term"), rs.int("frequency"), rs.string("type"))
+  /** Automatic mapping for [[models.Relationship]] to read and write from and to json. */
+  implicit val keywordRelationshipFormat = Json.format[KeywordRelationship]
 }

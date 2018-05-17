@@ -49,10 +49,22 @@ class EntityController @Inject() (
     Ok(toJson(types)).as("application/json")
   }
 
+  /** Returns a recorded entity */
+  def getRecordedEntity(text: String, enType: String) = Action { implicit request =>
+    val types = entityService.getNameAndType(text, enType)(currentDataset)
+    Ok(toJson(types)).as("application/json")
+  }
+
   /** Returns all blacklisted entities for the underlying collection. */
   def getBlacklistedEntities = Action { implicit request =>
     val entities = entityService.getBlacklisted()(currentDataset)
     Ok(toJson(entities)).as("application/json")
+  }
+
+  /** Returns all blacklisted keywords for the underlying collection. */
+  def getBlacklistedKeywords = Action { implicit request =>
+    val keywords = entityService.getBlacklistedKeywords()(currentDataset)
+    Ok(toJson(keywords)).as("application/json")
   }
 
   /** Returns all merged entities for the underlying collection. */
@@ -83,6 +95,24 @@ class EntityController @Inject() (
   }
 
   /**
+   * Returns all blacklisted entity occurrences for the given document including their position in the document.
+   *
+   * @param docId the document id.
+   */
+  def getBlacklistsByDoc(docId: Long) = Action { implicit request =>
+    val typesToId = entityService.getTypes()(currentDataset)
+    val entityToOccurrences = entityService.getBlacklistFragments(docId)(currentDataset).groupBy(_._1)
+    val res = entityToOccurrences.flatMap {
+      case (Entity(id, name, t, _), occ) =>
+        occ.map {
+          case (_, fragment) =>
+            Json.obj("id" -> id, "name" -> name, "type" -> t, "typeId" -> typesToId(t), "start" -> fragment.start, "end" -> fragment.end)
+        }
+    }
+    Ok(toJson(res)).as("application/json")
+  }
+
+  /**
    * Removes the blacklisted mark from the entities associated with the given ids.
    *
    * @param ids the entity ids to remove the blacklist mark from.
@@ -93,12 +123,40 @@ class EntityController @Inject() (
   }
 
   /**
+   * whitelist entity
+   *
+   * @param text the entity to whitelist.
+   * @param start start the offset position.
+   * @param end end the offset position.
+   * @param enType type of entity
+   *
+   */
+  def whitelistEntity(text: String, start: String, end: String, enType: String, docId: String, entId: String) = Action { implicit request =>
+    if (entId == "empty") {
+      entityService.whitelist(text, start.toInt, end.toInt, enType, BigInt(docId))(currentDataset)
+    } else {
+      entityService.updateFrequency(text, start.toInt, end.toInt, enType, BigInt(entId), BigInt(docId))(currentDataset)
+    }
+    Ok("success").as("Text")
+  }
+
+  /**
    * Withdraws [[models.services.EntityService#merge]] for the given entity id.
    *
    * @param focalIds the central entity ids.
    */
   def undoMergeByIds(focalIds: List[Long]) = Action { implicit request =>
     entityService.undoMerge(focalIds)(currentDataset)
+    Ok("success").as("Text")
+  }
+
+  /**
+   * Withdraws [[models.services.EntityService#merge]] for the given keywords.
+   *
+   * @param focalTerms the central keywords.
+   */
+  def undoMergeKeywords(focalTerms: List[String]) = Action { implicit request =>
+    entityService.undoMergeKeywords(focalTerms)(currentDataset)
     Ok("success").as("Text")
   }
 
@@ -128,7 +186,7 @@ class EntityController @Inject() (
   ) = Action { implicit request =>
     val (from, to) = dateUtils.parseTimeRange(timeRange)
     val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
-    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+    val facets = Facets(fullText, generic, entities, List(), from, to, timeExprFrom, timeExprTo)
     var newSize = size
 
     val blacklistedIds = entityService.getBlacklisted()(currentDataset).map(_.id)

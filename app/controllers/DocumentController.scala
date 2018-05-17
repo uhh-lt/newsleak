@@ -75,6 +75,11 @@ class DocumentController @Inject() (
     Ok(Json.obj("labels" -> Json.toJson(documentService.getDocumentLabels()(currentDataset)))).as("application/json")
   }
 
+  /** Returns index name. */
+  def getIndexName() = Action { implicit request =>
+    Ok(Json.obj("index" -> Json.toJson(documentService.getIndex()(currentDataset)))).as("application/json")
+  }
+
   /**
    * Annotates a document with the given label.
    *
@@ -121,13 +126,14 @@ class DocumentController @Inject() (
     fullText: List[String],
     generic: Map[String, List[String]],
     entities: List[Long],
+    keywords: List[String],
     timeRange: String,
     timeExprRange: String
   ) = Action { implicit request =>
     val uid = request.session.get("uid").getOrElse("0")
     val (from, to) = dateUtils.parseTimeRange(timeRange)
     val (timeExprFrom, timeExprTo) = dateUtils.parseTimeRange(timeExprRange)
-    val facets = Facets(fullText, generic, entities, from, to, timeExprFrom, timeExprTo)
+    val facets = Facets(fullText, generic, entities, keywords, from, to, timeExprFrom, timeExprTo)
     var pageCounter = 0
 
     val cachedIterator = cache.get[IteratorSession](uid)
