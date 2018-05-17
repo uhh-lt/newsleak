@@ -347,6 +347,6 @@ class ESKeywordNetworkService @Inject() (
 
   /** @inheritdoc */
   override def getHostAddress(): String = {
-    NewsleakConfigReader.esSettings.address + ":" + NewsleakConfigReader.config.getInt("es.httpPort")
+    NewsleakConfigReader.esSettings.address + ":" + NewsleakConfigReader.config.getInt("es.port")
   }
 }
