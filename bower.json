@@ -1,11 +1,13 @@
 {
-  "name": "new/s/leak",
+  "name": "newsleak",
   "description": "Newsleak application",
-  "version": "0.0.1",
-  "homepage": "https://github.com/tudarmstadt-lt/newsleak-frontend",
+  "version": "0.9",
+  "homepage": "https://github.com/uhh-lt/newsleak-frontend",
   "authors": [
     "Uli Fahrer",
-	"Florian Zouhar"
+	  "Florian Zouhar",
+    "Alvin Fazrie",
+    "Gregor Wiedemann"
   ],
   "license": "GNU General Public License v3",
   "ignore": [
