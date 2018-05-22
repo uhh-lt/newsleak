@@ -19,6 +19,9 @@ package util.es
 
 import com.google.inject.Inject
 import org.elasticsearch.action.search.{ SearchRequestBuilder, SearchResponse }
+import org.elasticsearch.action.get.GetResponse
+import org.elasticsearch.action.update.{ UpdateRequest, UpdateResponse }
+
 import util.DateUtils
 // scalastyle:off
 import org.elasticsearch.index.query.QueryStringQueryBuilder._
@@ -28,6 +31,11 @@ import org.joda.time.LocalDateTime
 
 import models.services.SearchClientService
 import models.Facets
+
+import scala.collection.JavaConversions._
+import scala.collection.mutable
+import org.elasticsearch.common.xcontent.XContentFactory._
+import play.api.libs.json._
 
 /** Common helper to create and parse elasticsearch queries. Further provides elasticsearch field mappings. */
 class ESRequestUtils @Inject() (dateUtils: DateUtils) {
@@ -65,6 +73,197 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
       .setSize(documentSize)
       // We are only interested in the document id
       .addFields("id")
+
+    requestBuilder
+  }
+
+  /** newsleak version 2.0.0: document whitelisting, highlighting, and keyword networks*/
+  def highlightKeysByEnt(index: String, entName: String, client: SearchClientService): SearchResponse = {
+    val queryBuilder = client.client.prepareSearch(index)
+      .setSize(100)
+      .setQuery(QueryBuilders.matchQuery("Entities.Entname", entName))
+      .get()
+
+    queryBuilder
+  }
+
+  def highlightEntsByKey(index: String, keyName: String, client: SearchClientService): SearchResponse = {
+    val queryBuilder = client.client.prepareSearch(index)
+      .setSize(100)
+      .setQuery(QueryBuilders.boolQuery()
+        .must(
+          QueryBuilders.matchQuery("Keywords.Keyword.raw", keyName)
+        )).get()
+
+    queryBuilder
+  }
+
+  def multiSearchFilters(index: String, docIds: List[String], txts: List[String], kwds: List[String], ents: List[String], client: SearchClientService): SearchResponse = {
+
+    val docs = if (docIds.size == 0) "" else if (docIds.size == 1) docIds(0) else docIds.toArray
+    val texts = if (txts.size == 0) "" else if (txts.size == 1) txts(0) else txts.toArray
+    val keywords = if (kwds.size == 0) "" else if (kwds.size == 1) kwds(0) else kwds.toArray
+    val entities = if (ents.size == 0) "" else if (ents.size == 1) ents(0) else ents.toArray
+
+    val queryBuilder = client.client.prepareSearch(index)
+      .setQuery(QueryBuilders.boolQuery()
+        .must(QueryBuilders.termsQuery("_id", docs))
+        .must(
+          QueryBuilders.boolQuery()
+            .should(QueryBuilders.termsQuery("Content", texts))
+            .should(QueryBuilders.termsQuery("Keywords.Keyword.raw", keywords))
+            .should(QueryBuilders.termsQuery("Entities.EntId", entities))
+        )).get()
+
+    queryBuilder
+  }
+
+  def checkDocumentFields(index: String, docId: String, client: SearchClientService): GetResponse = {
+    val requestBuilder = client.client.prepareGet(index, "document", docId)
+      .get()
+
+    requestBuilder
+  }
+
+  def createInitEntity(
+    index: String,
+    docId: String,
+    entId: Int,
+    entName: String,
+    entType: String,
+    client: SearchClientService
+  ): UpdateResponse = {
+    val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId)
+      .doc(
+        jsonBuilder
+        .startObject()
+        .startArray("Entities")
+        .startObject
+        .field("EntId", entId)
+        .field("Entname", entName)
+        .field("EntType", entType)
+        .field("EntFrequency", 1)
+        .endObject
+        .endArray
+        .endObject
+      )
+
+    val requestBuilder = client.client.update(updateRequest).get()
+
+    requestBuilder
+  }
+
+  def createInitKeyword(
+    index: String,
+    docId: String,
+    keyword: String,
+    client: SearchClientService
+  ): UpdateResponse = {
+    val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId)
+      .doc(
+        jsonBuilder
+        .startObject()
+        .startArray("Keywords")
+        .startObject
+        .field("Keyword", keyword)
+        .field("TermFrequency", 1)
+        .endObject
+        .endArray
+        .endObject
+      )
+
+    val requestBuilder = client.client.update(updateRequest).get()
+
+    requestBuilder
+  }
+
+  def createNewKeyword(
+    index: String,
+    docId: String,
+    keyword: String,
+    client: SearchClientService
+  ): UpdateResponse = {
+    val jmap = new java.util.HashMap[String, Any]()
+    jmap.put("Keyword", keyword)
+    jmap.put("TermFrequency", 1)
+
+    val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId)
+      .addScriptParam("json", jmap)
+      .script("ctx._source.Keywords.add(json)")
+
+    val requestBuilder = client.client.update(updateRequest).get
+
+    requestBuilder
+  }
+
+  def createNewEntity(
+    index: String,
+    docId: String,
+    entId: Int,
+    entName: String,
+    entType: String,
+    client: SearchClientService
+  ): UpdateResponse = {
+    val jmap = new java.util.HashMap[String, Any]()
+    jmap.put("EntId", entId)
+    jmap.put("Entname", entName)
+    jmap.put("EntType", entType)
+    jmap.put("EntFrequency", 1)
+
+    val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId)
+      .addScriptParam("json", jmap)
+      .script("ctx._source.Entities.add(json)")
+
+    val requestBuilder = client.client.update(updateRequest).get
+
+    requestBuilder
+  }
+
+  def createInitEntityType(
+    index: String,
+    docId: String,
+    entId: Int,
+    entName: String,
+    entType: String,
+    client: SearchClientService
+  ): UpdateResponse = {
+    val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId)
+      .doc(
+        jsonBuilder
+        .startObject()
+        .startArray("Entities" + entType)
+        .startObject
+        .field("EntId", entId)
+        .field("Entname", entName)
+        .field("EntFrequency", 1)
+        .endObject
+        .endArray
+        .endObject
+      )
+
+    val requestBuilder = client.client.update(updateRequest).get()
+
+    requestBuilder
+  }
+
+  def createNewEntityType(
+    index: String,
+    docId: String,
+    entId: Int,
+    entName: String,
+    entType: String,
+    client: SearchClientService
+  ): UpdateResponse = {
+    val jmap = new java.util.HashMap[String, Any]()
+    jmap.put("EntId", entId)
+    jmap.put("Entname", entName)
+    jmap.put("EntFrequency", 1)
+
+    val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId)
+      .addScriptParam("json", jmap)
+      .script("ctx._source.Entities" + entType + ".add(json)")
+
+    val requestBuilder = client.client.update(updateRequest).get
 
     requestBuilder
   }

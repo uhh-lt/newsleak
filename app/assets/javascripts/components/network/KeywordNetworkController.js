@@ -18,7 +18,6 @@
 define([
     'angular',
     'ngMaterial',
-    'elasticsearch',
     'ngVis'
 ], function(angular) {
     'use strict';
@@ -62,7 +61,7 @@ define([
             });
         }])
         // Keyword Network Controller
-        .controller('KeywordNetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', 'esFactory', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService, esFactory) {
+        .controller('KeywordNetworkController', ['$scope', '$q', '$timeout', '$compile', '$mdDialog', 'VisDataSet', 'playRoutes', 'ObserverService', '_', 'physicOptions', 'graphProperties', 'EntityService', function ($scope, $q, $timeout, $compile, $mdDialog, VisDataSet, playRoutes, ObserverService, _, physicOptions, graphProperties, EntityService) {
 
             var self = this;
 
@@ -94,73 +93,38 @@ define([
                             var filters = currentFilter();
 
                             if(filters.fulltext.length > 0 || filters.entities.length > 0 || filters.keywords.length > 0) {
-                                $scope.client.search({
-                                    index: $scope.indexName,
-                                    type: 'document',
-                                    body: {
-                                        query: {
-                                            bool: {
-                                                must: [
-                                                    {
-                                                        terms: {
-                                                            "_id": $scope.allTagIds
-                                                        }
-                                                    },
-                                                    {
-                                                        bool: {
-                                                            should: [
-                                                                {
-                                                                    terms: {
-                                                                        "Content": filters.fulltext
-                                                                    }
-                                                                },
-                                                                {
-                                                                    terms: {
-                                                                        "Keywords.Keyword.raw": filters.keywords
-                                                                    }
-                                                                },
-                                                                {
-                                                                    terms: {
-                                                                        "Entities.EntId": filters.entities
-
-                                                                    }
-                                                                }
-                                                            ]
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
+                                playRoutes.controllers.KeywordNetworkController
+                                .multiSearchFilters($scope.allTagIds, filters.fullText, filters.keywords, filters.entities)
+                                .get().then(function(response) {
+                                  if(response.data.docs) {
+                                    for (let item of response.data.docs) {
+                                        $scope.currentTagIds.push(item._id);
                                     }
-                                }).then(function (resp) {
-                                    if (resp.hits.hits) {
-                                        for (let item of resp.hits.hits) {
-                                            $scope.currentTagIds.push(item._id);
-                                        }
-                                    }
+                                  }
 
-                                    if($scope.currentTagIds.length == 0){
-                                        $scope.currentTags = [];
-                                        $scope.areTagsSelected = false;
-                                        // TODO add alert that no tags are available for current filter
-                                    }
-                                    else {
-                                        var tmpTags = [];
+                                  if($scope.currentTagIds.length == 0){
+                                      $scope.currentTags = [];
+                                      $scope.areTagsSelected = false;
+                                      // TODO add alert that no tags are available for current filter
+                                  }
+                                  else {
+                                      var tmpTags = [];
 
-                                        for(let t of $scope.currentTags){
-                                            for(let i of $scope.currentTagIds){
-                                                if(t.documentId == i){
-                                                    tmpTags.push(t);
-                                                }
-                                            }
-                                        }
+                                      for(let t of $scope.currentTags){
+                                          for(let i of $scope.currentTagIds){
+                                              if(t.documentId == i){
+                                                  tmpTags.push(t);
+                                              }
+                                          }
+                                      }
 
-                                        $scope.currentTags = tmpTags;
-                                    }
+                                      $scope.currentTags = tmpTags;
+                                  }
 
-                                    for(let res of $scope.currentTags) {
-                                        esSearchKeywords('' + res.documentId, res.label);
-                                    }
+                                  for(let res of $scope.currentTags) {
+                                      esSearchKeywords('' + res.documentId, res.label);
+                                  }
+
                                 });
                             }
                             else {
@@ -181,53 +145,37 @@ define([
             };
 
             function esSearchKeywords(res, tag) {
+              playRoutes.controllers.DocumentController.retrieveKeywords(res).get().then(function(response) {
+                if(response.data.keys) {
+                  let keywords = [];
+                  let frequencies = [];
+                  for(let item of response.data.keys) {
+                      if(item.Keyword){
+                          keywords.push(item.Keyword);
+                      }
+                      if(item.TermFrequency){
+                          item.TermFrequency = parseInt(item.TermFrequency);
+                          frequencies.push(item.TermFrequency);
+                      }
+                      else {
+                          frequencies.push(0);
+                      }
+                  }
+                  playRoutes.controllers.KeywordNetworkController.setTagKeywordRelation(tag, keywords, frequencies).get().then(function () {
+                      $scope.tagCount++;
 
-                $scope.client.search({
-                    index: $scope.indexName,
-                    type: 'document',
-                    id: res,
-                    body: {
-                        query: {
-                            match: {
-                                _id: res
-                            }
-                        }
-                    }
+                      if($scope.tagCount == $scope.currentTags.length){
+                          EntityService.toggleTags($scope.areTagsSelected, $scope);
+                      }
+                  });
+                } else {
+                    // $scope.currentTags.slice($scope.currentTags.indexOf(tag), 1);
+                    $scope.tagCount++;
+                }
 
-                }).then(function (resp) {
-
-                    if(resp.hits.hits[0]._source.Keywords){
-                        let keywords = [];
-                        let frequencies = [];
-
-                        for(let item of resp.hits.hits[0]._source.Keywords){
-                            if(item.Keyword){
-                                keywords.push(item.Keyword);
-                            }
-                            if(item.TermFrequency){
-                                frequencies.push(item.TermFrequency);
-                            }
-                            else {
-                                frequencies.push(0);
-                            }
-                        }
-
-                        playRoutes.controllers.KeywordNetworkController.setTagKeywordRelation(tag, keywords, frequencies).get().then(function () {
-                            $scope.tagCount++;
-
-                            if($scope.tagCount == $scope.currentTags.length){
-                                EntityService.toggleTags($scope.areTagsSelected, $scope);
-                            }
-                        });
-                    }
-                    else {
-                        // $scope.currentTags.slice($scope.currentTags.indexOf(tag), 1);
-                        $scope.tagCount++;
-                    }
-
-                }, function (error) {
-                    console.trace(error.message);
-                });
+              }, function (error) {
+                  console.trace(error.message);
+              });
             }
 
             /* Background collection */
@@ -484,20 +432,7 @@ define([
                 });
             }
 
-            function initES() {
-                playRoutes.controllers.KeywordNetworkController.getHostAddress().get().then(function (response) {
-                    if(response && response.data){
-                        $scope.client = esFactory({
-                            host: response.data,
-                            apiVersion: '5.5',
-                            log: 'trace'
-                        });
-                    }
-                });
-            }
-
             function init() {
-                initES();
                 // init graph
                 $scope.keywordTypes = [{
                     name: "KEY",
@@ -812,65 +747,36 @@ define([
                     self.nodesDataset.update({ id: node.id, title: tooltip });
                 });
 
-                if(node.type == 'KEYWORD'){
-                    $scope.client.search({
-                        index: $scope.indexName,
-                        type: 'document',
-                        size: 100,
-                        body: {
-                            query: {
-                                bool: {
-                                    must: [
-                                        {
-                                            match: {
-                                                "Keywords.Keyword.raw": node.label
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
+                if(node.type == 'KEYWORD') {
+                  playRoutes.controllers.KeywordNetworkController.highlightEntsByKey(node.label).get().then(function(response) {
+                    if(response.data.ents) {
+                        let entities = [];
+                        for (let entity of Object.values(response.data.ents)) {
+                            entities.push(entity);
                         }
-                    }).then(function (resp) {
-                        if(resp.hits.hits) {
-                            let entities = [];
-                            for(let hit of Object.values(resp.hits.hits)){
-                                if(hit._source.Entities) {
-                                    for (let entity of Object.values(hit._source.Entities)) {
-                                        entities.push(entity);
-                                    }
-                                }
-                            }
-                            if (entities.length > 0) {
-                                EntityService.highlightEntities(entities);
-                            }
+                        if (entities.length > 0) {
+                            EntityService.highlightEntities(entities);
                         }
-                    }, function (error) {
-                        console.trace(error.message);
-                    });
+                    }
+                  }, function (error) {
+                      console.trace(error.message);
+                  });
                 }
                 else if (node.type == 'TAG'){
                     for(let tag of $scope.currentTags){
-                        if(tag.label == node.label){
-                            $scope.client.search({
-                                index: $scope.indexName,
-                                type: 'document',
-                                id: tag.documentId,
-                                body: {
-                                    query: {
-                                        match: {
-                                            _id: tag.documentId
-                                        }
-                                    }
-                                }
+                        if(tag.label == node.label) {
 
-                            }).then(function (resp) {
-                                if(resp.hits.hits[0]) {
-                                    let entities = resp.hits.hits[0]._source.Entities;
-                                    if (entities) {
-                                        EntityService.highlightEntities(entities);
-                                    }
-                                }
-                            });
+                          playRoutes.controllers.EntityController.getEntitiesByDoc(tag.documentId).get().then(function (response) {
+                              if(response.data) {
+                                  let entities = [];
+                                  for (let entity of response.data) {
+                                      entities.push({ Entname: entity.name, EntId: entity.id, EntType: entity.type });
+                                  }
+                                  if (entities) {
+                                      EntityService.highlightEntities(entities);
+                                  }
+                              }
+                          });;
                         }
                     }
                 }

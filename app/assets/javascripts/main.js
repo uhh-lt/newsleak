@@ -45,8 +45,7 @@
 			'bootstrapFileField': 'libs/angular-bootstrap-file-field/dist/angular-bootstrap-file-field.min',
 			'vis': 'libs/vis/dist/vis.min',
 			'ngVis': 'directives/angular-vis',
-      'contextMenu': 'libs/angular-bootstrap-contextmenu/contextMenu',
-      'elasticsearch': 'libs/elasticsearch/elasticsearch.angular'
+      'contextMenu': 'libs/angular-bootstrap-contextmenu/contextMenu'
 		},
 		shim: {
 			'jsRoutes': {

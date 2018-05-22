@@ -141,6 +141,21 @@ class EntityController @Inject() (
   }
 
   /**
+   * whitelist entity offset
+   *
+   * @param text the entity to whitelist.
+   * @param start start the offset position.
+   * @param end end the offset position.
+   * @param entId entity id
+   * @param docId document id
+   *
+   */
+  def whitelistEntityOffset(text: String, start: String, end: String, docId: String, entId: String) = Action { implicit request =>
+    entityService.whitelistOffset(text, start.toInt, end.toInt, BigInt(entId), BigInt(docId))(currentDataset)
+    Ok("success").as("Text")
+  }
+
+  /**
    * Withdraws [[models.services.EntityService#merge]] for the given entity id.
    *
    * @param focalIds the central entity ids.

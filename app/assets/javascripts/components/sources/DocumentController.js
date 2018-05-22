@@ -20,7 +20,6 @@ define([
     'ngSanitize',
     'ngMaterial',
     'contextMenu',
-    'elasticsearch',
     'ui-bootstrap'
 ], function (angular) {
     'use strict';
@@ -29,7 +28,7 @@ define([
      * - render document content
      * - load additional metdata/keywords for loaded document
      */
-    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ui.bootstrap.contextMenu', 'elasticsearch', 'ui.bootstrap'])
+    angular.module('myApp.document', ['play.routing', 'ngSanitize', 'ngMaterial', 'ui.bootstrap.contextMenu', 'ui.bootstrap'])
         .directive('docContent', ['$compile', 'ObserverService', 'EntityService', 'graphProperties',  '_', function($compile, ObserverService, EntityService, graphProperties, _) {
             return {
                 restrict: 'E',
@@ -187,7 +186,6 @@ define([
                         var innerElement = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none, \'border-bottom\': \'3px solid ' + color + '\'}"></span>');
                         innerElement.className = 'highlight-general';
                         var addFilter = angular.element('<a id='+ id +' ng-click="addEntityFilter(' + id +')" context-menu="contextMenu" style="text-decoration: none;"></a>');
-
                         addFilter.append(document.createTextNode(name));
                         innerElement.append(addFilter);
                         return innerElement;
@@ -230,7 +228,6 @@ define([
                 'sourceShareService',
                 'ObserverService',
                 'EntityService',
-                'esFactory',
                 '$uibModal',
                 '$log',
                 '$document',
@@ -244,7 +241,6 @@ define([
                           sourceShareService,
                           ObserverService,
                           EntityService,
-                          esFactory,
                           $uibModal,
                           $log,
                           $document) {
@@ -282,19 +278,6 @@ define([
 
                     function init() {
                         updateTagLabels();
-                        initES();
-                    }
-
-                    function initES() {
-                        playRoutes.controllers.KeywordNetworkController.getHostAddress().get().then(function (response) {
-                            if(response && response.data){
-                                $scope.client = esFactory({
-                                    host: response.data,
-                                    apiVersion: '5.5',
-                                    log: 'trace'
-                                });
-                            }
-                        });
                     }
 
                     init();
@@ -363,27 +346,12 @@ define([
 
                     $scope.retrieveKeywords = function(doc) {
                         var terms =  [];
-                        // playRoutes.controllers.DocumentController.getKeywordsById(doc.id, self.numKeywords).get().then(function(response) {
-                        //    response.data.forEach(function(t) { return terms.push(t.term); });
-                        //});
-                        $scope.client.search({
-                            index: $scope.indexName,
-                            type: 'document',
-                            id: doc.id,
-                            body: {
-                                query: {
-                                    match: {
-                                        _id: doc.id
-                                    }
-                                }
-                            }
-
-                        }).then(function (resp) {
-                            if(resp.hits.hits[0]._source.Keywords){
-                                for(let keyword of resp.hits.hits[0]._source.Keywords) {
-                                    terms.push(keyword.Keyword);
-                                }
-                            }
+                        playRoutes.controllers.DocumentController.retrieveKeywords(doc.id).get().then(function(response) {
+                          if(response.data.keys){
+                              for(let keyword of response.data.keys) {
+                                  terms.push(keyword.Keyword);
+                              }
+                          }
                         });
                         return terms;
                     };
@@ -547,8 +515,24 @@ define([
                               .get().then(function(response) {
                                   $scope.$emit('notifying-service-event', { parameter: entity, response: response });
                                   playRoutes.controllers.EntityController.getRecordedEntity(entity.text, type).get().then(function (response) {
-                                    $scope.esNewId = response.data[0].id;
-                                    $scope.esWhitelist(entity, type, doc);
+                                    $scope.annotations = entity.annotations;
+                                    $scope.esNewId = response.data[response.data.length-1].id;
+                                    // Checking if annotations are more than one in one document
+                                    if ($scope.annotations.length > 1) {
+                                      for (var i in $scope.annotations) {
+                                        var anno = $scope.annotations[i];
+                                        $scope.annoIter = parseInt(i);
+                                        if ($scope.annoIter !== 0) {
+                                          playRoutes.controllers.EntityController.whitelistEntityOffset(anno.text, anno.start, anno.end, doc.id, $scope.esNewId).get().then(function (response) {
+                                            if ($scope.annoIter === ($scope.annotations.length-1)) {
+                                              $scope.esWhitelist(entity, type, doc);
+                                            }
+                                          });
+                                        }
+                                      }
+                                    } else {
+                                      $scope.esWhitelist(entity, type, doc);
+                                    }
                                   });
                               });
                             }
@@ -573,231 +557,132 @@ define([
                       var text = "";
                       var start = 0;
                       var end = 0;
+                      var annotations = [];
                       if (window.getSelection) {
                          text = window.getSelection().toString();
-                         start = doc.match(text).index;
-                         end = start + text.length;
+                         // Global RegExp annotations
+                         if (text.length > 0) {
+                           text = text.trim();
+                           start = doc.match(text).index;
+                           end = start + text.length;
+                           var regexScript = RegExp(text, 'g');
+                           var iter;
+                           while ((iter = regexScript.exec(doc)) !== null) {
+                              annotations.push({text, start: iter.index, end: regexScript.lastIndex});
+                            }
+                         }
                       } else if (document.selection && document.selection.type != "Control") {
                          text = document.selection.createRange().text;
                       }
-                      text = text.trim();
                       return {
                         text,
                         start,
-                        end
+                        end,
+                        annotations
                       };
                     };
 
                     $scope.esKeyWhitelist = function(keyword, doc) {
-                        $scope.client.get({
-                        index: $scope.indexName,
-                        type: 'document',
-                        id: doc.id,
-                        source: 'Keywords'
-                      }).then(function (response) {
-                        var key = response._source.Keywords;
-                        if (key !== undefined) {
+                      playRoutes.controllers.DocumentController
+                        .getKeywordsByDoc(doc.id).get().then(function (response) {
+                        var option = response.data.option;
+                        if (option !== 'None') {
                           $scope.createNewKeyword(keyword, doc);
                         } else {
                           $scope.createInitKeyword(keyword, doc);
                         }
-                      }, function (err, response) {
-                        console.trace(err.message);
                       });
                     }
 
                     $scope.createInitKeyword = function(keyword, doc) {
-                        $scope.client.update({
-                        index: $scope.indexName,
-                        type: 'document',
-                        id: doc.id,
-                        body: {
-                          script: "ctx._source.Keywords = [(keyword)]",
-                          params: {
-                            keyword:  {
-                              Keyword: keyword,
-                              EntFrequency: 1
-                            }
-                          }
-                        }
-                      }).then(function (resp) {
-                          $scope.observer.notifyObservers();
-                          $scope.reloadDoc(doc);
-                          EntityService.reloadKeywordGraph(true);
-                      }, function (err) {
-                          console.trace(err.message);
+                      playRoutes.controllers.DocumentController
+                      .createInitKeyword(doc.id, keyword).get().then(function (response) {
+                        $scope.observer.notifyObservers();
+                        $scope.reloadDoc(doc);
+                        EntityService.reloadKeywordGraph(true);
                       });
                     }
 
                     $scope.createNewKeyword = function(keyword, doc) {
-                        $scope.client.update({
-                        index: $scope.indexName,
-                        type: 'document',
-                        id: doc.id,
-                        body: {
-                          script: "ctx._source.Keywords.add(keyword)",
-                          params: {
-                            keyword:  {
-                              Keyword: keyword,
-                              EntFrequency: 1
-                            }
-                          }
-                        }
-                      }).then(function (resp) {
-                          $scope.observer.notifyObservers();
-                          $scope.reloadDoc(doc);
-                          EntityService.reloadKeywordGraph(true);
-                      }, function (err) {
-                          console.trace(err.message);
+                      playRoutes.controllers.DocumentController
+                      .createNewKeyword(doc.id, keyword).get().then(function (response) {
+                        $scope.observer.notifyObservers();
+                        $scope.reloadDoc(doc);
+                        EntityService.reloadKeywordGraph(true);
                       });
                     }
 
                     $scope.esWhitelist = function(entity, typeEnt, doc) {
-                      $scope.client.get({
-                        index: $scope.indexName,
-                        type: 'document',
-                        id: doc.id,
-                        source: 'Entities'
-                      }).then(function (response) {
-                        var key = response._source.Entities;
-                        if (key !== undefined) {
+                      playRoutes.controllers.DocumentController
+                        .getESEntitiesByDoc(doc.id).get().then(function (response) {
+                        var option = response.data.option;
+                        if (option !== 'None') {
                           $scope.createNewEntity(entity, typeEnt, doc);
                         } else {
                           $scope.createInitEntity(entity, typeEnt, doc);
                         }
-                      }, function (error, response) {
-                        console.trace(err.message);
                       });
                     }
 
                     $scope.createInitEntity = function(entity, typeEnt, doc, entId = null) {
-                        $scope.client.update({
-                        index: $scope.indexName,
-                        type: 'document',
-                        id: doc.id,
-                        body: {
-                          script: "ctx._source.Entities = [(Entities)]",
-                          params: {
-                            Entities:  {
-                              EntId: entId === null ? $scope.esNewId : entId,
-                              Entname: entity.text,
-                              EntType: typeEnt,
-                              EntFrequency: 1
-                            }
-                          }
-                        }
-                      }).then(function (resp) {
-                          $scope.esNewEntity = resp;
+                      entId = entId === null ? $scope.esNewId : entId;
+                      playRoutes.controllers.DocumentController
+                      .createInitEntity(doc.id, entId, entity.text, typeEnt).get().then(function (response) {
                           $scope.isNewType === false ?
                             $scope.checkNewEntityType(entity, typeEnt, doc, entId)
                             :
-                            $scope.createNewEntityType(entity, typeEnt, doc);
-                      }, function (err) {
-                          $scope.esNewEntity = null;
-                          console.trace(err.message);
+                            $scope.createInitEntityType(entity, typeEnt, doc);
                       });
                     }
 
                     $scope.createNewEntity = function(entity, typeEnt, doc, entId = null) {
-                        $scope.client.update({
-                        index: $scope.indexName,
-                        type: 'document',
-                        id: doc.id,
-                        body: {
-                          script: "ctx._source.Entities.add(Entities)",
-                          params: {
-                            Entities:  {
-                              EntId: entId === null ? $scope.esNewId : entId,
-                              Entname: entity.text,
-                              EntType: typeEnt,
-                              EntFrequency: 1
-                            }
-                          }
-                        }
-                      }).then(function (resp) {
-                          $scope.esNewEntity = resp;
+                      entId = entId === null ? $scope.esNewId : entId;
+                      playRoutes.controllers.DocumentController
+                      .createNewEntity(doc.id, entId, entity.text, typeEnt).get().then(function (response) {
                           $scope.isNewType === false ?
                             $scope.checkNewEntityType(entity, typeEnt, doc, entId)
                             :
-                            $scope.createNewEntityType(entity, typeEnt, doc);
-                      }, function (err) {
-                          $scope.esNewEntity = null;
-                          console.trace(err.message);
+                            $scope.createInitEntityType(entity, typeEnt, doc);
                       });
                     }
 
                     $scope.checkNewEntityType = function(entity, typeEnt, doc, entId = null) {
-                      var suffixType = typeEnt.toLowerCase();
-                      var newType = 'Entities' + suffixType;
-                        $scope.client.get({
-                        index: $scope.indexName,
-                        type: 'document',
-                        id: doc.id,
-                        source: 'Entities'+ suffixType
-                      }).then(function (response) {
-                        var type = response._source[newType];
-                        if (type !== undefined) {
-                          $scope.insertNewEntityType(entity, typeEnt, doc)
-                        } else {
+                      typeEnt = typeEnt.toLowerCase();
+                      playRoutes.controllers.DocumentController
+                      .getEntitiesTypeByDoc(doc.id, typeEnt).get().then(function (response) {
+                        var option = response.data.option;
+                        if (option !== 'None') {
                           $scope.createNewEntityType(entity, typeEnt, doc);
+                        } else {
+                          $scope.createInitEntityType(entity, typeEnt, doc);
                         }
-                      }, function (err, response) {
-                        console.trace(err.message);
                       });
                     }
 
-                    $scope.insertNewEntityType = function(entity, typeEnt, doc, entId = null) {
+                    $scope.createNewEntityType = function(entity, typeEnt, doc, entId = null) {
                       var suffixType = typeEnt.toLowerCase();
-                        $scope.client.update({
-                        index: $scope.indexName,
-                        type: 'document',
-                        id: doc.id,
-                        body: {
-                          script: "ctx._source.Entities" + suffixType + ".add(Entities)",
-                          params: {
-                            Entities:  {
-                              EntId: entId === null ? $scope.esNewId : entId,
-                              Entname: entity.text,
-                              EntFrequency: 1
-                            }
-                          }
-                        }
-                      }).then(function (resp) {
-                          $scope.esNewEntityType = resp;
-                          $scope.observer.notifyObservers();
-                          $scope.reloadDoc(doc);
-                          EntityService.reloadEntityGraph();
-                      }, function (err) {
-                          $scope.esNewEntityType = null;
-                          console.trace(err.message);
+                      entId = entId === null ? $scope.esNewId : entId;
+                      playRoutes.controllers.DocumentController
+                      .createNewEntityType(doc.id, entId, entity.text, typeEnt).get().then(function (response) {
+                        $scope.esNewEntityType = response;
+                        $scope.observer.notifyObservers();
+                        $scope.reloadDoc(doc);
+                        EntityService.reloadEntityGraph();
                       });
                     }
 
 
-                    $scope.createNewEntityType = function(entity, typeEnt, doc) {
+                    $scope.createInitEntityType = function(entity, typeEnt, doc) {
+
                       var suffixType = typeEnt.toLowerCase();
-                        $scope.client.update({
-                        index: $scope.indexName,
-                        type: 'document',
-                        id: doc.id,
-                        body: {
-                          script: "ctx._source.Entities" + suffixType + " = [(Entities)]",
-                          params: {
-                            Entities:  {
-                              EntId: $scope.esNewId,
-                              Entname: entity.text,
-                              EntFrequency: 1
-                            }
-                          }
-                        }
-                      }).then(function (resp) {
-                          $scope.esNewEntityType = resp;
-                          $scope.observer.notifyObservers();
-                          $scope.reloadDoc(doc);
-                          EntityService.reloadEntityGraph();
-                      }, function (err) {
-                          $scope.esNewEntityType = null;
-                          console.trace(err.message);
+                      var entId = $scope.esNewId;
+
+                      playRoutes.controllers.DocumentController
+                      .createInitEntityType(doc.id, entId, entity.text, typeEnt).get().then(function (response) {
+                        $scope.esNewEntityType = response;
+                        $scope.observer.notifyObservers();
+                        $scope.reloadDoc(doc);
+                        EntityService.reloadEntityGraph();
                       });
                     }
 
