@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,6 +50,7 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 	
 	private Pattern paragraphPattern = Pattern.compile("[?!\\.]( *\\r?\\n){2,}", Pattern.MULTILINE);
 	public static int MINIMUM_PARAGRAPH_LENGTH = 1500;
+	private static final int MAXIMUM_DOCUMENT_LENGTH = 1500 * 100; // 100 norm pages
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
@@ -94,31 +94,37 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 	}
 
 	public void writeToIndex(JCas jcas, String docText, String docId) {
-		Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		
+		if (docText.length() > MAXIMUM_DOCUMENT_LENGTH) {
+			logger.log(Level.SEVERE, "Skipping document " + docId + ". Exceeds maximum length (" + MAXIMUM_DOCUMENT_LENGTH + ")");
+		} else {
+			Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-		XContentBuilder builder;
-		try {
-			Date created = dateFormat.parse(metadata.getTimestamp());
-			builder = XContentFactory.jsonBuilder()
-					.startObject()
-					.field("id", docId)
-					.field("Content", docText)
-					.field("Created", dateFormat.format(created))
-					.field("DocumentLanguage", jcas.getDocumentLanguage())
-					.endObject();
-			IndexResponse response = client.prepareIndex(esResource.getIndex(), ES_TYPE_DOCUMENT, docId)
-					.setSource(builder).get();
-			logger.log(Level.INFO, response.toString());
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
-			logger.log(Level.SEVERE, "Could not parse document date from document " + docId);
-			e.printStackTrace();
-		} catch (NullPointerException e) {
-			logger.log(Level.SEVERE, "No date for document " + docId);
-			e.printStackTrace();
-		}
+			XContentBuilder builder;
+			try {
+				Date created = dateFormat.parse(metadata.getTimestamp());
+				builder = XContentFactory.jsonBuilder()
+						.startObject()
+						.field("id", docId)
+						.field("Content", docText)
+						.field("Created", dateFormat.format(created))
+						.field("DocumentLanguage", jcas.getDocumentLanguage())
+						.endObject();
+				IndexResponse response = client.prepareIndex(esResource.getIndex(), ES_TYPE_DOCUMENT, docId)
+						.setSource(builder).get();
+				logger.log(Level.INFO, response.toString());
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (ParseException e) {
+				logger.log(Level.SEVERE, "Could not parse document date from document " + docId);
+				e.printStackTrace();
+			} catch (NullPointerException e) {
+				logger.log(Level.SEVERE, "No date for document " + docId);
+				e.printStackTrace();
+			}
+		}	
+		
 	}
 	
 	

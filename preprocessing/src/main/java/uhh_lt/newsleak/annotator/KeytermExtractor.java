@@ -2,6 +2,8 @@ package uhh_lt.newsleak.annotator;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -15,6 +17,9 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Logger;
 
+import opennlp.uima.Location;
+import opennlp.uima.Organization;
+import opennlp.uima.Person;
 import opennlp.uima.Token;
 import uhh_lt.keyterms.Extractor;
 import uhh_lt.newsleak.types.Metadata;
@@ -39,7 +44,7 @@ public class KeytermExtractor extends JCasAnnotator_ImplBase {
 		super.initialize(context);
 		log = context.getLogger();
 		try {
-			extractor = new Extractor(languageCode, nKeyterms);
+			extractor = new Extractor(languageCode, 100);
 		} catch (IOException e) {
 			throw new ResourceInitializationException(e.getMessage(), null);
 		}
@@ -49,19 +54,26 @@ public class KeytermExtractor extends JCasAnnotator_ImplBase {
 	@Override
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
 
-		List<Token> tokens = JCasUtil.selectCovered(jcas, Token.class, 0, jcas.getDocumentText().length());
+		Collection<Token> tokens = JCasUtil.select(jcas, Token.class);
 		
 		Set<String> keytermSet = getKeyWords(tokens);
+		HashSet<String> namedEntities = getNamedEntities(jcas);
 		
 		// generate decreasing count value for each keyterm
 		int pseudoCount = keytermSet.size();
+		int n = 0;
 		StringBuilder keyterms = new StringBuilder();
 		String text;
 		for (String term : keytermSet) {
+			pseudoCount--;
+			// do not extract NEs as keyterms too
+			if (namedEntities.contains(term)) continue;
 			text = keyterms.length() > 0 ? "\t" : "";
 			text += term.replaceAll(":", "");
 			keyterms.append(text).append(":").append(pseudoCount);
-			pseudoCount--;
+			n++;
+			// extract only top n keyterms
+			if (n >= nKeyterms) break;
 		}
 
 		Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
@@ -69,12 +81,30 @@ public class KeytermExtractor extends JCasAnnotator_ImplBase {
 		metadata.addToIndexes();
 	}
 	
-	public Set<String> getKeyWords(List<Token> document) {
+	public Set<String> getKeyWords(Collection<Token> document) {
 		List<String> tokens = new ArrayList<String>();
 		for (Token token : document) {
 			tokens.add(token.getCoveredText());
 		}
 		return extractor.extractKeyTerms(tokens);
+	}
+	
+	
+	public HashSet<String> getNamedEntities(JCas jcas) {
+		Collection<Person> persons = JCasUtil.select(jcas, Person.class);
+		Collection<Organization> organizations = JCasUtil.select(jcas, Organization.class);
+		Collection<Location> locations = JCasUtil.select(jcas, Location.class);
+		HashSet<String> nes = new HashSet<String>();
+		for (Person ne : persons) {
+			nes.add(ne.getCoveredText());
+		}
+		for (Location ne : locations) {
+			nes.add(ne.getCoveredText());
+		}
+		for (Organization ne : organizations) {
+			nes.add(ne.getCoveredText());
+		}
+		return nes;
 	}
 
 }
