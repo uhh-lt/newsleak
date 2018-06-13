@@ -56,6 +56,7 @@ public abstract class NewsleakPreprocessor {
 	protected String esIndex;
 	protected String esPort;
 	protected boolean paragraphsAsDocuments;
+	protected Integer maxDocumentLength;
 	
 	protected String hooverHost;
 	protected String hooverClustername;
@@ -119,6 +120,8 @@ public abstract class NewsleakPreprocessor {
 			esIndex = prop.getProperty("esindex");
 			esPort = prop.getProperty("esport");
 			paragraphsAsDocuments = Boolean.parseBoolean(prop.getProperty("paragraphsasdocuments"));
+			maxDocumentLength = Integer.valueOf(prop.getProperty("maxdocumentlength"));
+			if (maxDocumentLength <= 0) maxDocumentLength = Integer.MAX_VALUE;
 			
 			dbUrl = prop.getProperty("dburl");
 			dbName = prop.getProperty("dbname");

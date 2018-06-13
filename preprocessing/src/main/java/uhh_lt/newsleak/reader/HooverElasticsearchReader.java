@@ -56,8 +56,10 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 	@ConfigurationParameter(name = PARAM_DEBUG_MAX_DOCS, mandatory = false)
 	private Integer maxRecords = Integer.MAX_VALUE;
 	
-	private static final int MAXIMUM_DOCUMENT_LENGTH = 1500 * 10000; // 10000 norm pages
-
+	public static final String PARAM_MAX_DOC_LENGTH = "maxDocumentLength";
+	@ConfigurationParameter(name = PARAM_MAX_DOC_LENGTH, mandatory = false)
+	private Integer maxDocumentLength = Integer.MAX_VALUE; // 1500 * 10000 = 10000 norm pages
+	
 	private TransportClient client;
 	private String esIndex;
 	private String clientUrl;
@@ -172,7 +174,7 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		field = response.getField("text");
 		if (field != null) {
 			String completeText = ((String) field.getValue()).trim();
-			docText += completeText.substring(0, Math.min(completeText.length(), MAXIMUM_DOCUMENT_LENGTH));
+			docText += completeText.substring(0, Math.min(completeText.length(), maxDocumentLength));
 		}
 		jcas.setDocumentText(docText);
 

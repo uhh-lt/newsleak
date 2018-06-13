@@ -129,7 +129,8 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 					HooverElasticsearchReader.class, this.typeSystem,
 					HooverElasticsearchReader.RESOURCE_HOOVER, hooverResource,
 					HooverElasticsearchReader.RESOURCE_METADATA, this.getMetadataResourceDescription(),
-					HooverElasticsearchReader.PARAM_DEBUG_MAX_DOCS, this.debugMaxDocuments
+					HooverElasticsearchReader.PARAM_DEBUG_MAX_DOCS, this.debugMaxDocuments,
+					HooverElasticsearchReader.PARAM_MAX_DOC_LENGTH, this.maxDocumentLength
 					);
 		} else {
 			this.logger.log(Level.SEVERE, "Unknown reader type: " + type);
