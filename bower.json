@@ -2,10 +2,10 @@
   "name": "newsleak",
   "description": "Newsleak application",
   "version": "0.9",
-  "homepage": "https://github.com/uhh-lt/newsleak-frontend",
+  "homepage": "https://github.com/uhh-lt/newsleak",
   "authors": [
     "Uli Fahrer",
-	  "Florian Zouhar",
+    "Florian Zouhar",
     "Alvin Fazrie",
     "Gregor Wiedemann"
   ],
@@ -23,7 +23,7 @@
     "angular-animate": "1.4.14",
     "angular-aria": "1.4.14",
     "angular-sanitize": "1.4.14",
-	  "angular-messages": "1.4.14",
+    "angular-messages": "1.4.14",
     "angular-screenfull": "~0.1.1",
     "angular-material": "~1.1.8",
     "highcharts-release": "~4.2.7",
