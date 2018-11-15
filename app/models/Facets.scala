@@ -39,10 +39,10 @@ case class Facets(
     generic: Map[String, List[String]],
     entities: List[Long],
     keywords: List[String],
-    toTimeExpression: Option[LocalDateTime],
     fromDate: Option[LocalDateTime],
     toDate: Option[LocalDateTime],
-    fromTimeExpression: Option[LocalDateTime]
+    fromTimeExpression: Option[LocalDateTime],
+    toTimeExpression: Option[LocalDateTime]
 ) {
 
   def withEntities(ids: List[Long]): Facets = this.copy(entities = this.entities ++ ids)
