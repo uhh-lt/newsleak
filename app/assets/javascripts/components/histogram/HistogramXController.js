@@ -213,7 +213,7 @@ define([
                             useHTML: true,
                             formatter : function() {
                                 return $('<div/>').css({
-                                    'color' : 'white'
+                                    'color' : 'lightgray'
                                 }).text(this.y)[0].outerHTML;
                             }
                         }
