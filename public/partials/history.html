@@ -37,17 +37,17 @@
 				</md-tooltip>
 				Full history
 			</md-checkbox>
-			<md-button class="md-icon-button" aria-label="Reset">
+			<md-button class="md-icon-button" aria-label="Reset" ng-click="observer.reset()">
 				<md-tooltip>
 					Remove all filters
 				</md-tooltip>
-				<md-icon ng-click="observer.reset()" id="reset-history" class="material-icons md-secondary md-hue-3" style="color: red">cancel</md-icon>
+				<md-icon id="reset-history" class="material-icons md-secondary md-hue-3" style="color: red">cancel</md-icon>
 			</md-button>
-			<md-button class="md-icon-button" aria-label="Save">
+			<md-button class="md-icon-button" aria-label="Save" ng-click="saveHistory()">
 				<md-tooltip>
 					Save State
 				</md-tooltip>
-				<md-icon ng-click="saveHistory()" id="save-history" class="material-icons md-secondary md-hue-3" style="color: red">file_download</md-icon>
+				<md-icon id="save-history" class="material-icons md-secondary md-hue-3" style="color: red">file_download</md-icon>
 			</md-button>
 			<file-field class="md-icon-button md-button md-ink-ripple" ng-model="uploadFile" ng-click="loadHistory()" aria-label="Load">
 				<md-tooltip>

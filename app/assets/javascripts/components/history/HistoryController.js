@@ -62,6 +62,7 @@ define([
                       'entity': 'Entity Filter',
                       'metadata': 'Metadata Filter',
                       'time': 'Time Range',
+                      'timeX': 'Time Expression Range',
                       'annotate': 'Entity Annotated',
                       'fulltext': 'Fulltext Search',
                       'openDoc': 'Document opened',
@@ -145,7 +146,7 @@ define([
                         },null, 4);
                         var data = new Blob([json],
                         { type: 'application/json;charset=utf-8' });
-                        FileSaver.saveAs(data, "saver.json");
+                        FileSaver.saveAs(data, "newsleak_state.json");
                     };
 
                     $scope.loadHistory = function() {

@@ -259,7 +259,7 @@ define([
                     angular.forEach($scope.fulltextFilters, function(item) {
                         fulltext.push(item.data.item);
                     });
-                    playRoutes.controllers.HistogramController.getTimeline(fulltext,facets,entities,$scope.currentRange,"",$scope.currentLoD).get().then(function(respone) {
+                    playRoutes.controllers.HistogramController.getTimeline(fulltext,facets,entities,$scope.currentRange,$scope.observer.getXTimeRange(),$scope.currentLoD).get().then(function(respone) {
                         var overallPromise = $q.defer();
                         if($scope.drilldown ||  $scope.drillup) {
                             playRoutes.controllers.HistogramController.getTimeline("",$scope.emptyFacets,[],$scope.currentRange,"",$scope.currentLoD).get().then(function(responeAll) {

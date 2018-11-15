@@ -42,6 +42,7 @@ define([
             var metadataTypes = [];
             var entityTypes = [];
             var histogramLoD = [];
+            var histogramLoDX = [];
             types.forEach(function(type) {
                 if(type != types[1])
                     items[type] = [];
@@ -55,19 +56,17 @@ define([
                 var deferred = $q.defer();
                 metadataTypes = [];
                 playRoutes.controllers.MetadataController.getMetadataTypes().get().then(function (response) {
-                    //TODO: hack for ES issue
+                    
                     metadataTypes = [];
                     angular.forEach(response.data, function(type){
-                        //metadataTypes.push(type.replace(".","_").toLowerCase());
-                        metadataTypes.push(type.replace("sender","Sender"));
+                        metadataTypes.push(type);
                     });
 
                     angular.forEach(metadataTypes, function (type) {
                         items['metadata'][type] = [];
                     });
                     deferred.resolve(metadataTypes);
-                    //TODO: how to add metadata filter
-                    //items['metadata']['Tags'].push('PREF');
+                    // TODO: how to add metadata filter
                 });
                 return deferred.promise;
             }
@@ -90,6 +89,15 @@ define([
                 });
                 return deferred.promise;
             }
+            // fetch levels of detail for histogramX
+            function updateLoDX() {
+                var deferred = $q.defer();
+                playRoutes.controllers.HistogramController.getTimelineLOD().get().then(function (response) {
+                    histogramLoDX = angular.copy(response.data);
+                    deferred.resolve(histogramLoDX);
+                });
+                return deferred.promise;
+            }
 
             var lastAdded = -1;
             var lastRemoved = -1;
@@ -98,6 +106,7 @@ define([
             var promiseMetadata = updateMetadataTypes();
             var promiseEntities = updateEntityTypes();
             var promiseLoD = updateLoD();
+            var promiseLoDX = updateLoDX();
             //var promise = $q.all([updateMetadataTypes(), updateEntityTypes()]);
 
             return {
@@ -152,7 +161,7 @@ define([
                         case types[2]:
                             if(items[item.type].length > 0) action = "replaced";
                             break;
-                        //time filter
+                        //timeX filter
                         case types[13]:
                             if(items[item.type].length > 0) action = "replaced";
                             break;
@@ -196,7 +205,7 @@ define([
                         case types[2]:
                             items[item.type].push(item);
                             break;
-                        //time filter
+                        //timeX filter
                         case types[13]:
                             items[item.type].push(item);
                             break;
@@ -388,11 +397,15 @@ define([
                 getHistogramLod: function() {
                     return promiseLoD;
                 },
+                getHistogramLodX: function() {
+                    return promiseLoDX;
+                },
 
                 initTypes: function() {
                     promiseMetadata = updateMetadataTypes();
                     promiseEntities = updateEntityTypes();
                     promiseLoD = updateLoD();
+                    promiseLoDX = updateLoDX();
                 },
 
                 reset: function() {
@@ -407,7 +420,7 @@ define([
                     });
                     this.initTypes();
                     $q.all([
-                        promiseEntities, promiseLoD, promiseMetadata
+                        promiseEntities, promiseLoD, promiseLoDX, promiseMetadata
                     ]).then(function(values) {
                         rootThis.refreshSubscribers().then(function(val) {
                             rootThis.notifyObservers();
@@ -444,7 +457,7 @@ define([
 
                     //history = angular.copy(input.history);
                     $q.all([
-                        promiseEntities, promiseLoD, promiseMetadata
+                        promiseEntities, promiseLoD, promiseLoDX, promiseMetadata
                     ]).then(function() {
                         angular.forEach(input.history, function (item) {
                             history.push(angular.copy(item));

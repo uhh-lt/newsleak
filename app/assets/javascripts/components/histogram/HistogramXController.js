@@ -141,7 +141,7 @@ define([
                     $scope.currentLoD = "";
                     $scope.currentRange = "";
 
-                    $scope.observer.getHistogramLod().then(function(lod) {
+                    $scope.observer.getHistogramLodX().then(function(lod) {
                         $scope.lod  = angular.copy(lod);
                         $scope.currentLoD = $scope.lod[0];
                         $scope.updateHistogram().then(function(val) {
@@ -253,7 +253,7 @@ define([
                     angular.forEach($scope.fulltextFilters, function(item) {
                         fulltext.push(item.data.item);
                     });
-                    playRoutes.controllers.HistogramController.getTimeExprTimeline(fulltext,facets,entities,"",$scope.currentRange,$scope.currentLoD).get().then(function(respone) {
+                    playRoutes.controllers.HistogramController.getTimeExprTimeline(fulltext,facets,entities,$scope.observer.getTimeRange(),$scope.currentRange,$scope.currentLoD).get().then(function(respone) {
                         var overallPromise = $q.defer();
                         if($scope.drilldown ||  $scope.drillup) {
                             playRoutes.controllers.HistogramController.getTimeExprTimeline("",$scope.emptyFacets,[],"",$scope.currentRange,$scope.currentLoD).get().then(function(responeAll) {
