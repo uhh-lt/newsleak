@@ -54,11 +54,11 @@
                         class="repeated-item md-2-line"
                         ng-click="loadFullDocument(item)">
 
-                    <md-button class="md-icon-button metadata-button" aria-label="Show-meta">
+                    <md-button class="md-icon-button metadata-button" aria-label="Show-meta" ng-click="sourceShared.showMetaDialog($event, item.metadata)">
                         <md-tooltip>
                             Show Metadata
                         </md-tooltip>
-                        <md-icon ng-click="sourceShared.showMetaDialog($event, item.metadata)" class="material-icons">info</md-icon>
+                        <md-icon class="material-icons">info</md-icon>
                     </md-button>
                     <div class="md-list-item-text" layout="column">
                         <h3>{{ sourceShared.pluckMetaValues(item.metadata.Subject).join(", ") }} #{{item.id}}</h3>
