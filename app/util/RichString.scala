@@ -18,6 +18,7 @@
 package util
 
 import scala.util.control.Exception.catching
+import scala.language.implicitConversions
 
 /**
  * Implements additional methods for ''String''.
