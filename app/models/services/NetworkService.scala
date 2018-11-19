@@ -237,7 +237,7 @@ class ESNetworkService @Inject() (
     var res = List[Any]()
 
     var i = 0
-    val k = response.getHits.getTotalHits()
+    val k = scala.math.min(response.getHits().getTotalHits(), 100)
 
     while (i < k) {
 
