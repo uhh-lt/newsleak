@@ -374,6 +374,9 @@ trait DBDocumentService extends DocumentService {
                           FROM metadata m
                           WHERE m.key IN (${fields}) AND m.docid IN (${docIds})
                       """.map(rs => (rs.long("id"), rs.string("key"), rs.string("value"), rs.string("type"))).list().apply()
+      // alter base url for source link
+      // ... use NewsleakConfigReader.sourceBaseUrl + Link             
+
       // Add creates fields for documents that are not explicit added as metadata
       val dates = sql"SELECT id, created FROM document WHERE id IN (${docIds})".map(rs => (rs.long("id"), "Created", rs.string("created"), "Date")).list().apply()
       dates ++ generic

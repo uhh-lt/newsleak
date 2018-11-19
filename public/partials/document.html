@@ -29,11 +29,11 @@
         <md-content flex layout-padding ng-init="keywords = retrieveKeywords(doc); links = retrieveLinks(doc)">
             <md-card>
                 <md-card-header>
-                    <md-button class="md-icon-button" aria-label="Show-meta">
+                    <md-button class="md-icon-button" aria-label="Show-meta" ng-click="sourceShared.showMetaDialog($event, doc.meta)">
                         <md-tooltip>
                             Show Metadata
                         </md-tooltip>
-                        <md-icon ng-click="sourceShared.showMetaDialog($event, doc.meta)" class="material-icons md-secondary">info</md-icon>
+                        <md-icon class="material-icons md-secondary">info</md-icon>
                     </md-button>
                     <md-card-header-text>
                         <span class="md-title">{{ sourceShared.pluckMetaValues(doc.meta.Subject).join(', ') }}</span>
@@ -64,10 +64,8 @@
                             <b>Keywords: </b>
                             <span>{{ keywords.join(', ') }}</span>
                         </span>
-                        <span class="md-subhead" ng-show="!links.length">No Link</span>
                         <span class="md-subhead" ng-repeat="(key, val) in links">
-                            <a target="_blank" href="{{ l.val }}" ng-repeat="l in val">{{ l.val }} </a>
-                            ({{ key }})
+                            <a target="_blank" href="{{ l.val }}" ng-repeat="l in val" onclick="return confirm('Are you sure to open this link?')">{{ l.val }}</a>
                         </span>
                     </md-card-header-text>
                 </md-card-header>

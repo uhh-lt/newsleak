@@ -16,9 +16,9 @@
   -->
 
 <div style="padding: 15px;" id="documents-view">
-    <p style="font-size:16px">
+    <p style="font-size:14px">
         Documents:
-        <span ng-show="hits > 0"> <b>{{hits}}</b> hits out of <b>{{sourceShared.documentsInDB}}</b> docs
+        <span ng-show="hits > 0"> <b>{{hits}}</b> ({{sourceShared.documentsInDB}} total)
         </span>
     </p>
 
@@ -61,8 +61,8 @@
                         <md-icon class="material-icons">info</md-icon>
                     </md-button>
                     <div class="md-list-item-text" layout="column">
-                        <h3>{{ sourceShared.pluckMetaValues(item.metadata.Subject).join(", ") }} #{{item.id}}</h3>
-                        <p>Keywords</p>
+                        <h3>{{ sourceShared.pluckMetaValues(item.metadata.Subject).join(", ") }}</h3>
+                        <p>Id: {{item.id}}</p>
                     </div>
                     <md-divider ng-if="!$last"></md-divider>
 

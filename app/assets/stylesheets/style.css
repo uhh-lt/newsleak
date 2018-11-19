@@ -40,8 +40,8 @@ html, body {
 }
 
 .md-small-toolbar {
-    min-height: 50px;
-    height: 50px;
+    min-height: 40px;
+    height: 40px;
 }
 
 .institute-logo {
@@ -283,11 +283,11 @@ div.popupMenu ul li:hover {
 }
 
 #flex-body {
-    height: calc(100% - 350px);
+    height: calc(100% - 250px);
 }
 
 #top-container {
-    height: 65px;
+    height: 55px;
 }
 
 main {
@@ -700,4 +700,30 @@ ul#historyList {
 .md-select:focus {
   outline: none;
   border-bottom-color: rgb(63,81,181);
+}
+
+
+/*
+    ======================================
+    Font sizes
+    ======================================
+*/
+
+
+.md-display-1 {
+	font-size: 20px;
+}
+
+.md-toolbar-tools {
+	font-size: 14px;
+}
+
+.md-button {
+	min-height: 30px;
+	line-height: 30px;
+}
+
+
+md-input-container {
+	margin: 0;
 }

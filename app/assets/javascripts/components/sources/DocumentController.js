@@ -255,7 +255,6 @@ define([
                     $scope.tags = {};
                     $scope.labels = $scope.sourceShared.labels;
 
-
                     self.numKeywords = 15;
 
                     $scope.removeTab = function (tab) {
@@ -357,9 +356,7 @@ define([
                     };
 
                     $scope.retrieveLinks = function(doc) {
-                        var links = _.pick(doc.meta, function(value, key, obj) {
-                            return _.every(_.pluck(value, 'type'), function(t) { return t == 'Link'; })
-                        });
+                    	    var links = _.pick(doc.meta, 'Link');
                         return links;
                     };
 

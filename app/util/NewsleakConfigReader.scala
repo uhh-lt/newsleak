@@ -58,4 +58,7 @@ object NewsleakConfigReader extends TypesafeConfigReader
   lazy val excludedMetadataTypes: Map[String, List[String]] = {
     esIndices.map { index => index -> config.getStringList(s"es.$index.excludeTypes").asScala.toList }.toMap
   }
+
+  /** Provides the base url to the source of document texts (e.g. Hoover) for later display in UI. */
+  lazy val sourceBaseUrl: String = config.getString("source.base.url")
 }
