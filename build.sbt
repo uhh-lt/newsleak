@@ -9,7 +9,7 @@ scalacOptions += "-feature"
 libraryDependencies ++= Seq(
   jdbc,
   cache,
-  "org.postgresql" % "postgresql" % "9.4-1206-jdbc41", // PostgreSQL Licence
+  "org.postgresql" % "postgresql" % "9.4-1206-jdbc41", // PostgreSQL License
   "org.scalikejdbc" %% "scalikejdbc" % "2.5.0", // ApacheV2
   "org.scalikejdbc" %% "scalikejdbc-config" % "2.5.0", // ApacheV2
   "org.scalikejdbc" %% "scalikejdbc-play-initializer" % "2.5.1", // ApacheV2
