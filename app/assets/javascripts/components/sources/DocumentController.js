@@ -185,7 +185,7 @@ define([
                         var color = graphProperties.options['groups'][typeId]['color']['background'];
                         var innerElement = angular.element('<span ng-style="{ padding: 0, margin: 0, \'text-decoration\': none, \'border-bottom\': \'3px solid ' + color + '\'}"></span>');
                         innerElement.className = 'highlight-general';
-                        var addFilter = angular.element('<a id='+ id +' ng-click="addEntityFilter(' + id +')" context-menu="contextMenu" style="text-decoration: none;"></a>');
+                        var addFilter = angular.element('<a id='+ id +' ng-click="addEntityFilter(' + id +')" context-menu="contextMenu" style="text-decoration: none; cursor: pointer;"></a>');
                         addFilter.append(document.createTextNode(name));
                         innerElement.append(addFilter);
                         return innerElement;
