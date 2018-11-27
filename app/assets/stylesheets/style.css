@@ -65,6 +65,12 @@ html, body {
     color: #fafafa;
 }
 
+md-input-container.md-input-focused label:not(.md-no-float), md-input-container.md-input-has-placeholder label:not(.md-no-float), md-input-container.md-input-has-value label:not(.md-no-float) {
+	-webkit-transform: translate3d(0,16px,0) scale(.75);
+	transform: translate3d(0,16px,0) scale(.75);
+}
+
+
 /*
     ======================================
     Network
