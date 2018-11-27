@@ -404,7 +404,7 @@ abstract class ESDocumentService(clientService: SearchClientService, utils: ESRe
 
   /** @inheritdoc */
   override def searchDocuments(facets: Facets, pageSize: Int)(index: String): (Long, Iterator[Document]) = {
-    val requestBuilder = utils.createSearchRequest(facets, pageSize, index, clientService)
+    val requestBuilder = utils.createSearchRequest(facets, pageSize, index, clientService, true)
     val highlight = requestBuilder
       .addField(utils.docContentField)
       .addHighlightedField(utils.docContentField)

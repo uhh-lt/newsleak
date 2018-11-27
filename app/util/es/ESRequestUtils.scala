@@ -23,6 +23,8 @@ import org.elasticsearch.action.get.GetResponse
 import org.elasticsearch.action.update.{ UpdateRequest, UpdateResponse }
 
 import util.DateUtils
+import util.NewsleakConfigReader
+
 // scalastyle:off
 import org.elasticsearch.index.query.QueryStringQueryBuilder._
 import org.elasticsearch.index.query._
@@ -36,9 +38,13 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable
 import org.elasticsearch.common.xcontent.XContentFactory._
 import play.api.libs.json._
+import models.services.EntityService
 
 /** Common helper to create and parse elasticsearch queries. Further provides elasticsearch field mappings. */
-class ESRequestUtils @Inject() (dateUtils: DateUtils) {
+class ESRequestUtils @Inject() (
+    entityService: EntityService,
+    dateUtils: DateUtils
+) {
 
   /** Elasticsearch field storing the document content. */
   val docContentField = "Content"
@@ -49,8 +55,10 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
 
   /** Elasticsearch field for running aggregation queries using entity ids. */
   val entityIdsField = "Entities" -> "Entities.EntId"
+  val entityFrqField = "Entities" -> "Entities.EntFrequency"
   /** Elasticsearch field for running aggregation queries using document keywords. */
   val keywordsField = "Keywords" -> "Keywords.Keyword.raw"
+  val keywordsFrqField = "Keywords" -> "Keywords.TermFrequency"
 
   /** Elasticsearch fields for running aggregation queries using entity ids from separate entity types. */
   def convertEntityTypeToField = (t: String) => s"Entities${t.toLowerCase}.EntId"
@@ -67,9 +75,9 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
    * @param client the elasticsearch client.
    * @return an elasticsearch query builder.
    */
-  def createSearchRequest(facets: Facets, documentSize: Int, index: String, client: SearchClientService): SearchRequestBuilder = {
+  def createSearchRequest(facets: Facets, documentSize: Int, index: String, client: SearchClientService, addRelevanceQuery: Boolean = false): SearchRequestBuilder = {
     val requestBuilder = client.client.prepareSearch(index)
-      .setQuery(createQuery(facets))
+      .setQuery(createQuery(facets, addRelevanceQuery))
       .setSize(documentSize)
       // We are only interested in the document id
       .addFields("id")
@@ -268,7 +276,7 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
     requestBuilder
   }
 
-  private def createQuery(facets: Facets): QueryBuilder = {
+  private def createQuery(facets: Facets, addRelevanceQuery: Boolean = false): QueryBuilder = {
     if (facets.isEmpty) {
       QueryBuilders.matchAllQuery()
     } else {
@@ -280,6 +288,10 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
       addKeywordsFilter(facets).map(request.must)
       addDateFilter(facets).map(request.must)
       addDateXFilter(facets).map(request.must)
+
+      if (addRelevanceQuery) {
+        addEntityKeywordRelevanceQuery(facets).map(request.should)
+      }
 
       request
     }
@@ -293,6 +305,23 @@ class ESRequestUtils @Inject() (dateUtils: DateUtils) {
         case term if term.count(_ == '"') % 2 != 0 => term + "\""
         case term => term
       }
+
+      val query = QueryBuilders
+        .queryStringQuery(terms.mkString(" "))
+        .field(docContentField)
+        .defaultOperator(Operator.AND)
+      Some(query)
+    } else {
+      None
+    }
+  }
+
+  private def addEntityKeywordRelevanceQuery(facets: Facets): Option[QueryStringQueryBuilder] = {
+    if (facets.entities.nonEmpty || facets.keywords.nonEmpty) {
+      val ids = facets.entities
+      val entityList = if (ids.nonEmpty) entityService.getByIds(ids)(NewsleakConfigReader.esDefaultIndex).map(_.name).filter(e => !e.contains("/")) else List()
+      val keywordList = facets.keywords.filter(e => !e.contains("/"))
+      val terms = List.concat(entityList, keywordList)
       val query = QueryBuilders
         .queryStringQuery(terms.mkString(" "))
         .field(docContentField)
