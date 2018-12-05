@@ -63,6 +63,7 @@ public abstract class NewsleakPreprocessor {
 	protected String hooverIndex;
 	protected String hooverPort;
 	protected String hooverTmpMetadata;
+	protected String hooverSearchUrl;
 	
 	protected String dbUrl;
 	protected String dbName;
@@ -114,6 +115,7 @@ public abstract class NewsleakPreprocessor {
 			hooverIndex = prop.getProperty("hooverindex");
 			hooverPort = prop.getProperty("hooverport");
 			hooverTmpMetadata = prop.getProperty("hoovertmpmetadata");
+			hooverSearchUrl = prop.getProperty("hooversearchurl");
 			
 			esHost = prop.getProperty("esurl");
 			esClustername = prop.getProperty("esclustername");

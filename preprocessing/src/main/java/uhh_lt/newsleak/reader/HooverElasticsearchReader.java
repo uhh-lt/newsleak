@@ -23,19 +23,23 @@ import org.apache.uima.util.Logger;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.search.ClearScrollRequest;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.get.GetField;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.sort.SortOrder;
-import org.elasticsearch.search.sort.SortParseElement;
+import org.elasticsearch.index.query.QueryBuilders;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import de.unihd.dbs.uima.types.heideltime.Dct;
+import io.searchbox.client.JestClient;
+import io.searchbox.client.JestResult;
+import io.searchbox.core.Get;
+import io.searchbox.core.Search;
+import io.searchbox.core.SearchResult;
+import io.searchbox.core.SearchScroll;
+import io.searchbox.params.Parameters;
 import uhh_lt.newsleak.resources.HooverResource;
 import uhh_lt.newsleak.resources.MetadataResource;
 import uhh_lt.newsleak.types.Metadata;
@@ -47,7 +51,7 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 	public static final String RESOURCE_HOOVER = "hooverResource";
 	@ExternalResource(key = RESOURCE_HOOVER)
 	private HooverResource hooverResource;
-	
+
 	public static final String RESOURCE_METADATA = "metadataResource";
 	@ExternalResource(key = RESOURCE_METADATA)
 	private MetadataResource metadataResource;
@@ -55,12 +59,15 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 	public static final String PARAM_DEBUG_MAX_DOCS = "maxRecords";
 	@ConfigurationParameter(name = PARAM_DEBUG_MAX_DOCS, mandatory = false)
 	private Integer maxRecords = Integer.MAX_VALUE;
-	
+
 	public static final String PARAM_MAX_DOC_LENGTH = "maxDocumentLength";
 	@ConfigurationParameter(name = PARAM_MAX_DOC_LENGTH, mandatory = false)
 	private Integer maxDocumentLength = Integer.MAX_VALUE; // 1500 * 10000 = 10000 norm pages
-	
-	private TransportClient client;
+
+	private static final String PARAM_SCROLL_SIZE = "10000";
+	private static final String PARAM_SCROLL_TIME = "1m";
+
+	private JestClient client;
 	private String esIndex;
 	private String clientUrl;
 
@@ -82,53 +89,55 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		esIndex = hooverResource.getIndex();
 
 		clientUrl = hooverResource.getClientUrl();
+
+		Search search = new Search.Builder("{\"query\": {\"match_all\" : {}}, \"_source\" : false, \"size\" : " + PARAM_SCROLL_SIZE + "}")  
+				.addIndex(hooverResource.getIndex())
+				.addType(HooverResource.HOOVER_DOCUMENT_TYPE)
+				.setParameter(Parameters.SCROLL, PARAM_SCROLL_TIME)
+				.build();
 		
 		try {
+			
+			JestResult result = client.execute(search);
 
-			XContentBuilder builder = XContentFactory.jsonBuilder()
-					.startObject()
-					.field("match_all")
-					.startObject()
-					.endObject().endObject();
 			totalIdList = new ArrayList<String>();
-			logger.log(Level.INFO, "Start scroll request on " + esIndex);
-			SearchRequestBuilder sb = client.prepareSearch(esIndex)
-					.addSort(SortParseElement.DOC_FIELD_NAME, SortOrder.ASC)
-					.setScroll(TimeValue.timeValueSeconds(15L))
-					.setQuery(builder)
-					.setFetchSource(false)
-					.setSize(10000); 
-			System.out.println(sb.toString());
-			SearchResponse scrollResp = sb.execute().actionGet();
-			while (true) {
-				logger.log(Level.INFO, "Continuing scroll request on " + esIndex);
-				for (SearchHit hit : scrollResp.getHits().getHits()) {
-					totalIdList.add(hit.getId());
-				}
-				scrollResp = client.prepareSearchScroll(scrollResp.getScrollId()).setScroll(TimeValue.timeValueSeconds(15L)).execute().actionGet();
-				//Break condition: No hits are returned
-				int nHits = scrollResp.getHits().getHits().length;
-				if (nHits == 0) {
-					break;
-				}
-				logger.log(Level.INFO, "Added hits " + nHits);
+
+			JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+			Integer total = result.getJsonObject().getAsJsonObject("hits").get("total").getAsInt();
+
+			int nHits = hits.size();
+
+			logger.log(Level.INFO, "Hits first result: " + nHits);
+			logger.log(Level.INFO, "Hits total: " + total);
+
+			totalIdList.addAll(hooverResource.getIds(hits));
+
+			String scrollId = result.getJsonObject().get("_scroll_id").getAsString();
+
+			int i = 0;
+			while (nHits > 0) {
+				SearchScroll scroll = new SearchScroll.Builder(scrollId, PARAM_SCROLL_TIME).build();
+
+				result = client.execute(scroll);
+
+				hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
+				nHits = hits.size();
+				logger.log(Level.INFO, "Hits " + ++i + " result: " + nHits);
+				totalIdList.addAll(hooverResource.getIds(hits));
+				scrollId = result.getJsonObject().getAsJsonPrimitive("_scroll_id").getAsString();
 			}
-			
-			// clear scroll request
-			ClearScrollRequest request = new ClearScrollRequest(); 
-			request.addScrollId(scrollResp.getScrollId());
-			client.clearScroll(request);
-			
+
 			if (maxRecords > 0 && maxRecords < totalIdList.size()) {
 				totalIdList = new ArrayList<String>(totalIdList.subList(0, maxRecords));
 			}
 
 			totalRecords = totalIdList.size();
-			logger.log(Level.INFO, "Found " + totalRecords + " in index " + esIndex);
-
+			logger.log(Level.INFO, "Found " + totalRecords + " ids in index " + esIndex);
+			
 		} catch (IOException e) {
 			throw new ResourceInitializationException(e);
 		}
+
 	}
 
 
@@ -141,39 +150,43 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		}
 
 		String docId = totalIdList.get(currentRecord - 1);
-		GetField field;
-		GetResponse response = client
-				.prepareGet(esIndex, "doc", docId)
-				.setFields("attachments", "date", "date-created", "content-type", 
-						"filetype", "from", "to", "in-reply-to", "subject", "text",
-						"filename", "path")
-				.get();
+		Get get = new Get.Builder(hooverResource.getIndex(), docId).type(HooverResource.HOOVER_DOCUMENT_TYPE).build();
+		JestResult getResult = client.execute(get);
+		JsonObject o = getResult.getJsonObject();
+		JsonObject source = o.get("_source").getAsJsonObject();
 
 		String docText = "";
-		
+		String field;
+
 		// put email header information in main text
-		field = response.getField("from");
+		field = getField(source, "from");
 		if (field != null) {
-			String fromText = ((String) field.getValue()).trim();
+			String fromText = field.trim();
 			docText += "From: " + fromText.replaceAll("<", "[").replaceAll(">", "]") + "\n";
 		}
-		field = response.getField("to");
-		if (field != null) {
-			String toText = ((String) field.getValue()).trim();
-			docText += "To: " + toText.replaceAll("<", "[").replaceAll(">", "]") + "\n";
+		JsonArray arrayField = getFieldArray(source, "to");
+		if (arrayField != null) {
+			String toList = "";
+			for (JsonElement item : arrayField) {
+				String toListItem = item.getAsString().trim();
+				toListItem = toListItem.replaceAll("<", "[").replaceAll(">", "]");
+				toListItem = toListItem.replaceAll("\\s+", " ") + "\n";
+				toList += toList.isEmpty() ? toListItem : "; " + toListItem;
+			}
+			docText += "To: " + toList;
 		}
-		field = response.getField("subject");
+		field = getField(source, "subject");
 		if (field != null) {
-			docText += "Subject: " + ((String) field.getValue()).trim() + "\n";
+			docText += "Subject: " + field.trim() + "\n";
 		}
 		if (!docText.isEmpty()) {
 			docText += "\n-- \n\n";
 		}
-		
+
 		// add main text
-		field = response.getField("text");
+		field = getField(source, "text");
 		if (field != null) {
-			String completeText = ((String) field.getValue()).trim();
+			String completeText = field.trim();
 			docText += completeText.substring(0, Math.min(completeText.length(), maxDocumentLength));
 		}
 		jcas.setDocumentText(docText);
@@ -188,19 +201,19 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		Date dateField = null;
 		Date dateCreatedField = null;
 		try {
-			
-			GetField date = response.getField("date");
+
+			String date = getField(source, "date");
 			if (date != null) {
 				// docDate = dateFormat.format();
-				dateField = dateCreated.parse((String) date.getValue());
+				dateField = dateCreated.parse(date);
 			}
-			
-			date = response.getField("date-created");
+
+			date = getField(source, "date-created");
 			if (date != null) {
 				// docDate = dateFormat.format() ;
-				dateCreatedField = dateJson.parse((String) date.getValue());
+				dateCreatedField = dateJson.parse(date);
 			}
-			
+
 			if (dateField != null && dateCreatedField != null) {
 				docDate = dateField.before(dateCreatedField) ? dateFormat.format(dateCreatedField) : dateFormat.format(dateField);
 			} else {
@@ -215,7 +228,7 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		
+
 		metaCas.setTimestamp(docDate);
 
 		// heideltime
@@ -230,56 +243,83 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 
 		// filename, subject, path
 		String fileName = "";
-		field = response.getField("filename");
+		field = getField(source, "filename");
 		if (field != null) {
-			fileName = ((String) field.getValue()).toString();
+			fileName = field;
 			metadata.add(metadataResource.createTextMetadata(docIdHash, "filename", fileName));
 		}
-		field = response.getField("subject");
+		field = getField(source, "subject");
 		if (field != null) {
-			metadata.add(metadataResource.createTextMetadata(docIdHash, "subject", ((String) field.getValue()).toString()));
+			metadata.add(metadataResource.createTextMetadata(docIdHash, "subject", field));
 		} else {
 			if (!fileName.isEmpty()) {
 				metadata.add(metadataResource.createTextMetadata(docIdHash, "subject", fileName));
 			}
 		}
-		field = response.getField("path");
+		field = getField(source, "path");
 		if (field != null)
-			metadata.add(metadataResource.createTextMetadata(docIdHash, "path", ((String) field.getValue()).toString()));
-		
+			metadata.add(metadataResource.createTextMetadata(docIdHash, "path", field));
+
 		// link to hover
 		metadata.add(metadataResource.createTextMetadata(docIdHash, "Link", clientUrl + docId));
 
 		// attachments
-		field = response.getField("attachments");
-		if (field != null)
-			metadata.add(metadataResource.createTextMetadata(docIdHash, "attachments", ((Boolean) field.getValue()).toString()));
+		Boolean booleanField = getFieldBoolean(source, "attachments");
+		if (booleanField != null)
+			metadata.add(metadataResource.createTextMetadata(docIdHash, "attachments", booleanField.toString()));
 		// content-type
-		field = response.getField("content-type");
+		field = getField(source, "content-type");
 		if (field != null)
-			metadata.add(metadataResource.createTextMetadata(docIdHash, "content-type", (String) field.getValue()));
+			metadata.add(metadataResource.createTextMetadata(docIdHash, "content-type", field));
 		// file-type
-		field = response.getField("filetype");
+		field = getField(source, "filetype");
 		if (field != null)
-			metadata.add(metadataResource.createTextMetadata(docIdHash, "filetype", (String) field.getValue()));
+			metadata.add(metadataResource.createTextMetadata(docIdHash, "filetype", field));
 		// from
-		field = response.getField("from");
+		field = getField(source, "from");
 		if (field != null) {
-			for (String email : extractEmail((String) field.getValue())) {
+			for (String email : extractEmail(field)) {
 				metadata.add(metadataResource.createTextMetadata(docIdHash, "from", email));
 			}
 		}
 		// to
-		field = response.getField("to");
-		if (field != null) {
-			for (Object toList : field.getValues()) {
-				for (String email : extractEmail((String) toList)) {
+		arrayField = getFieldArray(source, "to");
+		if (arrayField != null) {
+			for (JsonElement toList : arrayField) {
+				for (String email : extractEmail(toList.getAsString())) {
 					metadata.add(metadataResource.createTextMetadata(docIdHash, "to", email));
 				}
 			}
 		}
 		metadataResource.appendMetadata(metadata);
 
+	}
+	
+	private String getField(JsonObject o, String fieldname) {
+		JsonElement fieldValue = o.get(fieldname);
+		if (fieldValue == null) {
+			return null;
+		} else {
+			return fieldValue.isJsonNull() ? null : fieldValue.getAsString();
+		}
+	}
+	
+	private Boolean getFieldBoolean(JsonObject o, String fieldname) {
+		JsonElement fieldValue = o.get(fieldname);
+		if (fieldValue == null) {
+			return null;
+		} else {
+			return fieldValue.isJsonNull() ? null : fieldValue.getAsBoolean();
+		}
+	}
+	
+	private JsonArray getFieldArray(JsonObject o, String fieldname) {
+		JsonElement fieldValue = o.get(fieldname);
+		if (fieldValue == null) {
+			return null;
+		} else {
+			return fieldValue.isJsonNull() ? null : fieldValue.getAsJsonArray();
+		}
 	}
 
 	private ArrayList<String> extractEmail(String s) {

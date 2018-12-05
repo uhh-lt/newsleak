@@ -1,31 +1,27 @@
 package uhh_lt.newsleak.resources;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.apache.uima.fit.component.Resource_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.ResourceSpecifier;
+import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+
+import io.searchbox.client.JestClient;
+import io.searchbox.client.JestClientFactory;
+import io.searchbox.client.config.HttpClientConfig;
 
 public class HooverResource extends Resource_ImplBase {
 
 	private Logger logger;
-	
+
 	public static final String HOOVER_DOCUMENT_TYPE = "doc";
 
 	public static final String PARAM_HOST = "mHost";
@@ -41,7 +37,12 @@ public class HooverResource extends Resource_ImplBase {
 	@ConfigurationParameter(name = PARAM_CLUSTERNAME)
 	private String mClustername;
 
-	private TransportClient client;
+	public static final String PARAM_SEARCHURL = "mSearchUrl";
+	@ConfigurationParameter(name = PARAM_SEARCHURL)
+	private String mSearchUrl;
+	private String hooverSearchBaseUrl;
+
+	private JestClient client;
 
 	@Override
 	public boolean initialize(ResourceSpecifier aSpecifier, Map<String, Object> aAdditionalParams)
@@ -50,19 +51,22 @@ public class HooverResource extends Resource_ImplBase {
 			return false;
 		}
 		this.logger = this.getLogger();
-		Settings settings = Settings.builder().put("cluster.name", mClustername).build();
-		try {
-			client = TransportClient.builder().settings(settings).build()
-					.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(mHost), mPort));
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(0);
-		}
+
+		// Construct a new Jest client according to configuration via factory
+		JestClientFactory factory = new JestClientFactory();
+		factory.setHttpClientConfig(new HttpClientConfig
+				.Builder(mHost + ":" + mPort)
+				.multiThreaded(false)
+				.build());
+		client = factory.getObject();
+
+		hooverSearchBaseUrl = PARAM_SEARCHURL + "/" + HOOVER_DOCUMENT_TYPE + "/" + mIndex + "/";
+
 		return true;
 	}
 
 
-	public TransportClient getClient() {
+	public JestClient getClient() {
 		return client;
 	}
 
@@ -80,14 +84,26 @@ public class HooverResource extends Resource_ImplBase {
 	@Override
 	public void destroy() {
 		super.destroy();
-		client.close();
+		try {
+			client.close();
+			logger.log(Level.INFO, "Hoover connection closed.");
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, "Error closing Hoover connection.");
+			e.printStackTrace();
+		}
 	}
-	
-	
+
+
 	public String getClientUrl() {
-		String url = client.transportAddresses().iterator().next().getAddress();
-		return url + "/" + HOOVER_DOCUMENT_TYPE + "/" + mIndex + "/";
+		return hooverSearchBaseUrl;
 	}
 
 
+	public ArrayList<String> getIds(JsonArray hits) {
+		ArrayList<String> idList = new ArrayList<String>();
+		for (JsonElement hit : hits) {
+			idList.add(hit.getAsJsonObject().get("_id").getAsString());
+		}
+		return idList;
+	}
 }

@@ -59,7 +59,7 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 		super.initialize(context);
 		log = context.getLogger();
 		httpClient = HttpClientBuilder.create().build();
-		request = new HttpPost("http://" + nerMicroserviceUrl);
+		request = new HttpPost(nerMicroserviceUrl);
 		localeMap = LanguageDetector.localeToISO(); 
 	}
 

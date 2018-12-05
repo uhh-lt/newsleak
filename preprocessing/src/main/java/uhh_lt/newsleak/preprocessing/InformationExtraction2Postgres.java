@@ -123,7 +123,8 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 					HooverResource.PARAM_HOST, this.hooverHost,
 					HooverResource.PARAM_CLUSTERNAME, this.hooverClustername,
 					HooverResource.PARAM_INDEX, this.hooverIndex,
-					HooverResource.PARAM_PORT, this.hooverPort
+					HooverResource.PARAM_PORT, this.hooverPort,
+					HooverResource.PARAM_SEARCHURL, this.hooverSearchUrl
 					);
 			reader = CollectionReaderFactory.createReaderDescription(
 					HooverElasticsearchReader.class, this.typeSystem,
