@@ -21,6 +21,7 @@ import com.google.inject.Inject
 import org.elasticsearch.action.search.{ SearchRequestBuilder, SearchResponse }
 import org.elasticsearch.action.get.GetResponse
 import org.elasticsearch.action.update.{ UpdateRequest, UpdateResponse }
+import org.elasticsearch.script.Script
 
 import util.DateUtils
 import util.NewsleakConfigReader
@@ -195,9 +196,9 @@ class ESRequestUtils @Inject() (
     jmap.put("Keyword", keyword)
     jmap.put("TermFrequency", 1)
 
-    val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId)
-      .addScriptParam("json", jmap)
-      .script("ctx._source.Keywords.add(json)")
+    val myScript = new Script("ctx._source.Keywords.add(json)");
+
+    val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId).script(myScript)
 
     val requestBuilder = client.client.update(updateRequest).get
 
@@ -218,10 +219,7 @@ class ESRequestUtils @Inject() (
     jmap.put("EntType", entType)
     jmap.put("EntFrequency", 1)
 
-    val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId)
-      .addScriptParam("json", jmap)
-      .script("ctx._source.Entities.add(json)")
-
+    val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId).script(new Script("ctx._source.Entities.add(json)"))
     val requestBuilder = client.client.update(updateRequest).get
 
     requestBuilder
@@ -267,10 +265,7 @@ class ESRequestUtils @Inject() (
     jmap.put("Entname", entName)
     jmap.put("EntFrequency", 1)
 
-    val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId)
-      .addScriptParam("json", jmap)
-      .script("ctx._source.Entities" + entType + ".add(json)")
-
+    val updateRequest: UpdateRequest = new UpdateRequest(index, "document", docId).script(new Script("ctx._source.Entities" + entType + ".add(json)"))
     val requestBuilder = client.client.update(updateRequest).get
 
     requestBuilder
