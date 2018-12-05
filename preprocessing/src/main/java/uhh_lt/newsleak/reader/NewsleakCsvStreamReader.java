@@ -12,7 +12,6 @@ import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
 import org.apache.uima.collection.CollectionException;
-import org.apache.uima.fit.component.CasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
@@ -21,7 +20,7 @@ import org.apache.uima.util.ProgressImpl;
 
 import uhh_lt.newsleak.types.Metadata;
 
-public class NewsleakCsvStreamReader extends CasCollectionReader_ImplBase {
+public class NewsleakCsvStreamReader extends NewsleakReader {
 
 	/**
 	 * Directory containing input files
@@ -93,7 +92,7 @@ public class NewsleakCsvStreamReader extends CasCollectionReader_ImplBase {
 		// add paragraph with annotation
 		// LangDect: per paragraph, doc-lang = majority of paragraph languages
 		
-		jcas.setDocumentText(record.get(1));
+		jcas.setDocumentText(cleanBodyText(record.get(1)));
 		jcas.setDocumentLanguage(record.size() > 3 ? record.get(3) : defaultLanguage);
 		
 		// Set metadata

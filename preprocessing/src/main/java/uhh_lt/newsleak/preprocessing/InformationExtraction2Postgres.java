@@ -46,6 +46,7 @@ import uhh_lt.newsleak.annotator.SegmenterICU;
 import uhh_lt.newsleak.reader.HooverElasticsearchReader;
 import uhh_lt.newsleak.reader.NewsleakCsvStreamReader;
 import uhh_lt.newsleak.reader.NewsleakElasticsearchReader;
+import uhh_lt.newsleak.reader.NewsleakReader;
 import uhh_lt.newsleak.resources.DictionaryResource;
 import uhh_lt.newsleak.resources.ElasticsearchResource;
 import uhh_lt.newsleak.resources.HooverResource;
@@ -114,7 +115,8 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 					NewsleakCsvStreamReader.PARAM_METADATA_FILE, this.metadataFile,
 					NewsleakCsvStreamReader.PARAM_INPUTDIR, this.dataDirectory,
 					NewsleakCsvStreamReader.PARAM_DEFAULT_LANG, this.defaultLanguage,
-					NewsleakCsvStreamReader.PARAM_DEBUG_MAX_DOCS, this.debugMaxDocuments
+					NewsleakReader.PARAM_DEBUG_MAX_DOCS, this.debugMaxDocuments,
+					NewsleakReader.PARAM_MAX_DOC_LENGTH, this.maxDocumentLength
 					);
 		} else if (type.equals("hoover")) {
 			this.metadataFile = this.hooverTmpMetadata;
@@ -130,8 +132,8 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 					HooverElasticsearchReader.class, this.typeSystem,
 					HooverElasticsearchReader.RESOURCE_HOOVER, hooverResource,
 					HooverElasticsearchReader.RESOURCE_METADATA, this.getMetadataResourceDescription(),
-					HooverElasticsearchReader.PARAM_DEBUG_MAX_DOCS, this.debugMaxDocuments,
-					HooverElasticsearchReader.PARAM_MAX_DOC_LENGTH, this.maxDocumentLength
+					NewsleakReader.PARAM_DEBUG_MAX_DOCS, this.debugMaxDocuments,
+					NewsleakReader.PARAM_MAX_DOC_LENGTH, this.maxDocumentLength
 					);
 		} else {
 			this.logger.log(Level.SEVERE, "Unknown reader type: " + type);
@@ -182,7 +184,8 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		AnalysisEngineDescription esWriter = AnalysisEngineFactory.createEngineDescription(
 				ElasticsearchDocumentWriter.class,
 				ElasticsearchDocumentWriter.RESOURCE_ESCLIENT, esResource,
-				ElasticsearchDocumentWriter.PARAM_PARAGRAPHS_AS_DOCUMENTS, this.paragraphsAsDocuments
+				ElasticsearchDocumentWriter.PARAM_PARAGRAPHS_AS_DOCUMENTS, this.paragraphsAsDocuments,
+				ElasticsearchDocumentWriter.PARAM_MAX_DOC_LENGTH, this.maxDocumentLength
 				);
 
 		AnalysisEngineDescription ldPipeline = AnalysisEngineFactory.createEngineDescription(	

@@ -13,21 +13,12 @@ import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
 import org.apache.uima.collection.CollectionException;
-import org.apache.uima.fit.component.CasCollectionReader_ImplBase;
-import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.descriptor.ExternalResource;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
-import org.apache.uima.util.Logger;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.index.get.GetField;
-import org.elasticsearch.index.query.QueryBuilders;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -37,16 +28,13 @@ import io.searchbox.client.JestClient;
 import io.searchbox.client.JestResult;
 import io.searchbox.core.Get;
 import io.searchbox.core.Search;
-import io.searchbox.core.SearchResult;
 import io.searchbox.core.SearchScroll;
 import io.searchbox.params.Parameters;
 import uhh_lt.newsleak.resources.HooverResource;
 import uhh_lt.newsleak.resources.MetadataResource;
 import uhh_lt.newsleak.types.Metadata;
 
-public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
-
-	private Logger logger;
+public class HooverElasticsearchReader extends NewsleakReader {
 
 	public static final String RESOURCE_HOOVER = "hooverResource";
 	@ExternalResource(key = RESOURCE_HOOVER)
@@ -55,14 +43,6 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 	public static final String RESOURCE_METADATA = "metadataResource";
 	@ExternalResource(key = RESOURCE_METADATA)
 	private MetadataResource metadataResource;
-
-	public static final String PARAM_DEBUG_MAX_DOCS = "maxRecords";
-	@ConfigurationParameter(name = PARAM_DEBUG_MAX_DOCS, mandatory = false)
-	private Integer maxRecords = Integer.MAX_VALUE;
-
-	public static final String PARAM_MAX_DOC_LENGTH = "maxDocumentLength";
-	@ConfigurationParameter(name = PARAM_MAX_DOC_LENGTH, mandatory = false)
-	private Integer maxDocumentLength = Integer.MAX_VALUE; // 1500 * 10000 = 10000 norm pages
 
 	private static final String PARAM_SCROLL_SIZE = "10000";
 	private static final String PARAM_SCROLL_TIME = "1m";
@@ -126,7 +106,7 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 				totalIdList.addAll(hooverResource.getIds(hits));
 				scrollId = result.getJsonObject().getAsJsonPrimitive("_scroll_id").getAsString();
 			}
-
+			
 			if (maxRecords > 0 && maxRecords < totalIdList.size()) {
 				totalIdList = new ArrayList<String>(totalIdList.subList(0, maxRecords));
 			}
@@ -149,8 +129,12 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 			throw new CollectionException(e);
 		}
 
-		String docId = totalIdList.get(currentRecord - 1);
-		Get get = new Get.Builder(hooverResource.getIndex(), docId).type(HooverResource.HOOVER_DOCUMENT_TYPE).build();
+		String docIdNewsleak = Integer.toString(currentRecord); // "" + docId.hashCode();
+		String docIdHoover = totalIdList.get(currentRecord - 1);
+		
+		logger.log(Level.INFO, "Proceessing document: " + docIdHoover);
+		
+		Get get = new Get.Builder(hooverResource.getIndex(), docIdHoover).type(HooverResource.HOOVER_DOCUMENT_TYPE).build();
 		JestResult getResult = client.execute(get);
 		JsonObject o = getResult.getJsonObject();
 		JsonObject source = o.get("_source").getAsJsonObject();
@@ -187,14 +171,13 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		field = getField(source, "text");
 		if (field != null) {
 			String completeText = field.trim();
-			docText += completeText.substring(0, Math.min(completeText.length(), maxDocumentLength));
+			docText += cleanBodyText(completeText);
 		}
 		jcas.setDocumentText(docText);
 
 		// set document metadata
 		Metadata metaCas = new Metadata(jcas);
-		String docIdHash = "" + docId.hashCode();
-		metaCas.setDocId(docIdHash);
+		metaCas.setDocId(docIdNewsleak);
 
 		// date
 		String docDate = "1900-01-01";
@@ -246,40 +229,40 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		field = getField(source, "filename");
 		if (field != null) {
 			fileName = field;
-			metadata.add(metadataResource.createTextMetadata(docIdHash, "filename", fileName));
+			metadata.add(metadataResource.createTextMetadata(docIdNewsleak, "filename", fileName));
 		}
 		field = getField(source, "subject");
 		if (field != null) {
-			metadata.add(metadataResource.createTextMetadata(docIdHash, "subject", field));
+			metadata.add(metadataResource.createTextMetadata(docIdNewsleak, "subject", field));
 		} else {
 			if (!fileName.isEmpty()) {
-				metadata.add(metadataResource.createTextMetadata(docIdHash, "subject", fileName));
+				metadata.add(metadataResource.createTextMetadata(docIdNewsleak, "subject", fileName));
 			}
 		}
 		field = getField(source, "path");
 		if (field != null)
-			metadata.add(metadataResource.createTextMetadata(docIdHash, "path", field));
+			metadata.add(metadataResource.createTextMetadata(docIdNewsleak, "path", field));
 
 		// link to hover
-		metadata.add(metadataResource.createTextMetadata(docIdHash, "Link", clientUrl + docId));
+		metadata.add(metadataResource.createTextMetadata(docIdNewsleak, "Link", clientUrl + docIdHoover));
 
 		// attachments
 		Boolean booleanField = getFieldBoolean(source, "attachments");
 		if (booleanField != null)
-			metadata.add(metadataResource.createTextMetadata(docIdHash, "attachments", booleanField.toString()));
+			metadata.add(metadataResource.createTextMetadata(docIdNewsleak, "attachments", booleanField.toString()));
 		// content-type
 		field = getField(source, "content-type");
 		if (field != null)
-			metadata.add(metadataResource.createTextMetadata(docIdHash, "content-type", field));
+			metadata.add(metadataResource.createTextMetadata(docIdNewsleak, "content-type", field));
 		// file-type
 		field = getField(source, "filetype");
 		if (field != null)
-			metadata.add(metadataResource.createTextMetadata(docIdHash, "filetype", field));
+			metadata.add(metadataResource.createTextMetadata(docIdNewsleak, "filetype", field));
 		// from
 		field = getField(source, "from");
 		if (field != null) {
 			for (String email : extractEmail(field)) {
-				metadata.add(metadataResource.createTextMetadata(docIdHash, "from", email));
+				metadata.add(metadataResource.createTextMetadata(docIdNewsleak, "from", email));
 			}
 		}
 		// to
@@ -287,7 +270,7 @@ public class HooverElasticsearchReader extends CasCollectionReader_ImplBase {
 		if (arrayField != null) {
 			for (JsonElement toList : arrayField) {
 				for (String email : extractEmail(toList.getAsString())) {
-					metadata.add(metadataResource.createTextMetadata(docIdHash, "to", email));
+					metadata.add(metadataResource.createTextMetadata(docIdNewsleak, "to", email));
 				}
 			}
 		}

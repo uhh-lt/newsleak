@@ -50,7 +50,11 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 	
 	private Pattern paragraphPattern = Pattern.compile("[?!\\.]( *\\r?\\n){2,}", Pattern.MULTILINE);
 	public static int MINIMUM_PARAGRAPH_LENGTH = 1500;
-	private static final int MAXIMUM_DOCUMENT_LENGTH = 1500 * 100; // 100 norm pages
+	
+	public static final String PARAM_MAX_DOC_LENGTH = "maxDocumentLength";
+	@ConfigurationParameter(name = PARAM_MAX_DOC_LENGTH, mandatory = false)
+	protected Integer maxDocumentLength = Integer.MAX_VALUE;
+	
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
@@ -95,8 +99,8 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 
 	public void writeToIndex(JCas jcas, String docText, String docId) {
 		
-		if (docText.length() > MAXIMUM_DOCUMENT_LENGTH) {
-			logger.log(Level.SEVERE, "Skipping document " + docId + ". Exceeds maximum length (" + MAXIMUM_DOCUMENT_LENGTH + ")");
+		if (docText.length() > maxDocumentLength) {
+			logger.log(Level.SEVERE, "Skipping document " + docId + ". Exceeds maximum length (" + maxDocumentLength + ")");
 		} else {
 			Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
