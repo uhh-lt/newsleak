@@ -104,6 +104,7 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 			}
 			catch (Exception e) {
 				log.log(Level.SEVERE, "Invalid NER result. Check if there is a model for language '" + docLang + "' in the NER microservice?");
+				log.log(Level.SEVERE, "Json request string: " + sb.string());
 		
 				// System.exit(1);
 				throw new AnalysisEngineProcessException();
