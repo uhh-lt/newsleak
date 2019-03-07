@@ -24,12 +24,12 @@
     "angular-aria": "1.4.14",
     "angular-sanitize": "1.4.14",
     "angular-messages": "1.4.14",
-    "angular-screenfull": "~0.1.1",
+    "angular-screenfull": "~1.0.0",
     "angular-material": "~1.1.8",
     "highcharts-release": "~4.2.7",
     "requirejs": "~2.3.2",
     "underscore": "~1.8.3",
-    "screenfull": "~3.0.0",
+    "screenfull": "~4.0.1",
     "font-awesome": "~4.7.0",
     "jquery": "~2.2.4",
     "jquery-json": "~2.6.0",
@@ -46,6 +46,6 @@
   },
   "resolutions": {
     "angular": "1.4.14",
-    "screenfull": "2.0.0"
+    "screenfull": "4.0.0"
   }
 }

@@ -213,6 +213,13 @@ define([
                     controller: 'SettingsController'
                 })
             };
+            
+            $scope.showAboutDialog = function() {
+                $mdDialog.show({
+                    templateUrl: 'assets/partials/about.html',
+                    controller: 'AboutController'
+                })
+            };
 
             $scope.changeDataset = function() {
                 console.log('Changed ' + $scope.selectedDataset);
@@ -369,5 +376,9 @@ define([
             $scope.closeClick = function() { $mdDialog.cancel(); };
         }]);
 
+    app.controller('AboutController', ['$scope', '$mdDialog', 'playRoutes', '_', 'ObserverService', function ($scope, $mdDialog, playRoutes, _, ObserverService) {
+        $scope.closeClick = function() { $mdDialog.cancel(); };
+    }]);
+    
     return app;
 });

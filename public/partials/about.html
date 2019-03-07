@@ -1,0 +1,80 @@
+<!--
+  ~ Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<md-dialog aria-label="About" flex="40">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>About</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="closeClick()">
+                    <md-icon class="material-icons" aria-label="Close dialog">clear</md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+
+		<md-dialog-content style="overflow-y: hidden;">
+			<md-card>
+		   		<md-card-content>
+			        <p>New/s/leak (network of searchable leaks) is a research project 
+			        producing a piece of software that allows to quickly and intuitively 
+			        explore large amounts of textual data. The tool will support 
+			        journalists working with datasets like the War Diaries or the Embassy 
+			        cables (both distributed by Wikileaks) or the hacking of Hacking 
+			        Team. The goal is to provide a quick access to important entities 
+			        (people, organizations, places) and their relationships, and how 
+			        those things change over time.</p>
+			        
+			        <p>The following partners are cooperated for this project:</p>
+		        
+			        <div style="text-align:center">
+					    <md-button class="md-raised" ng-href="http://www.spiegel.de/" target="_blank" aria-label="Spiegel">
+					      <img class="institute-logo" src="./assets/images/logo_der_spiegel.jpg">
+					    </md-button>
+					
+					    <md-button class="md-raised" ng-href="https://www.inf.uni-hamburg.de/en/inst/ab/lt/" target="_blank" aria-label="LT">
+					      <img class="institute-logo" src="./assets/images/logo_language_technology_group.png">
+					    </md-button>
+					
+					    <md-button class="md-raised" ng-href="http://www.gris.tu-darmstadt.de" target="_blank" aria-label="GRIS">
+					      <img class="institute-logo" src="./assets/images/logo_graphisch-interaktive_systeme.png">
+					    </md-button>
+					</div>
+					
+					<p>New/s/leak was funded 2016-2018 by:</p>
+					
+					<div style="text-align:center">
+						<md-button class="md-raised" ng-href="https://www.volkswagenstiftung.de/" target="_blank" aria-label="VW">
+						      <img class="institute-logo" src="./assets/images/Logo_Volkswagenstiftung.svg.png">
+					    </md-button>
+					 </div>
+					
+					<p>Find more information about new/s/leak here:</p>
+					
+					<ul>
+					   <li><a href="https://uhh-lt.github.io/newsleak" target="_blank">uhh-lt.github.io/newsleak</a> - Project website (including documentation)</li>
+					   <li><a href="https://www.newsleak.io" target="_blank">www.newsleak.io</a> - Project blog</li>
+					</ul>
+					
+				</md-card-content>
+			</md-card>
+		</md-dialog-content>
+
+        <md-dialog-actions layout="row">
+            <span flex></span>
+            <md-button class="md-primary md-raised" ng-click="closeClick()">Close</md-button>
+        </md-dialog-actions>
+</md-dialog>
