@@ -35,7 +35,7 @@ import uhh_lt.newsleak.types.Paragraph;
 public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 
 	private Logger logger;
-	
+
 	public static final String ES_TYPE_DOCUMENT = "document";
 
 	public static final String RESOURCE_ESCLIENT = "esResource";
@@ -47,14 +47,14 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 	public static final String PARAM_PARAGRAPHS_AS_DOCUMENTS = "splitIntoParagraphs";
 	@ConfigurationParameter(name = PARAM_PARAGRAPHS_AS_DOCUMENTS, mandatory = false, defaultValue = "false")
 	private boolean splitIntoParagraphs;
-	
+
 	private Pattern paragraphPattern = Pattern.compile("[?!\\.]( *\\r?\\n){2,}", Pattern.MULTILINE);
 	public static int MINIMUM_PARAGRAPH_LENGTH = 1500;
-	
+
 	public static final String PARAM_MAX_DOC_LENGTH = "maxDocumentLength";
 	@ConfigurationParameter(name = PARAM_MAX_DOC_LENGTH, mandatory = false)
 	protected Integer maxDocumentLength = Integer.MAX_VALUE;
-	
+
 
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
@@ -67,38 +67,39 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
 
 		String docText = jcas.getDocumentText();
-		
-		// always convert windows line breaks to unix line break
-		docText = docText.replaceAll("\\r\\n", "\n");
-		docText = docText.replaceAll("\\r", "\n");
-		
-		docText = dehyphenate(docText);
-		docText = replaceHtmlLineBreaks(docText);
-		
-		Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
-		String docId = metadata.getDocId();
-		
-		if (!splitIntoParagraphs ) {
-			writeToIndex(jcas, docText, docId);
-		} else {
-			annotateParagraphs(jcas);
-			int i = 0;
-			for (Paragraph paragraph : JCasUtil.select(jcas, Paragraph.class)) {
-				i++;
-				String pId = "" + (Integer.parseInt(docId) + i);
-				writeToIndex(jcas, paragraph.getCoveredText(), pId);
-//				System.out.println("+++++++++++++++++++++++++++++++++=");
-//				System.out.println(docId);
-//				System.out.println(pId);
-//				System.out.println(paragraph.getCoveredText());
+
+		// skip indexing empty documents
+		if (docText.trim().length() > 0) {
+
+			// always convert windows line breaks to unix line break
+			docText = docText.replaceAll("\\r\\n", "\n");
+			docText = docText.replaceAll("\\r", "\n");
+
+			docText = dehyphenate(docText);
+			docText = replaceHtmlLineBreaks(docText);
+
+			Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
+			String docId = metadata.getDocId();
+
+			if (!splitIntoParagraphs) {
+				writeToIndex(jcas, docText, docId);
+			} else {
+				annotateParagraphs(jcas);
+				int i = 0;
+				for (Paragraph paragraph : JCasUtil.select(jcas, Paragraph.class)) {
+					i++;
+					String pId = "" + (Integer.parseInt(docId) + i);
+					writeToIndex(jcas, paragraph.getCoveredText(), pId);
+				}
+
 			}
-			
+
 		}
-		
+
 	}
 
 	public void writeToIndex(JCas jcas, String docText, String docId) {
-		
+
 		if (docText.length() > maxDocumentLength) {
 			logger.log(Level.SEVERE, "Skipping document " + docId + ". Exceeds maximum length (" + maxDocumentLength + ")");
 		} else {
@@ -128,23 +129,23 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 				e.printStackTrace();
 			}
 		}	
-		
+
 	}
-	
-	
+
+
 	public static String replaceHtmlLineBreaks(String html) {
-	    if (html == null)
-	    		return html;
- 	    Document document = Jsoup.parse(html);
-	    //makes html() preserve linebreaks and spacing
-	    document.outputSettings(new Document.OutputSettings().prettyPrint(false));
-	    document.select("br").append("\\n");
-	    document.select("p").prepend("\\n\\n");
-	    String s = document.html().replaceAll("\\\\n", "\n");
-	    return Jsoup.clean(s, "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
+		if (html == null)
+			return html;
+		Document document = Jsoup.parse(html);
+		//makes html() preserve linebreaks and spacing
+		document.outputSettings(new Document.OutputSettings().prettyPrint(false));
+		document.select("br").append("\\n");
+		document.select("p").prepend("\\n\\n");
+		String s = document.html().replaceAll("\\\\n", "\n");
+		return Jsoup.clean(s, "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
 	}
-	
-	
+
+
 	/**
 	 * An advanced dehyphanator based on regex.
 	 *  - " -" is accepted as hyphen
@@ -189,8 +190,8 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 		return dehyphenatedString;
 	}
 
-	
-	
+
+
 	private void annotateParagraphs(JCas jcas) {
 
 		Matcher matcher = paragraphPattern.matcher(jcas.getDocumentText());
