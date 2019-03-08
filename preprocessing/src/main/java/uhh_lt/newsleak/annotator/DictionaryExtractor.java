@@ -3,8 +3,6 @@ package uhh_lt.newsleak.annotator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,11 +15,9 @@ import org.apache.uima.fit.descriptor.OperationalProperties;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.StringList;
-import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Logger;
 
-import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
 import opennlp.uima.Token;
 import uhh_lt.newsleak.resources.DictionaryResource;
 import uhh_lt.newsleak.resources.DictionaryResource.Dictionary;

@@ -15,7 +15,7 @@ import org.apache.uima.fit.descriptor.OperationalProperties;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Logger;
-import org.uimafit.util.JCasUtil;
+import org.apache.uima.fit.util.JCasUtil;
 
 import opennlp.uima.Sentence;
 import opennlp.uima.Token;

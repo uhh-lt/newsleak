@@ -25,7 +25,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.safety.Whitelist;
-import org.uimafit.util.JCasUtil;
+import org.apache.uima.fit.util.JCasUtil;
 
 import uhh_lt.newsleak.resources.ElasticsearchResource;
 import uhh_lt.newsleak.types.Metadata;
