@@ -24,21 +24,35 @@ import opennlp.uima.Token;
 import uhh_lt.keyterms.Extractor;
 import uhh_lt.newsleak.types.Metadata;
 
-@OperationalProperties(multipleDeploymentAllowed=true, modifiesCas=true)
+// TODO: Auto-generated Javadoc
+/**
+ * UIMA annotator for key term extraction. Uses the uhh-lt/lt-keyterms maven
+ * package providing statistical keyness measurement based on log likelihood
+ * comparison with a reference corpus.
+ */
+@OperationalProperties(multipleDeploymentAllowed = true, modifiesCas = true)
 public class KeytermExtractor extends JCasAnnotator_ImplBase {
 
+	/** PARAM_LANGUAGE_CODE to initialize the keyterm extractor */
 	public static final String PARAM_LANGUAGE_CODE = "languageCode";
 	@ConfigurationParameter(name = PARAM_LANGUAGE_CODE)
 	private String languageCode;
-	
+
+	/** PARAM_N_KEYTERMS Number of keyterms to extract per document. */
 	public static final String PARAM_N_KEYTERMS = "nKeyterms";
 	@ConfigurationParameter(name = PARAM_N_KEYTERMS)
 	private Integer nKeyterms;
 
 	private Extractor extractor;
-	
+
 	private Logger log;
 
+	/*
+	 * UIMA initializer
+	 * 
+	 * @see org.apache.uima.fit.component.JCasAnnotator_ImplBase#initialize(org.
+	 * apache.uima.UimaContext)
+	 */
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		super.initialize(context);
@@ -50,15 +64,22 @@ public class KeytermExtractor extends JCasAnnotator_ImplBase {
 		}
 	}
 
-
+	/*
+	 * Extracts keyterms and named entities. Removes named entities from keyterm
+	 * list to not produce overlap
+	 * 
+	 * @see
+	 * org.apache.uima.analysis_component.JCasAnnotator_ImplBase#process(org.
+	 * apache.uima.jcas.JCas)
+	 */
 	@Override
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
 
 		Collection<Token> tokens = JCasUtil.select(jcas, Token.class);
-		
+
 		Set<String> keytermSet = getKeyWords(tokens);
 		HashSet<String> namedEntities = getNamedEntities(jcas);
-		
+
 		// generate decreasing count value for each keyterm
 		int pseudoCount = keytermSet.size();
 		int n = 0;
@@ -67,20 +88,29 @@ public class KeytermExtractor extends JCasAnnotator_ImplBase {
 		for (String term : keytermSet) {
 			pseudoCount--;
 			// do not extract NEs as keyterms too
-			if (namedEntities.contains(term)) continue;
+			if (namedEntities.contains(term))
+				continue;
 			text = keyterms.length() > 0 ? "\t" : "";
 			text += term.replaceAll(":", "");
 			keyterms.append(text).append(":").append(pseudoCount);
 			n++;
 			// extract only top n keyterms
-			if (n >= nKeyterms) break;
+			if (n >= nKeyterms)
+				break;
 		}
 
 		Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
 		metadata.setKeyterms(keyterms.toString());
 		metadata.addToIndexes();
 	}
-	
+
+	/**
+	 * Gets the key words.
+	 *
+	 * @param document
+	 *            the document
+	 * @return the key words
+	 */
 	public Set<String> getKeyWords(Collection<Token> document) {
 		List<String> tokens = new ArrayList<String>();
 		for (Token token : document) {
@@ -88,8 +118,14 @@ public class KeytermExtractor extends JCasAnnotator_ImplBase {
 		}
 		return extractor.extractKeyTerms(tokens);
 	}
-	
-	
+
+	/**
+	 * Gets the named entities.
+	 *
+	 * @param jcas
+	 *            the jcas
+	 * @return the named entities
+	 */
 	public HashSet<String> getNamedEntities(JCas jcas) {
 		Collection<Person> persons = JCasUtil.select(jcas, Person.class);
 		Collection<Organization> organizations = JCasUtil.select(jcas, Organization.class);
