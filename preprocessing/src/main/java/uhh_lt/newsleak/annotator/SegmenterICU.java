@@ -21,23 +21,41 @@ import opennlp.uima.Sentence;
 import opennlp.uima.Token;
 import uhh_lt.newsleak.types.Paragraph;
 
-@OperationalProperties(multipleDeploymentAllowed=true, modifiesCas=true)
+/**
+ * Tokenization, sentence and paragraph annotation with the ICU4J library. ICU4J
+ * provides segmentation rules for all unicode locales to iterate over tokens
+ * and sentences (BreakIterator).
+ * 
+ * Paragraph splits are heuristically inferred at one or more empty lines.
+ */
+@OperationalProperties(multipleDeploymentAllowed = true, modifiesCas = true)
 public class SegmenterICU extends JCasAnnotator_ImplBase {
 
-
+	/** The Constant PARAM_LOCALE. */
 	public final static String PARAM_LOCALE = "localeString";
-	@ConfigurationParameter(
-			name = PARAM_LOCALE, 
-			mandatory = true,
-			description = "Locale string for ICU4J sentence segmentation")
+
+	/** The locale string. */
+	@ConfigurationParameter(name = PARAM_LOCALE, mandatory = true, description = "Locale string for ICU4J sentence segmentation")
 	private String localeString;
 
+	/** The locale map. */
 	private Map<String, Locale> localeMap;
-	private Pattern paragraphPattern = Pattern.compile("( *\\r?\\n){2,}", Pattern.MULTILINE);
-	// private Pattern paragraphPattern = Pattern.compile("(^\\s*$)+", Pattern.MULTILINE);
 
+	/** The paragraph pattern. */
+	private Pattern paragraphPattern = Pattern.compile("( *\\r?\\n){2,}", Pattern.MULTILINE);
+	// private Pattern paragraphPattern = Pattern.compile("(^\\s*$)+",
+	// Pattern.MULTILINE);
+
+	/** The log. */
 	Logger log;
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.apache.uima.fit.component.JCasAnnotator_ImplBase#initialize(org.apache.
+	 * uima.UimaContext)
+	 */
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		super.initialize(context);
@@ -46,7 +64,13 @@ public class SegmenterICU extends JCasAnnotator_ImplBase {
 		localeMap = LanguageDetector.localeToISO();
 	}
 
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.apache.uima.analysis_component.JCasAnnotator_ImplBase#process(org.apache.
+	 * uima.jcas.JCas)
+	 */
 	@Override
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
 
@@ -55,9 +79,9 @@ public class SegmenterICU extends JCasAnnotator_ImplBase {
 		// get locale from current language
 		Locale locale = localeMap.get(localeString);
 
-		Collection<Paragraph> paragraphs = JCasUtil.select(jcas,  Paragraph.class);
+		Collection<Paragraph> paragraphs = JCasUtil.select(jcas, Paragraph.class);
 		for (Paragraph paragraph : paragraphs) {
-			
+
 			int parStart = paragraph.getBegin();
 
 			// load language specific rule set
@@ -66,7 +90,8 @@ public class SegmenterICU extends JCasAnnotator_ImplBase {
 
 			// find sentence breaks
 			int sentStart = sentenceBreaker.first();
-			for (int sentEnd = sentenceBreaker.next(); sentEnd != BreakIterator.DONE; sentStart = sentEnd, sentEnd = sentenceBreaker.next()) {
+			for (int sentEnd = sentenceBreaker
+					.next(); sentEnd != BreakIterator.DONE; sentStart = sentEnd, sentEnd = sentenceBreaker.next()) {
 
 				Sentence sentence = new Sentence(jcas);
 				sentence.setBegin(parStart + sentStart);
@@ -75,10 +100,11 @@ public class SegmenterICU extends JCasAnnotator_ImplBase {
 				BreakIterator tokenBreaker = BreakIterator.getWordInstance(locale);
 				tokenBreaker.setText(sentence.getCoveredText());
 
-				// find token breaks 
+				// find token breaks
 				int tokStart = tokenBreaker.first();
 				boolean containsTokens = false;
-				for (int tokEnd = tokenBreaker.next(); tokEnd != BreakIterator.DONE; tokStart = tokEnd, tokEnd = tokenBreaker.next()) {
+				for (int tokEnd = tokenBreaker
+						.next(); tokEnd != BreakIterator.DONE; tokStart = tokEnd, tokEnd = tokenBreaker.next()) {
 					Token token = new Token(jcas);
 					token.setBegin(parStart + sentStart + tokStart);
 					token.setEnd(parStart + sentStart + tokEnd);
@@ -100,7 +126,12 @@ public class SegmenterICU extends JCasAnnotator_ImplBase {
 
 	}
 
-
+	/**
+	 * Annotate paragraphs.
+	 *
+	 * @param jcas
+	 *            the jcas
+	 */
 	private void annotateParagraphs(JCas jcas) {
 
 		Matcher matcher = paragraphPattern.matcher(jcas.getDocumentText());

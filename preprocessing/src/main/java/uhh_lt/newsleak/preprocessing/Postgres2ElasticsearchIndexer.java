@@ -37,10 +37,25 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
+/**
+ * The Class Postgres2ElasticsearchIndexer reads fulltext and extracted
+ * information from the newsleak postgres database and feeds it to the newsleak
+ * elasticsearch index. For this, several mappings of elasticsearch data objects
+ * have to be created. Indexing itself is carried out in parallel bulk requests.
+ */
 public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 
+	/** The Constant BATCH_SIZE. */
 	private static final int BATCH_SIZE = 100;
 
+	/**
+	 * The main method.
+	 *
+	 * @param args
+	 *            the arguments
+	 * @throws Exception
+	 *             the exception
+	 */
 	public static void main(String[] args) throws Exception {
 
 		Postgres2ElasticsearchIndexer indexer = new Postgres2ElasticsearchIndexer();
@@ -53,11 +68,12 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 		st.setFetchSize(BATCH_SIZE);
 		try {
 			client = TransportClient.builder().settings(settings).build()
-					.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(indexer.esHost), Integer.parseInt(indexer.esPort)));
+					.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(indexer.esHost),
+							Integer.parseInt(indexer.esPort)));
 			// remove existing index
 			client.admin().indices().delete(new DeleteIndexRequest(indexer.esIndex)).actionGet();
 			// create index with all extracted data
-			indexer.documenIndexer(client, indexer.esIndex, "document");
+			indexer.documentIndexer(client, indexer.esIndex, "document");
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(0);
@@ -66,15 +82,25 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 		conn.close();
 	}
 
-
-	private void documenIndexer(Client client, String indexName,
-			String documentType) throws Exception {
+	/**
+	 * Document indexer.
+	 *
+	 * @param client
+	 *            the client
+	 * @param indexName
+	 *            the index name
+	 * @param documentType
+	 *            the document type
+	 * @throws Exception
+	 *             the exception
+	 */
+	private void documentIndexer(Client client, String indexName, String documentType) throws Exception {
 		try {
 			boolean exists = client.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
 			if (!exists) {
 				System.out.println("Index " + indexName + " will be created.");
 
-				createDynamicIndex(client, indexName, documentType);
+				createElasticsearchIndex(client, indexName, documentType);
 
 				System.out.println("Index " + indexName + " is created.");
 			}
@@ -85,16 +111,15 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 
 		System.out.println("Start indexing");
 		ResultSet docSt = st.executeQuery("select * from document;");
-		
+
 		BulkRequestConcurrent bulkRequestConcurrent = new BulkRequestConcurrent(client);
 		AtomicCounter bblen = new AtomicCounter();
 
 		ResultSet entTypes = conn.createStatement().executeQuery("select distinct type from entity;");
 		Set<String> types = new HashSet<>();
-		while(entTypes.next()){
+		while (entTypes.next()) {
 			types.add(entTypes.getString("type").toLowerCase());
 		}
-
 
 		Function<ResultSet, String> indexDoc = new Function<ResultSet, String>() {
 
@@ -104,19 +129,21 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 				String content;
 				Integer docId = 0;
 				try {
+					// fulltext
 					content = docSt.getString("content");
+					// creation date
 					Date dbCreated = docSt.getDate("created");
-
 					SimpleDateFormat simpleCreated = new SimpleDateFormat("yyyy-MM-dd");
 					String created = simpleCreated.format(dbCreated);
+					// document id
 					docId = docSt.getInt("id");
-
+					// entities
 					ResultSet docEntSt = conn.createStatement()
 							.executeQuery("select entid from entityoffset where  docid = " + docId + ";");
 					Set<Long> ids = new HashSet<>();
 					while (docEntSt.next()) {
 						long entId = docEntSt.getLong("entid");
-						if(ids.contains(entId)){
+						if (ids.contains(entId)) {
 							continue;
 						}
 						ids.add(entId);
@@ -124,27 +151,23 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 								.executeQuery("select * from entity where  id = " + entId + ";");
 						if (entSt.next()) {
 							NamedEntity ne = new NamedEntity(entSt.getLong("id"), entSt.getString("name"),
-									entSt.getString("type"), 1 /*docEntSt.getInt("frequency")*/);
+									entSt.getString("type"), 1 /* docEntSt.getInt("frequency") */);
 							namedEntity.add(ne);
 						}
 
 					}
-
-					///// Adding important terms to the index - ONLY top 10
-
+					// key terms (top 10 only)
 					ResultSet docTermSt = conn.createStatement()
 							.executeQuery("select * from terms where  docid = " + docId + " limit 10;");
-
 					Map<String, Integer> termMap = new HashMap<>();
 					while (docTermSt.next()) {
 						String term = docTermSt.getString("term");
 						int freq = docTermSt.getInt("frequency");
 						termMap.put(term, freq);
 					}
-
+					// temporal expressions
 					ResultSet docTimexSt = conn.createStatement()
 							.executeQuery("select * from eventtime where  docid = " + docId + ";");
-
 					List<TimeX> timexs = new ArrayList<>();
 					Set<String> simpeTimex = new HashSet<>();
 					while (docTimexSt.next()) {
@@ -154,10 +177,12 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 						timexs.add(t);
 						simpeTimex.add(timeXValue);
 					}
-
+					// metadata
 					ResultSet metadataSt = conn.createStatement()
 							.executeQuery("select * from metadata where docid =" + docId + ";");
 
+					// Create a JSON request object for adding the data to the index
+					// -------------------------------------------------------------
 					XContentBuilder xb = XContentFactory.jsonBuilder().startObject();
 					xb.field("Content", content).field("Created", created);
 					Map<String, List<String>> metas = new HashMap<>();
@@ -188,10 +213,8 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 						}
 						xb.endArray();
 
-
-
-						for (String type:types){			
-							xb.startArray("Entities"+type);
+						for (String type : types) {
+							xb.startArray("Entities" + type);
 							for (NamedEntity ne : namedEntity) {
 								if (ne.type.toLowerCase().equals(type)) {
 									xb.startObject();
@@ -203,7 +226,6 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 							}
 							xb.endArray();
 						}
-
 
 					}
 
@@ -234,12 +256,14 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 						xb.endArray();
 						xb.field("SimpleTimeExpresion", new ArrayList<>(simpeTimex));
 					}
-					
+
 					xb.endObject();
 					metadataSt.close();
-					
+
+					// perform concurrent bulk requests
 					synchronized (bulkRequestConcurrent) {
-						bulkRequestConcurrent.add(client.prepareIndex(indexName, documentType, docId.toString()).setSource(xb));
+						bulkRequestConcurrent
+								.add(client.prepareIndex(indexName, documentType, docId.toString()).setSource(xb));
 						bblen.increment();
 
 						if (bblen.value() % BATCH_SIZE == 0) {
@@ -247,7 +271,6 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 							bulkRequestConcurrent.execute();
 						}
 					}
-					
 
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -264,27 +287,30 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 		// index last requests
 		try {
 			bulkRequestConcurrent.execute();
-		}
-		catch(ActionRequestValidationException e) {
+		} catch (ActionRequestValidationException e) {
 			logger.log(Level.INFO, "All data has been indexed.");
 		}
-		
 
 		docSt.close();
 
 	}
 
-	public static void createIndex(String indexName, Client client) throws Exception {
-		CreateIndexRequest request = new CreateIndexRequest(indexName);
-		IndicesAdminClient iac = client.admin().indices();
 
-		CreateIndexResponse response = iac.create(request).actionGet();
-		if (!response.isAcknowledged()) {
-			throw new Exception("Failed to delete index " + indexName);
-		}
-	}
-
-	public static void createDynamicIndex(Client client, String indexName,
+	/**
+	 * Creates the elasticsearch index mappings.
+	 *
+	 * @param client
+	 *            the client
+	 * @param indexName
+	 *            the index name
+	 * @param documentType
+	 *            the document type
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 * @throws SQLException
+	 *             the SQL exception
+	 */
+	public static void createElasticsearchIndex(Client client, String indexName,
 			String documentType/* , String mapping */) throws IOException, SQLException {
 
 		IndicesExistsResponse res = client.admin().indices().prepareExists(indexName).execute().actionGet();
@@ -301,8 +327,8 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 
 		mappingBuilder.startObject("Created").field("type", "date").field("format", "yyyy-MM-dd").
 
-		startObject("fields").startObject("raw").field("type", "date").field("format", "yyyy-MM-dd").endObject()
-		.endObject().endObject();
+				startObject("fields").startObject("raw").field("type", "date").field("format", "yyyy-MM-dd").endObject()
+				.endObject().endObject();
 
 		System.out.println("creating entities mapping ...");
 		createEntitesPerTypeMappings(mappingBuilder, "Entities");
@@ -312,7 +338,7 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 		System.out.println("creating nested entities mapping ...");
 		while (entTypes.next()) {
 			String type = entTypes.getString("type").toLowerCase();
-			createEntitesPerTypeMappings(mappingBuilder, "Entities"+type);
+			createEntitesPerTypeMappings(mappingBuilder, "Entities" + type);
 		}
 		System.out.println("creating nested entities mapping ... done");
 
@@ -323,8 +349,8 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 		Map<String, String> metaFields = new HashMap<>();
 		System.out.println("creating metadata mapping ...");
 
-		ResultSet metadataSt = conn.createStatement().executeQuery(
-				"select key, value, type from metadata  group by key, value, type;");
+		ResultSet metadataSt = conn.createStatement()
+				.executeQuery("select key, value, type from metadata  group by key, value, type;");
 		while (metadataSt.next()) {
 			String key = StringUtils.capitalize(metadataSt.getString("key").replace(".", "_"));
 			String type = metadataSt.getString("type");
@@ -350,75 +376,136 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 
 		createIndexRequestBuilder.execute().actionGet();
 	}
-	// Based on this so:
-	// http://stackoverflow.com/questions/22071198/adding-mapping-to-a-type-from-java-how-do-i-do-it
 
+	/**
+	 * Creates the entites per type mappings.
+	 *
+	 * @param mappingBuilder
+	 *            the mapping builder
+	 * @param neType
+	 *            the ne type
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 */
 	private static void createEntitesPerTypeMappings(XContentBuilder mappingBuilder, String neType) throws IOException {
 
-		//mappingBuilder.startObject(neType).field("type", "nested");
 		mappingBuilder.startObject(neType);
 		mappingBuilder.startObject("properties");
 		mappingBuilder.startObject("EntId").field("type", "long").endObject();
 		mappingBuilder.startObject("Entname").field("type", "string").field("analyzer", "english").startObject("fields")
-		.startObject("raw").field("type", "string").field("index", "not_analyzed").endObject().endObject()
-		.endObject();
+				.startObject("raw").field("type", "string").field("index", "not_analyzed").endObject().endObject()
+				.endObject();
 		mappingBuilder.startObject("EntType").field("type", "string").field("analyzer", "english").startObject("fields")
-		.startObject("raw").field("type", "string").field("index", "not_analyzed").endObject().endObject()
-		.endObject();
+				.startObject("raw").field("type", "string").field("index", "not_analyzed").endObject().endObject()
+				.endObject();
 		mappingBuilder.startObject("EntFrequency").field("type", "long").endObject().endObject().endObject();
 	}
 
+	/**
+	 * Creates the event time mappings.
+	 *
+	 * @param mappingBuilder
+	 *            the mapping builder
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 */
 	private static void createEventTimeMappings(XContentBuilder mappingBuilder) throws IOException {
-		mappingBuilder.startObject("EventTimes");	
+		mappingBuilder.startObject("EventTimes");
 		mappingBuilder.startObject("properties");
-		mappingBuilder.startObject("Beginoffset").field("type", "long").endObject()
-		.startObject("Endoffset").field("type", "long").endObject();
+		mappingBuilder.startObject("Beginoffset").field("type", "long").endObject().startObject("Endoffset")
+				.field("type", "long").endObject();
 		mappingBuilder.startObject("TimeXType").field("type", "string").field("analyzer", "english")
-		.startObject("fields").startObject("raw").field("type", "string").field("index", "not_analyzed")
-		.endObject().endObject().endObject();
+				.startObject("fields").startObject("raw").field("type", "string").field("index", "not_analyzed")
+				.endObject().endObject().endObject();
 		mappingBuilder.startObject("Timex").field("type", "string").field("analyzer", "english").startObject("fields")
-		.startObject("raw").field("type", "string").field("index", "not_analyzed").endObject().endObject()
-		.endObject();
+				.startObject("raw").field("type", "string").field("index", "not_analyzed").endObject().endObject()
+				.endObject();
 		mappingBuilder.startObject("Timexvalue").field("type", "string").field("analyzer", "english")
-		.startObject("fields").startObject("raw").field("type", "string").field("index", "not_analyzed")
-		.endObject().endObject().endObject().endObject().endObject();
+				.startObject("fields").startObject("raw").field("type", "string").field("index", "not_analyzed")
+				.endObject().endObject().endObject().endObject().endObject();
 	}
 
-
-
+	/**
+	 * Creates the keywords mappings.
+	 *
+	 * @param mappingBuilder
+	 *            the mapping builder
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 */
 	private static void createKeywordsMappings(XContentBuilder mappingBuilder) throws IOException {
-		mappingBuilder.startObject("Keywords");	
+		mappingBuilder.startObject("Keywords");
 		mappingBuilder.startObject("properties");
-		mappingBuilder.startObject("Keyword").field("type", "String").field("analyzer", "english")
-		.startObject("fields").startObject("raw").field("type", "string").field("index", "not_analyzed")
-		.endObject().endObject().endObject();
+		mappingBuilder.startObject("Keyword").field("type", "String").field("analyzer", "english").startObject("fields")
+				.startObject("raw").field("type", "string").field("index", "not_analyzed").endObject().endObject()
+				.endObject();
 		mappingBuilder.startObject("TermFrequency").field("type", "long").endObject().endObject().endObject();
 	}
 
-	
+	/**
+	 * Creates the simple timex mappings.
+	 *
+	 * @param mappingBuilder
+	 *            the mapping builder
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 */
 	private static void createSimpleTimexMappings(XContentBuilder mappingBuilder) throws IOException {
 		mappingBuilder.startObject("SimpleTimeExpresion").field("type", "date")
-		.field("format", "yyyy-MM-dd || yyyy || yyyy-MM").startObject("fields").startObject("raw")
-		.field("type", "date").field("format", "yyyy-MM-dd || yyyy || yyyy-MM").endObject().endObject()
-		.endObject();
+				.field("format", "yyyy-MM-dd || yyyy || yyyy-MM").startObject("fields").startObject("raw")
+				.field("type", "date").field("format", "yyyy-MM-dd || yyyy || yyyy-MM").endObject().endObject()
+				.endObject();
 
 	}
-	
 
+	/**
+	 * Creates the metadata mappings for the elasticsearch index.
+	 *
+	 * @param mappingBuilder
+	 *            the mapping builder
+	 * @param meta
+	 *            the meta
+	 * @param type
+	 *            the type
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 */
 	private static void createMetadataMappings(XContentBuilder mappingBuilder, String meta, String type)
 			throws IOException {
 		mappingBuilder.startObject(meta).field("type", type).startObject("fields").startObject("raw")
-		.field("type", type).field("index", "not_analyzed").endObject().endObject().endObject();
+				.field("type", type).field("index", "not_analyzed").endObject().endObject().endObject();
 
 	}
 
-
+	/**
+	 * The Class NamedEntity.
+	 */
 	static class NamedEntity {
+
+		/** The id. */
 		long id;
+
+		/** The name. */
 		String name;
+
+		/** The type. */
 		String type;
+
+		/** The frequency. */
 		int frequency;
 
+		/**
+		 * Instantiates a new named entity.
+		 *
+		 * @param aId
+		 *            the a id
+		 * @param aName
+		 *            the a name
+		 * @param aType
+		 *            the a type
+		 * @param aFreq
+		 *            the a freq
+		 */
 		public NamedEntity(long aId, String aName, String aType, int aFreq) {
 			this.id = aId;
 			this.name = aName;
@@ -428,13 +515,40 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 		}
 	}
 
+	/**
+	 * The Class TimeX.
+	 */
 	static class TimeX {
+
+		/** The begin offset. */
 		int beginOffset;
+
+		/** The end offset. */
 		int endOffset;
+
+		/** The time X. */
 		String timeX;
+
+		/** The time X type. */
 		String timeXType;
+
+		/** The timex value. */
 		String timexValue;
 
+		/**
+		 * Instantiates a new time X.
+		 *
+		 * @param aBeginOffset
+		 *            the a begin offset
+		 * @param aEndOffset
+		 *            the a end offset
+		 * @param aTimeX
+		 *            the a time X
+		 * @param aTimexType
+		 *            the a timex type
+		 * @param aTimexValue
+		 *            the a timex value
+		 */
 		public TimeX(int aBeginOffset, int aEndOffset, String aTimeX, String aTimexType, String aTimexValue) {
 			this.beginOffset = aBeginOffset;
 			this.endOffset = aEndOffset;
@@ -444,39 +558,80 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 
 		}
 	}
-	
-	
+
+	/**
+	 * AtomicCounter to concurrently count up indexes.
+	 */
 	class AtomicCounter {
-	    private AtomicInteger c = new AtomicInteger(0);
 
-	    public void increment() {
-	        c.incrementAndGet();
-	    }
+		/** A concurrent integer. */
+		private AtomicInteger c = new AtomicInteger(0);
 
-	    public void decrement() {
-	        c.decrementAndGet();
-	    }
+		/**
+		 * Increment.
+		 */
+		public void increment() {
+			c.incrementAndGet();
+		}
 
-	    public int value() {
-	        return c.get();
-	    }
+		/**
+		 * Decrement.
+		 */
+		public void decrement() {
+			c.decrementAndGet();
+		}
+
+		/**
+		 * The value of the counter.
+		 *
+		 * @return the int
+		 */
+		public int value() {
+			return c.get();
+		}
 	}
-	
+
+	/**
+	 * The Class BulkRequestConcurrent.
+	 */
 	class BulkRequestConcurrent {
+
+		/** The bulk request. */
 		private BulkRequestBuilder bulkRequest;
+
+		/** The elasticsearch client. */
 		private Client client;
+
+		/**
+		 * Instantiates a new concurrent bulk request.
+		 *
+		 * @param client
+		 *            the client
+		 */
 		public BulkRequestConcurrent(Client client) {
 			super();
 			this.client = client;
 			this.bulkRequest = this.client.prepareBulk();
 		}
+
+		/**
+		 * Adds a bulk of data to the index.
+		 *
+		 * @param request
+		 *            the request
+		 */
 		public synchronized void add(IndexRequestBuilder request) {
 			this.bulkRequest.add(request);
 		}
+
+		/**
+		 * Executes a bulk request.
+		 */
 		public synchronized void execute() {
 			BulkResponse bulkResponse = bulkRequest.execute().actionGet();
 			if (bulkResponse.hasFailures()) {
-				logger.log(Level.SEVERE, "##### Bulk Request failure with error: " + bulkResponse.buildFailureMessage());
+				logger.log(Level.SEVERE,
+						"##### Bulk Request failure with error: " + bulkResponse.buildFailureMessage());
 			}
 			this.bulkRequest = client.prepareBulk();
 		}

@@ -58,17 +58,39 @@ import uhh_lt.newsleak.writer.PostgresDbWriter;
 import uhh_lt.newsleak.writer.TextLineWriter;
 
 /**
- * Reads document.csv and metadata.csv, processes them in a UIMA pipeline
- * and writes output to an ElasticSearch index.
+ * Information extraction pipeline. The process iterates over the entire dataset
+ * twice.
+ * 
+ * The first process reads fulltexts and metadata from a @see
+ * uhh_lt.newsleak.reader.NewsleakReader, then determines the language for each
+ * document and writes everything temporarily to an elasticsearch index
+ * (metadata is written to a temporary file on the disk for later insertion into
+ * the database).
+ * 
+ * The second process iterates over the elasticsearch index and extracts
+ * entities from fulltexts for each of the configured languages separately. If
+ * languages mainly contained in a collection are unknown, the first process
+ * outputs a statistic of how many documents of a language it has seen.
+ * 
+ * Extracted information is written into a relation database (postgres) to allow
+ * the newsleak explorer app relational queries lateron.
  *
  */
-public class InformationExtraction2Postgres extends NewsleakPreprocessor
-{
+public class InformationExtraction2Postgres extends NewsleakPreprocessor {
 
-	public static void main(String[] args) throws Exception
-	{
+	/**
+	 * The main method running language detection and information extraction.
+	 *
+	 * @param args
+	 *            CLI option pointing to the configuration file
+	 * @throws Exception
+	 *             anything that can go wrong...
+	 */
+	public static void main(String[] args) throws Exception {
 
 		InformationExtraction2Postgres np = new InformationExtraction2Postgres();
+
+		// read configuration file
 		np.getConfiguration(args);
 
 		// run language detection
@@ -76,7 +98,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		// extract information (per language)
 		np.pipelineAnnotation();
 
-		// import metadata.csv
+		// import temporary metadata.csv
 		np.initDb(np.dbName, np.dbUrl, np.dbUser, np.dbPass);
 		np.metadataToPostgres();
 
@@ -92,6 +114,16 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		conn.close();
 	}
 
+	/**
+	 * Metadata is supposed to be presented in a four-tuple CSV format (docid, key,
+	 * value, type). @see uhh_lt.newsleak.reader.NewsleakReader should write a
+	 * temporary metadata file in that format (or assume it was produced by an
+	 * external process)
+	 * 
+	 * The CSV file is imported via postgres directly.
+	 * 
+	 * See <i>data/metadata_example.csv</i> for an example.
+	 */
 	private void metadataToPostgres() {
 		try {
 			CopyManager cpManager = new CopyManager((BaseConnection) conn);
@@ -106,35 +138,37 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		}
 	}
 
+	/**
+	 * Gets the UIMA reader according to the current configuration.
+	 *
+	 * @param type
+	 *            The reader type (e.g. "csv" for externally preprocessed fulltexts
+	 *            and metadata, or "hoover" for the Hoover text extraction system)
+	 * @return the reader
+	 * @throws ResourceInitializationException
+	 *             the resource initialization exception
+	 */
 	public CollectionReaderDescription getReader(String type) throws ResourceInitializationException {
 		CollectionReaderDescription reader = null;
 		if (type.equals("csv")) {
-			reader = CollectionReaderFactory.createReaderDescription(
-					NewsleakCsvStreamReader.class, this.typeSystem,
+			reader = CollectionReaderFactory.createReaderDescription(NewsleakCsvStreamReader.class, this.typeSystem,
 					NewsleakCsvStreamReader.PARAM_DOCUMENT_FILE, this.documentFile,
 					NewsleakCsvStreamReader.PARAM_METADATA_FILE, this.metadataFile,
 					NewsleakCsvStreamReader.PARAM_INPUTDIR, this.dataDirectory,
 					NewsleakCsvStreamReader.PARAM_DEFAULT_LANG, this.defaultLanguage,
-					NewsleakReader.PARAM_DEBUG_MAX_DOCS, this.debugMaxDocuments,
-					NewsleakReader.PARAM_MAX_DOC_LENGTH, this.maxDocumentLength
-					);
+					NewsleakReader.PARAM_DEBUG_MAX_DOCS, this.debugMaxDocuments, NewsleakReader.PARAM_MAX_DOC_LENGTH,
+					this.maxDocumentLength);
 		} else if (type.equals("hoover")) {
 			this.metadataFile = this.hooverTmpMetadata;
 			ExternalResourceDescription hooverResource = ExternalResourceFactory.createExternalResourceDescription(
-					HooverResource.class, 
-					HooverResource.PARAM_HOST, this.hooverHost,
-					HooverResource.PARAM_CLUSTERNAME, this.hooverClustername,
-					HooverResource.PARAM_INDEX, this.hooverIndex,
-					HooverResource.PARAM_PORT, this.hooverPort,
-					HooverResource.PARAM_SEARCHURL, this.hooverSearchUrl
-					);
-			reader = CollectionReaderFactory.createReaderDescription(
-					HooverElasticsearchReader.class, this.typeSystem,
+					HooverResource.class, HooverResource.PARAM_HOST, this.hooverHost, HooverResource.PARAM_CLUSTERNAME,
+					this.hooverClustername, HooverResource.PARAM_INDEX, this.hooverIndex, HooverResource.PARAM_PORT,
+					this.hooverPort, HooverResource.PARAM_SEARCHURL, this.hooverSearchUrl);
+			reader = CollectionReaderFactory.createReaderDescription(HooverElasticsearchReader.class, this.typeSystem,
 					HooverElasticsearchReader.RESOURCE_HOOVER, hooverResource,
 					HooverElasticsearchReader.RESOURCE_METADATA, this.getMetadataResourceDescription(),
-					NewsleakReader.PARAM_DEBUG_MAX_DOCS, this.debugMaxDocuments,
-					NewsleakReader.PARAM_MAX_DOC_LENGTH, this.maxDocumentLength
-					);
+					NewsleakReader.PARAM_DEBUG_MAX_DOCS, this.debugMaxDocuments, NewsleakReader.PARAM_MAX_DOC_LENGTH,
+					this.maxDocumentLength);
 		} else {
 			this.logger.log(Level.SEVERE, "Unknown reader type: " + type);
 			System.exit(1);
@@ -142,7 +176,15 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 		return reader;
 	}
 
-
+	/**
+	 * The language detection pipeline detects the language of each document and
+	 * writes this information and the metadata acquired by the the reader
+	 * temporarily to disk. The extracted fulltext is temporarily stored in the
+	 * elasticsearch index.
+	 *
+	 * @throws Exception
+	 *             the exception
+	 */
 	public void pipelineLanguageDetection() throws Exception {
 		statusListener = new NewsleakStatusCallbackListener(this.logger);
 
@@ -155,183 +197,159 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 			}
 		}
 
-
 		// reader
 		CollectionReaderDescription reader = getReader(this.readerType);
 
-		// language detection
+		// language detection annotator
 		ExternalResourceDescription resourceLangDect = ExternalResourceFactory.createExternalResourceDescription(
-				LanguageDetectorResource.class, 
-				LanguageDetectorResource.PARAM_MODEL_FILE, "resources/langdetect-183.bin"
-			    );
-		AnalysisEngineDescription langDetect = AnalysisEngineFactory.createEngineDescription(
-				LanguageDetector.class,
-				LanguageDetector.MODEL_FILE, resourceLangDect,
-				LanguageDetector.METADATA_FILE, this.getMetadataResourceDescription(),
-				LanguageDetector.PARAM_DEFAULT_LANG, this.defaultLanguage,
-				LanguageDetector.DOCLANG_FILE, "data/documentLanguages.ser"
-				);
+				LanguageDetectorResource.class, LanguageDetectorResource.PARAM_MODEL_FILE,
+				"resources/langdetect-183.bin");
+		AnalysisEngineDescription langDetect = AnalysisEngineFactory.createEngineDescription(LanguageDetector.class,
+				LanguageDetector.MODEL_FILE, resourceLangDect, LanguageDetector.METADATA_FILE,
+				this.getMetadataResourceDescription(), LanguageDetector.PARAM_DEFAULT_LANG, this.defaultLanguage,
+				LanguageDetector.DOCLANG_FILE, "data/documentLanguages.ser");
 
-		// elasticsearch writer
+		// elasticsearch writer to store fulltexts
 		ExternalResourceDescription esResource = ExternalResourceFactory.createExternalResourceDescription(
-				ElasticsearchResource.class, 
-				ElasticsearchResource.PARAM_CREATE_INDEX, "true",
-				ElasticsearchResource.PARAM_CLUSTERNAME, this.esClustername,
-				ElasticsearchResource.PARAM_INDEX, this.esIndex,
-				ElasticsearchResource.PARAM_HOST, this.esHost,
-				ElasticsearchResource.PARAM_PORT, this.esPort,
-				ElasticsearchResource.PARAM_DOCUMENT_MAPPING_FILE, "desc/elasticsearch_mapping_document_2.4.json");
+				ElasticsearchResource.class, ElasticsearchResource.PARAM_CREATE_INDEX, "true",
+				ElasticsearchResource.PARAM_CLUSTERNAME, this.esClustername, ElasticsearchResource.PARAM_INDEX,
+				this.esIndex, ElasticsearchResource.PARAM_HOST, this.esHost, ElasticsearchResource.PARAM_PORT,
+				this.esPort, ElasticsearchResource.PARAM_DOCUMENT_MAPPING_FILE,
+				"desc/elasticsearch_mapping_document_2.4.json");
 		AnalysisEngineDescription esWriter = AnalysisEngineFactory.createEngineDescription(
-				ElasticsearchDocumentWriter.class,
-				ElasticsearchDocumentWriter.RESOURCE_ESCLIENT, esResource,
+				ElasticsearchDocumentWriter.class, ElasticsearchDocumentWriter.RESOURCE_ESCLIENT, esResource,
 				ElasticsearchDocumentWriter.PARAM_PARAGRAPHS_AS_DOCUMENTS, this.paragraphsAsDocuments,
-				ElasticsearchDocumentWriter.PARAM_MAX_DOC_LENGTH, this.maxDocumentLength
-				);
+				ElasticsearchDocumentWriter.PARAM_MAX_DOC_LENGTH, this.maxDocumentLength);
 
-		AnalysisEngineDescription ldPipeline = AnalysisEngineFactory.createEngineDescription(	
-				langDetect,
-				esWriter
-				);
+		// create pipeline
+		AnalysisEngineDescription ldPipeline = AnalysisEngineFactory.createEngineDescription(langDetect, esWriter);
 
+		// run pipeline in parallel manner with UIMA CPE
 		CpeBuilder ldCpeBuilder = new CpeBuilder();
 		ldCpeBuilder.setReader(reader);
 		ldCpeBuilder.setMaxProcessingUnitThreadCount(this.threads);
 		ldCpeBuilder.setAnalysisEngine(ldPipeline);
-		CollectionProcessingEngine engine = ldCpeBuilder.createCpe(statusListener); 
+		CollectionProcessingEngine engine = ldCpeBuilder.createCpe(statusListener);
 		engine.process();
 
+		// wait until language detection has finished before running the next
+		// information extraction processing step
 		while (statusListener.isProcessing()) {
 			Thread.sleep(500);
 		}
-		
-		
+
 	}
 
+	/**
+	 * The annotation pipeline performs several annotation tasks, for each language
+	 * separately (sentence detection, sentence cleaning, temporal expression
+	 * detection, named entity recognition, keyterm extraction, and dictionary
+	 * annotation). Extracted information is stored in a postgres database.
+	 * 
+	 * Languages to process have to be configured as a comma separated list of
+	 * ISO-639-3 language codes in the configuration file ("processlanguages").
+	 *
+	 * @throws Exception
+	 *             the exception
+	 */
 	public void pipelineAnnotation() throws Exception {
-		
 
-		/* Proceeding for multi-language collections:
-		 * - 1. run language detection and write language per document to ES index
-		 * - 2. set document language for unsupported languages to default language
-		 * - 3. run annotation pipeline per language with lang dependent resources
+		/*
+		 * Proceeding for multi-language collections: - 1. run language detection and
+		 * write language per document to ES index - 2. set document language for
+		 * unsupported languages to default language - 3. run annotation pipeline per
+		 * language with lang dependent resources
 		 */
-		
+
 		// iterate over configured ISO-639-3 language codes
 		boolean firstLanguage = true;
 		for (String currentLanguage : processLanguages) {
-			
+
 			NewsleakStatusCallbackListener annotationListener = new NewsleakStatusCallbackListener(this.logger);
 
 			Map<String, Locale> localeMap = LanguageDetector.localeToISO();
 			Locale currentLocale = localeMap.get(currentLanguage);
-			
+
 			logger.log(Level.INFO, "Processing " + currentLocale.getDisplayName() + " (" + currentLanguage + ")");
 			Thread.sleep(2000);
 
 			// reader
 			ExternalResourceDescription esResource = ExternalResourceFactory.createExternalResourceDescription(
-					ElasticsearchResource.class, 
-					ElasticsearchResource.PARAM_CREATE_INDEX, "false",
-					ElasticsearchResource.PARAM_HOST, this.esHost,
-					ElasticsearchResource.PARAM_CLUSTERNAME, this.esClustername,
-					ElasticsearchResource.PARAM_INDEX, this.esIndex,
-					ElasticsearchResource.PARAM_PORT, this.esPort,
-					ElasticsearchResource.PARAM_DOCUMENT_MAPPING_FILE, "desc/elasticsearch_mapping_document_2.4.json");
+					ElasticsearchResource.class, ElasticsearchResource.PARAM_CREATE_INDEX, "false",
+					ElasticsearchResource.PARAM_HOST, this.esHost, ElasticsearchResource.PARAM_CLUSTERNAME,
+					this.esClustername, ElasticsearchResource.PARAM_INDEX, this.esIndex,
+					ElasticsearchResource.PARAM_PORT, this.esPort, ElasticsearchResource.PARAM_DOCUMENT_MAPPING_FILE,
+					"desc/elasticsearch_mapping_document_2.4.json");
 			CollectionReaderDescription esReader = CollectionReaderFactory.createReaderDescription(
-					NewsleakElasticsearchReader.class, this.typeSystem,
-					NewsleakElasticsearchReader.RESOURCE_ESCLIENT, esResource,
-					NewsleakElasticsearchReader.PARAM_LANGUAGE, currentLanguage
-					);
-
+					NewsleakElasticsearchReader.class, this.typeSystem, NewsleakElasticsearchReader.RESOURCE_ESCLIENT,
+					esResource, NewsleakElasticsearchReader.PARAM_LANGUAGE, currentLanguage);
 
 			// sentences
-			AnalysisEngineDescription sentenceICU = AnalysisEngineFactory.createEngineDescription(
-					SegmenterICU.class,
-					SegmenterICU.PARAM_LOCALE, currentLanguage
-					);
-
+			AnalysisEngineDescription sentenceICU = AnalysisEngineFactory.createEngineDescription(SegmenterICU.class,
+					SegmenterICU.PARAM_LOCALE, currentLanguage);
 
 			// sentence cleaner
-			AnalysisEngineDescription sentenceCleaner = AnalysisEngineFactory.createEngineDescription(
-					SentenceCleaner.class
-					);
-
+			AnalysisEngineDescription sentenceCleaner = AnalysisEngineFactory
+					.createEngineDescription(SentenceCleaner.class);
 
 			// heideltime
 			AnalysisEngineDescription heideltime = AnalysisEngineFactory.createEngineDescription(
-					HeidelTimeOpenNLP.class,
-					HeidelTimeOpenNLP.PARAM_LANGUAGE, "auto-" + currentLocale.getDisplayName().toLowerCase(),
-					HeidelTimeOpenNLP.PARAM_LOCALE, "en_US"
-					);
+					HeidelTimeOpenNLP.class, HeidelTimeOpenNLP.PARAM_LANGUAGE,
+					"auto-" + currentLocale.getDisplayName().toLowerCase(), HeidelTimeOpenNLP.PARAM_LOCALE, "en_US");
 
-			
+			// named entity recognition
 			AnalysisEngineDescription nerMicroservice = AnalysisEngineFactory.createEngineDescription(
-					NerMicroservice.class,
-					NerMicroservice.NER_SERVICE_URL, this.nerServiceUrl
-					);
+					NerMicroservice.class, NerMicroservice.NER_SERVICE_URL, this.nerServiceUrl);
 
 			// keyterms
-			AnalysisEngineDescription keyterms = AnalysisEngineFactory.createEngineDescription(
-					KeytermExtractor.class,
-					KeytermExtractor.PARAM_N_KEYTERMS, 15,
-					KeytermExtractor.PARAM_LANGUAGE_CODE, currentLanguage
-					);
+			AnalysisEngineDescription keyterms = AnalysisEngineFactory.createEngineDescription(KeytermExtractor.class,
+					KeytermExtractor.PARAM_N_KEYTERMS, 15, KeytermExtractor.PARAM_LANGUAGE_CODE, currentLanguage);
 
 			// dictionaries
 			ExternalResourceDescription dictResource = ExternalResourceFactory.createExternalResourceDescription(
-					DictionaryResource.class, 
-					DictionaryResource.PARAM_DATADIR, this.configDir + File.separator + "dictionaries",
-					DictionaryResource.PARAM_DICTIONARY_FILES, this.dictionaryFiles,
-					DictionaryResource.PARAM_LANGUAGE_CODE, currentLanguage);
+					DictionaryResource.class, DictionaryResource.PARAM_DATADIR,
+					this.configDir + File.separator + "dictionaries", DictionaryResource.PARAM_DICTIONARY_FILES,
+					this.dictionaryFiles, DictionaryResource.PARAM_LANGUAGE_CODE, currentLanguage);
 			AnalysisEngineDescription dictionaries = AnalysisEngineFactory.createEngineDescription(
-					DictionaryExtractor.class,
-					DictionaryExtractor.RESOURCE_DICTIONARIES, dictResource
-					);
-			
-			
-			// writer
-//			ExternalResourceDescription resourceLinewriter = ExternalResourceFactory.createExternalResourceDescription(
-//					TextLineWriterResource.class, 
-//					TextLineWriterResource.PARAM_OUTPUT_FILE, this.dataDirectory + File.separator + "output.txt");
-//			AnalysisEngineDescription linewriter = AnalysisEngineFactory.createEngineDescription(
-//					TextLineWriter.class,
-//					TextLineWriter.RESOURCE_LINEWRITER, resourceLinewriter
-//					);
-//
-//			AnalysisEngineDescription xmi = AnalysisEngineFactory.createEngineDescription(
-//					XmiWriter.class,
-//					XmiWriter.PARAM_OUTPUT_DIRECTORY, this.dataDirectory + File.separator + "xmi"
-//					);
+					DictionaryExtractor.class, DictionaryExtractor.RESOURCE_DICTIONARIES, dictResource);
 
+			// alternative writers for testing purposes (rawtext, xmi) ...
+			// ... raw text writer
+			// ExternalResourceDescription resourceLinewriter =
+			// ExternalResourceFactory.createExternalResourceDescription(
+			// TextLineWriterResource.class,
+			// TextLineWriterResource.PARAM_OUTPUT_FILE, this.dataDirectory + File.separator
+			// + "output.txt");
+			// AnalysisEngineDescription linewriter =
+			// AnalysisEngineFactory.createEngineDescription(
+			// TextLineWriter.class,
+			// TextLineWriter.RESOURCE_LINEWRITER, resourceLinewriter
+			// );
+			//
+			// ... xmi writer
+			// AnalysisEngineDescription xmi =
+			// AnalysisEngineFactory.createEngineDescription(
+			// XmiWriter.class,
+			// XmiWriter.PARAM_OUTPUT_DIRECTORY, this.dataDirectory + File.separator + "xmi"
+			// );
+
+			// postgres writer
 			ExternalResourceDescription resourcePostgres = ExternalResourceFactory.createExternalResourceDescription(
-					PostgresResource.class, 
-					PostgresResource.PARAM_DBURL, this.dbUrl,
-					PostgresResource.PARAM_DBNAME, this.dbName,
-					PostgresResource.PARAM_DBUSER, this.dbUser,
-					PostgresResource.PARAM_DBPASS, this.dbPass,
-					PostgresResource.PARAM_TABLE_SCHEMA, this.dbSchema,
-					PostgresResource.PARAM_INDEX_SCHEMA, this.dbIndices,
-					PostgresResource.PARAM_CREATE_DB, firstLanguage ? "true" : "false"
-					);
+					PostgresResource.class, PostgresResource.PARAM_DBURL, this.dbUrl, PostgresResource.PARAM_DBNAME,
+					this.dbName, PostgresResource.PARAM_DBUSER, this.dbUser, PostgresResource.PARAM_DBPASS, this.dbPass,
+					PostgresResource.PARAM_TABLE_SCHEMA, this.dbSchema, PostgresResource.PARAM_INDEX_SCHEMA,
+					this.dbIndices, PostgresResource.PARAM_CREATE_DB, firstLanguage ? "true" : "false");
 			AnalysisEngineDescription postgresWriter = AnalysisEngineFactory.createEngineDescription(
-					PostgresDbWriter.class,
-					PostgresDbWriter.RESOURCE_POSTGRES, resourcePostgres
-					);
-			
+					PostgresDbWriter.class, PostgresDbWriter.RESOURCE_POSTGRES, resourcePostgres);
 
 			// define pipeline
-			AnalysisEngineDescription pipeline = AnalysisEngineFactory.createEngineDescription(
-					sentenceICU,
-					sentenceCleaner,
-					dictionaries,
-					heideltime,
-					nerMicroservice,
-					keyterms,
+			AnalysisEngineDescription pipeline = AnalysisEngineFactory.createEngineDescription(sentenceICU,
+					sentenceCleaner, dictionaries, heideltime, nerMicroservice, keyterms,
 					// linewriter,
 					// xmi,
-					postgresWriter
-					);
+					postgresWriter);
 
+			// run as UIMA CPE
 			CpeBuilder cpeBuilder = new CpeBuilder();
 			cpeBuilder.setReader(esReader);
 			cpeBuilder.setMaxProcessingUnitThreadCount(this.threads);
@@ -350,39 +368,6 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor
 
 		}
 
-
-	}
-
-	public Properties getLanguageRescourceProperties(String language) {
-		// config file
-		Properties properties = new Properties();
-		File resourceConfigFile = new File("resources" + File.separator + language, "resources.conf");
-		try {
-			InputStream input = new FileInputStream(resourceConfigFile);
-			properties.load(input);
-
-			readerType = properties.getProperty("datareader");
-
-			input.close();
-		}
-		catch (IOException e) {
-			System.err.println("Could not read resource configuration file " + resourceConfigFile.getPath());
-			System.exit(1);
-		}
-		return properties;
-	}
-
-	private AnalysisEngineDescription getOpennlpNerAed(String shortType, String type, String modelFile) throws ResourceInitializationException {
-		ExternalResourceDescription resourceNer = ExternalResourceFactory.createExternalResourceDescription(
-				TokenNameFinderModelResourceImpl.class, new File(modelFile));
-		AnalysisEngineDescription ner = AnalysisEngineFactory.createEngineDescription(
-				NameFinder.class,
-				UimaUtil.MODEL_PARAMETER, resourceNer,
-				UimaUtil.SENTENCE_TYPE_PARAMETER, Sentence.class,
-				UimaUtil.TOKEN_TYPE_PARAMETER, Token.class,
-				NameFinder.NAME_TYPE_PARAMETER, type
-				);
-		return ner;
 	}
 
 }

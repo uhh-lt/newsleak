@@ -24,7 +24,6 @@ import opennlp.uima.Token;
 import uhh_lt.keyterms.Extractor;
 import uhh_lt.newsleak.types.Metadata;
 
-// TODO: Auto-generated Javadoc
 /**
  * UIMA annotator for key term extraction. Uses the uhh-lt/lt-keyterms maven
  * package providing statistical keyness measurement based on log likelihood

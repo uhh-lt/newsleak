@@ -26,41 +26,54 @@ import org.apache.uima.util.Logger;
 
 import uhh_lt.newsleak.resources.MetadataResource;
 
+// TODO: Auto-generated Javadoc
 /**
- * Reads document.csv and metadata.csv, processes them in a UIMA pipeline
- * and writes output to an ElasticSearch index.
+ * Abtract class to provide common functionality for each newsleak data reader
+ * (e.g. processing the preprocessing configuration file, initialization of the
+ * postgres database connection, and the metadata UIMA resource initialization).
  *
  */
 public abstract class NewsleakPreprocessor {
 
+	/** The logger. */
 	protected Logger logger;
 
+	/** command line options */
 	private Options cliOptions;
 	private String configfile;
 	protected String configDir;
-	
+
+	/** config file options */
 	protected String readerType;
 
+	// processing parameters
 	protected String defaultLanguage;
 	protected String[] processLanguages;
 	protected String dataDirectory;
+	protected boolean paragraphsAsDocuments;
+	protected Integer maxDocumentLength;
+	protected Integer threads;
+	protected Integer debugMaxDocuments;
+
+	// csv externally preprocessed data
 	protected String documentFile;
 	protected String metadataFile;
-
+	
+	// newsleak elasticsearch configuration 
 	protected String esHost;
 	protected String esClustername;
 	protected String esIndex;
 	protected String esPort;
-	protected boolean paragraphsAsDocuments;
-	protected Integer maxDocumentLength;
 	
+	// hoover elasticsearch configuration
 	protected String hooverHost;
 	protected String hooverClustername;
 	protected String hooverIndex;
 	protected String hooverPort;
 	protected String hooverTmpMetadata;
 	protected String hooverSearchUrl;
-	
+
+	// newsleak postgres configuration
 	protected String dbUrl;
 	protected String dbName;
 	protected String dbUser;
@@ -68,36 +81,43 @@ public abstract class NewsleakPreprocessor {
 	protected String dbSchema;
 	protected String dbIndices;
 
+	// newsleak-ner microservice configuration
 	protected String nerServiceUrl;
 	protected String dictionaryFiles;
-	
-	protected Integer threads;
-	protected Integer debugMaxDocuments;
 
+	// UIMA configuration variables
 	protected TypeSystemDescription typeSystem;
 	protected NewsleakStatusCallbackListener statusListener;
 	protected ExternalResourceDescription metadataResourceDesc = null;
-	
+
+	// postgres connection
 	protected static Connection conn;
 	protected static Statement st;
-	
+
+	/**
+	 * Instantiates a new newsleak preprocessor.
+	 */
 	public NewsleakPreprocessor() {
 		super();
-		logger = UIMAFramework.getLogger();		
+		logger = UIMAFramework.getLogger();
 	}
-	
 
-
+	/**
+	 * Reads the configuration from a config file.
+	 *
+	 * @param cliArgs the cli args
+	 * @return the configuration
+	 */
 	public void getConfiguration(String[] cliArgs) {
 		this.getCliOptions(cliArgs);
-		
+
 		// config file
 		Properties prop = new Properties();
 		try {
 			this.configDir = new File(configfile).getParentFile().getAbsolutePath();
 			InputStream input = new FileInputStream(configfile);
 			prop.load(input);
-			
+
 			readerType = prop.getProperty("datareader");
 
 			defaultLanguage = prop.getProperty("defaultlanguage");
@@ -105,22 +125,23 @@ public abstract class NewsleakPreprocessor {
 			dataDirectory = prop.getProperty("datadirectory");
 			documentFile = prop.getProperty("documentfile");
 			metadataFile = prop.getProperty("metadatafile");
-			
+
 			hooverHost = prop.getProperty("hooverurl");
 			hooverClustername = prop.getProperty("hooverclustername");
 			hooverIndex = prop.getProperty("hooverindex");
 			hooverPort = prop.getProperty("hooverport");
 			hooverTmpMetadata = prop.getProperty("hoovertmpmetadata");
 			hooverSearchUrl = prop.getProperty("hooversearchurl");
-			
+
 			esHost = prop.getProperty("esurl");
 			esClustername = prop.getProperty("esclustername");
 			esIndex = prop.getProperty("esindex");
 			esPort = prop.getProperty("esport");
 			paragraphsAsDocuments = Boolean.parseBoolean(prop.getProperty("paragraphsasdocuments"));
 			maxDocumentLength = Integer.valueOf(prop.getProperty("maxdocumentlength"));
-			if (maxDocumentLength <= 0) maxDocumentLength = Integer.MAX_VALUE;
-			
+			if (maxDocumentLength <= 0)
+				maxDocumentLength = Integer.MAX_VALUE;
+
 			dbUrl = prop.getProperty("dburl");
 			dbName = prop.getProperty("dbname");
 			dbUser = prop.getProperty("dbuser");
@@ -130,23 +151,29 @@ public abstract class NewsleakPreprocessor {
 
 			nerServiceUrl = prop.getProperty("nerserviceurl");
 			dictionaryFiles = prop.getProperty("dictionaryfiles");
-			
+
 			threads = Integer.valueOf(prop.getProperty("threads"));
 			debugMaxDocuments = Integer.valueOf(prop.getProperty("debugMaxDocuments"));
-			if (debugMaxDocuments <= 0) debugMaxDocuments = null;
-			
+			if (debugMaxDocuments <= 0)
+				debugMaxDocuments = null;
+
 			input.close();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			System.err.println("Could not read configuration file " + configfile);
 			System.exit(1);
 		}
-		
+
 		// uima type system
-		String typeSystemFile = new File("desc/NewsleakDocument.xml").getAbsolutePath();	
+		String typeSystemFile = new File("desc/NewsleakDocument.xml").getAbsolutePath();
 		this.typeSystem = TypeSystemDescriptionFactory.createTypeSystemDescriptionFromPath(typeSystemFile);
 	}
 
+	/**
+	 * Gets the cli options.
+	 *
+	 * @param args the args
+	 * @return the cli options
+	 */
 	private void getCliOptions(String[] args) {
 		cliOptions = new Options();
 		Option configfileOpt = new Option("c", "configfile", true, "config file path");
@@ -166,7 +193,18 @@ public abstract class NewsleakPreprocessor {
 		this.configfile = cmd.getOptionValue("configfile");
 	}
 
-	
+	/**
+	 * Initalizes the postgres db.
+	 *
+	 * @param dbName the db name
+	 * @param ip the ip
+	 * @param user the user
+	 * @param pswd the pswd
+	 * @throws InstantiationException the instantiation exception
+	 * @throws IllegalAccessException the illegal access exception
+	 * @throws ClassNotFoundException the class not found exception
+	 * @throws SQLException the SQL exception
+	 */
 	protected void initDb(String dbName, String ip, String user, String pswd)
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		String url = "jdbc:postgresql://" + ip + "/";
@@ -175,15 +213,17 @@ public abstract class NewsleakPreprocessor {
 		conn = DriverManager.getConnection(url + dbName, userName, password);
 		st = conn.createStatement();
 	}
-	
-	
+
+	/**
+	 * Gets the metadata resource description.
+	 *
+	 * @return the metadata resource description
+	 */
 	protected ExternalResourceDescription getMetadataResourceDescription() {
 		if (metadataResourceDesc == null) {
-			metadataResourceDesc = ExternalResourceFactory.createExternalResourceDescription(
-					MetadataResource.class, 
+			metadataResourceDesc = ExternalResourceFactory.createExternalResourceDescription(MetadataResource.class,
 					MetadataResource.PARAM_METADATA_FILE, this.dataDirectory + File.separator + this.metadataFile,
-					MetadataResource.PARAM_RESET_METADATA_FILE, "true"
-				    );
+					MetadataResource.PARAM_RESET_METADATA_FILE, "true");
 		}
 		return metadataResourceDesc;
 	}

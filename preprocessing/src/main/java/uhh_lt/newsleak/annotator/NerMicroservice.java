@@ -37,33 +37,67 @@ import opennlp.uima.Person;
 import opennlp.uima.Sentence;
 import opennlp.uima.Token;
 
-@OperationalProperties(multipleDeploymentAllowed=true, modifiesCas=true)
+/**
+ * Annotator for Named Entity Recognition. The annotator queries a micro-service
+ * via JSON API. The default micro-service (available at
+ * https://github.com/uhh-lt/newsleak-ner) wraps the polyglot NLP library
+ * (https://github.com/aboSamoor/polyglot) in a Flask APP
+ * (http://flask.pocoo.org/) and is deployed as a docker container
+ * (https://www.docker.com/).
+ * 
+ * Currently, polyglot NER only supports O, I-PER, I-LOC and I-ORG labels. No
+ * information about beginning of a new entity is present. Our heuristic assumes
+ * that sequences of tokens with identical I-tags are one entity
+ * 
+ * Moreover, polyglot NER tends to produce many false positives for noisy text
+ * data. Thus, we utilize a simple heuristic to remove detected entities which
+ * contain less than 2 alphabetic characters.
+ */
+@OperationalProperties(multipleDeploymentAllowed = true, modifiesCas = true)
 public class NerMicroservice extends JCasAnnotator_ImplBase {
 
-	
+	/** The Constant NER_SERVICE_URL. */
 	public final static String NER_SERVICE_URL = "nerMicroserviceUrl";
-	@ConfigurationParameter(
-			name = NER_SERVICE_URL, 
-			mandatory = true,
-			description = "Url to microservice for named entity recognition (JSON API)")
+
+	/** The ner microservice url. */
+	@ConfigurationParameter(name = NER_SERVICE_URL, mandatory = true, description = "Url to microservice for named entity recognition (JSON API)")
 	private String nerMicroserviceUrl;
-	
+
+	/** The locale map. */
 	private Map<String, Locale> localeMap;
-	
+
+	/** The log. */
 	Logger log;
+
+	/** The http client. */
 	HttpClient httpClient;
+
+	/** The request. */
 	HttpPost request;
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.apache.uima.fit.component.JCasAnnotator_ImplBase#initialize(org.apache.
+	 * uima.UimaContext)
+	 */
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		super.initialize(context);
 		log = context.getLogger();
 		httpClient = HttpClientBuilder.create().build();
 		request = new HttpPost(nerMicroserviceUrl);
-		localeMap = LanguageDetector.localeToISO(); 
+		localeMap = LanguageDetector.localeToISO();
 	}
 
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.apache.uima.analysis_component.JCasAnnotator_ImplBase#process(org.apache.
+	 * uima.jcas.JCas)
+	 */
 	@Override
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
 
@@ -71,15 +105,17 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 		String docLang = localeMap.get(jcas.getDocumentLanguage()).getLanguage();
 
 		try {
-			
+
 			// create json request for microservice
-			
+
 			XContentBuilder sb = XContentFactory.jsonBuilder().startObject();
 			sb.field("lang", docLang);
 			sb.field("sentences").startArray();
-			Collection<Sentence> sentences = JCasUtil.selectCovered(jcas, Sentence.class, 0, jcas.getDocumentText().length());
+			Collection<Sentence> sentences = JCasUtil.selectCovered(jcas, Sentence.class, 0,
+					jcas.getDocumentText().length());
 			for (Sentence sentence : sentences) {
-				Collection<Token> tokens = JCasUtil.selectCovered(jcas, Token.class, sentence.getBegin(), sentence.getEnd());
+				Collection<Token> tokens = JCasUtil.selectCovered(jcas, Token.class, sentence.getBegin(),
+						sentence.getEnd());
 				sb.startArray();
 				for (Token token : tokens) {
 					sb.value(token.getCoveredText());
@@ -93,7 +129,7 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 			HttpResponse response = httpClient.execute(request);
 
 			// evaluate request response
-			
+
 			String responseText = EntityUtils.toString(response.getEntity());
 
 			JsonObject obj = new JsonParser().parse(responseText).getAsJsonObject();
@@ -101,11 +137,11 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 			JsonArray sentenceArray = null;
 			try {
 				sentenceArray = obj.getAsJsonArray("result");
-			}
-			catch (Exception e) {
-				log.log(Level.SEVERE, "Invalid NER result. Check if there is a model for language '" + docLang + "' in the NER microservice?");
+			} catch (Exception e) {
+				log.log(Level.SEVERE, "Invalid NER result. Check if there is a model for language '" + docLang
+						+ "' in the NER microservice?");
 				log.log(Level.SEVERE, "Json request string: " + sb.string());
-		
+
 				// System.exit(1);
 				throw new AnalysisEngineProcessException();
 			}
@@ -122,15 +158,16 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 			int position = -1;
 
 			// annotate NE types
-			
+
 			for (Sentence sentence : sentences) {
 
-				Collection<Token> tokens = JCasUtil.selectCovered(jcas, Token.class, sentence.getBegin(), sentence.getEnd());
+				Collection<Token> tokens = JCasUtil.selectCovered(jcas, Token.class, sentence.getBegin(),
+						sentence.getEnd());
 				Annotation annotation = null;
 				String prevTag = "";
 
 				for (Token token : tokens) {
-					
+
 					position++;
 					String tag = tagList.get(position);
 
@@ -144,14 +181,11 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 						}
 						if (tag.equals("O")) {
 							annotation = null;
-						}
-						else if (tag.equals("I-PER")) {
+						} else if (tag.equals("I-PER")) {
 							annotation = new Person(jcas);
-						}
-						else if (tag.equals("I-LOC")) {
+						} else if (tag.equals("I-LOC")) {
 							annotation = new Location(jcas);
-						}
-						else if (tag.equals("I-ORG")) {
+						} else if (tag.equals("I-ORG")) {
 							annotation = new Organization(jcas);
 						}
 						if (annotation != null) {
@@ -164,24 +198,29 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 				if (annotation != null) {
 					annotation.addToIndexes();
 				}
-				
+
 			}
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
+		// remove unlikely entities
 		cleanNerAnnotations(jcas);
-		
+
 	}
 
-
+	/**
+	 * Remove NE annotation for unlikely PER, ORG and LOC entities.
+	 *
+	 * @param jcas
+	 *            the jcas
+	 */
 	private void cleanNerAnnotations(JCas jcas) {
-		
+
 		// do not apply filter to chinese or japanese texts
 		if (jcas.getDocumentLanguage().equals("zho") || jcas.getDocumentLanguage().equals("jpn"))
 			return;
-		
+
 		Collection<Person> persons = JCasUtil.select(jcas, Person.class);
 		cleanAnnotation(persons);
 		Collection<Organization> organizations = JCasUtil.select(jcas, Organization.class);
@@ -189,8 +228,14 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 		Collection<Location> locations = JCasUtil.select(jcas, Location.class);
 		cleanAnnotation(locations);
 	}
-	
-	private void cleanAnnotation(Collection<?extends Annotation> annotations) {
+
+	/**
+	 * Remove unlikely annotation.
+	 *
+	 * @param annotations
+	 *            removal candidates
+	 */
+	private void cleanAnnotation(Collection<? extends Annotation> annotations) {
 		for (Annotation a : annotations) {
 			// less than two letters
 			String ne = a.getCoveredText();
