@@ -20,7 +20,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>uhh_lt.newsleak.preprocessing.Preprocessor</mainClass>
+							<mainClass>uhh_lt.newsleak.preprocessing.CreateCollection</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>

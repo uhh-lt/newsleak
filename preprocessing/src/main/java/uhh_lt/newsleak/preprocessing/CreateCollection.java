@@ -1,6 +1,6 @@
 package uhh_lt.newsleak.preprocessing;
 
-public class Preprocessor {
+public class CreateCollection {
 	
 	public static void main(String[] args) throws Exception
 	{
