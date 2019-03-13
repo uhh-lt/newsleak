@@ -34,50 +34,101 @@ import uhh_lt.newsleak.resources.HooverResource;
 import uhh_lt.newsleak.resources.MetadataResource;
 import uhh_lt.newsleak.types.Metadata;
 
+/**
+ * The HooverElasticsearchReader connects to a running instance of the Hoover
+ * text data extraction system created by the EIC.network (see
+ * <a href="https://hoover.github.io">https://hoover.github.io</a>). It utilizes
+ * the Hoover API to query for all extracted documents in a collection.
+ * 
+ * Hoover is expected to extract raw fulltext (regardless of any further NLP
+ * application or human analysts requirement). Newsleak takes Hoover's output
+ * and extracted file metadata (e.g. creation date).
+ * 
+ * Duplicated storage of fulltexts (with newly generated document IDs) is
+ * necessary since we clean and preprocess raw data for further annotation
+ * processes. Among others, this includes deletion of multiple blank lines
+ * (often extracted from Excel sheets), dehyphenation at line endings (a result
+ * from OCR-ed or badly encoded PDFs) , or splitting of long documents into
+ * chunks of roughly page length.
+ * 
+ * This reader sets document IDs to 0. The final document IDs will be generated
+ * as an automatically incremented by @see
+ * uhh_lt.newsleak.writer.ElasticsearchDocumentWriter
+ */
 public class HooverElasticsearchReader extends NewsleakReader {
 
+	/** The Constant RESOURCE_HOOVER. */
 	public static final String RESOURCE_HOOVER = "hooverResource";
+
+	/** The hoover resource. */
 	@ExternalResource(key = RESOURCE_HOOVER)
 	private HooverResource hooverResource;
 
+	/** The Constant RESOURCE_METADATA. */
 	public static final String RESOURCE_METADATA = "metadataResource";
+
+	/** The metadata resource. */
 	@ExternalResource(key = RESOURCE_METADATA)
 	private MetadataResource metadataResource;
 
+	/** The Constant PARAM_SCROLL_SIZE. */
 	private static final String PARAM_SCROLL_SIZE = "10000";
+
+	/** The Constant PARAM_SCROLL_TIME. */
 	private static final String PARAM_SCROLL_TIME = "1m";
 
+	/** JEST client to run JSON API requests. */
 	private JestClient client;
-	private String esIndex;
-	private String clientUrl;
 
+	/** The Hoover elasticsearch index. */
+	private String esIndex;
+
+	/** The total records. */
 	private int totalRecords = 0;
+
+	/** The current record. */
 	private int currentRecord = 0;
 
+	/** The list of all Ids. */
 	private ArrayList<String> totalIdList;
+
+	/** The date format. */
 	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+	/** The date created. */
 	SimpleDateFormat dateCreated = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+	/** The date json. */
 	SimpleDateFormat dateJson = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+
+	/** The email regex pattern. */
 	Pattern emailPattern = Pattern.compile("[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+");
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.apache.uima.fit.component.CasCollectionReader_ImplBase#initialize(org.
+	 * apache.uima.UimaContext)
+	 */
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		super.initialize(context);
 
 		logger = context.getLogger();
+		// init hoover connection
 		client = hooverResource.getClient();
 		esIndex = hooverResource.getIndex();
 
-		clientUrl = hooverResource.getClientUrl();
+		// query hoover's elasticsearch index
+		Search search = new Search.Builder(
+				"{\"query\": {\"match_all\" : {}}, \"_source\" : false, \"size\" : " + PARAM_SCROLL_SIZE + "}")
+						.addIndex(hooverResource.getIndex()).addType(HooverResource.HOOVER_DOCUMENT_TYPE)
+						.setParameter(Parameters.SCROLL, PARAM_SCROLL_TIME).build();
 
-		Search search = new Search.Builder("{\"query\": {\"match_all\" : {}}, \"_source\" : false, \"size\" : " + PARAM_SCROLL_SIZE + "}")  
-				.addIndex(hooverResource.getIndex())
-				.addType(HooverResource.HOOVER_DOCUMENT_TYPE)
-				.setParameter(Parameters.SCROLL, PARAM_SCROLL_TIME)
-				.build();
-		
 		try {
-			
+
+			// run JEST request
 			JestResult result = client.execute(search);
 
 			totalIdList = new ArrayList<String>();
@@ -94,6 +145,7 @@ public class HooverElasticsearchReader extends NewsleakReader {
 
 			String scrollId = result.getJsonObject().get("_scroll_id").getAsString();
 
+			// run scroll request to collect all Ids
 			int i = 0;
 			while (nHits > 0) {
 				SearchScroll scroll = new SearchScroll.Builder(scrollId, PARAM_SCROLL_TIME).build();
@@ -106,21 +158,26 @@ public class HooverElasticsearchReader extends NewsleakReader {
 				totalIdList.addAll(hooverResource.getIds(hits));
 				scrollId = result.getJsonObject().getAsJsonPrimitive("_scroll_id").getAsString();
 			}
-			
+
 			if (maxRecords > 0 && maxRecords < totalIdList.size()) {
 				totalIdList = new ArrayList<String>(totalIdList.subList(0, maxRecords));
 			}
 
 			totalRecords = totalIdList.size();
 			logger.log(Level.INFO, "Found " + totalRecords + " ids in index " + esIndex);
-			
+
 		} catch (IOException e) {
 			throw new ResourceInitializationException(e);
 		}
 
 	}
 
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.apache.uima.collection.CollectionReader#getNext(org.apache.uima.cas.CAS)
+	 */
 	public void getNext(CAS cas) throws IOException, CollectionException {
 		JCas jcas;
 		try {
@@ -129,12 +186,14 @@ public class HooverElasticsearchReader extends NewsleakReader {
 			throw new CollectionException(e);
 		}
 
-		String docIdNewsleak = Integer.toString(currentRecord); // "" + docId.hashCode();
+		// temporary document Id (a new will be generated by ElasticsearchDocumentWriter)
+		String docIdNewsleak = Integer.toString(currentRecord); 
 		String docIdHoover = totalIdList.get(currentRecord - 1);
-		
+
 		logger.log(Level.INFO, "Proceessing document: " + docIdHoover);
-		
-		Get get = new Get.Builder(hooverResource.getIndex(), docIdHoover).type(HooverResource.HOOVER_DOCUMENT_TYPE).build();
+
+		Get get = new Get.Builder(hooverResource.getIndex(), docIdHoover).type(HooverResource.HOOVER_DOCUMENT_TYPE)
+				.build();
 		JestResult getResult = client.execute(get);
 		JsonObject o = getResult.getJsonObject();
 		JsonObject source = o.get("_source").getAsJsonObject();
@@ -198,7 +257,8 @@ public class HooverElasticsearchReader extends NewsleakReader {
 			}
 
 			if (dateField != null && dateCreatedField != null) {
-				docDate = dateField.before(dateCreatedField) ? dateFormat.format(dateCreatedField) : dateFormat.format(dateField);
+				docDate = dateField.before(dateCreatedField) ? dateFormat.format(dateCreatedField)
+						: dateFormat.format(dateField);
 			} else {
 				if (dateField != null) {
 					docDate = dateFormat.format(dateField);
@@ -277,7 +337,16 @@ public class HooverElasticsearchReader extends NewsleakReader {
 		metadataResource.appendMetadata(metadata);
 
 	}
-	
+
+	/**
+	 * Returns a string field value from a JSON object.
+	 *
+	 * @param o
+	 *            the Json object
+	 * @param fieldname
+	 *            the fieldname
+	 * @return the field
+	 */
 	private String getField(JsonObject o, String fieldname) {
 		JsonElement fieldValue = o.get(fieldname);
 		if (fieldValue == null) {
@@ -286,7 +355,16 @@ public class HooverElasticsearchReader extends NewsleakReader {
 			return fieldValue.isJsonNull() ? null : fieldValue.getAsString();
 		}
 	}
-	
+
+	/**
+	 * Returns a boolean field value from a Json Object.
+	 *
+	 * @param o
+	 *            the Json object
+	 * @param fieldname
+	 *            the fieldname
+	 * @return the field boolean
+	 */
 	private Boolean getFieldBoolean(JsonObject o, String fieldname) {
 		JsonElement fieldValue = o.get(fieldname);
 		if (fieldValue == null) {
@@ -295,7 +373,16 @@ public class HooverElasticsearchReader extends NewsleakReader {
 			return fieldValue.isJsonNull() ? null : fieldValue.getAsBoolean();
 		}
 	}
-	
+
+	/**
+	 * Returns an array field value from a Json Object.
+	 *
+	 * @param o
+	 *            the Json object
+	 * @param fieldname
+	 *            the fieldname
+	 * @return the field array
+	 */
 	private JsonArray getFieldArray(JsonObject o, String fieldname) {
 		JsonElement fieldValue = o.get(fieldname);
 		if (fieldValue == null) {
@@ -305,6 +392,13 @@ public class HooverElasticsearchReader extends NewsleakReader {
 		}
 	}
 
+	/**
+	 * Extracts email addresses from a given string.
+	 *
+	 * @param s
+	 *            the string to match email patterns in
+	 * @return an array of email addresses
+	 */
 	private ArrayList<String> extractEmail(String s) {
 		ArrayList<String> emails = new ArrayList<String>();
 		Matcher m = emailPattern.matcher(s);
@@ -314,18 +408,21 @@ public class HooverElasticsearchReader extends NewsleakReader {
 		return emails;
 	}
 
-
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.apache.uima.collection.base_cpm.BaseCollectionReader#getProgress()
+	 */
 	public Progress[] getProgress() {
-		return new Progress[] {
-				new ProgressImpl(
-						Long.valueOf(currentRecord).intValue() - 1,
-						Long.valueOf(totalRecords).intValue(),
-						Progress.ENTITIES
-						)
-		};
+		return new Progress[] { new ProgressImpl(Long.valueOf(currentRecord).intValue() - 1,
+				Long.valueOf(totalRecords).intValue(), Progress.ENTITIES) };
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.apache.uima.collection.base_cpm.BaseCollectionReader#hasNext()
+	 */
 	public boolean hasNext() throws IOException, CollectionException {
 		if (currentRecord < totalRecords) {
 			currentRecord++;
