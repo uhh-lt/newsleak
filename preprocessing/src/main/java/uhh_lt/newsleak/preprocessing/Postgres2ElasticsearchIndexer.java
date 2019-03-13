@@ -61,7 +61,7 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 		indexer.getConfiguration(args);
 
 		indexer.initDb(indexer.dbName, indexer.dbUrl, indexer.dbUser, indexer.dbPass);
-		
+
 		indexer.setElasticsearchDefaultAnalyzer(indexer.defaultLanguage);
 
 		TransportClient client;
@@ -83,23 +83,20 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 		conn.close();
 	}
 
-
-
 	public String getElasticsearchDefaultAnalyzer() {
 		return elasticsearchDefaultAnalyzer;
 	}
 
-
-
 	public void setElasticsearchDefaultAnalyzer(String isoCode) {
 
 		// language analyzers supported by elasticsearch 2.4
-		HashMap<String, String> analyzers = new HashMap<String, String>(); 
+		HashMap<String, String> analyzers = new HashMap<String, String>();
 		analyzers.put("ara", "arabic");
 		analyzers.put("bul", "bulgarian");
 		analyzers.put("cat", "catalan");
 		analyzers.put("ces", "czech");
 		analyzers.put("dan", "danish");
+		analyzers.put("eng", "english");
 		analyzers.put("nld", "dutch");
 		analyzers.put("fin", "finnish");
 		analyzers.put("fra", "french");
@@ -123,10 +120,13 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 
 		// set elasticsearch analyse (english as default)
 		this.elasticsearchDefaultAnalyzer = analyzers.containsKey(isoCode) ? analyzers.get(isoCode) : "english";
-		
+
+		if (!analyzers.containsKey(isoCode)) {
+			this.logger.log(Level.WARNING, "Configuration parameter defaultlanguage=" + isoCode
+					+ " is not supported by elasticsearch language analyzers. Switching to 'english' as default elasticsearch analyzer.");
+		}
+
 	}
-
-
 
 	/**
 	 * Document indexer.
@@ -309,7 +309,7 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 					// perform concurrent bulk requests
 					synchronized (bulkRequestConcurrent) {
 						bulkRequestConcurrent
-						.add(client.prepareIndex(indexName, documentType, docId.toString()).setSource(xb));
+								.add(client.prepareIndex(indexName, documentType, docId.toString()).setSource(xb));
 						bblen.increment();
 
 						if (bblen.value() % BATCH_SIZE == 0) {
@@ -341,7 +341,6 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 
 	}
 
-
 	/**
 	 * Creates the elasticsearch index mappings.
 	 *
@@ -356,8 +355,8 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 	 * @throws SQLException
 	 *             the SQL exception
 	 */
-	public void createElasticsearchIndex(Client client, String indexName,
-			String documentType/* , String mapping */) throws IOException, SQLException {
+	public void createElasticsearchIndex(Client client, String indexName, String documentType/* , String mapping */)
+			throws IOException, SQLException {
 
 		IndicesExistsResponse res = client.admin().indices().prepareExists(indexName).execute().actionGet();
 		if (res.isExists()) {
@@ -369,12 +368,13 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 
 		XContentBuilder mappingBuilder = XContentFactory.jsonBuilder().startObject().startObject(documentType)
 				.startObject("properties");
-		mappingBuilder.startObject("Content").field("type", "string").field("analyzer", this.getElasticsearchDefaultAnalyzer()).endObject();
+		mappingBuilder.startObject("Content").field("type", "string")
+				.field("analyzer", this.getElasticsearchDefaultAnalyzer()).endObject();
 
 		mappingBuilder.startObject("Created").field("type", "date").field("format", "yyyy-MM-dd").
 
-		startObject("fields").startObject("raw").field("type", "date").field("format", "yyyy-MM-dd").endObject()
-		.endObject().endObject();
+				startObject("fields").startObject("raw").field("type", "date").field("format", "yyyy-MM-dd").endObject()
+				.endObject().endObject();
 
 		System.out.println("creating entities mapping ...");
 		createEntitesPerTypeMappings(mappingBuilder, "Entities");
@@ -438,12 +438,12 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 		mappingBuilder.startObject(neType);
 		mappingBuilder.startObject("properties");
 		mappingBuilder.startObject("EntId").field("type", "long").endObject();
-		mappingBuilder.startObject("Entname").field("type", "string").field("analyzer", this.getElasticsearchDefaultAnalyzer()).startObject("fields")
-		.startObject("raw").field("type", "string").field("index", "not_analyzed").endObject().endObject()
-		.endObject();
-		mappingBuilder.startObject("EntType").field("type", "string").field("analyzer", this.getElasticsearchDefaultAnalyzer()).startObject("fields")
-		.startObject("raw").field("type", "string").field("index", "not_analyzed").endObject().endObject()
-		.endObject();
+		mappingBuilder.startObject("Entname").field("type", "string")
+				.field("analyzer", this.getElasticsearchDefaultAnalyzer()).startObject("fields").startObject("raw")
+				.field("type", "string").field("index", "not_analyzed").endObject().endObject().endObject();
+		mappingBuilder.startObject("EntType").field("type", "string")
+				.field("analyzer", this.getElasticsearchDefaultAnalyzer()).startObject("fields").startObject("raw")
+				.field("type", "string").field("index", "not_analyzed").endObject().endObject().endObject();
 		mappingBuilder.startObject("EntFrequency").field("type", "long").endObject().endObject().endObject();
 	}
 
@@ -459,16 +459,17 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 		mappingBuilder.startObject("EventTimes");
 		mappingBuilder.startObject("properties");
 		mappingBuilder.startObject("Beginoffset").field("type", "long").endObject().startObject("Endoffset")
-		.field("type", "long").endObject();
-		mappingBuilder.startObject("TimeXType").field("type", "string").field("analyzer", this.getElasticsearchDefaultAnalyzer())
-		.startObject("fields").startObject("raw").field("type", "string").field("index", "not_analyzed")
-		.endObject().endObject().endObject();
-		mappingBuilder.startObject("Timex").field("type", "string").field("analyzer", this.getElasticsearchDefaultAnalyzer()).startObject("fields")
-		.startObject("raw").field("type", "string").field("index", "not_analyzed").endObject().endObject()
-		.endObject();
-		mappingBuilder.startObject("Timexvalue").field("type", "string").field("analyzer", this.getElasticsearchDefaultAnalyzer())
-		.startObject("fields").startObject("raw").field("type", "string").field("index", "not_analyzed")
-		.endObject().endObject().endObject().endObject().endObject();
+				.field("type", "long").endObject();
+		mappingBuilder.startObject("TimeXType").field("type", "string")
+				.field("analyzer", this.getElasticsearchDefaultAnalyzer()).startObject("fields").startObject("raw")
+				.field("type", "string").field("index", "not_analyzed").endObject().endObject().endObject();
+		mappingBuilder.startObject("Timex").field("type", "string")
+				.field("analyzer", this.getElasticsearchDefaultAnalyzer()).startObject("fields").startObject("raw")
+				.field("type", "string").field("index", "not_analyzed").endObject().endObject().endObject();
+		mappingBuilder.startObject("Timexvalue").field("type", "string")
+				.field("analyzer", this.getElasticsearchDefaultAnalyzer()).startObject("fields").startObject("raw")
+				.field("type", "string").field("index", "not_analyzed").endObject().endObject().endObject().endObject()
+				.endObject();
 	}
 
 	/**
@@ -482,9 +483,9 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 	private void createKeywordsMappings(XContentBuilder mappingBuilder) throws IOException {
 		mappingBuilder.startObject("Keywords");
 		mappingBuilder.startObject("properties");
-		mappingBuilder.startObject("Keyword").field("type", "String").field("analyzer", this.getElasticsearchDefaultAnalyzer()).startObject("fields")
-		.startObject("raw").field("type", "string").field("index", "not_analyzed").endObject().endObject()
-		.endObject();
+		mappingBuilder.startObject("Keyword").field("type", "String")
+				.field("analyzer", this.getElasticsearchDefaultAnalyzer()).startObject("fields").startObject("raw")
+				.field("type", "string").field("index", "not_analyzed").endObject().endObject().endObject();
 		mappingBuilder.startObject("TermFrequency").field("type", "long").endObject().endObject().endObject();
 	}
 
@@ -498,9 +499,9 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 	 */
 	private static void createSimpleTimexMappings(XContentBuilder mappingBuilder) throws IOException {
 		mappingBuilder.startObject("SimpleTimeExpresion").field("type", "date")
-		.field("format", "yyyy-MM-dd || yyyy || yyyy-MM").startObject("fields").startObject("raw")
-		.field("type", "date").field("format", "yyyy-MM-dd || yyyy || yyyy-MM").endObject().endObject()
-		.endObject();
+				.field("format", "yyyy-MM-dd || yyyy || yyyy-MM").startObject("fields").startObject("raw")
+				.field("type", "date").field("format", "yyyy-MM-dd || yyyy || yyyy-MM").endObject().endObject()
+				.endObject();
 
 	}
 
@@ -519,7 +520,7 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 	private static void createMetadataMappings(XContentBuilder mappingBuilder, String meta, String type)
 			throws IOException {
 		mappingBuilder.startObject(meta).field("type", type).startObject("fields").startObject("raw")
-		.field("type", type).field("index", "not_analyzed").endObject().endObject().endObject();
+				.field("type", type).field("index", "not_analyzed").endObject().endObject().endObject();
 
 	}
 
