@@ -12,9 +12,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import uhh_lt.newsleak.util.AtomicCounter;
 import uhh_lt.newsleak.util.ResultSetIterable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -606,37 +607,7 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 		}
 	}
 
-	/**
-	 * AtomicCounter to concurrently count up indexes.
-	 */
-	class AtomicCounter {
-
-		/** A concurrent integer. */
-		private AtomicInteger c = new AtomicInteger(0);
-
-		/**
-		 * Increment.
-		 */
-		public void increment() {
-			c.incrementAndGet();
-		}
-
-		/**
-		 * Decrement.
-		 */
-		public void decrement() {
-			c.decrementAndGet();
-		}
-
-		/**
-		 * The value of the counter.
-		 *
-		 * @return the int
-		 */
-		public int value() {
-			return c.get();
-		}
-	}
+	
 
 	/**
 	 * The Class BulkRequestConcurrent.

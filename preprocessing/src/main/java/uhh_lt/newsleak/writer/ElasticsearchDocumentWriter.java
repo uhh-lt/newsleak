@@ -79,17 +79,17 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 			docText = replaceHtmlLineBreaks(docText);
 
 			Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
-			String docId = metadata.getDocId();
+			String tmpDocId = metadata.getDocId();
 
 			if (!splitIntoParagraphs) {
-				writeToIndex(jcas, docText, docId);
+				writeToIndex(jcas, docText, tmpDocId);
 			} else {
 				annotateParagraphs(jcas);
 				int i = 0;
 				for (Paragraph paragraph : JCasUtil.select(jcas, Paragraph.class)) {
 					i++;
-					String pId = "" + (Integer.parseInt(docId) + i);
-					writeToIndex(jcas, paragraph.getCoveredText(), pId);
+					String tmpParagraphId = tmpDocId + "_" + i;
+					writeToIndex(jcas, paragraph.getCoveredText(), tmpParagraphId);
 				}
 
 			}
@@ -98,10 +98,10 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 
 	}
 
-	public void writeToIndex(JCas jcas, String docText, String docId) {
+	public void writeToIndex(JCas jcas, String docText, String tmpDocId) {
 
 		if (docText.length() > maxDocumentLength) {
-			logger.log(Level.SEVERE, "Skipping document " + docId + ". Exceeds maximum length (" + maxDocumentLength + ")");
+			logger.log(Level.SEVERE, "Skipping document " + tmpDocId + ". Exceeds maximum length (" + maxDocumentLength + ")");
 		} else {
 			Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -111,21 +111,21 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 				Date created = dateFormat.parse(metadata.getTimestamp());
 				builder = XContentFactory.jsonBuilder()
 						.startObject()
-						.field("id", docId)
+						.field("id", esResource.getNextDocumentId()) // returns an autoincrement value to generate newsleak document ids
 						.field("Content", docText)
 						.field("Created", dateFormat.format(created))
 						.field("DocumentLanguage", jcas.getDocumentLanguage())
 						.endObject();
-				IndexResponse response = client.prepareIndex(esResource.getIndex(), ES_TYPE_DOCUMENT, docId)
+				IndexResponse response = client.prepareIndex(esResource.getIndex(), ES_TYPE_DOCUMENT, tmpDocId)
 						.setSource(builder).get();
 				logger.log(Level.INFO, response.toString());
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (ParseException e) {
-				logger.log(Level.SEVERE, "Could not parse document date from document " + docId);
+				logger.log(Level.SEVERE, "Could not parse document date from document " + tmpDocId);
 				e.printStackTrace();
 			} catch (NullPointerException e) {
-				logger.log(Level.SEVERE, "No date for document " + docId);
+				logger.log(Level.SEVERE, "No date for document " + tmpDocId);
 				e.printStackTrace();
 			}
 		}	

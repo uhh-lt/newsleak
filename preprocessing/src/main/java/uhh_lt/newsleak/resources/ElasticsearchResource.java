@@ -23,6 +23,8 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
 
+import uhh_lt.newsleak.util.AtomicCounter;
+
 public class ElasticsearchResource extends Resource_ImplBase {
 
 	private Logger logger;
@@ -55,6 +57,7 @@ public class ElasticsearchResource extends Resource_ImplBase {
 
 	private TransportClient client;
 
+	AtomicCounter autoincrementValue;
 
 	@Override
 	public boolean initialize(ResourceSpecifier aSpecifier, Map<String, Object> aAdditionalParams)
@@ -74,6 +77,7 @@ public class ElasticsearchResource extends Resource_ImplBase {
 			e.printStackTrace();
 			System.exit(0);
 		}
+		autoincrementValue = new AtomicCounter();
 		return true;
 	}
 
@@ -128,6 +132,11 @@ public class ElasticsearchResource extends Resource_ImplBase {
 		createIndexRequestBuilder.addMapping(DOCUMENT_TYPE, builder);
 		createIndexRequestBuilder.execute().actionGet();
 
+	}
+	
+	public synchronized int getNextDocumentId() {
+		autoincrementValue.increment();
+		return autoincrementValue.value();
 	}
 
 }
