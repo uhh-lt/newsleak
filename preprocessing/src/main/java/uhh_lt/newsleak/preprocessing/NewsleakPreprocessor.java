@@ -24,6 +24,7 @@ import org.apache.uima.resource.ExternalResourceDescription;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.apache.uima.util.Logger;
 
+import uhh_lt.newsleak.resources.ElasticsearchResource;
 import uhh_lt.newsleak.resources.MetadataResource;
 
 // TODO: Auto-generated Javadoc
@@ -226,6 +227,24 @@ public abstract class NewsleakPreprocessor {
 					MetadataResource.PARAM_RESET_METADATA_FILE, "true");
 		}
 		return metadataResourceDesc;
+	}
+	
+	
+	/**
+	 * Gets the elasticsearch resource description.
+	 *
+	 * @param createNewIndex Should be "true" or "false". If "true", the index will be newly created (a pre-existing index with the same name will be overwritten)
+	 * @return the metadata resource description
+	 */
+	protected ExternalResourceDescription getElasticsearchResourceDescription(String createNewIndex) {
+		ExternalResourceDescription esResource = ExternalResourceFactory.createExternalResourceDescription(
+				ElasticsearchResource.class, ElasticsearchResource.PARAM_CREATE_INDEX, createNewIndex,
+				ElasticsearchResource.PARAM_CLUSTERNAME, this.esClustername, ElasticsearchResource.PARAM_INDEX,
+				this.esIndex, ElasticsearchResource.PARAM_HOST, this.esHost, ElasticsearchResource.PARAM_PORT,
+				this.esPort, ElasticsearchResource.PARAM_DOCUMENT_MAPPING_FILE,
+				"desc/elasticsearch_mapping_document_2.4.json",
+				ElasticsearchResource.PARAM_METADATA_FILE, this.dataDirectory + File.separator + this.metadataFile);
+		return esResource;
 	}
 
 }
