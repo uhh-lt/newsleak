@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,43 +81,47 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 
 			Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
 			String tmpDocId = metadata.getDocId();
+			ArrayList<Integer> newsleakDocIds = new ArrayList<Integer>();
 
 			if (!splitIntoParagraphs) {
-				writeToIndex(jcas, docText, tmpDocId);
+				newsleakDocIds.add(writeToIndex(jcas, docText, tmpDocId));
 			} else {
 				annotateParagraphs(jcas);
-				int i = 0;
 				for (Paragraph paragraph : JCasUtil.select(jcas, Paragraph.class)) {
-					i++;
-					String tmpParagraphId = tmpDocId + "_" + i;
-					writeToIndex(jcas, paragraph.getCoveredText(), tmpParagraphId);
+					newsleakDocIds.add(writeToIndex(jcas, paragraph.getCoveredText(), tmpDocId));
 				}
-
 			}
+			
+			esResource.addDocumentIdMapping(Integer.parseInt(tmpDocId), newsleakDocIds);
 
 		}
 
 	}
 
-	public void writeToIndex(JCas jcas, String docText, String tmpDocId) {
+	public Integer writeToIndex(JCas jcas, String docText, String tmpDocId) {
+		
+		Integer newsleakDocId = null;
 
 		if (docText.length() > maxDocumentLength) {
 			logger.log(Level.SEVERE, "Skipping document " + tmpDocId + ". Exceeds maximum length (" + maxDocumentLength + ")");
 		} else {
 			Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			
+			// generate new id from auto-increment
+			newsleakDocId = esResource.getNextDocumentId();
 
 			XContentBuilder builder;
 			try {
 				Date created = dateFormat.parse(metadata.getTimestamp());
 				builder = XContentFactory.jsonBuilder()
 						.startObject()
-						.field("id", esResource.getNextDocumentId()) // returns an autoincrement value to generate newsleak document ids
+						.field("id", newsleakDocId.toString()) // returns an autoincrement value to generate newsleak document ids
 						.field("Content", docText)
 						.field("Created", dateFormat.format(created))
 						.field("DocumentLanguage", jcas.getDocumentLanguage())
 						.endObject();
-				IndexResponse response = client.prepareIndex(esResource.getIndex(), ES_TYPE_DOCUMENT, tmpDocId)
+				IndexResponse response = client.prepareIndex(esResource.getIndex(), ES_TYPE_DOCUMENT, newsleakDocId.toString())
 						.setSource(builder).get();
 				logger.log(Level.INFO, response.toString());
 			} catch (IOException e) {
@@ -130,6 +135,7 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 			}
 		}	
 
+		return newsleakDocId;
 	}
 
 
@@ -212,4 +218,16 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 
 	}
 
+	@Override
+	public void collectionProcessComplete() throws AnalysisEngineProcessException {
+		try {
+			esResource.writeDocumentIdMapping();
+		} catch (IOException e) {
+			throw new AnalysisEngineProcessException(e);
+		}
+		super.collectionProcessComplete();
+	}
+
+	
+	
 }

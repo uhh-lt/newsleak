@@ -34,7 +34,6 @@ import org.tartarus.snowball.ext.spanishStemmer;
 import org.tartarus.snowball.ext.swedishStemmer;
 import org.tartarus.snowball.ext.turkishStemmer;
 
-import opennlp.uima.Token;
 import uhh_lt.newsleak.annotator.LanguageDetector;
 
 public class DictionaryResource extends Resource_ImplBase {

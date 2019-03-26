@@ -1,17 +1,26 @@
 package uhh_lt.newsleak.preprocessing;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionProcessingEngine;
 import org.apache.uima.collection.CollectionReaderDescription;
@@ -125,17 +134,63 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor {
 	 * See <i>data/metadata_example.csv</i> for an example.
 	 */
 	private void metadataToPostgres() {
+
 		try {
+			// we need a mapping of document ids since ElasticsearchDocumentWriter generates
+			// new Ids from an autoincrement-value
+			String mappedMetadataFilepath = this.dataDirectory + File.separator + this.metadataFile + ".mapped";
+			mappingIdsInMetadata(mappedMetadataFilepath);
+
+			// import csv into postgres db
 			CopyManager cpManager = new CopyManager((BaseConnection) conn);
 			st.executeUpdate("TRUNCATE TABLE metadata;");
-			String metaFile = this.dataDirectory + File.separator + this.metadataFile;
-			this.logger.log(Level.INFO, "Importing metadata from " + metaFile);
-			Long n = cpManager.copyIn("COPY metadata FROM STDIN WITH CSV", new FileReader(metaFile));
+			this.logger.log(Level.INFO, "Importing metadata from " + mappedMetadataFilepath);
+			Long n = cpManager.copyIn("COPY metadata FROM STDIN WITH CSV", new FileReader(mappedMetadataFilepath));
 			this.logger.log(Level.INFO, n + " metadata imported");
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
+	}
+
+	private void mappingIdsInMetadata(String mappedMetadataFile) throws Exception {
+		// read mappings file
+		FileInputStream fis = new FileInputStream(this.dataDirectory + File.separator + this.metadataFile + ".id-map");
+		ObjectInputStream ois = new ObjectInputStream(fis);
+		HashMap<Integer, ArrayList<Integer>> documentIdMapping = (HashMap<Integer, ArrayList<Integer>>) ois
+				.readObject();
+		ois.close();
+
+		// open metadata file, replace ids, write to temporary metadata file
+		BufferedWriter writer = new BufferedWriter(new FileWriter(mappedMetadataFile));
+		CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.RFC4180);
+
+		BufferedReader reader = new BufferedReader(new FileReader(this.dataDirectory + File.separator + this.metadataFile));
+		Iterable<CSVRecord> records = CSVFormat.RFC4180.parse(reader);
+		for (CSVRecord record : records) {
+			Integer tmpDocId = Integer.parseInt(record.get(0));
+			if (documentIdMapping.containsKey(tmpDocId)) { 
+				ArrayList<Integer> mappedIds = documentIdMapping.get(tmpDocId);
+				int nParts = mappedIds.size();
+				int partCounter = 0;
+				for (Integer newsleakDocId : mappedIds) {
+					String key = StringUtils.capitalize(record.get(1));
+					String value = record.get(2);
+					if (nParts > 0 && key.equals("Subject")) {
+						partCounter++;
+						value += " (" + partCounter + "/" + nParts + ")";
+					}
+					ArrayList<String> meta = new ArrayList<String>();
+					meta.add(newsleakDocId.toString());
+					meta.add(key);
+					meta.add(value);
+					meta.add(record.get(3));
+					csvPrinter.printRecord(meta);
+				}
+			}
+		}
+		csvPrinter.close();
+		reader.close();
 	}
 
 	/**
@@ -210,14 +265,9 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor {
 				LanguageDetector.DOCLANG_FILE, "data/documentLanguages.ser");
 
 		// elasticsearch writer to store fulltexts
-		ExternalResourceDescription esResource = ExternalResourceFactory.createExternalResourceDescription(
-				ElasticsearchResource.class, ElasticsearchResource.PARAM_CREATE_INDEX, "true",
-				ElasticsearchResource.PARAM_CLUSTERNAME, this.esClustername, ElasticsearchResource.PARAM_INDEX,
-				this.esIndex, ElasticsearchResource.PARAM_HOST, this.esHost, ElasticsearchResource.PARAM_PORT,
-				this.esPort, ElasticsearchResource.PARAM_DOCUMENT_MAPPING_FILE,
-				"desc/elasticsearch_mapping_document_2.4.json");
 		AnalysisEngineDescription esWriter = AnalysisEngineFactory.createEngineDescription(
-				ElasticsearchDocumentWriter.class, ElasticsearchDocumentWriter.RESOURCE_ESCLIENT, esResource,
+				ElasticsearchDocumentWriter.class, ElasticsearchDocumentWriter.RESOURCE_ESCLIENT,
+				this.getElasticsearchResourceDescription("true"),
 				ElasticsearchDocumentWriter.PARAM_PARAGRAPHS_AS_DOCUMENTS, this.paragraphsAsDocuments,
 				ElasticsearchDocumentWriter.PARAM_MAX_DOC_LENGTH, this.maxDocumentLength);
 
@@ -274,15 +324,10 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor {
 			Thread.sleep(2000);
 
 			// reader
-			ExternalResourceDescription esResource = ExternalResourceFactory.createExternalResourceDescription(
-					ElasticsearchResource.class, ElasticsearchResource.PARAM_CREATE_INDEX, "false",
-					ElasticsearchResource.PARAM_HOST, this.esHost, ElasticsearchResource.PARAM_CLUSTERNAME,
-					this.esClustername, ElasticsearchResource.PARAM_INDEX, this.esIndex,
-					ElasticsearchResource.PARAM_PORT, this.esPort, ElasticsearchResource.PARAM_DOCUMENT_MAPPING_FILE,
-					"desc/elasticsearch_mapping_document_2.4.json");
 			CollectionReaderDescription esReader = CollectionReaderFactory.createReaderDescription(
 					NewsleakElasticsearchReader.class, this.typeSystem, NewsleakElasticsearchReader.RESOURCE_ESCLIENT,
-					esResource, NewsleakElasticsearchReader.PARAM_LANGUAGE, currentLanguage);
+					this.getElasticsearchResourceDescription("false"), NewsleakElasticsearchReader.PARAM_LANGUAGE,
+					currentLanguage);
 
 			// sentences
 			AnalysisEngineDescription sentenceICU = AnalysisEngineFactory.createEngineDescription(SegmenterICU.class,

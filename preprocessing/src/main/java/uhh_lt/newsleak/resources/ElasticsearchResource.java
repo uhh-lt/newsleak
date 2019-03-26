@@ -1,8 +1,13 @@
 package uhh_lt.newsleak.resources;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,11 +58,19 @@ public class ElasticsearchResource extends Resource_ImplBase {
 			description = "If true, an new index will be created (existing index will be removed).")
 	private boolean createIndex;
 
-	// private HashMap<String, Object> knownMappings;
-
+	public static final String PARAM_METADATA_FILE = "mMetadata";
+	@ConfigurationParameter(name = PARAM_METADATA_FILE)
+	private String mMetadata;
+	
+	private File metadataFile;
+	
 	private TransportClient client;
 
-	AtomicCounter autoincrementValue;
+	// generator for new document Ids
+	private AtomicCounter autoincrementValue;
+	// tmp_doc_id : new_doc_ids (necessary for paragraph splitting and correct metadata association)
+	private HashMap<Integer, ArrayList<Integer>> documentIdMapping;
+	private boolean documentIdMappingWritten = false; 
 
 	@Override
 	public boolean initialize(ResourceSpecifier aSpecifier, Map<String, Object> aAdditionalParams)
@@ -78,7 +91,15 @@ public class ElasticsearchResource extends Resource_ImplBase {
 			System.exit(0);
 		}
 		autoincrementValue = new AtomicCounter();
+		documentIdMapping = new HashMap<Integer, ArrayList<Integer>>();
+		metadataFile = new File(mMetadata + ".id-map");
 		return true;
+	}
+
+
+	private File File(String string) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 
@@ -138,5 +159,19 @@ public class ElasticsearchResource extends Resource_ImplBase {
 		autoincrementValue.increment();
 		return autoincrementValue.value();
 	}
+	
+	public synchronized void addDocumentIdMapping(Integer tmpId, ArrayList<Integer> newIds) {
+		documentIdMapping.put(tmpId, newIds);
+	}
 
+	public synchronized void writeDocumentIdMapping() throws IOException {
+		logger.log(Level.INFO, "Writing document id mapping file " + metadataFile);
+		if (!documentIdMappingWritten) {
+			FileOutputStream fos = new FileOutputStream(metadataFile);
+	        ObjectOutputStream oos = new ObjectOutputStream(fos);
+	        oos.writeObject(documentIdMapping);
+	        oos.close();
+			documentIdMappingWritten = true;
+		}
+	}
 }
