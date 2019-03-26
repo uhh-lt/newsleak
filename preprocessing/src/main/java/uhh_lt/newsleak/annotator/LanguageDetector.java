@@ -16,6 +16,7 @@ import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.descriptor.ExternalResource;
+import org.apache.uima.fit.descriptor.OperationalProperties;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Logger;
@@ -34,6 +35,7 @@ import uhh_lt.newsleak.types.Metadata;
  * ISO codes for supported languages (one per line) should reside in
  * <i>resources/supportedLanguages.txt</i>
  */
+@OperationalProperties(multipleDeploymentAllowed=true, modifiesCas=true)
 public class LanguageDetector extends JCasAnnotator_ImplBase {
 
 	/** The OpenNLP model. */
