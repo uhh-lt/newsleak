@@ -27,9 +27,8 @@ import org.apache.uima.util.Logger;
 import uhh_lt.newsleak.resources.ElasticsearchResource;
 import uhh_lt.newsleak.resources.MetadataResource;
 
-// TODO: Auto-generated Javadoc
 /**
- * Abtract class to provide common functionality for each newsleak data reader
+ * Abstract class to provide common functionality for each newsleak data reader
  * (e.g. processing the preprocessing configuration file, initialization of the
  * postgres database connection, and the metadata UIMA resource initialization).
  *

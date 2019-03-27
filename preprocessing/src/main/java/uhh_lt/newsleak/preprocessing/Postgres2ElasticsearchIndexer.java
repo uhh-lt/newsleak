@@ -39,14 +39,20 @@ import org.elasticsearch.common.xcontent.XContentFactory;
  * The Class Postgres2ElasticsearchIndexer reads fulltext and extracted
  * information from the newsleak postgres database and feeds it to the newsleak
  * elasticsearch index. For this, several mappings of elasticsearch data objects
- * have to be created. Indexing itself is carried out in parallel bulk requests.
+ * are created. Indexing itself is carried out in parallel bulk requests.
+ * 
+ * As analyzer for fulltext search, one elasticsearch language analyzer is
+ * used. The analyzer used is to be configured as defaultlanguage configuration
+ * variable in the preprocessing configuration (ISO 639-3 code). If in
+ * elasticsearch no language analyzer for a given language code is available,
+ * the the English analyzer is used.
  */
 public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 
 	/** The Constant BATCH_SIZE. */
 	private static final int BATCH_SIZE = 100;
 
-	private String elasticsearchDefaultAnalyzer = "english";
+	private String elasticsearchDefaultAnalyzer;
 
 	/**
 	 * The main method.
@@ -606,8 +612,6 @@ public class Postgres2ElasticsearchIndexer extends NewsleakPreprocessor {
 
 		}
 	}
-
-	
 
 	/**
 	 * The Class BulkRequestConcurrent.
