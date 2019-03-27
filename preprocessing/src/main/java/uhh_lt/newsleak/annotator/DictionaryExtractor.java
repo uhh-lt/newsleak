@@ -65,7 +65,7 @@ public class DictionaryExtractor extends JCasAnnotator_ImplBase {
 
 	/** PARAM_EXTRACT_URL. */
 	public static final String PARAM_EXTRACT_URL = "extractUrl";
-	@ConfigurationParameter(name = PARAM_EXTRACT_URL, mandatory = false, defaultValue = "true")
+	@ConfigurationParameter(name = PARAM_EXTRACT_URL, mandatory = false, defaultValue = "false")
 	private boolean extractUrl;
 
 	/** PARAM_EXTRACT_IP. */

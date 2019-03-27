@@ -55,7 +55,7 @@ public abstract class NewsleakPreprocessor {
 	protected Integer maxDocumentLength;
 	protected Integer threads;
 	protected Integer debugMaxDocuments;
-
+	
 	// csv externally preprocessed data
 	protected String documentFile;
 	protected String metadataFile;
@@ -84,7 +84,13 @@ public abstract class NewsleakPreprocessor {
 
 	// newsleak-ner microservice configuration
 	protected String nerServiceUrl;
+	
+	// dictionary and pattern extraction
 	protected String dictionaryFiles;
+	protected boolean patternEmail;
+	protected boolean patternUrl;
+	protected boolean patternPhone;
+	protected boolean patternIP;
 
 	// UIMA configuration variables
 	protected TypeSystemDescription typeSystem;
@@ -151,7 +157,12 @@ public abstract class NewsleakPreprocessor {
 			dbIndices = prop.getProperty("dbindices");
 
 			nerServiceUrl = prop.getProperty("nerserviceurl");
+			
 			dictionaryFiles = prop.getProperty("dictionaryfiles");
+			patternEmail = Boolean.parseBoolean(prop.getProperty("patternemail", "true"));
+			patternUrl = Boolean.parseBoolean(prop.getProperty("patternurl", "false"));
+			patternPhone = Boolean.parseBoolean(prop.getProperty("patternphone", "false"));
+			patternIP = Boolean.parseBoolean(prop.getProperty("patternip", "false"));
 
 			threads = Integer.valueOf(prop.getProperty("threads"));
 			debugMaxDocuments = Integer.valueOf(prop.getProperty("debugMaxDocuments"));

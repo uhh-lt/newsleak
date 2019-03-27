@@ -34,17 +34,6 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
-import opennlp.uima.Sentence;
-import opennlp.uima.Token;
-import opennlp.uima.namefind.NameFinder;
-import opennlp.uima.namefind.TokenNameFinderModelResourceImpl;
-import opennlp.uima.postag.POSModelResourceImpl;
-import opennlp.uima.postag.POSTagger;
-import opennlp.uima.sentdetect.SentenceDetector;
-import opennlp.uima.sentdetect.SentenceModelResourceImpl;
-import opennlp.uima.tokenize.Tokenizer;
-import opennlp.uima.tokenize.TokenizerModelResourceImpl;
-import opennlp.uima.util.UimaUtil;
 import uhh_lt.newsleak.annotator.DictionaryExtractor;
 import uhh_lt.newsleak.annotator.HeidelTimeOpenNLP;
 import uhh_lt.newsleak.annotator.KeytermExtractor;
@@ -356,7 +345,12 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor {
 					this.configDir + File.separator + "dictionaries", DictionaryResource.PARAM_DICTIONARY_FILES,
 					this.dictionaryFiles, DictionaryResource.PARAM_LANGUAGE_CODE, currentLanguage);
 			AnalysisEngineDescription dictionaries = AnalysisEngineFactory.createEngineDescription(
-					DictionaryExtractor.class, DictionaryExtractor.RESOURCE_DICTIONARIES, dictResource);
+					DictionaryExtractor.class, 
+					DictionaryExtractor.RESOURCE_DICTIONARIES, dictResource,
+					DictionaryExtractor.PARAM_EXTRACT_EMAIL, this.patternEmail,
+					DictionaryExtractor.PARAM_EXTRACT_URL, this.patternUrl,
+					DictionaryExtractor.PARAM_EXTRACT_PHONE, this.patternPhone,
+					DictionaryExtractor.PARAM_EXTRACT_IP, this.patternIP);
 
 			// alternative writers for testing purposes (rawtext, xmi) ...
 			// ... raw text writer
