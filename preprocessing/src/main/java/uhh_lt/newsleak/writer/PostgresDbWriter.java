@@ -26,17 +26,34 @@ import uhh_lt.newsleak.resources.PostgresResource;
 import uhh_lt.newsleak.types.DictTerm;
 import uhh_lt.newsleak.types.Metadata;
 
-@OperationalProperties(multipleDeploymentAllowed=true, modifiesCas=false)
+/**
+ * A writer to populate the newsleak postgres database with final fulltexts and
+ * extracted entities from a prior annotation chain. This writer does not modify
+ * the documents.
+ */
+@OperationalProperties(multipleDeploymentAllowed = true, modifiesCas = false)
 public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 
+	/** The logger. */
 	private Logger logger;
 
+	/** The Constant RESOURCE_POSTGRES. */
 	public static final String RESOURCE_POSTGRES = "postgresResource";
+
+	/** The postgres resource. */
 	@ExternalResource(key = RESOURCE_POSTGRES)
 	private PostgresResource postgresResource;
 
+	/** The time formatter. */
 	private NewsleakTimeFormatter timeFormatter;
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.apache.uima.fit.component.JCasAnnotator_ImplBase#initialize(org.apache.
+	 * uima.UimaContext)
+	 */
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		super.initialize(context);
@@ -44,7 +61,12 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 		timeFormatter = new NewsleakTimeFormatter();
 	}
 
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.apache.uima.analysis_component.AnalysisComponent_ImplBase#
+	 * collectionProcessComplete()
+	 */
 	@Override
 	public void collectionProcessComplete() throws AnalysisEngineProcessException {
 		super.collectionProcessComplete();
@@ -52,6 +74,13 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 		postgresResource.commit();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.apache.uima.analysis_component.JCasAnnotator_ImplBase#process(org.apache.
+	 * uima.jcas.JCas)
+	 */
 	@Override
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
 
@@ -72,7 +101,7 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 			processEntities(orgs, "ORG", docId);
 			Collection<Location> locs = JCasUtil.select(jcas, Location.class);
 			processEntities(locs, "LOC", docId);
-			
+
 			// dictionary entities
 			HashMap<String, HashSet<DictTerm>> dictAnnotations = new HashMap<String, HashSet<DictTerm>>();
 			HashMap<String, HashMap<String, String>> baseFormMap = new HashMap<String, HashMap<String, String>>();
@@ -81,10 +110,10 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 				Collection<String> typeList = FSCollectionFactory.create(dictTerm.getDictType());
 				int i = 0;
 				for (String type : typeList) {
-					HashSet<DictTerm> typeTerms = dictAnnotations.containsKey(type) ? 
-							dictAnnotations.get(type) : new HashSet<DictTerm>();
-					HashMap<String, String> baseForms = baseFormMap.containsKey(type) ? 
-							baseFormMap.get(type) : new HashMap<String, String>();
+					HashSet<DictTerm> typeTerms = dictAnnotations.containsKey(type) ? dictAnnotations.get(type)
+							: new HashSet<DictTerm>();
+					HashMap<String, String> baseForms = baseFormMap.containsKey(type) ? baseFormMap.get(type)
+							: new HashMap<String, String>();
 					typeTerms.add(dictTerm);
 					baseForms.put(dictTerm.getCoveredText(), dictTerm.getDictTerm().getNthElement(i));
 					i++;
@@ -96,8 +125,6 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 				processEntities(dictAnnotations.get(type), type, docId, baseFormMap.get(type));
 			}
 
-			
-			
 			// eventtime
 			ArrayList<String> extractedTimes = timeFormatter.format(jcas);
 			if (extractedTimes.size() > 0) {
@@ -106,15 +133,15 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 					try {
 						String formattedDate = timeFormatter.filterDate(items[4]);
 						if (formattedDate != null) {
-							postgresResource.insertEventtime(docId, Integer.parseInt(items[0]), Integer.parseInt(items[1]), items[2], items[3], formattedDate);
+							postgresResource.insertEventtime(docId, Integer.parseInt(items[0]),
+									Integer.parseInt(items[1]), items[2], items[3], formattedDate);
 						}
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						System.out.println(items);
 					}
 				}
 			}
-			
+
 			// terms
 			String keytermList = metadata.getKeyterms();
 			if (keytermList != null) {
@@ -124,11 +151,10 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 						postgresResource.insertKeyterms(docId, termFrq[0], Integer.parseInt(termFrq[1]));
 					}
 				}
-			}			
-			
+			}
+
 			// execute batches
 			postgresResource.executeBatches();
-
 
 		} catch (SQLException e) {
 			logger.log(Level.SEVERE, "Could not write document " + docId);
@@ -138,15 +164,42 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		
+
 	}
-	
-	
-	private void processEntities(Collection<? extends Annotation> matches, String type, Integer docId) throws SQLException {
+
+	/**
+	 * Process entities.
+	 *
+	 * @param matches
+	 *            the matches
+	 * @param type
+	 *            the type
+	 * @param docId
+	 *            the doc id
+	 * @throws SQLException
+	 *             the SQL exception
+	 */
+	private void processEntities(Collection<? extends Annotation> matches, String type, Integer docId)
+			throws SQLException {
 		processEntities(matches, type, docId, null);
 	}
 
-	private void processEntities(Collection<? extends Annotation> matches, String type, Integer docId, HashMap<String, String> baseForms) throws SQLException {
+	/**
+	 * Process entities.
+	 *
+	 * @param matches
+	 *            the matches
+	 * @param type
+	 *            the type
+	 * @param docId
+	 *            the doc id
+	 * @param baseForms
+	 *            the base forms
+	 * @throws SQLException
+	 *             the SQL exception
+	 */
+	private void processEntities(Collection<? extends Annotation> matches, String type, Integer docId,
+			HashMap<String, String> baseForms) throws SQLException {
 		HashMap<String, Integer> counter = new HashMap<String, Integer>();
 		HashMap<String, ArrayList<Annotation>> offsets = new HashMap<String, ArrayList<Annotation>>();
 		for (Annotation annotation : matches) {
@@ -154,7 +207,7 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 			if (baseForms == null) {
 				entity = annotation.getCoveredText();
 			} else {
-				String coveredText =  annotation.getCoveredText();
+				String coveredText = annotation.getCoveredText();
 				entity = baseForms.containsKey(coveredText) ? baseForms.get(coveredText) : coveredText;
 			}
 			counter.put(entity, counter.containsKey(entity) ? counter.get(entity) + 1 : 1);

@@ -32,31 +32,69 @@ import uhh_lt.newsleak.resources.ElasticsearchResource;
 import uhh_lt.newsleak.types.Metadata;
 import uhh_lt.newsleak.types.Paragraph;
 
-@OperationalProperties(multipleDeploymentAllowed=true, modifiesCas=false)
+/**
+ * A writer to populate a temporary elasticsearch index with fulltexts from a
+ * prior annotation chain. This writer may modify original document contents in
+ * the following way:
+ * 
+ * - splitting of long documents into paragraphs of a certain minimum length
+ * (1500 characters, i.e. one norm page).
+ * 
+ * - standardization of line breaks and conversion of of HTML line breaks /
+ * paragraph markup to text line breaks
+ * 
+ * - pruning of documents to a maximum length (can be configured in the
+ * preprocessing configuration)
+ * 
+ * Paragraph splitting is heuristically assumed at occurrence of one or more
+ * empty lines.
+ */
+@OperationalProperties(multipleDeploymentAllowed = true, modifiesCas = true)
 public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 
+	/** The logger. */
 	private Logger logger;
 
+	/** The Constant ES_TYPE_DOCUMENT. */
 	public static final String ES_TYPE_DOCUMENT = "document";
 
+	/** The Constant RESOURCE_ESCLIENT. */
 	public static final String RESOURCE_ESCLIENT = "esResource";
+
+	/** The es resource. */
 	@ExternalResource(key = RESOURCE_ESCLIENT)
 	private ElasticsearchResource esResource;
 
+	/** The elasticsearch client. */
 	private TransportClient client;
 
+	/** The Constant PARAM_PARAGRAPHS_AS_DOCUMENTS. */
 	public static final String PARAM_PARAGRAPHS_AS_DOCUMENTS = "splitIntoParagraphs";
+
+	/** The split into paragraphs. */
 	@ConfigurationParameter(name = PARAM_PARAGRAPHS_AS_DOCUMENTS, mandatory = false, defaultValue = "false")
 	private boolean splitIntoParagraphs;
 
+	/** The paragraph pattern. */
 	private Pattern paragraphPattern = Pattern.compile("[?!\\.]( *\\r?\\n){2,}", Pattern.MULTILINE);
+
+	/** The minimum paragraph length. */
 	public static int MINIMUM_PARAGRAPH_LENGTH = 1500;
 
+	/** The Constant PARAM_MAX_DOC_LENGTH. */
 	public static final String PARAM_MAX_DOC_LENGTH = "maxDocumentLength";
+
+	/** The max document length. */
 	@ConfigurationParameter(name = PARAM_MAX_DOC_LENGTH, mandatory = false)
 	protected Integer maxDocumentLength = Integer.MAX_VALUE;
 
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.apache.uima.fit.component.JCasAnnotator_ImplBase#initialize(org.apache.
+	 * uima.UimaContext)
+	 */
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		super.initialize(context);
@@ -64,6 +102,13 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 		client = esResource.getClient();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.apache.uima.analysis_component.JCasAnnotator_ImplBase#process(org.apache.
+	 * uima.jcas.JCas)
+	 */
 	@Override
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
 
@@ -76,52 +121,71 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 			docText = docText.replaceAll("\\r\\n", "\n");
 			docText = docText.replaceAll("\\r", "\n");
 
+			// process text normalization
 			docText = dehyphenate(docText);
 			docText = replaceHtmlLineBreaks(docText);
 
+			// get temporary document id (as assigned by the reader) and prepare mapping to
+			// new ids
 			Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
 			String tmpDocId = metadata.getDocId();
 			ArrayList<Integer> newsleakDocIds = new ArrayList<Integer>();
 
 			if (!splitIntoParagraphs) {
+				// write entire document into the index
 				newsleakDocIds.add(writeToIndex(jcas, docText, tmpDocId));
 			} else {
+				// look for paragraoph boundaries
 				annotateParagraphs(jcas);
+				// write each paragraph as new document into the index
 				for (Paragraph paragraph : JCasUtil.select(jcas, Paragraph.class)) {
 					newsleakDocIds.add(writeToIndex(jcas, paragraph.getCoveredText(), tmpDocId));
 				}
 			}
-			
+
+			// keep track of mapping from tmp ids to new ids (for metadata assignment)
 			esResource.addDocumentIdMapping(Integer.parseInt(tmpDocId), newsleakDocIds);
 
 		}
 
 	}
 
+	/**
+	 * Write document to temporary newsleak elasticsearch index.
+	 *
+	 * @param jcas
+	 *            the jcas
+	 * @param docText
+	 *            the doc text
+	 * @param tmpDocId
+	 *            the tmp doc id
+	 * @return the integer
+	 */
 	public Integer writeToIndex(JCas jcas, String docText, String tmpDocId) {
-		
-		Integer newsleakDocId = null;
+
+		// init with tmp id
+		Integer newsleakDocId = Integer.parseInt(tmpDocId);
 
 		if (docText.length() > maxDocumentLength) {
-			logger.log(Level.SEVERE, "Skipping document " + tmpDocId + ". Exceeds maximum length (" + maxDocumentLength + ")");
+			// skip overly long documents
+			logger.log(Level.SEVERE,
+					"Skipping document " + tmpDocId + ". Exceeds maximum length (" + maxDocumentLength + ")");
 		} else {
 			Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-			
+
 			// generate new id from auto-increment
 			newsleakDocId = esResource.getNextDocumentId();
 
+			// index document, and date + language metadata alogn with new document id
 			XContentBuilder builder;
 			try {
 				Date created = dateFormat.parse(metadata.getTimestamp());
-				builder = XContentFactory.jsonBuilder()
-						.startObject()
-						.field("id", newsleakDocId.toString()) // returns an autoincrement value to generate newsleak document ids
-						.field("Content", docText)
-						.field("Created", dateFormat.format(created))
-						.field("DocumentLanguage", jcas.getDocumentLanguage())
-						.endObject();
-				IndexResponse response = client.prepareIndex(esResource.getIndex(), ES_TYPE_DOCUMENT, newsleakDocId.toString())
+				builder = XContentFactory.jsonBuilder().startObject().field("id", newsleakDocId.toString())
+						.field("Content", docText).field("Created", dateFormat.format(created))
+						.field("DocumentLanguage", jcas.getDocumentLanguage()).endObject();
+				IndexResponse response = client
+						.prepareIndex(esResource.getIndex(), ES_TYPE_DOCUMENT, newsleakDocId.toString())
 						.setSource(builder).get();
 				logger.log(Level.INFO, response.toString());
 			} catch (IOException e) {
@@ -133,17 +197,23 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 				logger.log(Level.SEVERE, "No date for document " + tmpDocId);
 				e.printStackTrace();
 			}
-		}	
+		}
 
 		return newsleakDocId;
 	}
 
-
+	/**
+	 * Replace html line breaks.
+	 *
+	 * @param html
+	 *            the html
+	 * @return the string
+	 */
 	public static String replaceHtmlLineBreaks(String html) {
 		if (html == null)
 			return html;
 		Document document = Jsoup.parse(html);
-		//makes html() preserve linebreaks and spacing
+		// makes html() preserve linebreaks and spacing
 		document.outputSettings(new Document.OutputSettings().prettyPrint(false));
 		document.select("br").append("\\n");
 		document.select("p").prepend("\\n\\n");
@@ -151,15 +221,20 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 		return Jsoup.clean(s, "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
 	}
 
-
 	/**
 	 * An advanced dehyphanator based on regex.
-	 *  - " -" is accepted as hyphen
-	 *  - "und"/"and" and "or"/"oder" in second line prevent dehyphenation
-	 *  - leaves the hyphen if there are a number or an upper case letter
-	 *    as first character in second line
-	 *  - deletes the first spaces in second line
-	 * @param sequence A string to dehyphenate
+	 * 
+	 * - " -" is accepted as hyphen
+	 * 
+	 * - "und"/"and" and "or"/"oder" in second line prevent dehyphenation
+	 * 
+	 * - leaves the hyphen if there are a number or an upper case letter as first
+	 * character in second line
+	 * 
+	 * - deletes the first spaces in second line
+	 * 
+	 * @param sequence
+	 *            A string to dehyphenate
 	 * @return A dehyphenated string
 	 */
 	public static String dehyphenate(String sequence) {
@@ -183,21 +258,26 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 		regexForDehyphenation.append("\\w+)");
 		Pattern p = Pattern.compile(regexForDehyphenation.toString(), Pattern.UNICODE_CHARACTER_CLASS);
 		Matcher m = p.matcher(sequence);
-		while(m.find()){
+		while (m.find()) {
 			String sep = "";
 			Character firstLetterOfNewline = m.group(4).toCharArray()[0];
-			// If the first character of the word in the second line is uppercase or a number leave the hyphen
+			// If the first character of the word in the second line is uppercase or a
+			// number leave the hyphen
 			if (Character.isUpperCase(firstLetterOfNewline) || Character.isDigit(firstLetterOfNewline)) {
 				sep = "-";
 			}
-			String replaceString =  "\n" + m.group(2) + sep + m.group(4);
+			String replaceString = "\n" + m.group(2) + sep + m.group(4);
 			dehyphenatedString = dehyphenatedString.replace(m.group(0), replaceString);
 		}
 		return dehyphenatedString;
 	}
 
-
-
+	/**
+	 * Annotate paragraphs.
+	 *
+	 * @param jcas
+	 *            the jcas
+	 */
 	private void annotateParagraphs(JCas jcas) {
 
 		Matcher matcher = paragraphPattern.matcher(jcas.getDocumentText());
@@ -218,6 +298,12 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.apache.uima.analysis_component.AnalysisComponent_ImplBase#
+	 * collectionProcessComplete()
+	 */
 	@Override
 	public void collectionProcessComplete() throws AnalysisEngineProcessException {
 		try {
@@ -228,6 +314,4 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 		super.collectionProcessComplete();
 	}
 
-	
-	
 }
