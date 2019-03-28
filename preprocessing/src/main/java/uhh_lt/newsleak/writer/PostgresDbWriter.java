@@ -48,6 +48,7 @@ public class PostgresDbWriter extends JCasAnnotator_ImplBase {
 	@Override
 	public void collectionProcessComplete() throws AnalysisEngineProcessException {
 		super.collectionProcessComplete();
+		// commit final inserts/updates
 		postgresResource.commit();
 	}
 

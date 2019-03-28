@@ -5,9 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,34 +16,48 @@ import org.apache.uima.fit.component.Resource_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.ResourceSpecifier;
-import org.apache.uima.util.Logger;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
+/**
+ * Provides shared functionality and data for the @see
+ * uhh_lt.newsleak.reader.HooverElasticsearchReader and @see
+ * uhh_lt.newsleak.reader.HooverElasticsearchApiReader. Metadata is written
+ * temporarily to disk in CSV format for later import into the newsleak postgres
+ * database.
+ */
 public class MetadataResource extends Resource_ImplBase {
 
-	private Logger logger;
-
+	/** The Constant PARAM_METADATA_FILE. */
 	public static final String PARAM_METADATA_FILE = "mMetadata";
+
+	/** The m metadata. */
 	@ConfigurationParameter(name = PARAM_METADATA_FILE)
 	private String mMetadata;
-	
+
+	/** The Constant PARAM_RESET_METADATA_FILE. */
 	public static final String PARAM_RESET_METADATA_FILE = "resetMetadata";
+
+	/** The reset metadata. */
 	@ConfigurationParameter(name = PARAM_RESET_METADATA_FILE)
 	private boolean resetMetadata;
 
+	/** The metadata file. */
 	private File metadataFile;
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.apache.uima.fit.component.Resource_ImplBase#initialize(org.apache.uima.
+	 * resource.ResourceSpecifier, java.util.Map)
+	 */
 	@Override
 	public boolean initialize(ResourceSpecifier aSpecifier, Map<String, Object> aAdditionalParams)
 			throws ResourceInitializationException {
 		if (!super.initialize(aSpecifier, aAdditionalParams)) {
 			return false;
 		}
-		this.logger = this.getLogger();
 		metadataFile = new File(mMetadata);
-		
+
 		if (resetMetadata) {
 			try {
 				// reset metadata file
@@ -56,12 +67,17 @@ public class MetadataResource extends Resource_ImplBase {
 				System.exit(1);
 			}
 		}
-		
+
 		return true;
 	}
 
-
-
+	/**
+	 * Append a list of metadata entries for one document to the temporary metadata
+	 * file.
+	 *
+	 * @param metadata
+	 *            the metadata
+	 */
 	public synchronized void appendMetadata(List<List<String>> metadata) {
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(metadataFile, true));
@@ -70,10 +86,20 @@ public class MetadataResource extends Resource_ImplBase {
 			csvPrinter.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} 
+		}
 	}
-	
-	
+
+	/**
+	 * Create a metadata entry with type text.
+	 *
+	 * @param docId
+	 *            the doc id
+	 * @param key
+	 *            the key
+	 * @param value
+	 *            the value
+	 * @return the array list
+	 */
 	public ArrayList<String> createTextMetadata(String docId, String key, String value) {
 		ArrayList<String> meta = new ArrayList<String>();
 		meta.add(docId);

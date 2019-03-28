@@ -36,31 +36,70 @@ import org.tartarus.snowball.ext.turkishStemmer;
 
 import uhh_lt.newsleak.annotator.LanguageDetector;
 
+/**
+ * Provides shared functionality and data for the @see
+ * uhh_lt.newsleak.annotator.DictionaryExtractor such as reading in dictionary
+ * files for each language, and perform stemming of dictionary entries.
+ * 
+ * Dictionaries shoudl follow the convention of file names providing the
+ * dictionary type as main name and ISO-639-3 language code as file extension.
+ * Dictionaries containing entries for all languages may have the file extension
+ * 'all'. Dictionary files should be placed in <i>conf/dictionaries</i>.
+ * 
+ * Dictionary files should contain one entry per line. Entries can be single
+ * terms, which then are stemmed before comparison with the target data (if a
+ * stemmer for the selected language is available). Entries can also be multi
+ * word unit (MWU). For MWU, no stemming is performed. MWU are matched via regex
+ * instead.
+ */
 public class DictionaryResource extends Resource_ImplBase {
 
+	/** The logger. */
 	private Logger logger;
 
+	/** The Constant PARAM_DATADIR. */
 	public static final String PARAM_DATADIR = "dictionaryDir";
-	@ConfigurationParameter(name=PARAM_DATADIR, mandatory=true)
+
+	/** The dictionary dir. */
+	@ConfigurationParameter(name = PARAM_DATADIR, mandatory = true)
 	private String dictionaryDir;
 
+	/** The Constant PARAM_DICTIONARY_FILES. */
 	public static final String PARAM_DICTIONARY_FILES = "dictionaryFilesString";
+
+	/** The dictionary files string. */
 	@ConfigurationParameter(name = PARAM_DICTIONARY_FILES)
 	private String dictionaryFilesString;
 
+	/** The dictionary files. */
 	private List<File> dictionaryFiles;
 
+	/** The Constant PARAM_LANGUAGE_CODE. */
 	public static final String PARAM_LANGUAGE_CODE = "languageCode";
+
+	/** The language code. */
 	@ConfigurationParameter(name = PARAM_LANGUAGE_CODE)
 	private String languageCode;
 
+	/** The stemmer. */
 	private SnowballStemmer stemmer;
+
+	/** The locale. */
 	private Locale locale;
-	
+
+	/** The unigram dictionaries. */
 	private HashMap<String, Dictionary> unigramDictionaries;
+
+	/** The mwu dictionaries. */
 	private HashMap<String, Dictionary> mwuDictionaries;
 
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.apache.uima.fit.component.Resource_ImplBase#initialize(org.apache.uima.
+	 * resource.ResourceSpecifier, java.util.Map)
+	 */
 	@Override
 	public boolean initialize(ResourceSpecifier aSpecifier, Map<String, Object> aAdditionalParams)
 			throws ResourceInitializationException {
@@ -73,7 +112,7 @@ public class DictionaryResource extends Resource_ImplBase {
 
 		dictionaryFiles = getDictionaryFiles(dictionaryFilesString);
 
-		// stemmer
+		// select stemmer
 		switch (languageCode) {
 		case "eng":
 			stemmer = new englishStemmer();
@@ -124,6 +163,7 @@ public class DictionaryResource extends Resource_ImplBase {
 			stemmer = new noStemmer();
 		}
 
+		// populate dictionary objects from files
 		unigramDictionaries = new HashMap<String, Dictionary>();
 		mwuDictionaries = new HashMap<String, Dictionary>();
 
@@ -137,7 +177,7 @@ public class DictionaryResource extends Resource_ImplBase {
 				for (String term : dictTermList) {
 					String t = term.trim();
 					if (!t.isEmpty()) {
-						
+
 						if (isMultiWord(t)) {
 							// handle dictionary entry as multiword unit
 							dictMwu.put("(?i)" + Pattern.quote(t), t);
@@ -149,7 +189,8 @@ public class DictionaryResource extends Resource_ImplBase {
 								stemmer.stem();
 								stem = stemmer.getCurrent().toLowerCase();
 							}
-							
+
+							// map stems to shortest original type
 							String shortestType;
 							if (dictUnigrams.containsKey(stem) && dictUnigrams.get(stem).length() < t.length()) {
 								shortestType = dictUnigrams.get(stem);
@@ -158,8 +199,7 @@ public class DictionaryResource extends Resource_ImplBase {
 							}
 							dictUnigrams.put(stem, shortestType);
 						}
-						
-						
+
 					}
 				}
 				unigramDictionaries.put(dictType, dictUnigrams);
@@ -174,8 +214,13 @@ public class DictionaryResource extends Resource_ImplBase {
 		return true;
 	}
 
-
-
+	/**
+	 * Checks if a String is a multi word unit.
+	 *
+	 * @param t
+	 *            the t
+	 * @return true, if is multi word
+	 */
 	private boolean isMultiWord(String t) {
 		BreakIterator tokenBreaker = BreakIterator.getWordInstance(locale);
 		tokenBreaker.setText(t);
@@ -191,17 +236,22 @@ public class DictionaryResource extends Resource_ImplBase {
 		return nTokens > 1;
 	}
 
-
-
+	/**
+	 * Retrieves the dictionary files as configured in the preprocessing configuration.
+	 *
+	 * @param list
+	 *            the list
+	 * @return the dictionary files
+	 */
 	private List<File> getDictionaryFiles(String list) {
 		List<File> files = new ArrayList<File>();
 		for (String f : list.split(", +?")) {
 			String[] args = f.split(":");
 			if (args.length > 2) {
-				logger.log(Level.SEVERE, "Could not parse dictionary files configuration: '" + list + "'\n" 
-						+ "Expecting format 'dictionaryfiles = langcode:filename1, langcode:filename2, ...'.\n"
-						+ "You can also omit 'langcode:' to apply dictionary to all languages."
-						);
+				logger.log(Level.SEVERE,
+						"Could not parse dictionary files configuration: '" + list + "'\n"
+								+ "Expecting format 'dictionaryfiles = langcode:filename1, langcode:filename2, ...'.\n"
+								+ "You can also omit 'langcode:' to apply dictionary to all languages.");
 				System.exit(1);
 			}
 			if (args.length == 1 || (args.length == 2 && args[0].equals(languageCode))) {
@@ -213,14 +263,25 @@ public class DictionaryResource extends Resource_ImplBase {
 		return files;
 	}
 
-
+	/**
+	 * Gets the unigram dictionaries.
+	 *
+	 * @return the unigram dictionaries
+	 */
 	public HashMap<String, Dictionary> getUnigramDictionaries() {
 		return unigramDictionaries;
 	}
 
-
+	/**
+	 * A do nothing stemmer.
+	 */
 	private class noStemmer extends org.tartarus.snowball.SnowballStemmer {
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.tartarus.snowball.SnowballStemmer#stem()
+		 */
 		@Override
 		public boolean stem() {
 			return true;
@@ -228,29 +289,43 @@ public class DictionaryResource extends Resource_ImplBase {
 
 	}
 
+	/**
+	 * Stems an input token.
+	 *
+	 * @param token
+	 *            the token
+	 * @return the string
+	 */
 	public synchronized String stem(String token) {
 		stemmer.setCurrent(token);
 		stemmer.stem();
 		return stemmer.getCurrent();
 	}
-	
-	
-	
+
+	/**
+	 * The Class Dictionary.
+	 */
 	public class Dictionary extends HashMap<String, String> {
 
-		/**
-		 * Serial ID
-		 */
+		/** Serial ID. */
 		private static final long serialVersionUID = -4395683941205467020L;
-		
+
+		/**
+		 * Instantiates a new dictionary.
+		 */
 		public Dictionary() {
 			super();
 		}
-		
+
 	}
 
+	/**
+	 * Gets the mwu dictionaries.
+	 *
+	 * @return the mwu dictionaries
+	 */
 	public HashMap<String, Dictionary> getMwuDictionaries() {
 		return mwuDictionaries;
 	}
-	
+
 }
