@@ -147,11 +147,6 @@ trait KeywordNetworkService {
    */
   def resetTagKeywordRelation(): Unit
 
-  /**
-   * Returns the current ES Address for the JS client
-   * @return the address as string
-   */
-  def getHostAddress(): String
 }
 
 /**
@@ -364,11 +359,6 @@ class ESKeywordNetworkService @Inject() (
   /** @inheritdoc */
   override def resetTagKeywordRelation(): Unit = {
     keywordTagRelation.clear()
-  }
-
-  /** @inheritdoc */
-  override def getHostAddress(): String = {
-    NewsleakConfigReader.esSettings.address + ":" + NewsleakConfigReader.config.getInt("es.port")
   }
 
   /** newsleak 2.0.0 */

@@ -59,7 +59,6 @@ GET        /toggleTags                            controllers.KeywordNetworkCont
 GET        /getTags                               controllers.KeywordNetworkController.getTags
 GET        /setTagKeywordRelation                 controllers.KeywordNetworkController.setTagKeywordRelation(tag: String, keywords: List[String], frequencies: List[Long])
 GET        /clearTagKeywordRelation               controllers.KeywordNetworkController.resetTagKeywordRelation
-GET        /getHostAddress                        controllers.KeywordNetworkController.getHostAddress
 
 GET        /whitelistEntity                       controllers.EntityController.whitelistEntity(text: String, start: String, end: String, enType: String, docId: String, entId: String)
 GET        /whitelistEntityOffset                 controllers.EntityController.whitelistEntityOffset(text: String, start: String, end: String, docId: String, entId: String)

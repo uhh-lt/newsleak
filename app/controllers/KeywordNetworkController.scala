@@ -223,10 +223,6 @@ class KeywordNetworkController @Inject() (
     Ok("success").as("Text")
   }
 
-  def getHostAddress() = Action { implicit request =>
-    Ok(keywordNetworkService.getHostAddress()).as("Text")
-  }
-
   /** hightlights entities corresponding to the given keyword name. */
   def highlightEntsByKey(keyName: String) = Action { implicit request =>
 
