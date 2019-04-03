@@ -10,7 +10,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Wed Apr 04 11:24:03 CEST 2018
+ * Updated by JCasGen Wed Apr 03 17:15:09 CEST 2019
  * @generated */
 public class Timex3Interval_Type extends Timex3_Type {
   /** @generated */

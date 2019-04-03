@@ -8,7 +8,7 @@ import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
 /** 
- * Updated by JCasGen Wed Apr 04 11:24:03 CEST 2018
+ * Updated by JCasGen Wed Apr 03 17:15:09 CEST 2019
  * @generated */
 public class GoldEvent_Type extends Event_Type {
   /** @generated */

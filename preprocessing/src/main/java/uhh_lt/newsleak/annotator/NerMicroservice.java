@@ -7,6 +7,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -36,6 +37,7 @@ import opennlp.uima.Organization;
 import opennlp.uima.Person;
 import opennlp.uima.Sentence;
 import opennlp.uima.Token;
+import uhh_lt.newsleak.types.Metadata;
 
 /**
  * Annotator for Named Entity Recognition. The annotator queries a micro-service
@@ -75,6 +77,8 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 	/** The request. */
 	HttpPost request;
 
+	private static final int MAXIMUM_SENTENCES_PER_REQUEST = 1000;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -103,110 +107,135 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 
 		// document language in ISO-639-1 format
 		String docLang = localeMap.get(jcas.getDocumentLanguage()).getLanguage();
+		
+		Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
 
-		try {
-
-			// create json request for microservice
-
-			XContentBuilder sb = XContentFactory.jsonBuilder().startObject();
-			sb.field("lang", docLang);
-			sb.field("sentences").startArray();
-			Collection<Sentence> sentences = JCasUtil.selectCovered(jcas, Sentence.class, 0,
-					jcas.getDocumentText().length());
-			for (Sentence sentence : sentences) {
-				Collection<Token> tokens = JCasUtil.selectCovered(jcas, Token.class, sentence.getBegin(),
-						sentence.getEnd());
-				sb.startArray();
-				for (Token token : tokens) {
-					sb.value(token.getCoveredText());
-				}
-				sb.endArray();
-			}
-			sb.endArray();
-
-			StringEntity entity = new StringEntity(sb.string(), ContentType.APPLICATION_JSON);
-			request.setEntity(entity);
-			HttpResponse response = httpClient.execute(request);
-
-			// evaluate request response
-
-			String responseText = EntityUtils.toString(response.getEntity());
-
-			JsonObject obj = new JsonParser().parse(responseText).getAsJsonObject();
-
-			JsonArray sentenceArray = null;
+		if (metadata.getNoFulltextDocument()) {
+			log.log(Level.INFO, "Skipping document for NER annotation, because it not assumed to be a fulltext document.");
+		} else {
 			try {
-				sentenceArray = obj.getAsJsonArray("result");
-			} catch (Exception e) {
-				log.log(Level.SEVERE, "Invalid NER result. Check if there is a model for language '" + docLang
-						+ "' in the NER microservice?");
-				log.log(Level.SEVERE, "Json request string: " + sb.string());
 
-				// System.exit(1);
-				throw new AnalysisEngineProcessException();
-			}
-
-			ArrayList<String> tagList = new ArrayList<String>();
-			for (int i = 0; i < sentenceArray.size(); i++) {
-				JsonArray tokenArray = sentenceArray.get(i).getAsJsonArray();
-				for (int j = 0; j < tokenArray.size(); j++) {
-					JsonArray annotationArray = tokenArray.get(j).getAsJsonArray();
-					tagList.add(annotationArray.get(1).getAsString());
-				}
-			}
-
-			int position = -1;
-
-			// annotate NE types
-
-			for (Sentence sentence : sentences) {
-
-				Collection<Token> tokens = JCasUtil.selectCovered(jcas, Token.class, sentence.getBegin(),
-						sentence.getEnd());
-				Annotation annotation = null;
-				String prevTag = "";
-
-				for (Token token : tokens) {
-
-					position++;
-					String tag = tagList.get(position);
-
-					if (tag.equals(prevTag)) {
-						if (annotation != null) {
-							annotation.setEnd(token.getEnd());
-						}
-					} else {
-						if (annotation != null) {
-							annotation.addToIndexes();
-						}
-						if (tag.equals("O")) {
-							annotation = null;
-						} else if (tag.equals("I-PER")) {
-							annotation = new Person(jcas);
-						} else if (tag.equals("I-LOC")) {
-							annotation = new Location(jcas);
-						} else if (tag.equals("I-ORG")) {
-							annotation = new Organization(jcas);
-						}
-						if (annotation != null) {
-							annotation.setBegin(token.getBegin());
-							annotation.setEnd(token.getEnd());
-						}
+				// create json request for microservice
+				
+				Collection<Sentence> sentences = JCasUtil.selectCovered(jcas, Sentence.class, 0,
+						jcas.getDocumentText().length());
+				
+				// annotate in batches
+				if (sentences.size() < MAXIMUM_SENTENCES_PER_REQUEST ) {
+					annotateNer(jcas, docLang, sentences);
+				} else {
+					ArrayList<Sentence> sentenceList = new ArrayList<Sentence>(sentences);
+					int batches = (int) Math.ceil(sentenceList.size() / MAXIMUM_SENTENCES_PER_REQUEST);
+					for (int i = 0; i < batches; i++) {
+						int start = i * MAXIMUM_SENTENCES_PER_REQUEST;
+						int end = Math.min(sentenceList.size(), (i + 1) * MAXIMUM_SENTENCES_PER_REQUEST);
+						annotateNer(jcas, docLang, sentenceList.subList(start, end));
 					}
-					prevTag = tag;
 				}
-				if (annotation != null) {
-					annotation.addToIndexes();
-				}
-
+				
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
+		
 
 		// remove unlikely entities
 		cleanNerAnnotations(jcas);
 
+	}
+
+	private void annotateNer(JCas jcas, String docLang, Collection<Sentence> sentences)
+			throws IOException, ClientProtocolException, AnalysisEngineProcessException {
+		XContentBuilder sb = XContentFactory.jsonBuilder().startObject();
+		sb.field("lang", docLang);
+		sb.field("sentences").startArray();
+		for (Sentence sentence : sentences) {
+			Collection<Token> tokens = JCasUtil.selectCovered(jcas, Token.class, sentence.getBegin(),
+					sentence.getEnd());
+			sb.startArray();
+			for (Token token : tokens) {
+				sb.value(token.getCoveredText());
+			}
+			sb.endArray();
+		}
+		sb.endArray();
+
+		StringEntity entity = new StringEntity(sb.string(), ContentType.APPLICATION_JSON);
+		request.setEntity(entity);
+		HttpResponse response = httpClient.execute(request);
+
+		// evaluate request response
+
+		String responseText = EntityUtils.toString(response.getEntity());
+
+		JsonObject obj = new JsonParser().parse(responseText).getAsJsonObject();
+
+		JsonArray sentenceArray = null;
+		try {
+			sentenceArray = obj.getAsJsonArray("result");
+		} catch (Exception e) {
+			log.log(Level.SEVERE, "Invalid NER result. Check if there is a model for language '" + docLang
+					+ "' in the NER microservice?");
+			log.log(Level.SEVERE, "Json request string: " + sb.string());
+
+			// System.exit(1);
+			throw new AnalysisEngineProcessException();
+		}
+
+		ArrayList<String> tagList = new ArrayList<String>();
+		for (int i = 0; i < sentenceArray.size(); i++) {
+			JsonArray tokenArray = sentenceArray.get(i).getAsJsonArray();
+			for (int j = 0; j < tokenArray.size(); j++) {
+				JsonArray annotationArray = tokenArray.get(j).getAsJsonArray();
+				tagList.add(annotationArray.get(1).getAsString());
+			}
+		}
+
+		int position = -1;
+
+		// annotate NE types
+
+		for (Sentence sentence : sentences) {
+
+			Collection<Token> tokens = JCasUtil.selectCovered(jcas, Token.class, sentence.getBegin(),
+					sentence.getEnd());
+			Annotation annotation = null;
+			String prevTag = "";
+
+			for (Token token : tokens) {
+
+				position++;
+				String tag = tagList.get(position);
+
+				if (tag.equals(prevTag)) {
+					if (annotation != null) {
+						annotation.setEnd(token.getEnd());
+					}
+				} else {
+					if (annotation != null) {
+						annotation.addToIndexes();
+					}
+					if (tag.equals("O")) {
+						annotation = null;
+					} else if (tag.equals("I-PER")) {
+						annotation = new Person(jcas);
+					} else if (tag.equals("I-LOC")) {
+						annotation = new Location(jcas);
+					} else if (tag.equals("I-ORG")) {
+						annotation = new Organization(jcas);
+					}
+					if (annotation != null) {
+						annotation.setBegin(token.getBegin());
+						annotation.setEnd(token.getEnd());
+					}
+				}
+				prevTag = tag;
+			}
+			if (annotation != null) {
+				annotation.addToIndexes();
+			}
+
+		}
 	}
 
 	/**

@@ -41,7 +41,7 @@ object NewsleakConfigReader extends TypesafeConfigReader
     with NoEnvPrefix {
 
   /** Provides all settings defined in the ''conf/application.conf'' file. */
-  override lazy val config: Config = ConfigFactory.parseFile(new File("conf/application.conf"))
+  override lazy val config: Config = ConfigFactory.parseFile(new File(if (System.getenv("NEWSLEAK_CONFIG") != null) System.getenv("NEWSLEAK_CONFIG") else "conf/application.conf"))
   /** Provides the default elasticsearch index used for setting the default collection. */
   lazy val esDefaultIndex: String = config.getString("es.index.default")
   /** Provides the available elasticsearch indices. */

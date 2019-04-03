@@ -51,3 +51,5 @@ pipelineStages := Seq(/*rjs,*/ digest, gzip)
 
 // The r.js optimizer won't find jsRoutes so we must tell it to ignore it
 RjsKeys.paths += ("jsRoutes" -> ("/jsroutes" -> "empty:"))
+
+packageName in Universal := "newsleak-ui"

@@ -9,7 +9,7 @@ import org.apache.uima.cas.Type;
 import org.apache.uima.jcas.tcas.Annotation_Type;
 
 /** 
- * Updated by JCasGen Wed Apr 04 11:24:03 CEST 2018
+ * Updated by JCasGen Wed Apr 03 17:15:10 CEST 2019
  * @generated */
 public class Percentage_Type extends Annotation_Type {
   /** @generated */

@@ -3,9 +3,12 @@ package uhh_lt.newsleak.annotator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
@@ -20,6 +23,7 @@ import com.ibm.icu.text.DateFormatSymbols;
 
 import opennlp.uima.Sentence;
 import opennlp.uima.Token;
+import uhh_lt.newsleak.types.Metadata;
 
 /**
  * Annotator to remove implausible Sentences. The ICU4J sentence segmentation
@@ -28,10 +32,15 @@ import opennlp.uima.Token;
  * to a maximum number of tokens and tokens to a maximum character length.
  * Overly long tokens are removed from the CAS index. Overly long sentences are
  * split into smaller chunks. In addition, wrong sentence breaks in German dates
- * (e.g. "25. September 2019") are corrected.
+ * (e.g. "25. September 2019") are corrected. Also, documents are flagged by
+ * noFulltextDocument=true in the document metadata of the CAS if a very low
+ * type token ratio is observed.
  */
 @OperationalProperties(multipleDeploymentAllowed = true, modifiesCas = true)
 public class SentenceCleaner extends JCasAnnotator_ImplBase {
+
+	/** The Constant TTR_THRESHOLD. */
+	private static final double TTR_THRESHOLD = 0.01;
 
 	/** The Constant MAX_TOKENS_PER_SENTENCE. */
 	public static final int MAX_TOKENS_PER_SENTENCE = 150;
@@ -85,6 +94,9 @@ public class SentenceCleaner extends JCasAnnotator_ImplBase {
 
 		// step 3
 		restructureSentences(jcas);
+
+		// flag unlikely fulltext documents
+		flagUnlikelyDocuments(jcas);
 
 	}
 
@@ -199,4 +211,53 @@ public class SentenceCleaner extends JCasAnnotator_ImplBase {
 			}
 		}
 	}
+
+	/**
+	 * Flag unlikely documents. Documents with a very low type token ratio are
+	 * assumed to be log files or other non-fulltext documents. These documents can
+	 * be excluded from the information extraction pipeline, if the flag
+	 * noFulltextDocument is set to true by this annotator.
+	 *
+	 * @param jcas
+	 *            the jcas
+	 */
+	private void flagUnlikelyDocuments(JCas jcas) {
+
+		boolean noFulltextDocument = false;
+
+		Collection<Token> tokens = JCasUtil.select(jcas, Token.class);
+
+		if (tokens.size() > 10000) {
+
+			// calculate type-token ratio
+			int tokenCount = 0;
+			HashSet<String> vocabulary = new HashSet<String>();
+			for (Token token : tokens) {
+				String word = token.getCoveredText();
+				if (StringUtils.isNumeric(word)) {
+					continue;
+				}
+				tokenCount++;
+				if (!vocabulary.contains(word)) {
+					vocabulary.add(word);
+				}
+			}
+
+			double typeTokenRatio = vocabulary.size() / tokenCount;
+
+			// set flag for very low TTR
+			if (typeTokenRatio < TTR_THRESHOLD) {
+				noFulltextDocument = true;
+				log.log(Level.INFO,
+						"Unlikely fulltext document flagged: " + jcas.getDocumentText().substring(0, 2500));
+			}
+
+		}
+
+		Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
+		metadata.setNoFulltextDocument(noFulltextDocument);
+		metadata.addToIndexes();
+
+	}
+
 }
