@@ -205,7 +205,7 @@ public class SegmenterICU extends JCasAnnotator_ImplBase {
 				if (typeTokenRatio < TTR_THRESHOLD) {
 					noFulltextParagraph = true;
 					String paragraphText = paragraph.getCoveredText();
-					log.log(Level.INFO, "Unlikely fulltext paragraph flagged:\n----------------------------\n"
+					log.log(Level.FINEST, "Unlikely fulltext paragraph flagged:\n----------------------------\n"
 							+ paragraphText.substring(0, Math.min(paragraphText.length(), 1000)));
 				}
 
