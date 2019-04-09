@@ -11,7 +11,7 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 
 /** 
- * Updated by JCasGen Wed Apr 03 17:15:10 CEST 2019
+ * Updated by JCasGen Thu Apr 04 18:38:29 CEST 2019
  * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
 public class Paragraph extends Annotation {
@@ -96,6 +96,28 @@ public class Paragraph extends Annotation {
     if (Paragraph_Type.featOkTst && ((Paragraph_Type)jcasType).casFeat_language == null)
       jcasType.jcas.throwFeatMissing("language", "uhh_lt.newsleak.types.Paragraph");
     jcasType.ll_cas.ll_setStringValue(addr, ((Paragraph_Type)jcasType).casFeatCode_language, v);}    
+   
+    
+  //*--------------*
+  //* Feature: isNotFulltext
+
+  /** getter for isNotFulltext - gets flags paragraphs which suppedly do not contain interesting fulltext content (e.g. log files)
+   * @generated
+   * @return value of the feature 
+   */
+  public boolean getIsNotFulltext() {
+    if (Paragraph_Type.featOkTst && ((Paragraph_Type)jcasType).casFeat_isNotFulltext == null)
+      jcasType.jcas.throwFeatMissing("isNotFulltext", "uhh_lt.newsleak.types.Paragraph");
+    return jcasType.ll_cas.ll_getBooleanValue(addr, ((Paragraph_Type)jcasType).casFeatCode_isNotFulltext);}
+    
+  /** setter for isNotFulltext - sets flags paragraphs which suppedly do not contain interesting fulltext content (e.g. log files) 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setIsNotFulltext(boolean v) {
+    if (Paragraph_Type.featOkTst && ((Paragraph_Type)jcasType).casFeat_isNotFulltext == null)
+      jcasType.jcas.throwFeatMissing("isNotFulltext", "uhh_lt.newsleak.types.Paragraph");
+    jcasType.ll_cas.ll_setBooleanValue(addr, ((Paragraph_Type)jcasType).casFeatCode_isNotFulltext, v);}    
   }
 
     

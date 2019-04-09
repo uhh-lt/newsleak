@@ -263,8 +263,8 @@ public class ElasticsearchResource extends Resource_ImplBase {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	public synchronized void writeDocumentIdMapping() throws IOException {
-		logger.log(Level.INFO, "Writing document id mapping file " + metadataFile);
 		if (!documentIdMappingWritten) {
+			logger.log(Level.INFO, "Writing document id mapping file " + metadataFile);
 			FileOutputStream fos = new FileOutputStream(metadataFile);
 			ObjectOutputStream oos = new ObjectOutputStream(fos);
 			oos.writeObject(documentIdMapping);

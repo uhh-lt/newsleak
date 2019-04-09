@@ -15,14 +15,17 @@ import org.apache.uima.fit.descriptor.OperationalProperties;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
+import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 
 import opennlp.uima.Location;
 import opennlp.uima.Organization;
 import opennlp.uima.Person;
+import opennlp.uima.Sentence;
 import opennlp.uima.Token;
 import uhh_lt.keyterms.Extractor;
 import uhh_lt.newsleak.types.Metadata;
+import uhh_lt.newsleak.types.Paragraph;
 
 /**
  * UIMA annotator for key term extraction. Uses the uhh-lt/lt-keyterms maven
@@ -67,16 +70,13 @@ public class KeytermExtractor extends JCasAnnotator_ImplBase {
 	 * Extracts keyterms and named entities. Removes named entities from keyterm
 	 * list to not produce overlap
 	 * 
-	 * @see
-	 * org.apache.uima.analysis_component.JCasAnnotator_ImplBase#process(org.
+	 * @see org.apache.uima.analysis_component.JCasAnnotator_ImplBase#process(org.
 	 * apache.uima.jcas.JCas)
 	 */
 	@Override
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
 
-		Collection<Token> tokens = JCasUtil.select(jcas, Token.class);
-
-		Set<String> keytermSet = getKeyWords(tokens);
+		Set<String> keytermSet = getKeyWords(jcas);
 		HashSet<String> namedEntities = getNamedEntities(jcas);
 
 		// generate decreasing count value for each keyterm
@@ -104,16 +104,27 @@ public class KeytermExtractor extends JCasAnnotator_ImplBase {
 	}
 
 	/**
-	 * Gets the key words.
+	 * Gets the key words from a document using the lt-keyterms library. Keyterms
+	 * are only extracted from paragraphs which are supposed to contain full texts,
+	 * i.e. are not marked as dubious "not fulltext" (such as log files).
 	 *
-	 * @param document
-	 *            the document
+	 * @param jcas
+	 *            the jcas
 	 * @return the key words
 	 */
-	public Set<String> getKeyWords(Collection<Token> document) {
+	public Set<String> getKeyWords(JCas jcas) {
+		Collection<Paragraph> paragraphs = JCasUtil.select(jcas, Paragraph.class);
 		List<String> tokens = new ArrayList<String>();
-		for (Token token : document) {
-			tokens.add(token.getCoveredText());
+		for (Paragraph paragraph : paragraphs) {
+			if (paragraph.getIsNotFulltext()) {
+				log.log(Level.FINEST, "Skipping paragraph for keyterm extraction.");
+			} else {
+				Collection<Token> parTokens = JCasUtil.selectCovered(jcas, Token.class, paragraph.getBegin(),
+						paragraph.getEnd());
+				for (Token token : parTokens) {
+					tokens.add(token.getCoveredText());
+				}
+			}
 		}
 		return extractor.extractKeyTerms(tokens);
 	}

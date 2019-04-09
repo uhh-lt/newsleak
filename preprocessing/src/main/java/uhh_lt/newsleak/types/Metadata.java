@@ -11,7 +11,7 @@ import org.apache.uima.jcas.tcas.DocumentAnnotation;
 
 
 /** 
- * Updated by JCasGen Wed Apr 03 17:15:10 CEST 2019
+ * Updated by JCasGen Thu Apr 04 18:38:29 CEST 2019
  * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
 public class Metadata extends DocumentAnnotation {
@@ -272,28 +272,6 @@ public class Metadata extends DocumentAnnotation {
     if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_keyterms == null)
       jcasType.jcas.throwFeatMissing("keyterms", "uhh_lt.newsleak.types.Metadata");
     jcasType.ll_cas.ll_setStringValue(addr, ((Metadata_Type)jcasType).casFeatCode_keyterms, v);}    
-   
-    
-  //*--------------*
-  //* Feature: noFulltextDocument
-
-  /** getter for noFulltextDocument - gets Flag to identify unlikely fulltext documents
-   * @generated
-   * @return value of the feature 
-   */
-  public boolean getNoFulltextDocument() {
-    if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_noFulltextDocument == null)
-      jcasType.jcas.throwFeatMissing("noFulltextDocument", "uhh_lt.newsleak.types.Metadata");
-    return jcasType.ll_cas.ll_getBooleanValue(addr, ((Metadata_Type)jcasType).casFeatCode_noFulltextDocument);}
-    
-  /** setter for noFulltextDocument - sets Flag to identify unlikely fulltext documents 
-   * @generated
-   * @param v value to set into the feature 
-   */
-  public void setNoFulltextDocument(boolean v) {
-    if (Metadata_Type.featOkTst && ((Metadata_Type)jcasType).casFeat_noFulltextDocument == null)
-      jcasType.jcas.throwFeatMissing("noFulltextDocument", "uhh_lt.newsleak.types.Metadata");
-    jcasType.ll_cas.ll_setBooleanValue(addr, ((Metadata_Type)jcasType).casFeatCode_noFulltextDocument, v);}    
   }
 
     

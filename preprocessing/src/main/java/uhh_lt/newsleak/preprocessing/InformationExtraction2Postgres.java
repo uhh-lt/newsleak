@@ -96,10 +96,9 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor {
 		// extract information (per language)
 		np.pipelineAnnotation();
 
-		// import temporary metadata.csv
+		// init postgres db
 		np.initDb(np.dbName, np.dbUrl, np.dbUser, np.dbPass);
-		np.metadataToPostgres();
-
+		
 		// create postgres indices
 		String indexSql = FileUtils.readFileToString(new File(np.dbIndices)).replace("\n", "");
 		try {
@@ -108,6 +107,9 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		// import temporary metadata.csv
+		np.metadataToPostgres();
 
 		conn.close();
 	}

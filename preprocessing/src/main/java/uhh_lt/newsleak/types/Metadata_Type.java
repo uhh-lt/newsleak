@@ -11,7 +11,7 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.jcas.tcas.DocumentAnnotation_Type;
 
 /** 
- * Updated by JCasGen Wed Apr 03 17:15:10 CEST 2019
+ * Updated by JCasGen Thu Apr 04 18:38:29 CEST 2019
  * @generated */
 public class Metadata_Type extends DocumentAnnotation_Type {
   /** @generated */
@@ -246,30 +246,6 @@ public class Metadata_Type extends DocumentAnnotation_Type {
     ll_cas.ll_setStringValue(addr, casFeatCode_keyterms, v);}
     
   
- 
-  /** @generated */
-  final Feature casFeat_noFulltextDocument;
-  /** @generated */
-  final int     casFeatCode_noFulltextDocument;
-  /** @generated
-   * @param addr low level Feature Structure reference
-   * @return the feature value 
-   */ 
-  public boolean getNoFulltextDocument(int addr) {
-        if (featOkTst && casFeat_noFulltextDocument == null)
-      jcas.throwFeatMissing("noFulltextDocument", "uhh_lt.newsleak.types.Metadata");
-    return ll_cas.ll_getBooleanValue(addr, casFeatCode_noFulltextDocument);
-  }
-  /** @generated
-   * @param addr low level Feature Structure reference
-   * @param v value to set 
-   */    
-  public void setNoFulltextDocument(int addr, boolean v) {
-        if (featOkTst && casFeat_noFulltextDocument == null)
-      jcas.throwFeatMissing("noFulltextDocument", "uhh_lt.newsleak.types.Metadata");
-    ll_cas.ll_setBooleanValue(addr, casFeatCode_noFulltextDocument, v);}
-    
-  
 
 
 
@@ -305,10 +281,6 @@ public class Metadata_Type extends DocumentAnnotation_Type {
  
     casFeat_keyterms = jcas.getRequiredFeatureDE(casType, "keyterms", "uima.cas.String", featOkTst);
     casFeatCode_keyterms  = (null == casFeat_keyterms) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_keyterms).getCode();
-
- 
-    casFeat_noFulltextDocument = jcas.getRequiredFeatureDE(casType, "noFulltextDocument", "uima.cas.Boolean", featOkTst);
-    casFeatCode_noFulltextDocument  = (null == casFeat_noFulltextDocument) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_noFulltextDocument).getCode();
 
   }
 }

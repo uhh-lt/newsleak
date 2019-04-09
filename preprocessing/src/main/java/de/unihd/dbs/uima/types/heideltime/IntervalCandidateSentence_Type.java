@@ -8,7 +8,7 @@ import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
 /** 
- * Updated by JCasGen Wed Apr 03 17:15:09 CEST 2019
+ * Updated by JCasGen Thu Apr 04 18:38:29 CEST 2019
  * @generated */
 public class IntervalCandidateSentence_Type extends Sentence_Type {
   /** @generated */

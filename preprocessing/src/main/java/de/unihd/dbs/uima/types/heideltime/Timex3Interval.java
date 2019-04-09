@@ -10,7 +10,7 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** 
- * Updated by JCasGen Wed Apr 03 17:15:09 CEST 2019
+ * Updated by JCasGen Thu Apr 04 18:38:29 CEST 2019
  * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
 public class Timex3Interval extends Timex3 {

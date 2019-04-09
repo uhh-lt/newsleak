@@ -11,7 +11,7 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.jcas.tcas.Annotation_Type;
 
 /** 
- * Updated by JCasGen Wed Apr 03 17:15:10 CEST 2019
+ * Updated by JCasGen Thu Apr 04 18:38:29 CEST 2019
  * @generated */
 public class Paragraph_Type extends Annotation_Type {
   /** @generated */
@@ -45,6 +45,30 @@ public class Paragraph_Type extends Annotation_Type {
     ll_cas.ll_setStringValue(addr, casFeatCode_language, v);}
     
   
+ 
+  /** @generated */
+  final Feature casFeat_isNotFulltext;
+  /** @generated */
+  final int     casFeatCode_isNotFulltext;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public boolean getIsNotFulltext(int addr) {
+        if (featOkTst && casFeat_isNotFulltext == null)
+      jcas.throwFeatMissing("isNotFulltext", "uhh_lt.newsleak.types.Paragraph");
+    return ll_cas.ll_getBooleanValue(addr, casFeatCode_isNotFulltext);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setIsNotFulltext(int addr, boolean v) {
+        if (featOkTst && casFeat_isNotFulltext == null)
+      jcas.throwFeatMissing("isNotFulltext", "uhh_lt.newsleak.types.Paragraph");
+    ll_cas.ll_setBooleanValue(addr, casFeatCode_isNotFulltext, v);}
+    
+  
 
 
 
@@ -60,6 +84,10 @@ public class Paragraph_Type extends Annotation_Type {
  
     casFeat_language = jcas.getRequiredFeatureDE(casType, "language", "uima.cas.String", featOkTst);
     casFeatCode_language  = (null == casFeat_language) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_language).getCode();
+
+ 
+    casFeat_isNotFulltext = jcas.getRequiredFeatureDE(casType, "isNotFulltext", "uima.cas.Boolean", featOkTst);
+    casFeatCode_isNotFulltext  = (null == casFeat_isNotFulltext) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_isNotFulltext).getCode();
 
   }
 }

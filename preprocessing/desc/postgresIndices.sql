@@ -115,10 +115,9 @@ CREATE INDEX words_word_idx ON words USING hash (word);
 
 
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON SCHEMA public FROM postgres;
-GRANT ALL ON SCHEMA public TO postgres;
-GRANT ALL ON SCHEMA public TO PUBLIC;
-
+/*  REVOKE ALL ON SCHEMA public FROM postgres; */
+/*  GRANT ALL ON SCHEMA public TO postgres; */
+/*  GRANT ALL ON SCHEMA public TO PUBLIC; */
 
 REVOKE ALL ON TABLE co_n FROM PUBLIC;
 

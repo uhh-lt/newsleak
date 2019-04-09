@@ -2,11 +2,13 @@ package uhh_lt.newsleak.annotator;
 
 import java.text.BreakIterator;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
@@ -14,11 +16,13 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.descriptor.OperationalProperties;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
+import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
 import org.apache.uima.fit.util.JCasUtil;
 
 import opennlp.uima.Sentence;
 import opennlp.uima.Token;
+import uhh_lt.newsleak.types.Metadata;
 import uhh_lt.newsleak.types.Paragraph;
 
 /**
@@ -30,6 +34,9 @@ import uhh_lt.newsleak.types.Paragraph;
  */
 @OperationalProperties(multipleDeploymentAllowed = true, modifiesCas = true)
 public class SegmenterICU extends JCasAnnotator_ImplBase {
+
+	/** The Constant TTR_THRESHOLD. */
+	private static final double TTR_THRESHOLD = 0.02;
 
 	/** The Constant PARAM_LOCALE. */
 	public final static String PARAM_LOCALE = "localeString";
@@ -74,6 +81,7 @@ public class SegmenterICU extends JCasAnnotator_ImplBase {
 	@Override
 	public void process(JCas jcas) throws AnalysisEngineProcessException {
 
+		// annotate paragraphs in document text
 		annotateParagraphs(jcas);
 
 		// get locale from current language
@@ -124,10 +132,14 @@ public class SegmenterICU extends JCasAnnotator_ImplBase {
 
 		}
 
+		// flag unlikely fulltext paragraphs (e.g. log files)
+		flagDubiousParagraphs(jcas);
+
 	}
 
 	/**
-	 * Annotate paragraphs.
+	 * Annotate paragraphs such that every document contains at least one, starting
+	 * at the beginning and ending at the end of a document.
 	 *
 	 * @param jcas
 	 *            the jcas
@@ -149,6 +161,60 @@ public class SegmenterICU extends JCasAnnotator_ImplBase {
 		}
 		paragraph.setEnd(jcas.getDocumentText().length());
 		paragraph.addToIndexes();
+
+	}
+
+	/**
+	 * Flag unlikely documents. Documents with a very low type token ratio are
+	 * assumed to be log files or other non-fulltext documents. These documents can
+	 * be excluded from the information extraction pipeline, if the flag
+	 * noFulltextDocument is set to true by this annotator.
+	 *
+	 * @param jcas
+	 *            the jcas
+	 */
+	private void flagDubiousParagraphs(JCas jcas) {
+
+		Collection<Paragraph> paragraphs = JCasUtil.select(jcas, Paragraph.class);
+
+		for (Paragraph paragraph : paragraphs) {
+
+			boolean noFulltextParagraph = false;
+
+			Collection<Token> tokens = JCasUtil.selectCovered(jcas, Token.class, paragraph.getBegin(), paragraph.getEnd());
+
+			if (tokens.size() >= 1000) {
+
+				// calculate type-token ratio
+				int tokenCount = 0;
+				HashSet<String> vocabulary = new HashSet<String>();
+				for (Token token : tokens) {
+					String word = token.getCoveredText();
+					if (StringUtils.isNumeric(word)) {
+						continue;
+					}
+					tokenCount++;
+					if (!vocabulary.contains(word)) {
+						vocabulary.add(word);
+					}
+				}
+
+				double typeTokenRatio = vocabulary.size() / (double) tokenCount;
+
+				// set flag for very low TTR
+				if (typeTokenRatio < TTR_THRESHOLD) {
+					noFulltextParagraph = true;
+					String paragraphText = paragraph.getCoveredText();
+					log.log(Level.INFO, "Unlikely fulltext paragraph flagged:\n----------------------------\n"
+							+ paragraphText.substring(0, Math.min(paragraphText.length(), 1000)));
+				}
+
+			}
+
+			paragraph.setIsNotFulltext(noFulltextParagraph);
+			paragraph.addToIndexes();
+
+		}
 
 	}
 

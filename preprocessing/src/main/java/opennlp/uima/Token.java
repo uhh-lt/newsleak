@@ -11,7 +11,7 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 
 /** 
- * Updated by JCasGen Wed Apr 03 17:15:10 CEST 2019
+ * Updated by JCasGen Thu Apr 04 18:38:29 CEST 2019
  * XML source: /Users/gwiedemann/Projects/newsleak-frontend/preprocessing/desc/NewsleakDocument.xml
  * @generated */
 public class Token extends Annotation {

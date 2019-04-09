@@ -38,6 +38,7 @@ import opennlp.uima.Person;
 import opennlp.uima.Sentence;
 import opennlp.uima.Token;
 import uhh_lt.newsleak.types.Metadata;
+import uhh_lt.newsleak.types.Paragraph;
 
 /**
  * Annotator for Named Entity Recognition. The annotator queries a micro-service
@@ -107,37 +108,37 @@ public class NerMicroservice extends JCasAnnotator_ImplBase {
 
 		// document language in ISO-639-1 format
 		String docLang = localeMap.get(jcas.getDocumentLanguage()).getLanguage();
-		
-		Metadata metadata = (Metadata) jcas.getAnnotationIndex(Metadata.type).iterator().next();
 
-		if (metadata.getNoFulltextDocument()) {
-			log.log(Level.INFO, "Skipping document for NER annotation, because it not assumed to be a fulltext document.");
-		} else {
-			try {
+		Collection<Paragraph> paragraphs = JCasUtil.select(jcas, Paragraph.class);
+		for (Paragraph paragraph : paragraphs) {
+			if (paragraph.getIsNotFulltext()) {
+				log.log(Level.FINEST, "Skipping paragraph for NER annotation.");
+			} else {
+				try {
 
-				// create json request for microservice
-				
-				Collection<Sentence> sentences = JCasUtil.selectCovered(jcas, Sentence.class, 0,
-						jcas.getDocumentText().length());
-				
-				// annotate in batches
-				if (sentences.size() < MAXIMUM_SENTENCES_PER_REQUEST ) {
-					annotateNer(jcas, docLang, sentences);
-				} else {
-					ArrayList<Sentence> sentenceList = new ArrayList<Sentence>(sentences);
-					int batches = (int) Math.ceil(sentenceList.size() / MAXIMUM_SENTENCES_PER_REQUEST);
-					for (int i = 0; i < batches; i++) {
-						int start = i * MAXIMUM_SENTENCES_PER_REQUEST;
-						int end = Math.min(sentenceList.size(), (i + 1) * MAXIMUM_SENTENCES_PER_REQUEST);
-						annotateNer(jcas, docLang, sentenceList.subList(start, end));
+					// create json request for microservice
+
+					Collection<Sentence> sentences = JCasUtil.selectCovered(jcas, Sentence.class, paragraph.getBegin(),
+							paragraph.getEnd());
+
+					// annotate in batches
+					if (sentences.size() < MAXIMUM_SENTENCES_PER_REQUEST) {
+						annotateNer(jcas, docLang, sentences);
+					} else {
+						ArrayList<Sentence> sentenceList = new ArrayList<Sentence>(sentences);
+						int batches = (int) Math.ceil(sentenceList.size() / MAXIMUM_SENTENCES_PER_REQUEST);
+						for (int i = 0; i < batches; i++) {
+							int start = i * MAXIMUM_SENTENCES_PER_REQUEST;
+							int end = Math.min(sentenceList.size(), (i + 1) * MAXIMUM_SENTENCES_PER_REQUEST);
+							annotateNer(jcas, docLang, sentenceList.subList(start, end));
+						}
 					}
+
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-				
-			} catch (IOException e) {
-				e.printStackTrace();
 			}
 		}
-		
 
 		// remove unlikely entities
 		cleanNerAnnotations(jcas);
