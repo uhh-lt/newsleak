@@ -167,7 +167,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor {
 				for (Integer newsleakDocId : mappedIds) {
 					String key = StringUtils.capitalize(record.get(1));
 					String value = record.get(2);
-					if (nParts > 0 && key.equals("Subject")) {
+					if (nParts > 1 && key.equals("Subject")) {
 						partCounter++;
 						value += " (" + partCounter + "/" + nParts + ")";
 					}
