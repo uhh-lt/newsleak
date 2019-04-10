@@ -203,7 +203,7 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 	}
 
 	/**
-	 * Replace html line breaks.
+	 * Replace html line breaks and &gt; &lt; entities.
 	 *
 	 * @param html
 	 *            the html
@@ -218,7 +218,10 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 		document.select("br").append("\\n");
 		document.select("p").prepend("\\n\\n");
 		String s = document.html().replaceAll("\\\\n", "\n");
-		return Jsoup.clean(s, "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
+		String cleanedString = Jsoup.clean(s, "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
+		cleanedString = cleanedString.replaceAll("&gt;", ">");
+		cleanedString = cleanedString.replaceAll("&lt;", "<");
+		return cleanedString;
 	}
 
 	/**
