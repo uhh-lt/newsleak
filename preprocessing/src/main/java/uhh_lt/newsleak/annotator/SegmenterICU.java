@@ -35,9 +35,12 @@ import uhh_lt.newsleak.types.Paragraph;
 @OperationalProperties(multipleDeploymentAllowed = true, modifiesCas = true)
 public class SegmenterICU extends JCasAnnotator_ImplBase {
 
-	/** The Constant TTR_THRESHOLD. */
-	private static final double TTR_THRESHOLD = 0.02;
-
+	/** The Constants TTR_THRESHOLD and TTR_MIN_LENGTH. */
+	private static final double TTR_THRESHOLD = 0.1;
+	
+	/** The Constant TTR_MIN_LENGTH. */
+	private  static final int TTR_MIN_LENGTH = 100;
+	
 	/** The Constant PARAM_LOCALE. */
 	public final static String PARAM_LOCALE = "localeString";
 
@@ -131,10 +134,55 @@ public class SegmenterICU extends JCasAnnotator_ImplBase {
 			}
 
 		}
+		
+		// collapse single characters into one
+		collapseSingleCharacterTokens(jcas);
 
 		// flag unlikely fulltext paragraphs (e.g. log files)
 		flagDubiousParagraphs(jcas);
 
+	}
+
+	
+	/**
+	 * Collapses sequences of single character tokens of the same character into one token (e.g. .......).
+	 *
+	 * @param jcas the jcas
+	 */
+	private void collapseSingleCharacterTokens(JCas jcas) {
+		Collection<Token> tokens = JCasUtil.select(jcas, Token.class);
+		boolean sequenceStarted = false;
+		String lastToken = "";
+		int newTokenEnd = 0;
+		Token tokenToCollapse = null;
+		// iterate over all tokens
+		for (Token token : tokens) {
+			String currentToken = token.getCoveredText();
+			// only look at single char tokens
+			if (currentToken.length() == 1) {
+				if (!sequenceStarted) {
+					newTokenEnd = token.getEnd();
+					tokenToCollapse = token;
+					sequenceStarted = true;
+				} else {
+					if (currentToken.equals(lastToken)) {
+						newTokenEnd = token.getEnd();
+						token.removeFromIndexes();
+					} else {
+						if (newTokenEnd - tokenToCollapse.getEnd() > 0) {
+							tokenToCollapse.setEnd(newTokenEnd);
+							tokenToCollapse.addToIndexes();
+						}
+						sequenceStarted = false;
+					}
+				}
+			} else {
+				sequenceStarted = false;
+				tokenToCollapse = null;
+			}
+			lastToken = currentToken;
+		}
+		
 	}
 
 	/**
@@ -183,7 +231,7 @@ public class SegmenterICU extends JCasAnnotator_ImplBase {
 
 			Collection<Token> tokens = JCasUtil.selectCovered(jcas, Token.class, paragraph.getBegin(), paragraph.getEnd());
 
-			if (tokens.size() >= 1000) {
+			if (tokens.size() > TTR_MIN_LENGTH) {
 
 				// calculate type-token ratio
 				int tokenCount = 0;
