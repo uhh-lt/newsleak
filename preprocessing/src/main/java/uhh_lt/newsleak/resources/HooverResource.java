@@ -66,8 +66,8 @@ public class HooverResource extends Resource_ImplBase {
 	@ConfigurationParameter(name = PARAM_SEARCHURL)
 	private String mSearchUrl;
 
-	/** The hoover search base url. */
-	private String hooverSearchBaseUrl;
+	/** The hoover search relative base path. */
+	private String indexPath;
 
 	/** The client. */
 	private JestClient client;
@@ -92,7 +92,7 @@ public class HooverResource extends Resource_ImplBase {
 		factory.setHttpClientConfig(new HttpClientConfig.Builder(mHost + ":" + mPort).multiThreaded(false).build());
 		client = factory.getObject();
 
-		hooverSearchBaseUrl = PARAM_SEARCHURL + "/" + HOOVER_DOCUMENT_TYPE + "/" + mIndex + "/";
+		indexPath = mIndex + "/";
 
 		return true;
 	}
@@ -148,8 +148,8 @@ public class HooverResource extends Resource_ImplBase {
 	 *
 	 * @return the client url
 	 */
-	public String getClientUrl() {
-		return hooverSearchBaseUrl;
+	public String getHooverBasePath() {
+		return indexPath;
 	}
 
 	/**

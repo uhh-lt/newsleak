@@ -308,7 +308,7 @@ public class HooverElasticsearchReader extends NewsleakReader {
 			metadata.add(metadataResource.createTextMetadata(docIdNewsleak, "path", field));
 
 		// Source Id
-		metadata.add(metadataResource.createTextMetadata(docIdNewsleak, "Link", docIdHoover));
+		metadata.add(metadataResource.createTextMetadata(docIdNewsleak, "Link", hooverResource.getHooverBasePath() + docIdHoover));
 
 		// attachments
 		Boolean booleanField = getFieldBoolean(source, "attachments");

@@ -30,6 +30,7 @@ import scalikejdbc._
 import models.{ Document, Facets, KeyTerm, Tag }
 import util.es.{ ESRequestUtils, SearchHitIterator }
 import util.RichString.richString
+import util.NewsleakConfigReader
 
 /**
  * Defines common data access methods for retrieving and annotating documents.
@@ -263,6 +264,7 @@ trait DocumentService {
 trait DBDocumentService extends DocumentService {
 
   private val db = (index: String) => NamedDB(Symbol(index))
+  private val baseUrl = NewsleakConfigReader.config.getString("source.base.url")
 
   /** @inheritdoc */
   override def getById(docId: Long)(index: String): Option[Document] = db(index).readOnly { implicit session =>
@@ -373,10 +375,12 @@ trait DBDocumentService extends DocumentService {
       val generic = sql"""SELECT m.docid id, m.value, m.key, m.type
                           FROM metadata m
                           WHERE m.key IN (${fields}) AND m.docid IN (${docIds})
-                      """.map(rs => (rs.long("id"), rs.string("key"), rs.string("value"), rs.string("type"))).list().apply()
-      // alter base url for source link
-      // ... use NewsleakConfigReader.sourceBaseUrl + Link             
-
+                      """.map(rs => (
+        rs.long("id"),
+        rs.string("key"),
+        if (rs.string("key") == "Link") baseUrl.concat(rs.string("value")) else rs.string("value"),
+        rs.string("type")
+      )).list().apply()
       // Add creates fields for documents that are not explicit added as metadata
       val dates = sql"SELECT id, created FROM document WHERE id IN (${docIds})".map(rs => (rs.long("id"), "Created", rs.string("created"), "Date")).list().apply()
       dates ++ generic

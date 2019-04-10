@@ -66,7 +66,7 @@ define([
                             });
 
                             var highlightElement = undefined;
-                            if(_.has(e, 'nested')) {
+                            if(_.has(e, 'nested') && (e.nested.start != e.start || e.nested.end != e.end)) {
                                 // Two overlapping cases exist. In the first case, we need to append the inner element before the outer one.
                                 // In the second case, we need to append it after the outer element.
                                 // Case 1
