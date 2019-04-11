@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
@@ -22,7 +22,6 @@ import org.apache.uima.fit.util.JCasUtil;
 
 import opennlp.uima.Sentence;
 import opennlp.uima.Token;
-import uhh_lt.newsleak.types.Metadata;
 import uhh_lt.newsleak.types.Paragraph;
 
 /**
