@@ -260,6 +260,7 @@ public class InformationExtraction2Postgres extends NewsleakPreprocessor {
 				ElasticsearchDocumentWriter.class, ElasticsearchDocumentWriter.RESOURCE_ESCLIENT,
 				this.getElasticsearchResourceDescription("true"),
 				ElasticsearchDocumentWriter.PARAM_PARAGRAPHS_AS_DOCUMENTS, this.paragraphsAsDocuments,
+				ElasticsearchDocumentWriter.PARAM_MINIMUM_PARAGRAPH_LENGTH, this.paragraphMinimumLength,
 				ElasticsearchDocumentWriter.PARAM_MAX_DOC_LENGTH, this.maxDocumentLength);
 
 		// create pipeline

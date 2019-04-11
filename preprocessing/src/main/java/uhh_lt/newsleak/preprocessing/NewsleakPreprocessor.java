@@ -51,6 +51,7 @@ public abstract class NewsleakPreprocessor {
 	protected String[] processLanguages;
 	protected String dataDirectory;
 	protected boolean paragraphsAsDocuments;
+	protected Integer paragraphMinimumLength;
 	protected Integer maxDocumentLength;
 	protected Integer threads;
 	protected Integer debugMaxDocuments;
@@ -144,6 +145,7 @@ public abstract class NewsleakPreprocessor {
 			esIndex = prop.getProperty("esindex");
 			esPort = prop.getProperty("esport");
 			paragraphsAsDocuments = Boolean.parseBoolean(prop.getProperty("paragraphsasdocuments"));
+			paragraphMinimumLength = Integer.valueOf(prop.getProperty("paragraphminimumlength"));
 			maxDocumentLength = Integer.valueOf(prop.getProperty("maxdocumentlength"));
 			if (maxDocumentLength <= 0)
 				maxDocumentLength = Integer.MAX_VALUE;

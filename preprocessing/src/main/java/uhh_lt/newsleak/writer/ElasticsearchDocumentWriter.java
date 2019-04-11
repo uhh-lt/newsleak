@@ -74,12 +74,16 @@ public class ElasticsearchDocumentWriter extends JCasAnnotator_ImplBase {
 	/** The split into paragraphs. */
 	@ConfigurationParameter(name = PARAM_PARAGRAPHS_AS_DOCUMENTS, mandatory = false, defaultValue = "false")
 	private boolean splitIntoParagraphs;
+	
+	/** The Constant PARAM_MINIMUM_PARAGRAPH_LENGTH. */
+	public static final String PARAM_MINIMUM_PARAGRAPH_LENGTH = "MINIMUM_PARAGRAPH_LENGTH";
+	
+	/** The minimum paragraph length. */
+	@ConfigurationParameter(name = PARAM_MINIMUM_PARAGRAPH_LENGTH, mandatory = false, defaultValue = "1500")
+	private int MINIMUM_PARAGRAPH_LENGTH;
 
 	/** The paragraph pattern. */
 	private Pattern paragraphPattern = Pattern.compile("[?!\\.]( *\\r?\\n){2,}", Pattern.MULTILINE);
-
-	/** The minimum paragraph length. */
-	public static int MINIMUM_PARAGRAPH_LENGTH = 1500;
 
 	/** The Constant PARAM_MAX_DOC_LENGTH. */
 	public static final String PARAM_MAX_DOC_LENGTH = "maxDocumentLength";
