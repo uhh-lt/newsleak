@@ -1,6 +1,6 @@
 name := "newsleak"
 
-version := "0.0.2"
+version := "1.0.0"
 
 scalaVersion := "2.11.7"
 

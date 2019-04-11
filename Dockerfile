@@ -24,6 +24,8 @@ ADD preprocessing/data/metadata_example.csv data/metadata_example.csv
 ADD preprocessing/resources resources/
 ADD preprocessing/desc desc/
 
+RUN chown newsleak:newsleak /opt/newsleak/data
+
 ADD newsleak-start.sh .
 
 USER newsleak
