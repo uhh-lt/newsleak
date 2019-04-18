@@ -1,0 +1,682 @@
+<classpath>
+  <classpathentry kind="src" path="app"/>
+  <classpathentry kind="src" path="conf"/>
+  <classpathentry kind="src" path="target/scala-2.11/twirl/main"/>
+  <classpathentry kind="src" path="target/scala-2.11/routes/main"/>
+  <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"></classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/twirl-api_2.11/srcs/twirl-api_2.11-1.1.1-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/twirl-api_2.11/jars/twirl-api_2.11-1.1.1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/twirl-api_2.11/docs/twirl-api_2.11-1.1.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.commons/commons-lang3/srcs/commons-lang3-3.4-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.commons/commons-lang3/jars/commons-lang3-3.4.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.commons/commons-lang3/docs/commons-lang3-3.4-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.scala-lang.modules/scala-xml_2.11/srcs/scala-xml_2.11-1.0.1-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.scala-lang.modules/scala-xml_2.11/bundles/scala-xml_2.11-1.0.1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.scala-lang.modules/scala-xml_2.11/docs/scala-xml_2.11-1.0.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-server_2.11/srcs/play-server_2.11-2.5.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-server_2.11/jars/play-server_2.11-2.5.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-server_2.11/docs/play-server_2.11-2.5.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play_2.11/srcs/play_2.11-2.5.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play_2.11/jars/play_2.11-2.5.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play_2.11/docs/play_2.11-2.5.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/build-link/srcs/build-link-2.5.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/build-link/jars/build-link-2.5.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/build-link/docs/build-link-2.5.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-exceptions/srcs/play-exceptions-2.5.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-exceptions/jars/play-exceptions-2.5.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-exceptions/docs/play-exceptions-2.5.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-iteratees_2.11/srcs/play-iteratees_2.11-2.5.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-iteratees_2.11/jars/play-iteratees_2.11-2.5.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-iteratees_2.11/docs/play-iteratees_2.11-2.5.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.scala-stm/scala-stm_2.11/srcs/scala-stm_2.11-0.7-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.scala-stm/scala-stm_2.11/jars/scala-stm_2.11-0.7.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.scala-stm/scala-stm_2.11/docs/scala-stm_2.11-0.7-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe/config/srcs/config-1.3.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe/config/bundles/config-1.3.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe/config/docs/config-1.3.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-json_2.11/srcs/play-json_2.11-2.5.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-json_2.11/jars/play-json_2.11-2.5.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-json_2.11/docs/play-json_2.11-2.5.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-functional_2.11/srcs/play-functional_2.11-2.5.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-functional_2.11/jars/play-functional_2.11-2.5.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-functional_2.11/docs/play-functional_2.11-2.5.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-datacommons_2.11/srcs/play-datacommons_2.11-2.5.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-datacommons_2.11/jars/play-datacommons_2.11-2.5.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-datacommons_2.11/docs/play-datacommons_2.11-2.5.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/joda-time/joda-time/srcs/joda-time-2.9.6-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/joda-time/joda-time/jars/joda-time-2.9.6.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/joda-time/joda-time/docs/joda-time-2.9.6-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.joda/joda-convert/srcs/joda-convert-1.8.1-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.joda/joda-convert/jars/joda-convert-1.8.1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.joda/joda-convert/docs/joda-convert-1.8.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.core/jackson-core/srcs/jackson-core-2.7.8-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.core/jackson-core/bundles/jackson-core-2.7.8.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.core/jackson-core/docs/jackson-core-2.7.8-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.core/jackson-annotations/srcs/jackson-annotations-2.7.8-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.core/jackson-annotations/bundles/jackson-annotations-2.7.8.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.core/jackson-annotations/docs/jackson-annotations-2.7.8-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.core/jackson-databind/srcs/jackson-databind-2.7.8-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.core/jackson-databind/bundles/jackson-databind-2.7.8.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.core/jackson-databind/docs/jackson-databind-2.7.8-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.datatype/jackson-datatype-jdk8/srcs/jackson-datatype-jdk8-2.7.8-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.datatype/jackson-datatype-jdk8/bundles/jackson-datatype-jdk8-2.7.8.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.datatype/jackson-datatype-jdk8/docs/jackson-datatype-jdk8-2.7.8-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.datatype/jackson-datatype-jsr310/srcs/jackson-datatype-jsr310-2.7.8-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.datatype/jackson-datatype-jsr310/bundles/jackson-datatype-jsr310-2.7.8.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.datatype/jackson-datatype-jsr310/docs/jackson-datatype-jsr310-2.7.8-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-netty-utils/srcs/play-netty-utils-2.5.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-netty-utils/jars/play-netty-utils-2.5.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-netty-utils/docs/play-netty-utils-2.5.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.slf4j/slf4j-api/srcs/slf4j-api-1.7.21-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.slf4j/slf4j-api/jars/slf4j-api-1.7.21.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.slf4j/slf4j-api/docs/slf4j-api-1.7.21-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.slf4j/jul-to-slf4j/srcs/jul-to-slf4j-1.7.21-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.slf4j/jul-to-slf4j/jars/jul-to-slf4j-1.7.21.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.slf4j/jul-to-slf4j/docs/jul-to-slf4j-1.7.21-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.slf4j/jcl-over-slf4j/srcs/jcl-over-slf4j-1.7.21-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.slf4j/jcl-over-slf4j/jars/jcl-over-slf4j-1.7.21.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.slf4j/jcl-over-slf4j/docs/jcl-over-slf4j-1.7.21-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-streams_2.11/srcs/play-streams_2.11-2.5.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-streams_2.11/jars/play-streams_2.11-2.5.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-streams_2.11/docs/play-streams_2.11-2.5.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.reactivestreams/reactive-streams/srcs/reactive-streams-1.0.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.reactivestreams/reactive-streams/jars/reactive-streams-1.0.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.reactivestreams/reactive-streams/docs/reactive-streams-1.0.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.akka/akka-stream_2.11/srcs/akka-stream_2.11-2.4.12-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.akka/akka-stream_2.11/jars/akka-stream_2.11-2.4.12.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.akka/akka-stream_2.11/docs/akka-stream_2.11-2.4.12-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.akka/akka-actor_2.11/srcs/akka-actor_2.11-2.4.12-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.akka/akka-actor_2.11/jars/akka-actor_2.11-2.4.12.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.akka/akka-actor_2.11/docs/akka-actor_2.11-2.4.12-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.scala-lang.modules/scala-java8-compat_2.11/srcs/scala-java8-compat_2.11-0.7.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.scala-lang.modules/scala-java8-compat_2.11/bundles/scala-java8-compat_2.11-0.7.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.scala-lang.modules/scala-java8-compat_2.11/docs/scala-java8-compat_2.11-0.7.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe/ssl-config-core_2.11/srcs/ssl-config-core_2.11-0.2.1-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe/ssl-config-core_2.11/bundles/ssl-config-core_2.11-0.2.1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe/ssl-config-core_2.11/docs/ssl-config-core_2.11-0.2.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.11/srcs/scala-parser-combinators_2.11-1.0.4-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.11/bundles/scala-parser-combinators_2.11-1.0.4.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.11/docs/scala-parser-combinators_2.11-1.0.4-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.akka/akka-slf4j_2.11/srcs/akka-slf4j_2.11-2.4.12-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.akka/akka-slf4j_2.11/jars/akka-slf4j_2.11-2.4.12.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.akka/akka-slf4j_2.11/docs/akka-slf4j_2.11-2.4.12-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/commons-codec/commons-codec/srcs/commons-codec-1.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/commons-codec/commons-codec/jars/commons-codec-1.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/commons-codec/commons-codec/docs/commons-codec-1.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/xerces/xercesImpl/srcs/xercesImpl-2.11.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/xerces/xercesImpl/jars/xercesImpl-2.11.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/xerces/xercesImpl/docs/xercesImpl-2.11.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/xml-apis/xml-apis/srcs/xml-apis-1.4.01-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/xml-apis/xml-apis/jars/xml-apis-1.4.01.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/xml-apis/xml-apis/docs/xml-apis-1.4.01-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/javax.transaction/jta/srcs/jta-1.1-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/javax.transaction/jta/jars/jta-1.1.jar"/>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.google.inject/guice/srcs/guice-4.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.google.inject/guice/jars/guice-4.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.google.inject/guice/docs/guice-4.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/javax.inject/javax.inject/srcs/javax.inject-1-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/javax.inject/javax.inject/jars/javax.inject-1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/javax.inject/javax.inject/docs/javax.inject-1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/aopalliance/aopalliance/srcs/aopalliance-1.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/aopalliance/aopalliance/jars/aopalliance-1.0.jar"/>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.google.inject.extensions/guice-assistedinject/srcs/guice-assistedinject-4.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.google.inject.extensions/guice-assistedinject/jars/guice-assistedinject-4.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.google.inject.extensions/guice-assistedinject/docs/guice-assistedinject-4.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-netty-server_2.11/srcs/play-netty-server_2.11-2.5.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-netty-server_2.11/jars/play-netty-server_2.11-2.5.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-netty-server_2.11/docs/play-netty-server_2.11-2.5.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.netty/netty-reactive-streams-http/srcs/netty-reactive-streams-http-1.0.8-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.netty/netty-reactive-streams-http/jars/netty-reactive-streams-http-1.0.8.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.netty/netty-reactive-streams-http/docs/netty-reactive-streams-http-1.0.8-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.netty/netty-reactive-streams/srcs/netty-reactive-streams-1.0.8-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.netty/netty-reactive-streams/jars/netty-reactive-streams-1.0.8.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.netty/netty-reactive-streams/docs/netty-reactive-streams-1.0.8-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/io.netty/netty-handler/srcs/netty-handler-4.0.41.Final-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/io.netty/netty-handler/jars/netty-handler-4.0.41.Final.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/io.netty/netty-handler/docs/netty-handler-4.0.41.Final-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/io.netty/netty-buffer/srcs/netty-buffer-4.0.41.Final-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/io.netty/netty-buffer/jars/netty-buffer-4.0.41.Final.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/io.netty/netty-buffer/docs/netty-buffer-4.0.41.Final-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/io.netty/netty-common/srcs/netty-common-4.0.41.Final-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/io.netty/netty-common/jars/netty-common-4.0.41.Final.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/io.netty/netty-common/docs/netty-common-4.0.41.Final-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/io.netty/netty-transport/srcs/netty-transport-4.0.41.Final-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/io.netty/netty-transport/jars/netty-transport-4.0.41.Final.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/io.netty/netty-transport/docs/netty-transport-4.0.41.Final-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/io.netty/netty-codec/srcs/netty-codec-4.0.41.Final-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/io.netty/netty-codec/jars/netty-codec-4.0.41.Final.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/io.netty/netty-codec/docs/netty-codec-4.0.41.Final-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/io.netty/netty-codec-http/srcs/netty-codec-http-4.0.41.Final-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/io.netty/netty-codec-http/jars/netty-codec-http-4.0.41.Final.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/io.netty/netty-codec-http/docs/netty-codec-http-4.0.41.Final-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="lib" path="/Users/gwiedemann/.ivy2/cache/io.netty/netty-transport-native-epoll/jars/netty-transport-native-epoll-4.0.41.Final-linux-x86_64.jar"/>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-logback_2.11/srcs/play-logback_2.11-2.5.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-logback_2.11/jars/play-logback_2.11-2.5.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-logback_2.11/docs/play-logback_2.11-2.5.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/ch.qos.logback/logback-classic/srcs/logback-classic-1.1.7-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/ch.qos.logback/logback-classic/jars/logback-classic-1.1.7.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/ch.qos.logback/logback-classic/docs/logback-classic-1.1.7-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/ch.qos.logback/logback-core/srcs/logback-core-1.1.7-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/ch.qos.logback/logback-core/jars/logback-core-1.1.7.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/ch.qos.logback/logback-core/docs/logback-core-1.1.7-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-jdbc_2.11/srcs/play-jdbc_2.11-2.5.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-jdbc_2.11/jars/play-jdbc_2.11-2.5.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-jdbc_2.11/docs/play-jdbc_2.11-2.5.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-jdbc-api_2.11/srcs/play-jdbc-api_2.11-2.5.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-jdbc-api_2.11/jars/play-jdbc-api_2.11-2.5.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-jdbc-api_2.11/docs/play-jdbc-api_2.11-2.5.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.jolbox/bonecp/srcs/bonecp-0.8.0.RELEASE-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.jolbox/bonecp/bundles/bonecp-0.8.0.RELEASE.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.jolbox/bonecp/docs/bonecp-0.8.0.RELEASE-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.zaxxer/HikariCP/srcs/HikariCP-2.5.1-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.zaxxer/HikariCP/bundles/HikariCP-2.5.1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.zaxxer/HikariCP/docs/HikariCP-2.5.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.googlecode.usc/jdbcdslog/srcs/jdbcdslog-1.0.6.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.googlecode.usc/jdbcdslog/jars/jdbcdslog-1.0.6.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.googlecode.usc/jdbcdslog/docs/jdbcdslog-1.0.6.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.h2database/h2/srcs/h2-1.4.192-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.h2database/h2/jars/h2-1.4.192.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.h2database/h2/docs/h2-1.4.192-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="lib" path="/Users/gwiedemann/.ivy2/cache/tyrex/tyrex/jars/tyrex-1.0.1.jar"/>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-cache_2.11/srcs/play-cache_2.11-2.5.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-cache_2.11/jars/play-cache_2.11-2.5.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-cache_2.11/docs/play-cache_2.11-2.5.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/net.sf.ehcache/ehcache-core/srcs/ehcache-core-2.6.11-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/net.sf.ehcache/ehcache-core/jars/ehcache-core-2.6.11.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/net.sf.ehcache/ehcache-core/docs/ehcache-core-2.6.11-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.postgresql/postgresql/srcs/postgresql-9.4-1206-jdbc41-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.postgresql/postgresql/jars/postgresql-9.4-1206-jdbc41.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.postgresql/postgresql/docs/postgresql-9.4-1206-jdbc41-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc_2.11/srcs/scalikejdbc_2.11-2.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc_2.11/jars/scalikejdbc_2.11-2.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc_2.11/docs/scalikejdbc_2.11-2.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc-core_2.11/srcs/scalikejdbc-core_2.11-2.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc-core_2.11/jars/scalikejdbc-core_2.11-2.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc-core_2.11/docs/scalikejdbc-core_2.11-2.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.commons/commons-dbcp2/srcs/commons-dbcp2-2.1.1-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.commons/commons-dbcp2/jars/commons-dbcp2-2.1.1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.commons/commons-dbcp2/docs/commons-dbcp2-2.1.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.commons/commons-pool2/srcs/commons-pool2-2.4.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.commons/commons-pool2/jars/commons-pool2-2.4.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.commons/commons-pool2/docs/commons-pool2-2.4.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/commons-logging/commons-logging/srcs/commons-logging-1.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/commons-logging/commons-logging/jars/commons-logging-1.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/commons-logging/commons-logging/docs/commons-logging-1.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc-interpolation_2.11/srcs/scalikejdbc-interpolation_2.11-2.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc-interpolation_2.11/jars/scalikejdbc-interpolation_2.11-2.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc-interpolation_2.11/docs/scalikejdbc-interpolation_2.11-2.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc-interpolation-macro_2.11/srcs/scalikejdbc-interpolation-macro_2.11-2.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc-interpolation-macro_2.11/jars/scalikejdbc-interpolation-macro_2.11-2.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc-interpolation-macro_2.11/docs/scalikejdbc-interpolation-macro_2.11-2.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc-config_2.11/srcs/scalikejdbc-config_2.11-2.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc-config_2.11/jars/scalikejdbc-config_2.11-2.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc-config_2.11/docs/scalikejdbc-config_2.11-2.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc-play-initializer_2.11/srcs/scalikejdbc-play-initializer_2.11-2.5.1-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc-play-initializer_2.11/jars/scalikejdbc-play-initializer_2.11-2.5.1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.scalikejdbc/scalikejdbc-play-initializer_2.11/docs/scalikejdbc-play-initializer_2.11-2.5.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.elasticsearch/elasticsearch/srcs/elasticsearch-2.3.5-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.elasticsearch/elasticsearch/jars/elasticsearch-2.3.5.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.elasticsearch/elasticsearch/docs/elasticsearch-2.3.5-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-core/srcs/lucene-core-5.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-core/jars/lucene-core-5.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-core/docs/lucene-core-5.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-backward-codecs/srcs/lucene-backward-codecs-5.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-backward-codecs/jars/lucene-backward-codecs-5.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-backward-codecs/docs/lucene-backward-codecs-5.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-analyzers-common/srcs/lucene-analyzers-common-5.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-analyzers-common/jars/lucene-analyzers-common-5.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-analyzers-common/docs/lucene-analyzers-common-5.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-queries/srcs/lucene-queries-5.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-queries/jars/lucene-queries-5.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-queries/docs/lucene-queries-5.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-memory/srcs/lucene-memory-5.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-memory/jars/lucene-memory-5.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-memory/docs/lucene-memory-5.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-highlighter/srcs/lucene-highlighter-5.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-highlighter/jars/lucene-highlighter-5.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-highlighter/docs/lucene-highlighter-5.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-join/srcs/lucene-join-5.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-join/jars/lucene-join-5.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-join/docs/lucene-join-5.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-grouping/srcs/lucene-grouping-5.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-grouping/jars/lucene-grouping-5.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-grouping/docs/lucene-grouping-5.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-queryparser/srcs/lucene-queryparser-5.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-queryparser/jars/lucene-queryparser-5.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-queryparser/docs/lucene-queryparser-5.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-sandbox/srcs/lucene-sandbox-5.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-sandbox/jars/lucene-sandbox-5.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-sandbox/docs/lucene-sandbox-5.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-suggest/srcs/lucene-suggest-5.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-suggest/jars/lucene-suggest-5.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-suggest/docs/lucene-suggest-5.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-misc/srcs/lucene-misc-5.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-misc/jars/lucene-misc-5.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-misc/docs/lucene-misc-5.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-spatial/srcs/lucene-spatial-5.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-spatial/jars/lucene-spatial-5.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-spatial/docs/lucene-spatial-5.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-spatial3d/srcs/lucene-spatial3d-5.5.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-spatial3d/jars/lucene-spatial3d-5.5.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.lucene/lucene-spatial3d/docs/lucene-spatial3d-5.5.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.spatial4j/spatial4j/srcs/spatial4j-0.5-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.spatial4j/spatial4j/jars/spatial4j-0.5.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.spatial4j/spatial4j/docs/spatial4j-0.5-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.elasticsearch/securesm/jars/securesm-1.0.jar"/>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.carrotsearch/hppc/srcs/hppc-0.7.1-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.carrotsearch/hppc/jars/hppc-0.7.1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.carrotsearch/hppc/docs/hppc-0.7.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.dataformat/jackson-dataformat-smile/srcs/jackson-dataformat-smile-2.6.6-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.dataformat/jackson-dataformat-smile/bundles/jackson-dataformat-smile-2.6.6.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.dataformat/jackson-dataformat-smile/docs/jackson-dataformat-smile-2.6.6-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml/srcs/jackson-dataformat-yaml-2.6.6-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml/bundles/jackson-dataformat-yaml-2.6.6.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml/docs/jackson-dataformat-yaml-2.6.6-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.yaml/snakeyaml/srcs/snakeyaml-1.15-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.yaml/snakeyaml/bundles/snakeyaml-1.15.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.yaml/snakeyaml/docs/snakeyaml-1.15-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.dataformat/jackson-dataformat-cbor/srcs/jackson-dataformat-cbor-2.6.6-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.dataformat/jackson-dataformat-cbor/bundles/jackson-dataformat-cbor-2.6.6.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.fasterxml.jackson.dataformat/jackson-dataformat-cbor/docs/jackson-dataformat-cbor-2.6.6-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/io.netty/netty/srcs/netty-3.10.5.Final-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/io.netty/netty/bundles/netty-3.10.5.Final.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/io.netty/netty/docs/netty-3.10.5.Final-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.ning/compress-lzf/srcs/compress-lzf-1.0.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.ning/compress-lzf/bundles/compress-lzf-1.0.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.ning/compress-lzf/docs/compress-lzf-1.0.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.tdunning/t-digest/srcs/t-digest-3.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.tdunning/t-digest/jars/t-digest-3.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.tdunning/t-digest/docs/t-digest-3.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.hdrhistogram/HdrHistogram/srcs/HdrHistogram-2.1.6-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.hdrhistogram/HdrHistogram/bundles/HdrHistogram-2.1.6.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.hdrhistogram/HdrHistogram/docs/HdrHistogram-2.1.6-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/commons-cli/commons-cli/srcs/commons-cli-1.3.1-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/commons-cli/commons-cli/jars/commons-cli-1.3.1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/commons-cli/commons-cli/docs/commons-cli-1.3.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.twitter/jsr166e/srcs/jsr166e-1.1.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.twitter/jsr166e/jars/jsr166e-1.1.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.twitter/jsr166e/docs/jsr166e-1.1.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/commons-io/commons-io/srcs/commons-io-2.4-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/commons-io/commons-io/jars/commons-io-2.4.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/commons-io/commons-io/docs/commons-io-2.4-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-test_2.11/srcs/play-test_2.11-2.5.10-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-test_2.11/jars/play-test_2.11-2.5.10.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.typesafe.play/play-test_2.11/docs/play-test_2.11-2.5.10-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/junit/junit/srcs/junit-4.12-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/junit/junit/jars/junit-4.12.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/junit/junit/docs/junit-4.12-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.hamcrest/hamcrest-core/srcs/hamcrest-core-1.3-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.hamcrest/hamcrest-core/jars/hamcrest-core-1.3.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.hamcrest/hamcrest-core/docs/hamcrest-core-1.3-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.novocode/junit-interface/srcs/junit-interface-0.11-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.novocode/junit-interface/jars/junit-interface-0.11.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.novocode/junit-interface/docs/junit-interface-0.11-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.scala-sbt/test-interface/srcs/test-interface-1.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.scala-sbt/test-interface/jars/test-interface-1.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.scala-sbt/test-interface/docs/test-interface-1.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.google.guava/guava/srcs/guava-19.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.google.guava/guava/bundles/guava-19.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.google.guava/guava/docs/guava-19.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.google.code.findbugs/jsr305/srcs/jsr305-3.0.1-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.google.code.findbugs/jsr305/jars/jsr305-3.0.1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.google.code.findbugs/jsr305/docs/jsr305-3.0.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/net.sourceforge.htmlunit/htmlunit/srcs/htmlunit-2.20-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/net.sourceforge.htmlunit/htmlunit/jars/htmlunit-2.20.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/net.sourceforge.htmlunit/htmlunit/docs/htmlunit-2.20-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/xalan/xalan/srcs/xalan-2.7.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/xalan/xalan/jars/xalan-2.7.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/xalan/xalan/docs/xalan-2.7.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/xalan/serializer/srcs/serializer-2.7.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/xalan/serializer/jars/serializer-2.7.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/xalan/serializer/docs/serializer-2.7.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.httpcomponents/httpclient/srcs/httpclient-4.5.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.httpcomponents/httpclient/jars/httpclient-4.5.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.httpcomponents/httpclient/docs/httpclient-4.5.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.httpcomponents/httpcore/srcs/httpcore-4.4.4-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.httpcomponents/httpcore/jars/httpcore-4.4.4.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.httpcomponents/httpcore/docs/httpcore-4.4.4-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.httpcomponents/httpmime/srcs/httpmime-4.5.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.httpcomponents/httpmime/jars/httpmime-4.5.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.httpcomponents/httpmime/docs/httpmime-4.5.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/net.sourceforge.htmlunit/htmlunit-core-js/srcs/htmlunit-core-js-2.17-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/net.sourceforge.htmlunit/htmlunit-core-js/jars/htmlunit-core-js-2.17.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/net.sourceforge.htmlunit/htmlunit-core-js/docs/htmlunit-core-js-2.17-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/net.sourceforge.nekohtml/nekohtml/srcs/nekohtml-1.9.22-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/net.sourceforge.nekohtml/nekohtml/jars/nekohtml-1.9.22.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/net.sourceforge.nekohtml/nekohtml/docs/nekohtml-1.9.22-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/net.sourceforge.cssparser/cssparser/srcs/cssparser-0.9.18-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/net.sourceforge.cssparser/cssparser/jars/cssparser-0.9.18.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/net.sourceforge.cssparser/cssparser/docs/cssparser-0.9.18-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.w3c.css/sac/srcs/sac-1.3-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.w3c.css/sac/jars/sac-1.3.jar"/>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.eclipse.jetty.websocket/websocket-client/srcs/websocket-client-9.2.15.v20160210-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.eclipse.jetty.websocket/websocket-client/jars/websocket-client-9.2.15.v20160210.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.eclipse.jetty.websocket/websocket-client/docs/websocket-client-9.2.15.v20160210-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.eclipse.jetty/jetty-util/srcs/jetty-util-9.2.15.v20160210-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.eclipse.jetty/jetty-util/jars/jetty-util-9.2.15.v20160210.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.eclipse.jetty/jetty-util/docs/jetty-util-9.2.15.v20160210-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.eclipse.jetty/jetty-io/srcs/jetty-io-9.2.15.v20160210-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.eclipse.jetty/jetty-io/jars/jetty-io-9.2.15.v20160210.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.eclipse.jetty/jetty-io/docs/jetty-io-9.2.15.v20160210-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.eclipse.jetty.websocket/websocket-common/srcs/websocket-common-9.2.15.v20160210-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.eclipse.jetty.websocket/websocket-common/jars/websocket-common-9.2.15.v20160210.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.eclipse.jetty.websocket/websocket-common/docs/websocket-common-9.2.15.v20160210-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.eclipse.jetty.websocket/websocket-api/srcs/websocket-api-9.2.15.v20160210-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.eclipse.jetty.websocket/websocket-api/jars/websocket-api-9.2.15.v20160210.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.eclipse.jetty.websocket/websocket-api/docs/websocket-api-9.2.15.v20160210-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.fluentlenium/fluentlenium-core/srcs/fluentlenium-core-0.10.9-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.fluentlenium/fluentlenium-core/jars/fluentlenium-core-0.10.9.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.fluentlenium/fluentlenium-core/docs/fluentlenium-core-0.10.9-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-java/jars/selenium-java-2.48.2.jar"/>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-chrome-driver/srcs/selenium-chrome-driver-2.48.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-chrome-driver/jars/selenium-chrome-driver-2.48.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-chrome-driver/docs/selenium-chrome-driver-2.48.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-remote-driver/srcs/selenium-remote-driver-2.48.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-remote-driver/jars/selenium-remote-driver-2.48.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-remote-driver/docs/selenium-remote-driver-2.48.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/cglib/cglib-nodep/srcs/cglib-nodep-2.1_3-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/cglib/cglib-nodep/jars/cglib-nodep-2.1_3.jar"/>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/com.google.code.gson/gson/srcs/gson-2.3.1-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/com.google.code.gson/gson/jars/gson-2.3.1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/com.google.code.gson/gson/docs/gson-2.3.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-api/srcs/selenium-api-2.48.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-api/jars/selenium-api-2.48.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-api/docs/selenium-api-2.48.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.apache.commons/commons-exec/srcs/commons-exec-1.3-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.apache.commons/commons-exec/jars/commons-exec-1.3.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.apache.commons/commons-exec/docs/commons-exec-1.3-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/net.java.dev.jna/jna/srcs/jna-4.1.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/net.java.dev.jna/jna/jars/jna-4.1.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/net.java.dev.jna/jna/docs/jna-4.1.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/net.java.dev.jna/jna-platform/srcs/jna-platform-4.1.0-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/net.java.dev.jna/jna-platform/jars/jna-platform-4.1.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/net.java.dev.jna/jna-platform/docs/jna-platform-4.1.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-edge-driver/srcs/selenium-edge-driver-2.48.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-edge-driver/jars/selenium-edge-driver-2.48.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-edge-driver/docs/selenium-edge-driver-2.48.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-htmlunit-driver/srcs/selenium-htmlunit-driver-2.48.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-htmlunit-driver/jars/selenium-htmlunit-driver-2.48.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-htmlunit-driver/docs/selenium-htmlunit-driver-2.48.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-support/srcs/selenium-support-2.48.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-support/jars/selenium-support-2.48.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-support/docs/selenium-support-2.48.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-firefox-driver/srcs/selenium-firefox-driver-2.48.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-firefox-driver/jars/selenium-firefox-driver-2.48.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-firefox-driver/docs/selenium-firefox-driver-2.48.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-ie-driver/srcs/selenium-ie-driver-2.48.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-ie-driver/jars/selenium-ie-driver-2.48.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-ie-driver/docs/selenium-ie-driver-2.48.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-safari-driver/srcs/selenium-safari-driver-2.48.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-safari-driver/jars/selenium-safari-driver-2.48.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-safari-driver/docs/selenium-safari-driver-2.48.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.webbitserver/webbit/srcs/webbit-0.4.14-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.webbitserver/webbit/jars/webbit-0.4.14.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.webbitserver/webbit/docs/webbit-0.4.14-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-leg-rc/srcs/selenium-leg-rc-2.48.2-sources.jar" kind="lib" path="/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-leg-rc/jars/selenium-leg-rc-2.48.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/gwiedemann/.ivy2/cache/org.seleniumhq.selenium/selenium-leg-rc/docs/selenium-leg-rc-2.48.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+  <classpathentry kind="output" path="bin"/>
+</classpath>

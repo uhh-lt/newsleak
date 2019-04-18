@@ -1,4 +1,6 @@
 baseURL = "https://uhh-lt.github.io/newsleak/"
+RelativeURLs=true
+CanonifyURLs=true
 publishDir = "../public"
 
 languageCode = "en-us"
@@ -13,11 +15,8 @@ theme = "ananke"
 [[menu.main.documentation]]
     name = "Documenation" 
     weight = 20 
-    url = "/documentation"
+    url = "/documentation/"
 
-[taxonomies]
-  category = "categories"
-  tag = "tags"
 
 MetaDataFormat = "yaml"
 DefaultContentLanguage = "en"
@@ -33,7 +32,7 @@ enableRobotsTXT = true
 
 [params]
   favicon = ""
-  description = "Network of searchable leaks. A free software for investigative journalism."
+  description = "Network of searchable leaks. A free software for investigative journalism and eDiscovery."
   facebook = ""
   twitter = ""
   instagram = ""
