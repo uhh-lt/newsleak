@@ -1,0 +1,17 @@
+---
+author: michaela
+date: 2015-11-25 14:28:41+00:00
+draft: false
+title: We made it!
+type: post
+tags: ["project info"]
+categories:
+- General
+---
+
+Happy news: VW foundation officially decided to fund our project with the working title DIVID-DJ: Data Extraction and Interactive Visualization of Unexplored Textual Datasets for Investigative Data-Driven Journalism.
+We are [one out of eight projects](https://www.volkswagenstiftung.de/aktuelles/aktdetnewsl/news/detail/artikel/wissenschaft-und-datenjournalismus-start-von-acht-projekten/marginal/4858.html) funded as a part of the initiative "Science and Data Journalism". Our goal is to create a piece of software that visualizes the content of large text data collections, to help journalists working with data leaks.
+
+VW foundation invited all project partners to a kickoff meeting at TU Dortmund, where all projects were introduced prior to the "[Daten-Labor](https://netzwerkrecherche.org/termine/konferenzen/fachkonferenzen/daten-labor15/)" conference of Netzwerk Recherche. The project funding will officially start in January 2016.
+
+More details come!

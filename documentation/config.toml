@@ -1,0 +1,46 @@
+baseURL = "https://uhh-lt.github.io/newsleak/"
+languageCode = "en-us"
+title = "new/s/leak"
+theme = "ananke"
+
+[[menu.main]]
+    name = "News" 
+    weight = 10 
+    url = "/news/"
+
+[[menu.main.documentation]]
+    name = "Documenation" 
+    weight = 20 
+    url = "/documentation"
+
+[taxonomies]
+  category = "categories"
+  tag = "tags"
+
+MetaDataFormat = "yaml"
+DefaultContentLanguage = "en"
+SectionPagesMenu = "main"
+Paginate = 3 # this is set low for demonstrating with dummy content. Set to a higher number
+googleAnalytics = ""
+enableRobotsTXT = true
+
+[sitemap]
+  changefreq = "monthly"
+  priority = 0.5
+  filename = "sitemap.xml"
+
+[params]
+  favicon = ""
+  description = "Network of searchable leaks. A free software for investigative journalism."
+  facebook = ""
+  twitter = ""
+  instagram = ""
+  youtube = ""
+  github = "https://github.com/uhh-lt/newsleak"
+  gitlab = ""
+  linkedin = ""
+  mastodon = ""
+  # choose a background color from any on this page: http://tachyons.io/docs/themes/skins/ and preface it with "bg-"
+  background_color_class = "bg-near-black"
+  featured_image = "img/header.png"
+  recent_posts_number = 2

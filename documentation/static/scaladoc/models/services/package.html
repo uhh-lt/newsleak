@@ -1,0 +1,403 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>services - models.services</title>
+          <meta name="description" content="services - models.services" />
+          <meta name="keywords" content="services models.services" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../lib/template.js"></script>
+      <script type="text/javascript" src="../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../index.html';
+            var hash = 'models.services.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../lib/package_big.png" />
+        <p id="owner"><a href="../package.html" class="extype" name="models">models</a></p>
+        <h1>services</h1><span class="permalink">
+      <a href="../../index.html#models.services.package" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">services</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Provides classes for accessing the underlying data.</p></div><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="models.services"><span>services</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="models.services.AggregateService" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="AggregateServiceextendsAnyRef"></a>
+      <a id="AggregateService:AggregateService"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="AggregateService.html"><span class="name">AggregateService</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.package@AggregateServiceextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Defines common data access methods for generating aggregated data based on a search query.</p><div class="fullcomment"><div class="comment cmt"><p>Defines common data access methods for generating aggregated data based on a search query.</p><p>The search query is given as <a href="../Facets.html" class="extype" name="models.Facets">models.Facets</a>. The service builds analytic information over a set of documents and
+provides the result as <a href="../Aggregation.html" class="extype" name="models.Aggregation">models.Aggregation</a>. Such a <a href="../Aggregation.html" class="extype" name="models.Aggregation">models.Aggregation</a> consists of a list of <a href="../Bucket.html" class="extype" name="models.Bucket">models.Bucket</a>,
+where each bucket is associated with a key and the number of documents that match the given search query. The trait
+further supports mechanisms to exclude and include specific keys.</p><p>The trait is implemented by <a href="ESAggregateService.html" class="extype" name="models.services.ESAggregateService">models.services.ESAggregateService</a>, which uses an elasticsearch index as backend.
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@ImplementedBy</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="models.services.DBDocumentService" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="DBDocumentServiceextendsDocumentService"></a>
+      <a id="DBDocumentService:DBDocumentService"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="DBDocumentService.html"><span class="name">DBDocumentService</span></a><span class="result"> extends <a href="DocumentService.html" class="extype" name="models.services.DocumentService">DocumentService</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.package@DBDocumentServiceextendsDocumentService" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Partial implementation of <a href="DocumentService.html" class="extype" name="models.services.DocumentService">models.services.DocumentService</a> using a relational database.</p><div class="fullcomment"><div class="comment cmt"><p>Partial implementation of <a href="DocumentService.html" class="extype" name="models.services.DocumentService">models.services.DocumentService</a> using a relational database.</p><p>Retrieving large documents via ES is slow. We therefore use the database to fetch documents. Further, user-generated
+data like tags are stored in the database as well.
+</p></div></div>
+    </li><li name="models.services.DBEntityService" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DBEntityServiceextendsEntityService"></a>
+      <a id="DBEntityService:DBEntityService"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DBEntityService.html"><span class="name">DBEntityService</span></a><span class="result"> extends <a href="EntityService.html" class="extype" name="models.services.EntityService">EntityService</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.package@DBEntityServiceextendsEntityService" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Implementation of <a href="EntityService.html" class="extype" name="models.services.EntityService">models.services.EntityService</a> using a relational database.</p>
+    </li><li name="models.services.DocumentService" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="DocumentServiceextendsAnyRef"></a>
+      <a id="DocumentService:DocumentService"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="DocumentService.html"><span class="name">DocumentService</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.package@DocumentServiceextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Defines common data access methods for retrieving and annotating documents.</p><div class="fullcomment"><div class="comment cmt"><p>Defines common data access methods for retrieving and annotating documents.</p><p>The trait is implemented by <a href="FinalDocumentService.html" class="extype" name="models.services.FinalDocumentService">models.services.FinalDocumentService</a>, which uses mixed-in composition in order to
+combine <a href="DBDocumentService.html" class="extype" name="models.services.DBDocumentService">models.services.DBDocumentService</a> and <a href="ESDocumentService.html" class="extype" name="models.services.ESDocumentService">models.services.ESDocumentService</a>.
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@ImplementedBy</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="models.services.ESAggregateService" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ESAggregateServiceextendsAggregateService"></a>
+      <a id="ESAggregateService:ESAggregateService"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ESAggregateService.html"><span class="name">ESAggregateService</span></a><span class="result"> extends <a href="AggregateService.html" class="extype" name="models.services.AggregateService">AggregateService</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.package@ESAggregateServiceextendsAggregateService" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Implementation of <a href="AggregateService.html" class="extype" name="models.services.AggregateService">models.services.AggregateService</a> using an elasticsearch index as backend.</p><div class="fullcomment"><div class="comment cmt"><p>Implementation of <a href="AggregateService.html" class="extype" name="models.services.AggregateService">models.services.AggregateService</a> using an elasticsearch index as backend.
+</p></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p>See <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket.html" target="_blank">ES documentation</a>
+for more information.</p></span></dd></dl></div>
+    </li><li name="models.services.ESDocumentService" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ESDocumentServiceextendsDocumentService"></a>
+      <a id="ESDocumentService:ESDocumentService"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ESDocumentService.html"><span class="name">ESDocumentService</span></a><span class="result"> extends <a href="DocumentService.html" class="extype" name="models.services.DocumentService">DocumentService</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.package@ESDocumentServiceextendsDocumentService" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Partial implementation of <a href="DocumentService.html" class="extype" name="models.services.DocumentService">models.services.DocumentService</a> using an elasticsearch index as backend.</p>
+    </li><li name="models.services.ESNetworkService" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ESNetworkServiceextendsNetworkService"></a>
+      <a id="ESNetworkService:ESNetworkService"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ESNetworkService.html"><span class="name">ESNetworkService</span></a><span class="result"> extends <a href="NetworkService.html" class="extype" name="models.services.NetworkService">NetworkService</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.package@ESNetworkServiceextendsNetworkService" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Implementation of <a href="NetworkService.html" class="extype" name="models.services.NetworkService">models.services.NetworkService</a> using an elasticsearch index as backend.</p>
+    </li><li name="models.services.ESTimelineService" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ESTimelineServiceextendsTimelineService"></a>
+      <a id="ESTimelineService:ESTimelineService"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ESTimelineService.html"><span class="name">ESTimelineService</span></a><span class="result"> extends <a href="TimelineService.html" class="extype" name="models.services.TimelineService">TimelineService</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.package@ESTimelineServiceextendsTimelineService" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Implementation of <a href="TimelineService.html" class="extype" name="models.services.TimelineService">models.services.TimelineService</a> using an elasticsearch index as backend.</p>
+    </li><li name="models.services.ESTransportClient" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ESTransportClientextendsSearchClientService"></a>
+      <a id="ESTransportClient:ESTransportClient"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="ESTransportClient.html"><span class="name">ESTransportClient</span></a><span class="result"> extends <a href="SearchClientService.html" class="extype" name="models.services.SearchClientService">SearchClientService</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.package@ESTransportClientextendsSearchClientService" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Wrapper around an ElasticSearch <span class="extype" name="TransportClient">TransportClient</span> node.</p><div class="fullcomment"><div class="comment cmt"><p>Wrapper around an ElasticSearch <span class="extype" name="TransportClient">TransportClient</span> node.</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@Singleton</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="models.services.EntityService" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="EntityServiceextendsAnyRef"></a>
+      <a id="EntityService:EntityService"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="EntityService.html"><span class="name">EntityService</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.package@EntityServiceextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Defines common data access methods for retrieving and manipulating <a href="../Entity.html" class="extype" name="models.Entity">models.Entity</a>.</p><div class="fullcomment"><div class="comment cmt"><p>Defines common data access methods for retrieving and manipulating <a href="../Entity.html" class="extype" name="models.Entity">models.Entity</a>.</p><p>The trait is implemented by <a href="DBDocumentService.html" class="extype" name="models.services.DBDocumentService">models.services.DBDocumentService</a>.
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@ImplementedBy</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="models.services.FinalDocumentService" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FinalDocumentServiceextendsESDocumentServicewithDBDocumentService"></a>
+      <a id="FinalDocumentService:FinalDocumentService"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FinalDocumentService.html"><span class="name">FinalDocumentService</span></a><span class="result"> extends <a href="ESDocumentService.html" class="extype" name="models.services.ESDocumentService">ESDocumentService</a> with <a href="DBDocumentService.html" class="extype" name="models.services.DBDocumentService">DBDocumentService</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.package@FinalDocumentServiceextendsESDocumentServicewithDBDocumentService" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Combines the elasticsearch and relational database implementations via mixed-in composition.</p>
+    </li><li name="models.services.NetworkService" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="NetworkServiceextendsAnyRef"></a>
+      <a id="NetworkService:NetworkService"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="NetworkService.html"><span class="name">NetworkService</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.package@NetworkServiceextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Defines common method for creating and extending co-occurrence networks given a search query.</p><div class="fullcomment"><div class="comment cmt"><p>Defines common method for creating and extending co-occurrence networks given a search query.</p><p>The trait is implemented by <a href="ESNetworkService.html" class="extype" name="models.services.ESNetworkService">models.services.ESNetworkService</a>.
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@ImplementedBy</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="models.services.SearchClientService" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="SearchClientServiceextendsAnyRef"></a>
+      <a id="SearchClientService:SearchClientService"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="SearchClientService.html"><span class="name">SearchClientService</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.package@SearchClientServiceextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Wrapper around an ElasticSearch <span class="extype" name="Client">Client</span>.</p><div class="fullcomment"><div class="comment cmt"><p>Wrapper around an ElasticSearch <span class="extype" name="Client">Client</span>. Different ways of obtaining a <span class="extype" name="Client">Client</span> can be implemented in classes
+implementing this interface.
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@ImplementedBy</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="models.services.TimelineService" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="TimelineServiceextendsAnyRef"></a>
+      <a id="TimelineService:TimelineService"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TimelineService.html"><span class="name">TimelineService</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.package@TimelineServiceextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Defines common methods for creating timeline instances based on document creation dates and time expressions matching
+a search query.</p><div class="fullcomment"><div class="comment cmt"><p>Defines common methods for creating timeline instances based on document creation dates and time expressions matching
+a search query.</p><p>The trait is implemented by <a href="ESTimelineService.html" class="extype" name="models.services.ESTimelineService">models.services.ESTimelineService</a>.
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@ImplementedBy</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>
