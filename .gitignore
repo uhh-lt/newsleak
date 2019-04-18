@@ -37,3 +37,6 @@ project/plugins/project/
 node_modules/*
 
 app/assets/javascripts/libs/*
+
+public
+
