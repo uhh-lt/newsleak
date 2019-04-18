@@ -1,4 +1,6 @@
 baseURL = "https://uhh-lt.github.io/newsleak/"
+publishDir = "../public"
+
 languageCode = "en-us"
 title = "new/s/leak"
 theme = "ananke"
