@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Categories on new/s/leak</title>
+    <link>https://uhh-lt.github.io/newsleak/categories/</link>
+    <description>Recent content in Categories on new/s/leak</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 18 Nov 2018 08:56:59 +0000</lastBuildDate>
+    
+	<atom:link href="https://uhh-lt.github.io/newsleak/categories/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Allgemein</title>
+      <link>https://uhh-lt.github.io/newsleak/categories/allgemein/</link>
+      <pubDate>Sun, 18 Nov 2018 08:56:59 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/categories/allgemein/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>General</title>
+      <link>https://uhh-lt.github.io/newsleak/categories/general/</link>
+      <pubDate>Tue, 08 Nov 2016 12:56:08 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/categories/general/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Publications</title>
+      <link>https://uhh-lt.github.io/newsleak/categories/publications/</link>
+      <pubDate>Tue, 16 Aug 2016 06:59:44 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/categories/publications/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Science</title>
+      <link>https://uhh-lt.github.io/newsleak/categories/science/</link>
+      <pubDate>Tue, 16 Aug 2016 06:59:44 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/categories/science/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>InfoViz</title>
+      <link>https://uhh-lt.github.io/newsleak/categories/infoviz/</link>
+      <pubDate>Fri, 08 Jul 2016 12:44:09 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/categories/infoviz/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Language Technology</title>
+      <link>https://uhh-lt.github.io/newsleak/categories/language-technology/</link>
+      <pubDate>Fri, 08 Apr 2016 13:12:22 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/categories/language-technology/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

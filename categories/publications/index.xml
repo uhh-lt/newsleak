@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Publications on new/s/leak</title>
+    <link>https://uhh-lt.github.io/newsleak/categories/publications/</link>
+    <description>Recent content in Publications on new/s/leak</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 16 Aug 2016 06:59:44 +0000</lastBuildDate>
+    
+	<atom:link href="https://uhh-lt.github.io/newsleak/categories/publications/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>new/s/leak @ ACL 2016</title>
+      <link>https://uhh-lt.github.io/newsleak/news/2016-08-16-newsleak-acl-2016/</link>
+      <pubDate>Tue, 16 Aug 2016 06:59:44 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/news/2016-08-16-newsleak-acl-2016/</guid>
+      <description>Last week, we presented new/s/leak for the first time in public: we had our demo session at the annual meeting of the Association for Computational Linguistics, which was held in Berlin this year. If you haven&amp;rsquo;t had the chance to attend (or you had and want to have some references now):
+ * Here&#39;s the [paper](http://www.aclweb.org/anthology/P/P16/P16-4028.pdf) documenting our software (you&#39;ll find a large part of the information from the paper in this blog, too) * Here&#39;s our [poster (in PDF format)](http://newsleak.</description>
+    </item>
+    
+    <item>
+      <title>Paper accepted @ SKILL 2016</title>
+      <link>https://uhh-lt.github.io/newsleak/news/2016-06-09-paper-accepted-skill-2016/</link>
+      <pubDate>Thu, 09 Jun 2016 06:32:32 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/news/2016-06-09-paper-accepted-skill-2016/</guid>
+      <description>Franziska, who designed and documented our requirements analysis for her research seminar paper (Studienarbeit), turned this into an article accepted for SKILL 2016, titled &amp;ldquo;new/s/leak - Anforderungsanalyse einer interaktiven Visualisierung für Data-Driven Journalism&amp;rdquo; (in German - English translation: &amp;ldquo;new/s/leak - Requirements analysis of an interactive visualization for data driven journalism&amp;rdquo;).
+Congrats Franziska, and of course thanks for the excellent analysis!</description>
+    </item>
+    
+    <item>
+      <title>Paper accepted @ ACL 2016</title>
+      <link>https://uhh-lt.github.io/newsleak/news/2016-05-23-paper-accepted-acl-2016/</link>
+      <pubDate>Mon, 23 May 2016 06:43:08 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/news/2016-05-23-paper-accepted-acl-2016/</guid>
+      <description>Our paper &amp;ldquo;new/s/leak – Information Extraction and Visualization for an Investigative Data Journalists&amp;rdquo; was accepted for the Systems Demonstration Track at ACL 2016!
+ACL is the most important conference for computational linguistics, and we will present new/s/leak there. Stay tuned for the final paper version - and our publicly available prototype.
+Looking forward to meeting you in Berlin!</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>InfoViz on new/s/leak</title>
+    <link>https://uhh-lt.github.io/newsleak/categories/infoviz/</link>
+    <description>Recent content in InfoViz on new/s/leak</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 08 Jul 2016 12:44:09 +0000</lastBuildDate>
+    
+	<atom:link href="https://uhh-lt.github.io/newsleak/categories/infoviz/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>The Science behind new/s/leak II: Interactive Visualization</title>
+      <link>https://uhh-lt.github.io/newsleak/news/2016-07-08-interactive-visualization/</link>
+      <pubDate>Fri, 08 Jul 2016 12:44:09 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/news/2016-07-08-interactive-visualization/</guid>
+      <description>We already explained the language-related data wrangling happening under new/s/leak&amp;rsquo;s hood. For the success of new/s/leak, our second scientific field is the game changer: interactive visualization. No matter how much accurate information we can produce - if we cannot present them to the user in an appealing way, the tool will fail its goals. So how exactly is visualization science influencing new/s/leak?
+Your daily dose of visualization science It might seem easy to create some kind of visualization (with Excel or even pen and paper) - however, there are lots of pitfalls that you need to avoid to create good visualizations.</description>
+    </item>
+    
+  </channel>
+</rss>

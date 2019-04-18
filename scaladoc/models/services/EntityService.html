@@ -1,0 +1,693 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>EntityService - models.services.EntityService</title>
+          <meta name="description" content="EntityService - models.services.EntityService" />
+          <meta name="keywords" content="EntityService models.services.EntityService" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../lib/template.js"></script>
+      <script type="text/javascript" src="../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../index.html';
+            var hash = 'models.services.EntityService';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="type">
+      <div id="definition">
+        <img alt="Trait" src="../../lib/trait_big.png" />
+        <p id="owner"><a href="../package.html" class="extype" name="models">models</a>.<a href="package.html" class="extype" name="models.services">services</a></p>
+        <h1>EntityService</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="models.services">package services</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../index.html#models.services.EntityService" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <span class="name">EntityService</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Defines common data access methods for retrieving and manipulating <a href="../Entity.html" class="extype" name="models.Entity">models.Entity</a>.</p><p>The trait is implemented by <a href="DBDocumentService.html" class="extype" name="models.services.DBDocumentService">models.services.DBDocumentService</a>.
+</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+                <span class="name">@ImplementedBy</span><span class="args">()</span>
+              
+        </dd></dl><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div><div class="toggleContainer block">
+            <span class="toggle">Known Subclasses</span>
+            <div class="subClasses hiddenContent"><a href="DBEntityService.html" class="extype" name="models.services.DBEntityService">DBEntityService</a></div>
+          </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="models.services.EntityService"><span>EntityService</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        
+
+        <div id="values" class="values members">
+              <h3>Abstract Value Members</h3>
+              <ol><li name="models.services.EntityService#blacklist" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="blacklist(ids:List[Long])(index:String):Boolean"></a>
+      <a id="blacklist(List[Long])(String):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">blacklist</span><span class="params">(<span name="ids">ids: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Long">Long</span>]</span>)</span><span class="params">(<span name="index">index: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@blacklist(ids:List[Long])(index:String):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Marks the entities associated with the given ids as blacklisted.</p><div class="fullcomment"><div class="comment cmt"><p>Marks the entities associated with the given ids as blacklisted.</p><p>Blacklisted entities don't appear in any result set.
+</p></div><dl class="paramcmts block"><dt class="param">ids</dt><dd class="cmt"><p>the entity ids to blacklist.</p></dd><dt class="param">index</dt><dd class="cmt"><p>the data source index or database name to query.</p></dd><dt>returns</dt><dd class="cmt"><p><i>true</i>, if all entities are successfully marked as blacklisted. <i>False</i> if at least one entity
+is not correct marked.</p></dd></dl></div>
+    </li><li name="models.services.EntityService#changeName" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="changeName(id:Long,newName:String)(index:String):Boolean"></a>
+      <a id="changeName(Long,String)(String):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">changeName</span><span class="params">(<span name="id">id: <span class="extype" name="scala.Long">Long</span></span>, <span name="newName">newName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span name="index">index: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@changeName(id:Long,newName:String)(index:String):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Changes the name of the entity corresponding to the given entity id.</p><div class="fullcomment"><div class="comment cmt"><p>Changes the name of the entity corresponding to the given entity id.
+</p></div><dl class="paramcmts block"><dt class="param">id</dt><dd class="cmt"><p>the entity id to change.</p></dd><dt class="param">newName</dt><dd class="cmt"><p>the new name to apply.</p></dd><dt class="param">index</dt><dd class="cmt"><p>the data source index or database name to query.</p></dd><dt>returns</dt><dd class="cmt"><p><i>true</i>, if the operation was successful. <i>False</i> otherwise.</p></dd></dl></div>
+    </li><li name="models.services.EntityService#changeType" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="changeType(id:Long,newType:String)(index:String):Boolean"></a>
+      <a id="changeType(Long,String)(String):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">changeType</span><span class="params">(<span name="id">id: <span class="extype" name="scala.Long">Long</span></span>, <span name="newType">newType: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span name="index">index: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@changeType(id:Long,newType:String)(index:String):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Changes the type of the entity corresponding to the given entity id.</p><div class="fullcomment"><div class="comment cmt"><p>Changes the type of the entity corresponding to the given entity id.
+</p></div><dl class="paramcmts block"><dt class="param">id</dt><dd class="cmt"><p>the entity id to change.</p></dd><dt class="param">newType</dt><dd class="cmt"><p>the new type to apply.</p></dd><dt class="param">index</dt><dd class="cmt"><p>the data source index or database name to query.</p></dd><dt>returns</dt><dd class="cmt"><p><i>true</i>, if the operation was successful. <i>False</i> otherwise.</p></dd></dl></div>
+    </li><li name="models.services.EntityService#getBlacklisted" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="getBlacklisted()(index:String):List[models.Entity]"></a>
+      <a id="getBlacklisted()(String):List[Entity]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getBlacklisted</span><span class="params">()</span><span class="params">(<span name="index">index: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.List">List</span>[<a href="../Entity.html" class="extype" name="models.Entity">Entity</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@getBlacklisted()(index:String):List[models.Entity]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns all blacklisted entities for the underlying collection.</p><div class="fullcomment"><div class="comment cmt"><p>Returns all blacklisted entities for the underlying collection.
+</p></div><dl class="paramcmts block"><dt class="param">index</dt><dd class="cmt"><p>the data source index or database name to query.</p></dd><dt>returns</dt><dd class="cmt"><p>a list of <a href="../Entity.html" class="extype" name="models.Entity">models.Entity</a>, where each entity is marked as blacklisted.</p></dd></dl></div>
+    </li><li name="models.services.EntityService#getByIds" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="getByIds(ids:List[Long])(index:String):List[models.Entity]"></a>
+      <a id="getByIds(List[Long])(String):List[Entity]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getByIds</span><span class="params">(<span name="ids">ids: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Long">Long</span>]</span>)</span><span class="params">(<span name="index">index: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.List">List</span>[<a href="../Entity.html" class="extype" name="models.Entity">Entity</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@getByIds(ids:List[Long])(index:String):List[models.Entity]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns a list of <a href="../Entity.html" class="extype" name="models.Entity">models.Entity</a> matching the given entity ids.</p><div class="fullcomment"><div class="comment cmt"><p>Returns a list of <a href="../Entity.html" class="extype" name="models.Entity">models.Entity</a> matching the given entity ids.
+</p></div><dl class="paramcmts block"><dt class="param">ids</dt><dd class="cmt"><p>a list of entity ids.</p></dd><dt class="param">index</dt><dd class="cmt"><p>the data source index or database name to query.</p></dd><dt>returns</dt><dd class="cmt"><p>a list of <a href="../Entity.html" class="extype" name="models.Entity">models.Entity</a> corresponding to the given ids or <span class="extype" name="scala.Nil">scala.Nil</span> if no
+matching entity is found.</p></dd></dl></div>
+    </li><li name="models.services.EntityService#getEntityFragments" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="getEntityFragments(docId:Long)(index:String):List[(models.Entity,models.Fragment)]"></a>
+      <a id="getEntityFragments(Long)(String):List[(Entity,Fragment)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getEntityFragments</span><span class="params">(<span name="docId">docId: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="params">(<span name="index">index: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.List">List</span>[(<a href="../Entity.html" class="extype" name="models.Entity">Entity</a>, <a href="../Fragment.html" class="extype" name="models.Fragment">Fragment</a>)]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@getEntityFragments(docId:Long)(index:String):List[(models.Entity,models.Fragment)]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns all entity occurrences for the given document including their position in the document.</p><div class="fullcomment"><div class="comment cmt"><p>Returns all entity occurrences for the given document including their position in the document.
+</p></div><dl class="paramcmts block"><dt class="param">docId</dt><dd class="cmt"><p>the document id.</p></dd><dt class="param">index</dt><dd class="cmt"><p>the data source index or database name to query.</p></dd><dt>returns</dt><dd class="cmt"><p>a list of tuple consisting of an entity and its position in the document.</p></dd></dl></div>
+    </li><li name="models.services.EntityService#getMerged" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="getMerged()(index:String):Map[models.Entity,List[models.Entity]]"></a>
+      <a id="getMerged()(String):Map[Entity,List[Entity]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getMerged</span><span class="params">()</span><span class="params">(<span name="index">index: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="../Entity.html" class="extype" name="models.Entity">Entity</a>, <span class="extype" name="scala.List">List</span>[<a href="../Entity.html" class="extype" name="models.Entity">Entity</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@getMerged()(index:String):Map[models.Entity,List[models.Entity]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns all merged entities for the underlying collection.</p><div class="fullcomment"><div class="comment cmt"><p>Returns all merged entities for the underlying collection.
+</p></div><dl class="paramcmts block"><dt class="param">index</dt><dd class="cmt"><p>the data source index or database name to query.</p></dd><dt>returns</dt><dd class="cmt"><p>a map linking from the focal entity to its duplicates.</p></dd></dl></div>
+    </li><li name="models.services.EntityService#getTypes" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="getTypes()(index:String):List[String]"></a>
+      <a id="getTypes()(String):List[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getTypes</span><span class="params">()</span><span class="params">(<span name="index">index: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@getTypes()(index:String):List[String]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns a list of distinct entity types in the underlying collection.</p>
+    </li><li name="models.services.EntityService#merge" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="merge(focalId:Long,duplicates:List[Long])(index:String):Boolean"></a>
+      <a id="merge(Long,List[Long])(String):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">merge</span><span class="params">(<span name="focalId">focalId: <span class="extype" name="scala.Long">Long</span></span>, <span name="duplicates">duplicates: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Long">Long</span>]</span>)</span><span class="params">(<span name="index">index: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@merge(focalId:Long,duplicates:List[Long])(index:String):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Merges multiple nodes in a given focal node.</p><div class="fullcomment"><div class="comment cmt"><p>Merges multiple nodes in a given focal node.</p><p>The duplicates don't appear in any result set anymore. Further, any entity-related search using the focal node as
+instance also queries for its duplicates i.e. searching for &quot;Angela Merkel&quot; will also search for &quot;Angela&quot; or &quot;Dr. Merkel&quot;.
+</p></div><dl class="paramcmts block"><dt class="param">focalId</dt><dd class="cmt"><p>the central entity id.</p></dd><dt class="param">duplicates</dt><dd class="cmt"><p>entity ids referring to similar textual mentions of the focal id.</p></dd><dt class="param">index</dt><dd class="cmt"><p>the data source index or database name to query.</p></dd><dt>returns</dt><dd class="cmt"><p><i>true</i>, if the operation was successful. <i>False</i> otherwise.</p></dd></dl></div>
+    </li><li name="models.services.EntityService#undoBlacklist" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="undoBlacklist(ids:List[Long])(index:String):Boolean"></a>
+      <a id="undoBlacklist(List[Long])(String):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">undoBlacklist</span><span class="params">(<span name="ids">ids: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Long">Long</span>]</span>)</span><span class="params">(<span name="index">index: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@undoBlacklist(ids:List[Long])(index:String):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Removes the blacklisted mark from the entities associated with the given ids.</p><div class="fullcomment"><div class="comment cmt"><p>Removes the blacklisted mark from the entities associated with the given ids.</p><p>After executing this operation, the respective entities do appear in result sets again.
+</p></div><dl class="paramcmts block"><dt class="param">ids</dt><dd class="cmt"><p>the entity ids to remove the blacklist mark from.</p></dd><dt class="param">index</dt><dd class="cmt"><p>the data source index or database name to query.</p></dd><dt>returns</dt><dd class="cmt"><p><i>true</i>, if the blacklist mark is successfully removed from all entities. <i>False</i> if at least one blacklist
+mark for an entity is not correct removed.</p></dd></dl></div>
+    </li><li name="models.services.EntityService#undoMerge" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="undoMerge(focalIds:List[Long])(index:String):Boolean"></a>
+      <a id="undoMerge(List[Long])(String):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">undoMerge</span><span class="params">(<span name="focalIds">focalIds: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Long">Long</span>]</span>)</span><span class="params">(<span name="index">index: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@undoMerge(focalIds:List[Long])(index:String):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Withdraws <a href="#merge(focalId:Long,duplicates:List[Long])(index:String):Boolean" class="extmbr" name="models.services.EntityService#merge">models.services.EntityService#merge</a> for the given entity id.</p><div class="fullcomment"><div class="comment cmt"><p>Withdraws <a href="#merge(focalId:Long,duplicates:List[Long])(index:String):Boolean" class="extmbr" name="models.services.EntityService#merge">models.services.EntityService#merge</a> for the given entity id.
+</p></div><dl class="paramcmts block"><dt class="param">focalIds</dt><dd class="cmt"><p>the central entity ids.</p></dd><dt class="param">index</dt><dd class="cmt"><p>the data source index or database name to query.</p></dd><dt>returns</dt><dd class="cmt"><p><i>true</i>, if the removal was successful. <i>False</i> otherwise.</p></dd></dl></div>
+    </li></ol>
+            </div>
+
+        <div id="values" class="values members">
+              <h3>Concrete Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@##():Int" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@clone():Object" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@notify():Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@toString():String" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@wait():Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#models.services.EntityService@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>
