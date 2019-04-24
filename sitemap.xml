@@ -66,7 +66,8 @@
   <url>
     <loc>https://uhh-lt.github.io/newsleak/news/</loc>
     <lastmod>2018-11-18T08:56:59+00:00</lastmod>
-    <priority>0</priority>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
   
   <url>
@@ -259,36 +260,6 @@
     <lastmod>2015-11-25T14:28:41+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
-  </url>
-  
-  <url>
-    <loc>https://uhh-lt.github.io/newsleak/index.html</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://uhh-lt.github.io/newsleak/3/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://uhh-lt.github.io/newsleak/en/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://uhh-lt.github.io/newsleak/main/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://uhh-lt.github.io/newsleak/true/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://uhh-lt.github.io/newsleak/yaml/</loc>
-    <priority>0</priority>
   </url>
   
 </urlset>
