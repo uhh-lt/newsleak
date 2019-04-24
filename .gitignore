@@ -40,3 +40,13 @@ app/assets/javascripts/libs/*
 
 public
 
+.DS_Store
+.classpath
+.dockerignore
+.project
+.settings/org.eclipse.core.resources.prefs
+.settings/org.scala-ide.sdt.core.prefs
+Gemfile.lock
+conf/application_local.conf
+conf/application_remote.conf
+deployment.txt
