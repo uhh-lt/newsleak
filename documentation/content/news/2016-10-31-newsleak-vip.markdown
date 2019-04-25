@@ -13,8 +13,7 @@ Last week, new/s/leak had its academic debut in the visualization science commun
 
 Here is the [paper](https://www.informatik.tu-darmstadt.de/fileadmin/user_upload/Group_LangTech/publications/newsleak-VIP-latest.pdf) documenting the software with a focus on visualization. Needless to say that it's always fun to present new/s/leak and get more feedback:
 
-[caption id="attachment_366" align="aligncenter" width="300"][![Kathrin presenting new/s/leak](http://newsleak.io/wp-content/uploads/2016/11/VIP-300x199.jpeg)
-](http://newsleak.io/wp-content/uploads/2016/11/VIP.jpeg) Kathrin presenting new/s/leak[/caption]
+![Kathrin presenting new/s/leak](/img/VIP-300x199.jpeg)
 
 Thanks to everyone who came and visited us!
 

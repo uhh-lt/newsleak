@@ -1,0 +1,561 @@
+body {
+	margin: 0;
+	background-color: #F1F1F1;
+/*	text-align: center;	*//* Seite zentrieren für IE <= 6 */
+}
+
+div#seiten_container {
+	position: relative;
+	top: 0;
+	width: 977px;
+	margin-left:20px;
+	background: #FFFFFF url(/media/corporate_design/cd_grafiken/hintergrund.png) repeat-y;
+}
+div#seiten_container2 {
+	position: relative;
+	top: 0;
+	width: 977px;
+	margin-left:40px;
+	background: #FFFFFF url(/media/corporate_design/cd_grafiken/hintergrund.png) repeat-y;
+}
+div#seite {
+	position: relative;
+	top: 0;
+	width: 931px;
+	min-height:520px;
+	margin-left: 23px;
+	padding-top: 5px;
+	padding-bottom: 15px;
+	background-color: #FFFFFF;
+	z-index:1;
+}div#seite2 {
+	position: relative;
+	top: 0;
+	width: 731px;
+	min-height:520px;
+	margin-left: 63px;
+	padding-top: 5px;
+	padding-bottom: 15px;
+	background-color: #FFFFFF;
+	z-index:1;
+}
+div#header {
+	position: relative;
+	top: 0;
+	width: 100%;
+	z-index:2;
+	line-height: 100%;
+}
+div#zum_inhalt {
+	position: absolute;
+	top:0;
+	left:0;
+}
+div#zum_inhalt a {
+	color: #FFFFFF;
+}
+div#zum_inhalt a:focus, div#zum_inhalt a:active {
+	color: #333333;
+}
+
+div#topnavigation {
+	position: relative;
+	top: 0;
+	text-align: right;
+	padding-bottom: 8px;
+	border-bottom: 14px solid #B90F22;
+	font-size: 100%;
+}
+div#topnavigation a:link, div#topnavigation a:visited {
+	color: #333333;
+	text-decoration: none;
+}
+div#topnavigation a:focus, div#topnavigation a:hover, div#topnavigation a:active{
+	text-decoration: underline;
+}
+div#topnavigation span.inaktiv {
+	color:#999999;
+}
+
+div#hauptnavigation_container {
+	position: relative;
+	top: 0;
+	width: 100%;
+	border-top: 1px solid #333333;
+	margin-top: 2px;
+	z-index: 5;
+	line-height: 100%;
+}
+div#hauptnavigation{
+	position: relative;
+	top: 0;
+	width:801px;
+	font-size: 118%;
+	font-weight: bold;
+	padding-top: 5px;
+	padding-bottom:8px;
+	z-index: 6;
+}
+div#hauptnavigation ul {
+	position: relative;
+	top: 0;
+	margin: 0;
+	padding: 0;
+	z-index: 7;
+	list-style-type: none;
+	list-style-image: none;
+}
+div#hauptnavigation ul li {
+	position: relative;
+	top: 0;
+	left: 0;
+	display: inline;
+	margin: 0;
+	padding: 0;
+}
+
+div#hauptnavigation a{
+	white-space:nowrap;
+}
+div#hauptnavigation a:link, div#hauptnavigation a:visited {
+	text-decoration: none;
+	color: #333333;
+}
+div#hauptnavigation a:focus, div#hauptnavigation a:hover, div#hauptnavigation a:active {
+	text-decoration: none;
+	color: #B90F22;
+}
+
+div#hauptnavigation ul.klappbox {
+	position: absolute;
+	top: 15px;
+	left:-2px;
+	width: 184px;
+	z-index: 8;
+	font-size: 85%;
+	display: none;
+	border-width: 0 1px 1px 1px;
+	border-style: solid;
+	border-color: #cccccc;
+	background-color: #ffffff;
+}
+div#hauptnavigation> ul.klappbox {
+	width: 182px !important;
+}
+
+div#hauptnavigation ul.klappbox li {
+}
+div#hauptnavigation ul.klappbox a {
+	margin-left: 1px;
+	display: block;
+	width: 182px;
+	padding: 5px 8px 6px 8px;
+	border-bottom: 1px solid #FFFFFF;
+	white-space:normal;	
+}
+div#hauptnavigation ul.klappbox li> a {	/* IE6-Hack => Padding von Breite abziehen */
+	width: 166px !important;
+}
+div#hauptnavigation ul.klappbox a:link, div#hauptnavigation ul.klappbox a:visited {
+	background-color: #fbf1f2;
+}
+div#hauptnavigation ul.klappbox a:focus, div#hauptnavigation ul.klappbox a:hover, div#hauptnavigation ul.klappbox a:active {
+	background-color: #FFFFFF;
+}
+
+div#suche {
+	float: right;
+	width: 122px;
+	text-align: right;
+	margin-top:1px;
+	z-index:9;
+}
+div#suche label{
+	display: none;
+}
+div#suche input#query_top {
+	border-width: 1px;
+	border-style: solid;
+	border-color: #666666 #cccccc #cccccc #666666;
+	font-size: 100%;
+	width: 100px;
+	padding:0 2px !important;
+}
+div#suche input.abschicken {
+	border: 0;
+	background-color: #FFFFFF;
+	height: 15px;
+	width:12px;
+	font-size: 15px;
+	font-family: Arial, Helvetica;
+	font-weight: bold;
+	color: #B90F22;
+	margin: 0;
+	padding: 0;
+	cursor:pointer;
+}
+
+div#headerbild_container {
+	position: relative;
+	top: 0;
+	width: 100%;
+	height: 145px;
+	overflow:hidden;
+	background-color: #B90F22;
+	z-index: 2;
+}
+div#headerbild_container div#tudlogo {
+	position: absolute;
+	left: 749px;
+	top: 23px;
+	z-index: 4;
+	background-color: #FFFFFF;
+}
+div#headerbild_container div#headerbild{
+	position: relative;
+	top: 0;
+	z-index: 3;
+}
+div#headerbild_container div.halbes_bild{
+	width: 466px;
+	overflow: hidden;
+}
+
+div#brotkrumen {
+	position: relative;
+	top: 0;
+	width: 100%;
+	margin-top: 7px;
+	margin-bottom: 10px;
+	font-size: 100%;
+	z-index:2;
+}
+
+div#brotkrumen a:link, div#brotkrumen a:visited {
+	color:#666666;
+	text-decoration: none;
+}
+div#brotkrumen a:focus, div#brotkrumen a:hover, div#brotkrumen a:active {
+	color: #B90F22;
+	text-decoration: none;
+}
+
+div#spalten_container {
+	position: relative;
+	top: 0;
+	width: 100%;
+	z-index:0;
+}
+
+div#navigationsspalte {
+	float: left;
+	width: 182px;
+	margin-right: 19px;
+	margin-bottom: 20px;
+	line-height:120%;
+	border-top-width: 2px;
+	border-top-style: solid;
+}
+div#navigationsspalte h1 {
+	margin-bottom: 1px;
+	margin-top: 9px;
+	padding-bottom: 3px;
+	border-bottom: 1px solid #E5E5E5;
+	font-size: 109% !important;
+	line-height:110%;
+}
+div#navigationsspalte h1 a{
+	margin:0;
+	padding:0;
+	text-decoration:none;
+}
+
+div#navigationsspalte ul {
+	margin: 0;
+	padding: 0;
+	list-style-type: none;
+	list-style-image: none;
+}
+div#navigationsspalte > ul {
+	border-bottom: 1px solid #E5E5E5;
+}
+div#navigationsspalte li {
+	margin: 0;
+	padding: 0;
+	clear: both;
+}
+
+div#navigationsspalte span.navi_pfeil {
+	float: right;
+	width: 7px;
+	margin-right: -7px;
+}
+div#navigationsspalte span.neues_fenster, div#navigationsspalte span.hat_untermenue {
+	float: right;
+	visibility: hidden;
+	text-align:right;
+}
+div#navigationsspalte span.neues_fenster {
+	float: right;
+	width:14px;
+	margin: 3px -6px 0 2px;
+	visibility: hidden;
+	text-align:right;
+}
+div#navigationsspalte span.hat_untermenue {
+	width:6px;
+	margin: 3px -6px 0 2px;
+}
+
+div#navigationsspalte a:hover span.neues_fenster, div#navigationsspalte a:hover span.hat_untermenue {
+	visibility: visible;
+}
+
+div#navigationsspalte li a {
+	display: block;
+	width: 100%;
+	padding: 5px 8px;
+	margin: 0;
+	color: #333;
+	text-decoration: none;
+	border-bottom: 1px solid #fff;
+}
+div#navigationsspalte li > a {	/* bei modernen Browsern (> IE6) => Padding von Breite abziehen */
+	width: 166px !important;
+}
+
+div#navigationsspalte li a:focus, div#navigationsspalte li a:hover, div#navigationsspalte li a:active {
+	background-color: #fff !important;
+}
+div#navigationsspalte li a.ebene1 {
+	font-weight: bold;
+}
+div#navigationsspalte li a.ebene2{
+	padding: 4px 8px 4px 8px;
+}
+div#navigationsspalte li > a.ebene2 {
+	background: url(/media/corporate_design/cd_grafiken/schleier_25.png) repeat-y;
+}
+div#navigationsspalte li a.ebene3{
+	padding: 3px 8px 3px 18px;
+}
+div#navigationsspalte li > a.ebene3 {
+	background: url(/media/corporate_design/cd_grafiken/schleier_45.png) repeat-y;
+	width: 156px !important;
+}
+div#navigationsspalte a.ebene4 {
+	padding: 2px 8px 2px 28px;
+}
+div#navigationsspalte li > a.ebene4 {
+	width: 146px !important;
+	background: url(/media/corporate_design/cd_grafiken/schleier_60.png) repeat-y;
+}
+div#navigationsspalte a.ebene5 {
+	padding: 1px 8px 2px 38px;
+}
+div#navigationsspalte li > a.ebene5 {
+	width: 136px !important;
+	background: url(/media/corporate_design/cd_grafiken/schleier_70.png) repeat-y;
+}
+div#navigationsspalte  li a.aktiv{
+	background-color: #fff !important;
+	border-bottom: 1px solid #fff;
+}
+
+
+
+div#zentrale_spalte{
+	position: relative;
+	top: 0;
+	float: left;
+	width: 548px;
+}
+div.eine_spalte {
+	width: 529px;
+	border-bottom: 1px solid #fff;
+}
+div.zwei_spalten {
+	width: 255px;
+	margin-right: 19px;
+}
+div.hervorgehoben {
+	border: 1px solid #E5E5E5;
+	margin-bottom: 1.6em;
+	padding-left: 5px;
+	padding-right: 5px;
+	background-image: url(/media/corporate_design/cd_grafiken/schleier_40.png);
+}
+div.hervorgehoben div.zwei_spalten{
+	width: 249px;
+}
+div.extrabreite_spalte {
+	float: left;
+	width: 730px;
+}
+div.extrabreite_spalte {
+	position: relative;
+	top: 0;
+	float: left;
+}
+
+div#fussbereich_container {
+	position: relative;
+	top: 0;
+	width: 100%;
+	z-index:2;
+}
+div#schatten_unten {
+	position: relative;
+	top: 0;
+	height: 3px;
+	margin-left:20px;
+	background: url(/media/corporate_design/cd_grafiken/schatten_unten.png) no-repeat;
+}
+div#fussbereich {
+	position: relative;
+	top: 0;
+	margin: 0px 23px 10px 43px;
+	font-size: 100%;
+	line-height: 100%;
+}
+div#nach_oben{
+	position: absolute;
+	left: 43px;
+	top: -20px;
+	width: 931px;
+	text-align: right;
+}
+div#nach_oben img {
+	width: 15px;
+	height: 15px;
+}
+div#nach_oben img#png {
+	display: none;
+}
+div#nach_oben img#gif {
+}
+div#nach_oben> a> img#png {
+	display: inline !important;
+	background-color: #B90F22;
+}
+div#nach_oben> a> img#gif {
+	display: none !important;
+}
+
+/*div#nach_oben a{
+	font-size: 15px;
+	color: #B90F22;
+	text-decoration: none;
+}*/
+
+div#fussbereich_container> div#fussbereich {	/* Selektor '>' wird vom IE<=6 nicht interpretiert => Workaround um falschen oberen Randabstand beim IE<=6 zu korrigieren */
+	margin-top: 5px !important;
+}
+
+div#fussbereich a:link, div#fussbereich a:visited {
+	color: #333333;
+	text-decoration: none;
+}
+div#fussbereich a:focus, div#fussbereich a:hover, div#fussbereich a:active {
+	text-decoration: underline;
+}
+a#schrift_kleiner {
+	font-size: 91%;
+}
+a#schrift_normal {
+	font-size: 109%;
+}
+a#schrift_groesser {
+	font-size: 127%;
+}
+
+.icon{
+	padding-left:20px;
+	background-position: left 1px;
+	background-repeat: no-repeat;
+}
+a.externer_link {
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/externer_link.png) ;
+}
+a.avi{
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/avi.png) ;
+}
+a.doc {
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/doc.png) ;
+}
+a.flv{
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/flv.png) ;
+}
+a.gif {
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/gif.png) ;
+}
+a.jpg {
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/jpg.png) ;
+}
+a.mov{
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/mov.png) ;
+}
+a.mp3 {
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/mp3.png) ;
+}
+a.odf {
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/odf.png) ;
+}
+a.ogg{
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/ogg.png) ;
+}
+a.pdf {
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/pdf.png);
+}
+a.png {
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/png.png) ;
+}
+a.ppt{
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/ppt.png) ;
+}
+a.sxw {
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/sxw.png) ;
+}
+a.swf {
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/swf.png) ;
+}
+a.wav{
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/wav.png) ;
+}
+a.xls {
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/xls.png) ;
+}
+a.zip {
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/zip.png) ;
+}
+span.email {
+	background-image: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/email.png) ;
+}
+
+.unsichtbar, .unsichtbar{
+	display: none;
+}
+.sichtbar{
+	display: block;
+}
+div.faq div.plus a, div#suchoptionen a.plus{
+	padding-left: 14px;
+	background: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/plus.png) no-repeat left 2px;
+}
+div.faq div.minus a, div#suchoptionen a.minus{
+	padding-left: 14px;
+	background: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/minus.png) no-repeat left 2px;
+}
+div.faq a.doppel_plus{
+	padding-left: 20px;
+	background: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/doppel_plus.png) no-repeat left 2px;
+}
+div.faq a.doppel_minus{
+	margin-left:20px;
+	padding-left: 20px;
+	background: url(/media/corporate_design/cd_grafiken/icons_fuer_barrierefrei/doppel_minus.png) no-repeat left 2px;
+}
+div.text_mit_bild div.text{
+	float:left;
+	width:255px;
+}

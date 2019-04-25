@@ -13,26 +13,7 @@ categories:
 Last week, we presented new/s/leak for the first time in public: we had our demo session at the [annual meeting of the Association for Computational Linguistics](http://acl2016.org), which was held in Berlin this year.
 If you haven't had the chance to attend (or you had and want to have some references now):
 
-
-
-	  * Here's the [paper](http://www.aclweb.org/anthology/P/P16/P16-4028.pdf) documenting our software (you'll find a large part of the information from the paper in this blog, too)
-	  * Here's our [poster (in PDF format)](http://newsleak.io/wp-content/uploads/2016/08/ACL2016_newsleak_Poster.pdf)
-
-And, of course, we took some pictures, testifying how much fun we had (click for larger versions):
-
-[caption id="attachment_335" align="aligncenter" width="300"][![Alex walking through the new/s/leak poster (with Seid listening)](http://newsleak.io/wp-content/uploads/2016/08/acl-newsleak-12-300x225.jpg)
-](http://newsleak.io/wp-content/uploads/2016/08/acl-newsleak-12.jpg) Alex walking through the new/s/leak poster (with Seid listening)[/caption]
-
-[caption id="attachment_333" align="aligncenter" width="300"][![Seid explaining new/s/leak](http://newsleak.io/wp-content/uploads/2016/08/acl-newsleak-10-300x225.jpg)
-](http://newsleak.io/wp-content/uploads/2016/08/acl-newsleak-10.jpg) Seid explaining new/s/leak[/caption]
-
-[caption id="attachment_334" align="aligncenter" width="300"][![Chris, Heiner and Seid busy discussing new/s/leak](http://newsleak.io/wp-content/uploads/2016/08/acl-newsleak-01-300x158.jpg)
-](http://newsleak.io/wp-content/uploads/2016/08/acl-newsleak-01.jpg) Chris, Heine, Seid and Alex discussing new/s/leak with different people[/caption]
-
-[caption id="attachment_332" align="aligncenter" width="300"][![Seid and many curious new/s/leak fans](http://newsleak.io/wp-content/uploads/2016/08/acl-newsleak-03-300x225.jpg)
-](http://newsleak.io/wp-content/uploads/2016/08/acl-newsleak-03.jpg) Seid and many curious new/s/leak fans[/caption]
-
-[caption id="attachment_331" align="aligncenter" width="300"][![The crew busy explaining, demonstrating and (secretly) playing with new/s/leak](http://newsleak.io/wp-content/uploads/2016/08/acl-newsleak-02-300x225.jpg)
-](http://newsleak.io/wp-content/uploads/2016/08/acl-newsleak-02.jpg) The crew busy explaining, demonstrating and (secretly) playing with new/s/leak[/caption]
+* Here's the [paper](http://www.aclweb.org/anthology/P/P16/P16-4028.pdf) documenting our software (you'll find a large part of the information from the paper in this blog, too)
+* Here's our [poster (in PDF format)](http://newsleak.io/wp-content/uploads/2016/08/ACL2016_newsleak_Poster.pdf)
 
 Thanks to everyone who stopped by, especially for the great suggestions for improvements! Be sure that we're working on that while you're reading this post. If you have any more ideas, application visions or simply want to debate information extraction and / or journalism - please get in touch!

@@ -1,0 +1,113 @@
+/* Extra-Styles für Startseite */
+div#startbild_container{
+	position:relative;
+	top:0;
+	width:100%;
+	height:360px;
+	overflow:hidden;
+	z-index: 2;
+}
+div#startbild_container div#logo{
+	position:absolute;
+	left:749px;
+	top:23px;
+	z-index: 4;
+	background-color: #FFFFFF;
+}
+div#startbild_container div#logo div#druck{
+	display: none;
+}
+div#startbild_container div#startbild img{
+	position: relative;
+	top: 0;
+	z-index: 3;
+	width: 931px;
+	height: 360px;
+}
+
+div#starttext{
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	padding:2px;
+	z-index: 4;
+	line-height:1.6em;
+}
+div#starttext h1{
+	margin-bottom: 0em;
+	font-weight:normal;
+	font-size:200%;
+}
+div#starttext h2{
+	font-weight:normal;
+	font-size:164%;
+	margin-top: 0.5em;
+	margin-bottom: 0;
+}
+div#starttext a:link, div#starttext a:visited{
+	text-decoration:none !important;
+}
+div#starttext a:hover, div#starttext a:focus, div#starttext a:active{
+	text-decoration:underline !important;
+}
+
+div#shortcuts{
+	position:relative;
+	top:0;
+	width:100%;
+	margin-top:18px;
+}
+div#shortcuts h1{
+	font-size:100%;
+	margin:0 0 4px 0;
+	color:#b90f22;
+	border-bottom:1px solid #d8d8d8;
+}
+div#shortcuts ul{
+	margin:0;
+	padding:0;
+	list-style-type:none;
+}
+div#shortcuts li{
+	clear:both;
+	margin:0;
+	padding:0;
+}
+div#shortcuts a:link, div#shortcuts a:visited{
+	color:#333333;
+	text-decoration:none;
+}
+div#shortcuts a:focus, div#shortcuts a:hover, div#shortcuts a:active {
+	text-decoration:underline;
+	color:#b90f22;
+}
+div#shortcuts h1 a:link, div#shortcuts h1 a:visited{
+	color:#b90f22;
+	text-decoration:none;
+}
+div#shortcuts h1 a:focus, div#shortcuts h1 a:hover, div#shortcuts h1 a:active{
+	text-decoration:underline;
+}
+div#shortcuts .spalte{
+	float:left;
+	width:220px;
+	border-top:1px solid white;
+}
+div#shortcuts .zwischenraum{
+	float:left;
+	width:17px;
+	height:1px;
+	border-top:1px solid white;
+}
+div#shortcuts .raquo{
+	float:left;
+	width:15px;
+}
+div#shortcuts .shortcut{
+	float:left;
+	width:205px;
+}
+
+div#nach_oben {
+	display:none;
+}

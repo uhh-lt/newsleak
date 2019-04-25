@@ -5755,6 +5755,7 @@ code, .code {
 .nested-links a {
   color: #357edd;
   transition: color .15s ease-in;
+  text-decoration: none;
 }
 
 .nested-links a:hover,
