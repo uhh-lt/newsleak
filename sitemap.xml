@@ -262,4 +262,26 @@
     <priority>0.5</priority>
   </url>
   
+  <url>
+    <loc>https://uhh-lt.github.io/newsleak/devsetup/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://uhh-lt.github.io/newsleak/install/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://uhh-lt.github.io/newsleak/tags/development/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://uhh-lt.github.io/newsleak/tags/installation/</loc>
+    <priority>0</priority>
+  </url>
+  
 </urlset>

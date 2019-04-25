@@ -17,7 +17,7 @@
       <pubDate>Tue, 19 Jan 2016 11:14:44 +0000</pubDate>
       
       <guid>https://uhh-lt.github.io/newsleak/about/</guid>
-      <description>new/s/leak (NetWork of Searchable Leaks) is a research project producing a piece of software that allows to quickly and intuitively explore large amounts of textual data. The tool will support journalists working with datasets like the War Diaries or the Embassy cables (both distributed by Wikileaks) or the hacking of Hacking Team. The goal is to provide a quick access to important entities (people, organizations, places) and their relationships, and how those things change over time.</description>
+      <description>new/s/leak (NetWork of Searchable Leaks) is a research project producing a piece of software that allows to quickly and intuitively explore large amounts of textual data. The tool will support journalists working with datasets like the Iraq War Diaries or the U.S. Embassy cables (both distributed by Wikileaks) or the hacking of Hacking Team. The goal is to provide a quick access to important entities (people, organizations, places) and their relationships, and how those things change over time.</description>
     </item>
     
     <item>
@@ -26,7 +26,8 @@
       <pubDate>Wed, 17 Apr 2019 17:16:02 +0200</pubDate>
       
       <guid>https://uhh-lt.github.io/newsleak/documentation/</guid>
-      <description> Getting started  Installation instructions Development setup User manual  Documentation  Javadoc preprocessing component Scaladoc UI component  Publications </description>
+      <description>new/s/leak is a browser-based web application with a backend of several docker containers orchestrated by docker-compose.
+Getting started  Installation instructions User manual  Documentation  Development setup Preprocessing component (Javadoc) UI component (Scaladoc)  Publications Ballweg K., Zouhar F., Wilhelmi-Dworski P., von Landesberger T., Fahrer U., Panchenko A., Yimam S.M. Biemann C., Regneri M., Ulrich H. (2016) new/s/leak – A Tool for Visual Exploration of Large Text Document Collections in the Journalistic Domain, Baltimore, MD, USA.</description>
     </item>
     
     <item>
@@ -35,7 +36,8 @@
       <pubDate>Wed, 08 Mar 2017 13:04:55 +0000</pubDate>
       
       <guid>https://uhh-lt.github.io/newsleak/demo/</guid>
-      <description>You can access the publicly available demo of new/s/leak with the Enron Email Dataset here (Chrome browser recommended)</description>
+      <description>Live demo We prepared three publicly available demo instances of new/s/leak. All demos can be accessed with the credentials username user, and password password
+ 250k English emails from the Enron Dataset 12k pages from German parliamentary investigation reports on the NSU murder case 27k articles from a multi-lingual collection of Wikipedia documents related to World War II (see also case study below)  Case study WWII   Ca.</description>
     </item>
     
     <item>
@@ -146,7 +148,6 @@ In June, we will publish a detailed blog post on how to setup Hoover and Newslea
       <guid>https://uhh-lt.github.io/newsleak/news/2016-10-31-newsleak-vip/</guid>
       <description>Last week, new/s/leak had its academic debut in the visualization science community at the Visualization in Practice Workshop, co-located with the IEEE VIS 2016 conference.
 Here is the paper documenting the software with a focus on visualization. Needless to say that it&amp;rsquo;s always fun to present new/s/leak and get more feedback:
-[caption id=&amp;ldquo;attachment_366&amp;rdquo; align=&amp;ldquo;aligncenter&amp;rdquo; width=&amp;ldquo;300&amp;rdquo;] Kathrin presenting new/s/leak[/caption]
 Thanks to everyone who came and visited us!</description>
     </item>
     
@@ -167,7 +168,7 @@ VIS is one of the most important conferences in visualization science. new/s/lea
       
       <guid>https://uhh-lt.github.io/newsleak/news/2016-08-16-newsleak-acl-2016/</guid>
       <description>Last week, we presented new/s/leak for the first time in public: we had our demo session at the annual meeting of the Association for Computational Linguistics, which was held in Berlin this year. If you haven&amp;rsquo;t had the chance to attend (or you had and want to have some references now):
- * Here&#39;s the [paper](http://www.aclweb.org/anthology/P/P16/P16-4028.pdf) documenting our software (you&#39;ll find a large part of the information from the paper in this blog, too) * Here&#39;s our [poster (in PDF format)](http://newsleak.</description>
+ Here&amp;rsquo;s the paper documenting our software (you&amp;rsquo;ll find a large part of the information from the paper in this blog, too) Here&amp;rsquo;s our poster (in PDF format)  Thanks to everyone who stopped by, especially for the great suggestions for improvements!</description>
     </item>
     
     <item>
@@ -247,6 +248,30 @@ For our project that brings together so different worlds of science and journali
       
       <guid>https://uhh-lt.github.io/newsleak/news/2015-11-25-we-made-it/</guid>
       <description>Happy news: VW foundation officially decided to fund our project with the working title DIVID-DJ: Data Extraction and Interactive Visualization of Unexplored Textual Datasets for Investigative Data-Driven Journalism. We are one out of eight projects funded as a part of the initiative &amp;ldquo;Science and Data Journalism&amp;rdquo;. Our goal is to create a piece of software that visualizes the content of large text data collections, to help journalists working with data leaks.</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://uhh-lt.github.io/newsleak/devsetup/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/devsetup/</guid>
+      <description>Development setup  Follow the instructions for the user installation to get a working hoover and newsleak installation.
+ Clone the newsleak Github repository
+  git clone https://github.com/uhh-lt/newsleak.git  Preprocessing pipeline The preprocessing pipeline is a Java-based Maven project using Apache UIMA a base technology for information extraction.
+Stop the newsleak containers and restart them with the dev container orchestration:
+cd newsleak-docker docker-compose down docker-compose -f docker-compose.dev.yml up -d  This omits starting the newsleak-ui container and exposes ports of the remaining three containers: newsleak-postgres, newsleak-elasticsearch, and newsleak-ner.</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://uhh-lt.github.io/newsleak/install/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/install/</guid>
+      <description>Installation new/s/leak is free, open-source, and deployed as a bundle of docker containers orchestrated by docker-compose.
+The software requires a docker compatible operating system (Linux, Mac OSX, or Windows 10 64bit Pro, Enterprise or Education), at least 8 GB of RAM, and 3 GB of disk space. Also: the more CPU cores, the faster the indexing, information extraction, and visualization will run.
+Prerequisites To install new/s/leak, you first need two other compontents:</description>
     </item>
     
   </channel>

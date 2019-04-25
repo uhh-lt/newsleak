@@ -56,5 +56,23 @@
       <description></description>
     </item>
     
+    <item>
+      <title>development</title>
+      <link>https://uhh-lt.github.io/newsleak/tags/development/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/tags/development/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>installation</title>
+      <link>https://uhh-lt.github.io/newsleak/tags/installation/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/tags/installation/</guid>
+      <description></description>
+    </item>
+    
   </channel>
 </rss>
