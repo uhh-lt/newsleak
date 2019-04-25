@@ -11,10 +11,16 @@ meta: false
 
 new/s/leak's interdisciplinarity shows in the diversity of the team behind it. There are scientists from Universität Hamburg and TU Darmstadt of different fields, and people from different departments of our media partner.
 
+<style>
+.marginauto {
+    margin: 10px auto 20px;
+    display: block;
+}
+</style>
 
 ### [Department of Interactive Graphics Systems](http://www.gris.informatik.tu-darmstadt.de) (GRIS), TU Darmstadt
 
-<img class="special-img-class" src="http://www.gris.tu-darmstadt.de/media/corporate_design/cd_grafiken/Gris_Logo_16_9b.png" style="width:250px !important;"/>
+<img class="special-img-class marginauto" src="/media/corporate_design/cd_grafiken/Gris_Logo_16_9b.png" style="width:250px !important;"/>
 
 [Tatiana von Landesberger](http://www.gris.informatik.tu-darmstadt.de/~ttekusov/), head of the [Visual Search and Analysis Group](http://www.gris.tu-darmstadt.de/research/vissearch/index.en.htm), is one of our principal investigators, supervising the Information Visualization part.
 
@@ -28,7 +34,7 @@ Lukas Raymann, Patrick Mell, Bettina Johanna Ballin and Nils Christopher Bösche
 ### [Department of Language Technology](https://www.inf.uni-hamburg.de/en/inst/ab/lt.html) (LT), Universität Hamburg
 
 
-<img class="special-img-class" src="https://www.inf.uni-hamburg.de/4653760/lt-logo-square-500x500-97574b16504b70e52d9033b91e1be7b4335f88ee.png" style="width:250px !important;"/>
+<img class="special-img-class marginauto" src="https://www.inf.uni-hamburg.de/4653760/lt-logo-square-500x500-97574b16504b70e52d9033b91e1be7b4335f88ee.png" style="width:250px !important;" align="center"/>
 [Chris Biemann](https://www.inf.uni-hamburg.de/en/inst/ab/lt/people/chris-biemann.html), head of Language Technology at TU Darmstadt, is our other principal investigator, with the Language Technology part under his supervision.
 
 [Alexander Panchenko](https://www.inf.uni-hamburg.de/en/inst/ab/lt/people/alexander-panchenko.html), Postdoctoral Researcher in Chris' group, is our main  executive research staff for the language-related parts of new/s/leak, also filling the role als head of engineering & quality assurance manager for the backend.
@@ -41,7 +47,6 @@ Lukas Raymann, Patrick Mell, Bettina Johanna Ballin and Nils Christopher Bösche
 ### [DER SPIEGEL](http://www.spiegel.de), Hamburg:
 
 
-[![](http://assets.materialup.com/uploads/567bed13-8102-4061-9113-dc0164a3810d/preview.jpg)
-](http://www.spiegel.de)
+<img class="special-img-class marginauto" src="http://assets.materialup.com/uploads/567bed13-8102-4061-9113-dc0164a3810d/preview.jpg" style="width:250px !important;"/>
 
 At SPIEGEL, the project is coordinated by the IT department by [Michaela Regneri](http://www.coli.uni-saarland.de/~regneri/) (who used to do research in Language Technology) and Heiner Ulrich (the deputy IT director). The main customers from SPIEGEL however are at home in the newsroom: we are in active exchange with enthusiastic and curious stakeholders in print and online newsrooms.
