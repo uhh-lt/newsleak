@@ -18,18 +18,6 @@ new/s/leak's interdisciplinarity shows in the diversity of the team behind it. T
 }
 </style>
 
-### [Department of Interactive Graphics Systems](http://www.gris.informatik.tu-darmstadt.de) (GRIS), TU Darmstadt
-
-<img class="special-img-class marginauto" src="/media/corporate_design/cd_grafiken/Gris_Logo_16_9b.png" style="width:250px !important;"/>
-
-[Tatiana von Landesberger](http://www.gris.informatik.tu-darmstadt.de/~ttekusov/), head of the [Visual Search and Analysis Group](http://www.gris.tu-darmstadt.de/research/vissearch/index.en.htm), is one of our principal investigators, supervising the Information Visualization part.
-
-[Kathrin Ballweg](http://www.gris.tu-darmstadt.de/home/members/ballweg/index.de.htm), PhD Student in Tatiana's group, carries out research around the graphical parts of new/s/leak, and is also responsible for conceptualizing the user experience.
-
-[Franziska Lehmann](https://www.xing.com/profile/Franziska_Lehmann26), about to graduate with a M.Sc. in Business Informatics, works on a research project on requirements management with Tatiana & Kathrin. Her project involves in particular requirements analysis for new/s/leak.
-
-Lukas Raymann, Patrick Mell, Bettina Johanna Ballin and Nils Christopher Böschen (Computer Science students at TU Darmstadt) [implemented a first prototype](http://newsleak.io/2016/01/25/science-data-journalsim-newsleak/) with a focus on the new UI as their software project.
-
 
 ### [Department of Language Technology](https://www.inf.uni-hamburg.de/en/inst/ab/lt.html) (LT), Universität Hamburg
 
@@ -50,3 +38,16 @@ Lukas Raymann, Patrick Mell, Bettina Johanna Ballin and Nils Christopher Bösche
 <img class="special-img-class marginauto" src="http://assets.materialup.com/uploads/567bed13-8102-4061-9113-dc0164a3810d/preview.jpg" style="width:250px !important;"/>
 
 At SPIEGEL, the project is coordinated by the IT department by [Michaela Regneri](http://www.coli.uni-saarland.de/~regneri/) (who used to do research in Language Technology) and Heiner Ulrich (the deputy IT director). The main customers from SPIEGEL however are at home in the newsroom: we are in active exchange with enthusiastic and curious stakeholders in print and online newsrooms.
+
+
+### [Department of Interactive Graphics Systems](http://www.gris.informatik.tu-darmstadt.de) (GRIS), TU Darmstadt
+
+<img class="special-img-class marginauto" src="/media/corporate_design/cd_grafiken/Gris_Logo_16_9b.png" style="width:250px !important;"/>
+
+[Tatiana von Landesberger](http://www.gris.informatik.tu-darmstadt.de/~ttekusov/), head of the [Visual Search and Analysis Group](http://www.gris.tu-darmstadt.de/research/vissearch/index.en.htm), is one of our principal investigators, supervising the Information Visualization part.
+
+[Kathrin Ballweg](http://www.gris.tu-darmstadt.de/home/members/ballweg/index.de.htm), PhD Student in Tatiana's group, carries out research around the graphical parts of new/s/leak, and is also responsible for conceptualizing the user experience.
+
+[Franziska Lehmann](https://www.xing.com/profile/Franziska_Lehmann26), about to graduate with a M.Sc. in Business Informatics, works on a research project on requirements management with Tatiana & Kathrin. Her project involves in particular requirements analysis for new/s/leak.
+
+Lukas Raymann, Patrick Mell, Bettina Johanna Ballin and Nils Christopher Böschen (Computer Science students at TU Darmstadt) [implemented a first prototype](http://newsleak.io/2016/01/25/science-data-journalsim-newsleak/) with a focus on the new UI as their software project.
