@@ -17,8 +17,8 @@ What sounds like magic is actually feasible using current research results: scep
 
 At some point, we want to arrive at something ressembling this sketch from our project proposal:
 
-[caption id="attachment_62" align="aligncenter" width="300"][![Wireframe from proposal](http://maggie.lt.informatik.tu-darmstadt.de/divid/wp-content/uploads/2016/01/scribble_1-300x202.png)
-](http://maggie.lt.informatik.tu-darmstadt.de/divid/wp-content/uploads/2016/01/scribble_1.png) An early wireframe for our software[/caption]
+![Wireframe from proposal](/img/2016/01/scribble_1-300x202.png)
+An early wireframe for our software
 
 
 
@@ -30,9 +30,8 @@ Four TU Darmstadt computer science students (Lukas Raymann, Patrick Mell, Bettin
 
 
 
-
-[caption id="attachment_66" align="aligncenter" width="300"][![](http://maggie.lt.informatik.tu-darmstadt.de/divid/wp-content/uploads/2016/01/divid_prototype_v2-300x169.png)
-](http://maggie.lt.informatik.tu-darmstadt.de/divid/wp-content/uploads/2016/01/divid_prototype_v2.png) The first new/s/leak prototype[/caption]
+![The first new/s/leak prototype](/img/2016/01/divid_prototype_v2-300x169.png)
+The first new/s/leak prototype
 
 The screenshot offers a glimpse on something which which could have helped the people that had to work double shifts to browse the 2 million records of the Cablegate Leaks - if new/s/leak had been around at that time already.
 

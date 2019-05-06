@@ -21,8 +21,8 @@ It might seem easy to create some kind of visualization (with Excel or even pen 
 
 
 	  * **Animation speed:** there is a certain animation speed that is pleasant to look at, and it cannot be much faster or slower if we want to convey information. While it's intuitively clear that reaaallyyyy slooooowwww animations can be annoying (think of those endless progress bars...), going to fast can overload you, even if there is no critical information involved. For evidence, take a minute look at those two guys working out (they are doing exactly the same movement).
-![www.GIFCreator.me_Io0FHw](http://newsleak.io/wp-content/uploads/2016/06/www.GIFCreator.me_Io0FHw.gif)
-![www.GIFCreator.me_fVOqUg](http://newsleak.io/wp-content/uploads/2016/06/www.GIFCreator.me_fVOqUg.gif)
+![www.GIFCreator.me_Io0FHw](/img/2016/06/www.GIFCreator.me_Io0FHw.gif)
+![www.GIFCreator.me_fVOqUg](/img/2016/06/www.GIFCreator.me_fVOqUg.gif)
 
 Now answer the question: would you pick the guy on the right as your office mate? Might become exhausting really soon (even if he's really smart).  
 
@@ -41,7 +41,7 @@ Those are just two examples for a whole lot of guidelines that visualization sc
 The largest challenge (and thus the largest need) for visualization science and language technology alike comes with the huge amounts of data we have to handle. A leak can be anything from 100 Documents to 1TB (or more). This is not only a lot for research-based software, but also enough to break many commercial applications. So, this is where the action is.
 Visualizing data for investigative purposes means that the software _may not show anything untrue_ (not even shady, or too ambiguous). However, there is so much data to display (all the documents, their metadata, and all the entities we extracted) - we simply cannot display the whole truth in one screen, that would be a) impossible and b) completely unusable. Imagine a network that shows all the information it has - that quickly becomes a "hairball" like in the picture on the left.
 
-Because new/s/leak should be _intuitively accessible_ for users with different backgrounds and without much training, ![Usability](http://newsleak.io/wp-content/uploads/2016/06/yourcompany-155x300.jpg)
+Because new/s/leak should be _intuitively accessible_ for users with different backgrounds and without much training, ![Usability](/img/2016/06/yourcompany-155x300.jpg)
 we need to find easy interfaces for giant piles of complex data.  This excludes e.g. some very powerful but rather complicated interfaces used for search in scientific environments.
 
 One extreme way to tackle this is the way Google presents the internet to us, or rather [the 60 trillion pages it has indexed](http://expandedramblings.com/index.php/by-the-numbers-a-gigantic-list-of-google-stats-and-facts/): Initially, Google doesn't display anything, but rather lets the user explore (see comic on the right). While we allow the user to explore the data on their own, new/s/leak's main purpose is to guide users through the data jungle and to provide a concise graphical summary of the core plots. In consequence, we display an initial graph as entry point that contains the most interesting entities and relations. It's a scientific question of its own to find out what _most interesting_ means, but according to our users, _frequency_ is a good indicator here. We thus show initially the most frequent people, companies and places, and let the user explore from there. (If they wish, users can also pick the least frequent entities first - this might foster serendipity.)

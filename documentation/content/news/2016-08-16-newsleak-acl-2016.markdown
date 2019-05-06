@@ -13,7 +13,23 @@ categories:
 Last week, we presented new/s/leak for the first time in public: we had our demo session at the [annual meeting of the Association for Computational Linguistics](http://acl2016.org), which was held in Berlin this year.
 If you haven't had the chance to attend (or you had and want to have some references now):
 
+
 * Here's the [paper](http://www.aclweb.org/anthology/P/P16/P16-4028.pdf) documenting our software (you'll find a large part of the information from the paper in this blog, too)
-* Here's our [poster (in PDF format)](http://newsleak.io/wp-content/uploads/2016/08/ACL2016_newsleak_Poster.pdf)
+* Here's our [poster (in PDF format)](/img/2016/08/ACL2016_newsleak_Poster.pdf)
+
+And, of course, we took some pictures, testifying how much fun we had (click for larger versions):
+
+![Alex walking through the new/s/leak poster (with Seid listening)](/img/2016/08/acl-newsleak-12-300x225.jpg)
+
+![Seid explaining new/s/leak](/img/2016/08/acl-newsleak-10-300x225.jpg)
+
+
+![Chris, Heiner and Seid busy discussing new/s/leak](/img/2016/08/acl-newsleak-01-300x158.jpg)
+
+
+![Seid and many curious new/s/leak fans](/img/2016/08/acl-newsleak-03-300x225.jpg)
+
+
+![The crew busy explaining, demonstrating and (secretly) playing with new/s/leak](/img/2016/08/acl-newsleak-02-300x225.jpg)
 
 Thanks to everyone who stopped by, especially for the great suggestions for improvements! Be sure that we're working on that while you're reading this post. If you have any more ideas, application visions or simply want to debate information extraction and / or journalism - please get in touch!

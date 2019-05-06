@@ -23,8 +23,8 @@ In this post, we will explain some of the semantic technology that helps to ans
 
 The results of the language technology software are easy to explain: we feed all the texts we want to analyze into several smart algorithms, and those algorithms find names of people, companies and places, and they spot dates. On top of those key elements (or "entities"), we finally extract the relationships between them, e.g. some person talks about a place, leaves a company, or pays another person. Finally, we are ready to put all of this into a nice network visualization.
 
-[caption id="attachment_172" align="aligncenter" width="300"]![NE-schema](http://newsleak.io/wp-content/uploads/2016/04/NE-schema-300x229.png)
-Entity and Relation Extraction for new/s/leak[/caption]
+![NE-schema](/img/2016/04/NE-schema-300x229.png)
+Entity and Relation Extraction for new/s/leak
 
 We hope that you're not ready to accept that all of this simply happens by computational magic, so let's dig a bit deeper:
 

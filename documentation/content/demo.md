@@ -11,11 +11,13 @@ meta: false
 
 ## Live demo
 
-We prepared three publicly available demo instances of new/s/leak. All demos can be accessed with the credentials username `user`, and password `password`
+We prepared three publicly available demo instances of new/s/leak. 
 
-* 250k English emails from the [Enron Dataset](https://ltdemos.informatik.uni-hamburg.de/newsleak-enron)
+All demos can be accessed with the credentials username `user`, and password `password`
+
+* 125k English emails from the [Enron Dataset](https://ltdemos.informatik.uni-hamburg.de/newsleak-enron)
 * 12k pages from German [parliamentary investigation reports on the NSU murder case](https://ltdemos.informatik.uni-hamburg.de/newsleak-nsureports)
-* 27k articles from a multi-lingual collection of Wikipedia documents related to [World War II](https://ltdemos.informatik.uni-hamburg.de/newsleak-nsureports) (see also case study below)
+* 27k articles from a multi-lingual collection of Wikipedia documents related to [World War II](https://ltdemos.informatik.uni-hamburg.de/newsleak-ww2) (see also case study below)
 
 ## Case study WWII
 
