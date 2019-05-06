@@ -26,8 +26,10 @@
       <pubDate>Wed, 17 Apr 2019 17:16:02 +0200</pubDate>
       
       <guid>https://uhh-lt.github.io/newsleak/documentation/</guid>
-      <description>new/s/leak is a browser-based web application with a backend of several docker containers orchestrated by docker-compose.
-Getting started  Installation instructions User manual  Documentation  Development setup Preprocessing component (Javadoc) UI component (Scaladoc)  Publications Ballweg K., Zouhar F., Wilhelmi-Dworski P., von Landesberger T., Fahrer U., Panchenko A., Yimam S.M. Biemann C., Regneri M., Ulrich H. (2016) new/s/leak – A Tool for Visual Exploration of Large Text Document Collections in the Journalistic Domain, Baltimore, MD, USA.</description>
+      <description>The goal of new/s/leak is to create a software as a scientific prototype.
+New/s/leak is a browser-based web application with a backend of several docker containers orchestrated by docker-compose.
+Getting started  Installation instructions User manual  Documentation  Development setup Preprocessing component (Javadoc) UI component (Scaladoc)  Publications The software and its development process have been described in a variety of scientific papers.
+ Ballweg K., Zouhar F., Wilhelmi-Dworski P.</description>
     </item>
     
     <item>
@@ -36,8 +38,9 @@ Getting started  Installation instructions User manual  Documentation  Developme
       <pubDate>Wed, 08 Mar 2017 13:04:55 +0000</pubDate>
       
       <guid>https://uhh-lt.github.io/newsleak/demo/</guid>
-      <description>Live demo We prepared three publicly available demo instances of new/s/leak. All demos can be accessed with the credentials username user, and password password
- 250k English emails from the Enron Dataset 12k pages from German parliamentary investigation reports on the NSU murder case 27k articles from a multi-lingual collection of Wikipedia documents related to World War II (see also case study below)  Case study WWII   Ca.</description>
+      <description>Live demo We prepared three publicly available demo instances of new/s/leak.
+All demos can be accessed with the credentials username user, and password password
+ 125k English emails from the Enron Dataset 12k pages from German parliamentary investigation reports on the NSU murder case 27k articles from a multi-lingual collection of Wikipedia documents related to World War II (see also case study below)  Case study WWII   Ca.</description>
     </item>
     
     <item>
@@ -47,7 +50,7 @@ Getting started  Installation instructions User manual  Documentation  Developme
       
       <guid>https://uhh-lt.github.io/newsleak/team/</guid>
       <description>new/s/leak&amp;rsquo;s interdisciplinarity shows in the diversity of the team behind it. There are scientists from Universität Hamburg and TU Darmstadt of different fields, and people from different departments of our media partner.
- .marginauto { margin: 10px auto 20px; display: block; }  Department of Language Technology (LT), Universität Hamburg Chris Biemann, head of Language Technology at TU Darmstadt, is our other principal investigator, with the Language Technology part under his supervision.</description>
+ .marginauto { margin: 10px auto 20px; display: block; }  Department of Language Technology (LT), Universität Hamburg Chris Biemann, head of Language Technology at Universität Hamburg, is our other principal investigator, with the Language Technology part under his supervision.</description>
     </item>
     
     <item>
@@ -166,7 +169,7 @@ VIS is one of the most important conferences in visualization science. new/s/lea
       
       <guid>https://uhh-lt.github.io/newsleak/news/2016-08-16-newsleak-acl-2016/</guid>
       <description>Last week, we presented new/s/leak for the first time in public: we had our demo session at the annual meeting of the Association for Computational Linguistics, which was held in Berlin this year. If you haven&amp;rsquo;t had the chance to attend (or you had and want to have some references now):
- Here&amp;rsquo;s the paper documenting our software (you&amp;rsquo;ll find a large part of the information from the paper in this blog, too) Here&amp;rsquo;s our poster (in PDF format)  Thanks to everyone who stopped by, especially for the great suggestions for improvements!</description>
+ Here&amp;rsquo;s the paper documenting our software (you&amp;rsquo;ll find a large part of the information from the paper in this blog, too) Here&amp;rsquo;s our poster (in PDF format)  And, of course, we took some pictures, testifying how much fun we had (click for larger versions):</description>
     </item>
     
     <item>
