@@ -17,7 +17,9 @@ hugo new news/my-new-blogpost.md
 
 Then edit the content of `news/my-new-blogpost.md`.
 
-And finally, run:
+Add the newly added file(s) to the repository and commit the changes.
+
+Finally, run:
 
 ```
 ./publish_to_gh-pages.sh
