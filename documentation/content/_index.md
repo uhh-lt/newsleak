@@ -9,6 +9,6 @@ Network of searchable leaks (*new/s/leak*) is a research project producing a sof
 
 ## Collaboration
 
-The new/s/leak project is a collaboration between Hamburg University (Department of [language technology](https://lt.informatik.uni-hamburg.de/)), Darmstadt University (department of [information visualization](http://www.gris.informatik.tu-darmstadt.de/home/index.de.htm)) and [Der Spiegel](https://www.spiegel.de). In 2016 and 2018, the project was funded by the [Volkswagenstiftung](https://www.volkswagenstiftung.de/) as a part of the initiative “Science and Data Journalism”. 
+The new/s/leak project is a collaboration between Hamburg University (Department of [language technology](https://lt.informatik.uni-hamburg.de/)), Darmstadt University (department of [information visualization](https://www.gris.informatik.tu-darmstadt.de/home/index.de.htm)) and [Der Spiegel](https://www.spiegel.de). In 2016 and 2018, the project was funded by the [Volkswagenstiftung](https://www.volkswagenstiftung.de/) as a part of the initiative “Science and Data Journalism”. 
 
 
