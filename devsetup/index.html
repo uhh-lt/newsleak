@@ -39,7 +39,7 @@
 
 
 
-<meta itemprop="wordCount" content="456">
+<meta itemprop="wordCount" content="540">
 
 
 
@@ -159,7 +159,9 @@
 
 <p>The <code>preprocessing</code> pipeline is a Java-based Maven project using <a href="https://uima.apache.org/">Apache UIMA</a> a base technology for information extraction.</p>
 
-<p>Stop the newsleak containers and restart them with the dev container orchestration:</p>
+<h3 id="start-dev-service-containers">Start dev service containers</h3>
+
+<p>Stop the newsleak containers from the docker user setup (step 1 above) and restart them with the dev container orchestration:</p>
 
 <pre><code>cd newsleak-docker
 docker-compose down
@@ -168,36 +170,52 @@ docker-compose -f docker-compose.dev.yml up -d
 
 <p>This omits starting the <code>newsleak-ui</code> container and exposes ports of the remaining three containers: <code>newsleak-postgres</code>, <code>newsleak-elasticsearch</code>, and <code>newsleak-ner</code>.</p>
 
-<p>Now you can open the <code>preprocessing</code> project (e.g. via &ldquo;Import Maven project&rdquo;) of your cloned <code>uhh-lt/newsleak</code> project in your favourite development environment such as Eclipse or IntelliJ.</p>
-
-<p>Make a copy of <code>preprocessing/conf/newsleak.properties</code>, e.g. <code>preprocessing/conf/newsleak_dev.properties</code>, and edit it to make sure you point to the right ports on <code>localhost</code> to reach the exposed docker container ports of the postgres db, the elasticsearch index, and the ner microservice.</p>
-
-<p>In your IDE, run <code>CreateCollection</code> with the new dev configuration file in the <code>preprocessing</code> directory.</p>
-
-<pre><code>uhh_lt.newsleak.preprocessing.CreateCollection -c conf/newsleak_dev.properties
-</code></pre>
-
-<p>Then, change the settings for the UI application in <code>conf/application.conf</code> to match the url and exposed ports of your newsleak containers (e.g. <code>es.address=localhost</code> and <code>es.port=19300</code>, and <code>db.*</code> accordingly).</p>
-
-<p>Start the front-end application in the main <code>newsleak</code> project directory.</p>
-
-<pre><code>sbt run
-</code></pre>
-
-<h3 id="frontend-application">Frontend application</h3>
+<h3 id="setup-ui-application">Setup UI application</h3>
 
 <p>The user interface is a front-end/back-end web application based on the Scala <a href="https://www.playframework.com/">Play framework</a>.</p>
 
 <p>Make sure you have a setup with preprocessed data (e.g. the test collection from the <a href="../install">user installation</a>).</p>
 
-<p>Stop the newsleak containers and restart them with the dev container orchestration:</p>
+<p>To configure the scala application, change the settings in <code>conf/application.conf</code> to match the url and exposed ports of your newsleak containers.</p>
 
-<pre><code>cd newsleak-docker
-docker-compose down
-docker-compose -f docker-compose.dev.yml up -d
+<pre><code>nano conf/application.conf
 </code></pre>
 
-<p>Then, change the settings for the UI application in <code>conf/application.conf</code> to match the url and exposed ports of your newsleak containers (e.g. <code>es.address=localhost</code> and <code>es.port=19300</code>, and <code>db.*</code> accordingly).</p>
+<p>&hellip; among others, it look like this (important paramerters are <code>es.indices</code>, and <code>es.index.default</code> pointing to the <code>newsleakdev</code> db configuration below; also take care of opened ports from the newsleak-docker dev service containers <code>es.address=localhost</code> and <code>es.port=19300</code>, and <code>db.newsleakdev.url</code> accordingly):</p>
+
+<pre><code># Available ES collections (provide db.* configuration for each collection below)
+es.indices =  [newsleakdev,newsleak2,newsleak3,newsleak4,newsleak5]
+# ES connection
+es.clustername = &quot;elasticsearch&quot;
+es.address = &quot;localhost&quot;
+es.port = 19300
+
+# Determine the default dataset for the application
+es.index.default = &quot;newsleakdev&quot;
+
+# collection 1
+db.newsleakdev.driver=org.postgresql.Driver
+db.newsleakdev.url=&quot;jdbc:postgresql://localhost:15432/newsleak&quot;
+db.newsleakdev.username=&quot;newsreader&quot;
+db.newsleakdev.password=&quot;newsreader&quot;
+es.newsleakdev.excludeTypes = [Link,Filename,Path,Content-type,SUBJECT,HEADER,Subject,Timezone,sender.id,Recipients.id,Recipients.order]
+</code></pre>
+
+<p>Then, compile the assets for the UI application (requires <code>nodejs</code> and <code>npm</code> installed on your system):</p>
+
+<pre><code>npm install
+</code></pre>
+
+<p>Alternatively to the command above, you can run the script file <code>./init-repo.sh</code>.</p>
+
+<p>Finally, start the front-end application within the main <code>newsleak</code> project directory.</p>
+
+<pre><code>sbt run
+</code></pre>
+
+<p>And open <code>http://localhost:9000</code> in your browser.</p>
+
+<h3 id="debug-frontend-application">Debug frontend application</h3>
 
 <p>Run the UI application with enabled debugging server.</p>
 
@@ -205,6 +223,17 @@ docker-compose -f docker-compose.dev.yml up -d
 </code></pre>
 
 <p>Finally, point your IDE in the debug mode to listen to the debug server.</p>
+
+<h3 id="setup-preprocessing-development">Setup preprocessing development</h3>
+
+<p>Open the <code>preprocessing</code> project (e.g. via &ldquo;Import Maven project&rdquo;) of your cloned <code>uhh-lt/newsleak</code> project in your favourite development environment such as Eclipse or IntelliJ.</p>
+
+<p>Make a copy of <code>preprocessing/conf/newsleak.properties</code>, e.g. <code>preprocessing/conf/newsleak_dev.properties</code>, and edit it to make sure you point to the right ports on <code>localhost</code> to reach the exposed docker container ports of the postgres db, the elasticsearch index, and the ner microservice.</p>
+
+<p>In your IDE, run <code>CreateCollection</code> with the new dev configuration file in the <code>preprocessing</code> directory.</p>
+
+<pre><code>uhh_lt.newsleak.preprocessing.CreateCollection -c conf/newsleak_dev.properties
+</code></pre>
 
 <h3 id="publish-a-docker-image">Publish a docker image</h3>
 
