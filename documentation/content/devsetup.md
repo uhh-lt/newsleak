@@ -22,7 +22,9 @@ git clone https://github.com/uhh-lt/newsleak.git
 
 The `preprocessing` pipeline is a Java-based Maven project using [Apache UIMA](https://uima.apache.org/) a base technology for information extraction.
 
-Stop the newsleak containers and restart them with the dev container orchestration:
+### Start dev service containers
+
+Stop the newsleak containers from the docker user setup (step 1 above) and restart them with the dev container orchestration:
 
 ```
 cd newsleak-docker
@@ -32,40 +34,56 @@ docker-compose -f docker-compose.dev.yml up -d
 
 This omits starting the `newsleak-ui` container and exposes ports of the remaining three containers: `newsleak-postgres`, `newsleak-elasticsearch`, and `newsleak-ner`.
 
-Now you can open the `preprocessing` project (e.g. via "Import Maven project") of your cloned `uhh-lt/newsleak` project in your favourite development environment such as Eclipse or IntelliJ.
-
-Make a copy of `preprocessing/conf/newsleak.properties`, e.g. `preprocessing/conf/newsleak_dev.properties`, and edit it to make sure you point to the right ports on `localhost` to reach the exposed docker container ports of the postgres db, the elasticsearch index, and the ner microservice.
-
-In your IDE, run `CreateCollection` with the new dev configuration file in the `preprocessing` directory.
-
-```
-uhh_lt.newsleak.preprocessing.CreateCollection -c conf/newsleak_dev.properties
-```
-
-Then, change the settings for the UI application in `conf/application.conf` to match the url and exposed ports of your newsleak containers (e.g. `es.address=localhost` and `es.port=19300`, and `db.*` accordingly). 
-
-Start the front-end application in the main `newsleak` project directory.
-
-```
-sbt run
-```
-
-
-### Frontend application
+### Setup UI application
 
 The user interface is a front-end/back-end web application based on the Scala [Play framework](https://www.playframework.com/).
 
 Make sure you have a setup with preprocessed data (e.g. the test collection from the [user installation](/install)).
 
-Stop the newsleak containers and restart them with the dev container orchestration:
+To configure the scala application, change the settings in `conf/application.conf` to match the url and exposed ports of your newsleak containers. 
 
 ```
-cd newsleak-docker
-docker-compose down
-docker-compose -f docker-compose.dev.yml up -d
+nano conf/application.conf
 ```
 
-Then, change the settings for the UI application in `conf/application.conf` to match the url and exposed ports of your newsleak containers (e.g. `es.address=localhost` and `es.port=19300`, and `db.*` accordingly). 
+... among others, it look like this (important paramerters are `es.indices`, and `es.index.default` pointing to the `newsleakdev` db configuration below; also take care of opened ports from the newsleak-docker dev service containers `es.address=localhost` and `es.port=19300`, and `db.newsleakdev.url` accordingly):
+
+```
+# Available ES collections (provide db.* configuration for each collection below)
+es.indices =  [newsleakdev,newsleak2,newsleak3,newsleak4,newsleak5]
+# ES connection
+es.clustername = "elasticsearch"
+es.address = "localhost"
+es.port = 19300
+
+# Determine the default dataset for the application
+es.index.default = "newsleakdev"
+
+# collection 1
+db.newsleakdev.driver=org.postgresql.Driver
+db.newsleakdev.url="jdbc:postgresql://localhost:15432/newsleak"
+db.newsleakdev.username="newsreader"
+db.newsleakdev.password="newsreader"
+es.newsleakdev.excludeTypes = [Link,Filename,Path,Content-type,SUBJECT,HEADER,Subject,Timezone,sender.id,Recipients.id,Recipients.order]
+```
+
+Then, compile the assets for the UI application (requires `nodejs` and `npm` installed on your system):
+
+```
+npm install
+```
+
+Alternatively to the command above, you can run the script file `./init-repo.sh`.
+
+Finally, start the front-end application within the main `newsleak` project directory.
+
+```
+sbt run
+```
+
+And open `http://localhost:9000` in your browser.
+
+### Debug frontend application
 
 Run the UI application with enabled debugging server.
 
@@ -74,6 +92,18 @@ sbt -jvm-debug 9999 run
 ```
 
 Finally, point your IDE in the debug mode to listen to the debug server.
+
+### Setup preprocessing development
+
+Open the `preprocessing` project (e.g. via "Import Maven project") of your cloned `uhh-lt/newsleak` project in your favourite development environment such as Eclipse or IntelliJ.
+
+Make a copy of `preprocessing/conf/newsleak.properties`, e.g. `preprocessing/conf/newsleak_dev.properties`, and edit it to make sure you point to the right ports on `localhost` to reach the exposed docker container ports of the postgres db, the elasticsearch index, and the ner microservice.
+
+In your IDE, run `CreateCollection` with the new dev configuration file in the `preprocessing` directory.
+
+```
+uhh_lt.newsleak.preprocessing.CreateCollection -c conf/newsleak_dev.properties
+```
 
 ### Publish a docker image
 
