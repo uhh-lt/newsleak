@@ -1,6 +1,7 @@
 ---
 type: "post"
-draft: true
+date: 2019-07-01 14:28:41+00:00
+draft: false
 title: New/s/leak 2.0: Second project phase finished
 author: "Gregor Wiedemann"
 description: "Second project phase finished"
