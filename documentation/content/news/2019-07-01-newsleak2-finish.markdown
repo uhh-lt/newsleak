@@ -1,6 +1,6 @@
 ---
 author: gregor
-date: 2019-07-31 08:56:59+00:00
+date: 2019-07-31T08:56:59+00:00
 draft: false
 title: New/s/leak 2.0: Second project phase finished
 type: post
