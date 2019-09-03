@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>demo on new/s/leak</title>
+    <link>https://uhh-lt.github.io/newsleak/tags/demo/</link>
+    <description>Recent content in demo on new/s/leak</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 31 Jul 2019 08:56:59 +0000</lastBuildDate>
+    
+	<atom:link href="https://uhh-lt.github.io/newsleak/tags/demo/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>New/s/leak 2.0: Second project phase finished</title>
+      <link>https://uhh-lt.github.io/newsleak/news/2019-07-01-newsleak2-finish/</link>
+      <pubDate>Wed, 31 Jul 2019 08:56:59 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/news/2019-07-01-newsleak2-finish/</guid>
+      <description>We are happy to announce that the second version of the tool new/s/leak has been completed. New/s/leak supports journalists in the evaluation of very large volumes of documents, such as those that repeatedly emerge from leaks of internal company or government data. The approach of the open-source software is the automatic identification of proper names as well as their visualization and filtering along relationship networks in the documents. In this way, one can quickly gain insight into otherwise unmanageable amounts of data and find starting points for journalistic reporting.</description>
+    </item>
+    
+    <item>
+      <title>Newsleak 2.0 pre-release software demo</title>
+      <link>https://uhh-lt.github.io/newsleak/news/2018-06-04-newsleak-2-0-pre-release-software-demo/</link>
+      <pubDate>Mon, 04 Jun 2018 09:05:42 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/news/2018-06-04-newsleak-2-0-pre-release-software-demo/</guid>
+      <description>Since the first version of Newsleak, a lot has been improved behind the scenes as well as in the front-end of the software. We want to encourage journalists, to try out a pre-release of Newsleak 2.0 on their own. For this, we provide a software demonstration. This demo is populated with ca. 26,500 documents collected from Wikipedia in four languages (English, German, Hungarian and Spanish) and mostly centered on the topic of World War II.</description>
+    </item>
+    
+    <item>
+      <title>new/s/leak demo @ SPIEGEL</title>
+      <link>https://uhh-lt.github.io/newsleak/news/2016-11-08-newsleak-demo-spiegel/</link>
+      <pubDate>Tue, 08 Nov 2016 12:56:08 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/news/2016-11-08-newsleak-demo-spiegel/</guid>
+      <description>Now that we&amp;rsquo;re in the middle of new/s/leak&amp;rsquo;s home stretch, we had a final demo at SPIEGEL in Hamburg. After some exciting and productive development sprints, we proudly introduced the software to journalists, documentarists and software developers, who gave us the best feedback by playing around with the tool and becoming absorbed in using it. Some evidence:
+  We also collected some more systematic feedback, which helped us prioritizing the remaining tasks.</description>
+    </item>
+    
+  </channel>
+</rss>

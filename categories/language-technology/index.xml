@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Language Technology on new/s/leak</title>
+    <link>https://uhh-lt.github.io/newsleak/categories/language-technology/</link>
+    <description>Recent content in Language Technology on new/s/leak</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 08 Apr 2016 13:12:22 +0000</lastBuildDate>
+    
+	<atom:link href="https://uhh-lt.github.io/newsleak/categories/language-technology/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>The Science behind new/s/leak I: Language Technology</title>
+      <link>https://uhh-lt.github.io/newsleak/news/2016-04-08-the-science-behind-newsleak-i-language-technology/</link>
+      <pubDate>Fri, 08 Apr 2016 13:12:22 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/news/2016-04-08-the-science-behind-newsleak-i-language-technology/</guid>
+      <description>Because of the Easter holiday season and several conference deadlines, this blog had to take a little break. Being back, we want to give a glimpse on the science behind of new/s/leak.
+We have two camps of scientists working together: computational linguists contribute software that extract semantic knowledge from texts, and visualization experts who bring the results to smart interactive interfaces that are easy to use for journalists (after the computational linguists made the dataset even more complicated than before).</description>
+    </item>
+    
+  </channel>
+</rss>
