@@ -1,0 +1,56 @@
+<!--
+  ~ Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<md-dialog>
+    <form>
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Edit node: {{ title }}</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="closeClick()">
+                    <md-icon class="material-icons" aria-label="Close dialog">clear</md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content style="max-width:800px;max-height:810px;">
+            <md-whiteframe class="md-whiteframe-z2 md-padding" layout>
+                <md-content layout-padding layout="column">
+                    <md-input-container>
+                        <label>Name</label>
+                        <input name="label" ng-model="entity.label">
+                    </md-input-container>
+
+                    <md-input-container>
+                        <label>Entity Type</label>
+                        <md-select name="type" ng-model="entity.type">
+                            <md-option value="PER">PER</md-option>
+                            <md-option value="ORG">ORG</md-option>
+                            <md-option value="LOC">LOC</md-option>
+                            <md-option value="MISC">MISC</md-option>
+                        </md-select>
+                    </md-input-container>
+                </md-content>
+            </md-whiteframe>
+        </md-dialog-content>
+
+        <md-dialog-actions layout="row">
+            <md-button class="md-primary md-raised" ng-click="apply()">Change</md-button>
+            <span flex></span>
+            <md-button class="md-primary md-raised" ng-click="closeClick()">Close</md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

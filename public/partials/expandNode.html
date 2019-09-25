@@ -1,0 +1,76 @@
+<!--
+  ~ Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<md-dialog aria-label="expand" flex="40">
+    <form>
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Expand Node: {{ title }}</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="closeClick()">
+                    <md-icon class="material-icons" aria-label="Close dialog">clear</md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content style="overflow-y: hidden;">
+                <md-content layout-padding layout="column">
+                    <div layout="row" style="height: 60px">
+                        <md-input-container class="md-block" flex-gt-sm>
+                            <label>Filter by name</label>
+                            <input ng-model="query">
+                        </md-input-container>
+
+                        <md-input-container>
+                            <label>Sort By</label>
+                            <md-select ng-model="orderList" ng-selected="$index == 4">
+                                <md-option value="label"><em>Name</em></md-option>
+                                <md-option value="id"><em>Id</em></md-option>
+                                <md-option value="type"><em>Type</em></md-option>
+                                <md-option value="-count"><em>Freq Decreasing</em></md-option>
+                                <md-option value="count"><em>Freq Increasing</em></md-option>
+                            </md-select>
+                        </md-input-container>
+                    </div>
+                    <md-list style="height: 100%">
+                        <md-list class="list-sub-head" layout="row">
+                            <md-subheader ng-style="{ width: '10%'}">Id  </md-subheader>
+                            <md-subheader ng-style="{ width: '40%'}">Name</md-subheader>
+                            <md-subheader ng-style="{ width: '20%'}">Type</md-subheader>
+                        </md-list>
+                        <md-divider></md-divider>
+                        <md-virtual-repeat-container style="height: 300px;">
+                            <md-list-item layout="row" md-virtual-repeat="n in neighbors | filter: query | orderBy: orderList"  ng-click="toggle(n, selection)">
+                                <p ng-style="{ width: '10%'}"> {{ n.id }} </p>
+                                <p ng-style="{ width: '40%'}"> {{ n.label }} </p>
+                                <p ng-style="{ width: '20%'}"> {{ n.type }} </p>
+                                <md-checkbox class="md-secondary" ng-style="{ width: '30%'}" ng-click="toggle(n, selection)" ng-checked="exists(n, selection)" aria-label="remove-item"></md-checkbox>
+                                <md-icon ng-click="blacklist(n.id, neighbors)" aria-label="blacklist" class="material-icons md-secondary md-hue-3">remove_circle</md-icon>
+                            </md-list-item>
+                        </md-virtual-repeat-container>
+                    </md-list>
+                    <md-divider></md-divider>
+                    <!--<span>Number of neighbors: {{ neighbors.length }} (fixed selection)</span>-->
+                </md-content>
+        </md-dialog-content>
+
+        <md-dialog-actions layout="row">
+            <md-button class="md-primary md-raised" ng-click="apply()">Add to Network</md-button>
+            <span flex></span>
+            <md-button class="md-primary md-raised" ng-click="closeClick()">Close</md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

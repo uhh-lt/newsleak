@@ -1,0 +1,48 @@
+<!--
+  ~ Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<md-dialog aria-label="merge" flex="20" ng-cloak>
+    <form>
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Merge nodes</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="closeClick()">
+                    <md-icon class="material-icons" aria-label="Close dialog">clear</md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content>
+            <md-content layout-padding layout="column">
+                <md-input-container class="md-block" flex-gt-sm>
+                    <label>Target Node</label>
+                    <md-select ng-model="target">
+                        <md-option ng-repeat="e in entities" value="{{ e.id }}">
+                            {{ e.label }} ({{ e.type }})
+                        </md-option>
+                    </md-select>
+                </md-input-container>
+            </md-content>
+        </md-dialog-content>
+
+        <md-dialog-actions layout="row">
+            <md-button class="md-primary md-raised" ng-click="apply()">Merge selection</md-button>
+            <span flex></span>
+            <md-button class="md-primary md-raised" ng-click="closeClick()">Close</md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

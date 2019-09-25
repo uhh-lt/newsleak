@@ -38,7 +38,7 @@ node_modules/*
 
 app/assets/javascripts/libs/*
 
-public
+newsleak.io
 
 .DS_Store
 .classpath

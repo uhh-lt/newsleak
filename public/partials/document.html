@@ -1,0 +1,67 @@
+<!--
+  ~ Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<md-tab ng-repeat="doc in tabs">
+    <md-tab-label>
+        <section layout="row">
+            {{ doc.title }}
+            <md-button class="md-icon-button" ng-click="removeTab(doc)" aria-label="close" style="padding-top: 0px;">
+                <md-icon class="material-icons">clear</md-icon>
+            </md-button>
+        </section>
+    </md-tab-label>
+
+    <md-tab-body>
+        <md-content flex layout-padding ng-init="keywords = retrieveKeywords(doc)">
+            <md-card>
+                <md-card-title>
+                    <md-card-title-text>
+                        <span class="md-headline">{{ doc.meta.Subject.join(', ') }}</span>
+                        <md-chips
+                                ng-init="initTags(doc)"
+                                ng-model="tags[doc.id]"
+                                md-transform-chip="transformTag($chip, doc)"
+                                md-autocomplete-snap
+                                delete-button-label="Remove Tag"
+                                delete-hint="Press delete to remove tag"
+                                secondary-placeholder="+Tag"
+                                md-on-add="addTag($chip, doc)"
+                                md-on-remove="removeTag($chip)">
+                            <md-autocomplete
+                                    placeholder="Enter a tag"
+                                    md-search-text="searchText"
+                                    md-items="label in querySearch(doc, searchText)"
+                                    md-item-text="label"
+                                    md-no-cache>
+                                <span md-highlight-text="searchText">{{label}}</span>
+                            </md-autocomplete>
+
+                            <md-chip-template>
+                                {{ $chip.label }}
+                            </md-chip-template>
+                        </md-chips>
+                        <span class="md-subhead">
+                            <b>Keywords: </b>
+                            <span>{{ keywords.join(', ') }}</span>
+                        </span>
+                    </md-card-title-text>
+                </md-card-title>
+                <doc-content layout-padding document="doc"></doc-content>
+            </md-card>
+        </md-content>
+    </md-tab-body>
+</md-tab>

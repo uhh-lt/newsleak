@@ -1,0 +1,85 @@
+<!--
+  ~ Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<md-dialog aria-label="Settings" flex="40">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Settings</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="closeClick()">
+                    <md-icon class="material-icons" aria-label="Close dialog">clear</md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+
+        <md-dialog-content style="overflow-y: hidden;">
+            <md-tabs md-dynamic-height md-border-bottom>
+                <md-tab label="blacklist" md-on-select="isBlacklist = !isBlacklist">
+                    <md-content class="md-padding">
+                        <md-list>
+                            <md-list class="list-sub-head" layout="row">
+                                <md-subheader ng-style="{ width: '10%'}">Id  </md-subheader>
+                                <md-subheader ng-style="{ width: '40%'}">Name</md-subheader>
+                                <md-subheader ng-style="{ width: '20%'}">Type</md-subheader>
+                            </md-list>
+                            <md-divider></md-divider>
+
+                            <md-virtual-repeat-container style="height: 300px;">
+                                <md-list-item layout="row" md-virtual-repeat="e in blacklist | orderBy: 'name'" ng-click="toggle(e, blacklistSelection)">
+                                    <p ng-style="{ width: '10%'}"> {{ e.id }} </p>
+                                    <p ng-style="{ width: '40%'}"> {{ e.name }} </p>
+                                    <p ng-style="{ width: '20%'}"> {{ e.entityType }} </p>
+                                    <md-checkbox class="md-secondary" ng-style="{ width: '30%'}" ng-click="toggle(e, blacklistSelection)" ng-checked="exists(e, blacklistSelection)" aria-label="remove-item"></md-checkbox>
+                                </md-list-item>
+                            </md-virtual-repeat-container>
+                        </md-list>
+                        <md-divider></md-divider>
+                    </md-content>
+                </md-tab>
+
+                <md-tab label="mergelist" md-on-select="isBlacklist = !isBlacklist">
+                    <md-content class="md-padding">
+                        <md-list>
+                            <md-list class="list-sub-head" layout="row">
+                                <md-subheader ng-style="{ width: '30%'}">Origin  </md-subheader>
+                                <md-subheader ng-style="{ width: '70%'}">Duplicates</md-subheader>
+                            </md-list>
+
+                            <md-divider></md-divider>
+                            <md-virtual-repeat-container style="height: 300px;">
+                                <md-list-item md-virtual-repeat="e in mergelist | orderBy: 'name'"  ng-click="toggle(e, mergelistSelection)">
+                                    <p ng-style="{ width: '30%'}"> {{ e.origin.name }} ({{ e.origin.entityType }}) </p>
+                                    <p ng-style="{ width: '70%'}"> {{ joinDuplicates(e.duplicates) }} </p >
+                                    <md-checkbox class="md-secondary" ng-click="toggle(e, mergelistSelection)" ng-checked="exists(e, mergelistSelection)" aria-label="remove-item"></md-checkbox>
+                                </md-list-item>
+                            </md-virtual-repeat-container>
+                        </md-list>
+                        <md-divider></md-divider>
+                    </md-content>
+                </md-tab>
+                <md-tab label="configuration">
+
+                </md-tab>
+            </md-tabs>
+        </md-dialog-content>
+
+        <md-dialog-actions layout="row">
+            <md-button class="md-primary md-raised" ng-click="isBlacklist ? removeFromBlacklist() : removeFromMergelist()">Remove</md-button>
+            <span flex></span>
+            <md-button class="md-primary md-raised" ng-click="closeClick()">Close</md-button>
+        </md-dialog-actions>
+</md-dialog>

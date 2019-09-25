@@ -1,0 +1,72 @@
+<!--
+  ~ Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<md-toolbar class="md-small-toolbar" show-if-fullscreen=false>
+  <div class="md-toolbar-tools">
+    <h1>
+      <span class="md-display-1">New/s/leak</span>
+    </h1>
+    <span flex="5"></span>
+
+    <md-input-container>
+      <md-select ng-model="selectedDataset" ng-change="changeDataset()" aria-label="dataset">
+        <md-option ng-repeat="data in datasets" ng-value="data">
+          {{data}}
+        </md-option>
+      </md-select>
+    </md-input-container>
+
+    <md-button class="md-raised md-small" ng-click="showSettings()" aria-label="Settings">
+      <md-icon class="material-icons">settings</md-icon>
+    </md-button>
+
+    <md-button class="md-raised md-small" aria-label="Fullscreen" ngsf-toggle-fullscreen>
+      <md-tooltip show-if-fullscreen=false> Enter Fullscreen </md-tooltip>
+      <md-tooltip show-if-fullscreen=true> Exit Fullscreen </md-tooltip>
+      <md-icon class="material-icons" show-if-fullscreen=false>settings_overscan</md-icon>
+      <md-icon class="material-icons" show-if-fullscreen=true>aspect_ratio</md-icon>
+    </md-button>
+
+    <md-button class="md-raised md-small" ng-href="http://newsleak.io/projekt/" target="_blank" aria-label="Blog">
+      <md-tooltip> More informations about new/s/leak </md-tooltip>
+      <md-icon class="material-icons">info_outline</md-icon>
+    </md-button>
+
+    <md-button class="md-raised md-small" ng-href="./assets/VIPvideo.mp4" target="_blank" aria-label="Video">
+      <md-tooltip> Help </md-tooltip>
+      <md-icon class="material-icons">help_outline</md-icon>
+    </md-button>
+
+    <span flex></span>
+
+    <md-button class="md-raised" ng-href="https://www.volkswagenstiftung.de/" target="_blank" aria-label="VW">
+      <img class="institute-logo" src="./assets/images/Logo_Volkswagenstiftung.svg.png">
+    </md-button>
+
+    <md-button class="md-raised" ng-href="http://www.spiegel.de/" target="_blank" aria-label="Spiegel">
+      <img class="institute-logo" src="./assets/images/logo_der_spiegel.jpg">
+    </md-button>
+
+    <md-button class="md-raised" ng-href="https://www.lt.tu-darmstadt.de/de/lt-home/" target="_blank" aria-label="LT">
+      <img class="institute-logo" src="./assets/images/logo_language_technology_group.png">
+    </md-button>
+
+    <md-button class="md-raised" ng-href="http://www.gris.tu-darmstadt.de" target="_blank" aria-label="GRIS">
+      <img class="institute-logo" src="./assets/images/logo_graphisch-interaktive_systeme.png">
+    </md-button>
+  </div>
+</md-toolbar>

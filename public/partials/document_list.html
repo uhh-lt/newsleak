@@ -1,0 +1,72 @@
+<!--
+  ~ Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<div style="padding: 15px;" id="documents-view">
+    <p style="font-size:16px">
+        Document Overview:
+        <span ng-show="hits > 0"> <b>{{hits}}</b> hits out of <b>{{sourceShared.documentsInDB}}</b> docs
+        </span>
+    </p>
+
+    <md-autocomplete
+            md-no-cache
+            md-selected-item="selectedItem"
+            md-search-text="searchText"
+            md-items="label in querySearch(searchText)"
+            md-selected-item-change="selectedTagChange(label)"
+            md-item-text="label"
+            md-min-length="0"
+            placeholder="Search for documents by tag">
+        <md-item-template>
+            <span md-highlight-text="searchText" md-highlight-flags="^i">{{ label }}</span>
+        </md-item-template>
+        <md-not-found>
+            No tags matching "{{ searchText }}" were found. Create a new one!
+        </md-not-found>
+    </md-autocomplete>
+
+    <p></p>
+
+    <div ng-show="sourceShared.documentList.length > 0" class="docs-ul">
+        <b style="text-decoration: underline;">{{ sourceShared.documentListInfo }}</b>
+
+        <md-content>
+            <md-list class="md-dense">
+            <md-virtual-repeat-container id="vertical-container" style="height: 500px;">
+                <md-list-item
+                        md-virtual-repeat="item in virtualScroll"
+                        md-on-demand="true"
+                        md-item-size="50"
+                        class="repeated-item md-3-line md-long-text"
+                        ng-click="loadFullDocument(item)">
+                    <div class="md-body-2">{{ item.metadata.Subject.join(", ") }} #{{item.id}}</div>
+                    <md-button class="md-primary md-raised metadata-button" ng-click="showMetaDialog($event, item.metadata)">Metadata</md-button>
+
+                    <md-divider ng-if="!$last"></md-divider>
+
+                </md-list-item>
+            </md-virtual-repeat-container>
+            </md-list>
+        </md-content>
+        <!-- Show toast when no documents in the iterator and the doc list is not empty -->
+        <span ng-init="showDocumentToast(allDocumentsLoadedMsg)" ng-if="iteratorEmpty && hits > 0"></span>
+        <!-- Show toast when no documents in the iterator and the doc list is not empty -->
+        <span ng-init="showDocumentToast(noDocumentsMsg)" ng-if="hits == 0"></span>
+    </div>
+
+    <div class="docs-loading" ng-show="showLoading"><span>Loading ...</span></div>
+</div>

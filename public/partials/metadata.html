@@ -1,0 +1,50 @@
+<!--
+  ~ Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<div id="metadata" style="padding: 10px 0 0 10px;">
+    <p style="font-size:16px; display: inline-block">Frequency Overview</p>
+    <md-tabs md-stretch-tabs="always" md-dynamic-height="true">
+            <md-tab label="Entities" md-on-select="updateHeight()">
+                <div id="entities_tab" class="tab-pane fade in">
+                <md-tabs>
+                    <md-tab
+                            ng-repeat="entityType in entityTypes"
+                            label="{{entityType}}">
+                        <div class="scroll-chart">
+                            <div id="chart_{{entityType| lowercase}}" class="meta-chart"></div>
+                        </div>
+                    </md-tab>
+                </md-tabs>
+                </div>
+
+            </md-tab>
+        <md-tab label="Metadata" md-on-select="updateHeight()">
+            <div id="metadata_tab" class="tab-pane fade in active">
+                <md-tabs>
+                    <md-tab
+                            ng-repeat="metaType in metadataTypes"
+                            label="{{metaType}}">
+                        <div class="scroll-chart">
+                            <div id="chart_{{metaType.replace('.','_') | lowercase}}" class="meta-chart"></div>
+                        </div>
+                    </md-tab>
+                </md-tabs>
+            </div>
+        </md-tab>
+    </md-tabs>
+
+</div>

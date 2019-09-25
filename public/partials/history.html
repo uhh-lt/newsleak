@@ -1,0 +1,83 @@
+<!--
+  ~ Copyright (C) 2016 Language Technology Group and Interactive Graphics Systems Group, Technische Universität Darmstadt, Germany
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<div style="padding-left: 10px;">
+	<script type="text/ng-template" id="tooltip_tmpl">
+		<div ng-mouseleave="hidePopover(obj.id)" ng-mouseenter="showPopover(obj.id)">
+			<ul class="list-group-item">
+				<li class="list-group-item"><span>Content:</span> {{ obj.data.item }}</li>
+				<li class="list-group-item" ng-if="obj.data.id && obj.data.id > -1"><span>ID#:</span> {{ obj.data.id }}</li>
+				<li class="list-group-item" ng-if="obj.data.type"><span>Typ:</span> {{ obj.data.type }}</li>
+				<li class="list-group-item"><span>Tracker-Type:</span> {{ obj.type }}</li>
+				<li class="list-group-item"><span>Active:</span> {{ obj.active }}</li>
+			</ul>
+
+			<button ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" type="button" class="btn btn-primary" ng-click="removeItem(obj)">
+				<i class="glyphicon type-icon glyphicon-trash" ng-class=""></i> Remove
+			</button>
+		</div>
+	</script>
+
+	<md-content id="history" style="padding: 5px 5px 0 5px; background: white;" layout="row">
+		<p style="font-size:16px;"> History Tracker</p>
+		<div style="width: 210px;">
+			<md-checkbox id="show-history" ng-model="showHistory" aria-label="Show-full-history">
+				<md-tooltip>
+					Show every interaction including remove events
+				</md-tooltip>
+				Full history
+			</md-checkbox>
+			<md-button class="md-icon-button" aria-label="Reset">
+				<md-tooltip>
+					Remove all filters
+				</md-tooltip>
+				<md-icon ng-click="observer.reset()" id="reset-history" class="material-icons md-secondary md-hue-3" style="color: red">cancel</md-icon>
+			</md-button>
+		</div>
+
+		<md-virtual-repeat-container md-orient-horizontal style="max-width: calc(100% - 40px); height: 60px; width: 100%; margin-right: 5px; background: #D3D3D3;">
+			<div ng-show="history.length == 0" style="margin-left: 10px;">
+				<p>No elements in the history.</p>
+			</div>
+
+			<div class="rep-item md-whiteframe-z1" flex
+				 md-virtual-repeat="obj in history"
+				 ng-mouseleave="hidePopover(obj.id)"
+				 ng-mouseenter="showPopover(obj.id)"
+				 ng-show="obj.active || showHistory"
+				 uib-popover-template="'tooltip_tmpl'"
+				 popover-title="{{ getTypeDescription(obj.type) }}"
+				 popover-placement="bottom"
+				 popover-trigger="none"
+				 popover-append-to-body='true'
+				 popover-is-open="factory.popover.isOpen[{{ obj.id }}]">
+
+				<i class="glyphicon type-icon glyphicon-{{ getIcon(obj.type) }}" ng-class=""></i>
+				<i class="glyphicon action-icon glyphicon-{{ getActionIcon(obj.action) }}" ng-class=""></i>
+				{{ obj.data.description }}
+
+				<i ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" ng-click="removeItem(obj)" class="glyphicon action-icon glyphicon-remove-circle" ng-class="" ></i>
+			</div>
+		</md-virtual-repeat-container>
+	</md-content>
+
+	<!--<div class="checkbox">-->
+		<!--<md-button class="md-primary md-raised" type="button" id="reset-history" ng-click="observer.reset()">Reset filters</md-button>-->
+		<!--<md-button class="md-primary md-raised" type="button" id="save-history" ng-click="saveHistory()"><md-icon class="material-icons md-light">archive</md-icon> Save State</md-button>
+		<file-field class="md-button md-primary md-raised" ng-model="uploadFile" ng-click="loadHistory()"><md-icon class="material-icons md-light">unarchive</md-icon> Load State</file-field>-->
+	<!--</div>-->
+</div>
