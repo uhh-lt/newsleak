@@ -1,0 +1,194 @@
+html, body, div#seiten_container {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+body {
+	background-color: #FFFFFF;
+	color: #000000;
+	font-family: Charter, "Times New Roman", serif;
+	line-height: 120%;
+}
+body, td {
+	font-size: 9pt;
+}
+div#seiten_container {
+	border-top: 4mm solid #B90F22;	
+}
+
+div#seite {
+	margin-top: 1.4mm;
+	border-top: 1.2pt solid #000000;
+	width: 100%;
+}
+div#header {
+	width: 100%;
+}
+div#zum_inhalt {
+	display:none;
+}
+
+div#topnavigation {
+	display:none;
+}
+
+div#hauptnavigation_container {
+	display:none;
+}
+
+div#headerbild_container {
+	height: 140px;
+	border-bottom: 0.6pt solid #000000;
+	margin-bottom: 4mm;
+}
+div#headerbild_container div#logo {
+	position: absolute;
+	top: 42px;
+	right: 0;
+}
+div#headerbild_container div#logo div#druck img{
+	width: 182px;
+	height: 84px;
+}
+div#headerbild_container div#logo div#bildschirm{
+	display:none;
+}
+div#headerbild_container div#headerbild{
+	display:none;
+}
+h1.erste_ueberschrift{
+	position: absolute;
+	top: 55px;
+	left: 4mm;
+	padding-right: 192px;
+	font-size: 200%;
+	line-height:100%;
+	font-family: Frontpage, Tahoma, Arial, Helvetica, sans-serif;
+}
+div#brotkrumen {
+	display:none;
+}
+
+div#spaltencontainer {
+	width: 100%;
+}
+
+div#navigationsspalte {
+	display:none;
+}
+div#rechte_marginalienspalte {
+	page-break-inside: avoid;
+	clear: both;
+	width: 100%;
+	margin: 0;
+	margin-top: 6.4mm;
+	border-top: 0.6pt solid #000000;
+	padding-top: 5px;
+}
+div#rechte_marginalienspalte div#institutionslogo{
+	float:right;
+	width:182px;
+	margin-left:10px;
+}
+div#rechte_marginalienspalte div#kontaktinformationen{
+	font-size: 7pt;
+	line-height: 100%;
+}
+div#rechte_marginalienspalte div#kontaktinformationen h1{
+	display: none;
+}
+div#rechte_marginalienspalte div.inhalt{
+	display: none;
+}
+div#zentrale_spalte{
+	width: 100%;
+	float: none;
+	background-color: #FFFFFF;	
+}
+div.eine_spalte{
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+div.extrabreite_spalte{
+	float: none;
+}
+div.zwei_spalten{
+	width:46%;
+	margin-right:4%;
+}
+div.ohne_randabstand{
+	margin-right: 0 !important;
+}
+
+img.rahmen{
+	border: 1px solid #cccccc;
+	margin-left: -2px;
+	margin-right: 0;
+}
+
+div#fussbereich_container {
+	display: none;
+}
+
+.print_unsichtbar {
+	display: none;
+}
+
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+table tr {
+	background-color: #FFFFFF;
+}
+table th{
+	background-color: #FFFFFF;
+	vertical-align:bottom;
+	padding: 0 10px 1px 5px;
+}
+table td{
+	border-width: 1px 0;
+	border-style: solid;
+	border-color: #cccccc;
+}
+table tr.zwischenueberschrift {
+	background-color: #e8e8e8;
+}
+table tr.zwischenueberschrift td {
+	border: 1px solid #ccc;
+}
+
+.seitenumbruch {
+	page-break-before: always;
+}
+
+#suchoptionen {
+	display:none;
+}
+#suchformular {
+	display:none;
+}
+#nach_oben, .nach_oben{
+	display:none;
+}
+
+div.seitenbrowser {
+	display: none;
+}
+
+p, table, ul, ol{
+	margin-top: 0;
+	margin-bottom: 1.2em;
+}
+div#zentrale_spalte .folge_absatz, div.extrabreite_spalte .folge_absatz {
+	margin-top: -0.6em;
+}
+
+p.datum {
+	float: none !important;
+	text-align: right;
+	margin-left: 0 !important;
+	margin-bottom: 1.2em;
+	width: 100% !important;
+}

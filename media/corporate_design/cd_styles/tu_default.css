@@ -1,0 +1,1050 @@
+﻿/* Zentrale Formate */
+body{
+	font-family: Tahoma, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	color: #333333;
+	line-height: 1.6em;
+}
+
+/* block-Elemente */
+form{
+	margin: 0;
+	padding: 0;
+}
+
+/* Überschriften */
+h1, h2, h3 {
+	margin-top: 0;
+	margin-bottom: 0.5em;
+}
+h1{
+	font-size: 127%;
+}
+h2{
+	font-size: 109%;
+}
+h3{
+	font-size: 100%;
+}
+
+/* Absätze u. a. */
+p, table, ul, ol, dl{
+	margin-top: 0;
+	margin-bottom: 1.6em;
+}
+p.zentriert{
+	text-align:center;
+}
+p.abstand{
+	margin-bottom:0;
+}
+
+pre{
+	font-family: "Lucida Console", "Courier New", Courier, monospace;
+	width:100%;
+	overflow:auto;
+	border: 1px solid #E5E5E5;
+	background-color: #F8F8F8;
+	display:block;
+	padding:5px;
+	margin-bottom:0;
+}
+
+/* Listen */
+ul, ol{
+	margin-left: 0;
+	padding-left: 0;
+	list-style-position: outside;
+}
+ul{
+	list-style-type: disc;
+}
+li{
+	margin-left: 0;
+	padding-left: 0;
+	margin-top:0;
+	margin-bottom:0.2em;
+}
+li ul{
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+ul.eingerueckt, ol.eingerueckt{
+	list-style-position: inside;
+}
+ul.eingerueckt{
+	list-style-type: square;
+}
+ul.ohne_bullet{
+	list-style-position: inside;
+	list-style-type: none;
+	border-top:1px solid #E5E5E5;
+}
+ul.ohne_bullet li{
+	padding-bottom: 0.4em;
+	margin-bottom: 0.4em;
+	border-bottom: 1px solid #E5E5E5;
+	clear: both;
+}
+
+ul.standard{
+	margin-left: 17px;
+}
+div.bild_links ul.standard{
+	margin-left: 0;
+	position: relative;
+	left: 17px;
+	margin-right: 17px;
+}
+ol.standard{
+	margin-left: 30px;
+}
+div.bild_links ol.standard{
+	margin-left: 0;
+	position: relative;
+	left: 25px;
+	margin-right: 25px;
+}
+
+dt{
+	font-weight: bold;
+	padding: 0;
+}
+dd{
+	margin: 0 0 0.8em 0;
+	padding: 0;
+}
+dd p{
+	margin-bottom: 0;
+}
+dl.tabelle{
+	width:100%;
+	border-bottom: 1px solid #E5E5E5;
+}
+dl.tabelle dt{
+	clear: both;
+	float: left;
+	min-width: 170px;
+	padding: 3px 19px 3px 0;
+	border-top: 1px solid #E5E5E5;
+	text-align: left;
+}
+dl.tabelle dd{
+	float: left;
+	width: 340px;
+	padding: 3px 0;
+	margin: 0;
+	border-top: 1px solid #E5E5E5;
+}
+
+hr {
+	clear: both;
+	border-width: 1px 0 0 0;
+	border-style: solid;
+	border-color: #E5E5E5;
+	margin-bottom: 1.6em;
+}
+dd hr {
+	margin-bottom: 0;
+}
+
+/* inline-Elemente */
+strong {
+	font-weight: bold;
+}
+em {
+	font-style: italic;
+}
+sup, sub {
+	line-height: 0px;
+	font-size: 81% !important;
+	color: #000000;
+	font-family: Tahoma, Arial, Helvetica, sans-serif;
+}
+
+a{
+	text-decoration: underline;
+}
+a.nicht_unterstrichen, a.nie_unterstrichen{
+	text-decoration: none;
+}
+a.nicht_unterstrichen:hover, a.nicht_unterstrichen:focus, a.nicht_unterstrichen:active{
+	text-decoration: underline;
+}
+a:link{
+	color: #333333;
+}
+a:visited{
+	color: #666666;
+}
+
+img {
+	border: 0;
+}
+
+abbr, acronym {
+	cursor: help ;
+}
+
+/* Tabellen */
+table{
+	border:0;
+	width:100%;
+	border-spacing:0;
+}
+
+tr{
+	vertical-align:top;
+}
+
+tr.ungerade{
+	background-color: #ffffff;
+}
+tr.zwischenueberschrift{
+	background-color: #e8e8e8;
+}
+tr.zwischenueberschrift_2, tr.zwischenueberschrift_3 {
+	background-color: #ffffff;
+}
+td, th{
+	border:0;	
+	text-align:left;
+	font-size:11px;	
+}
+th {
+	padding: 3px 10px 3px 5px;
+	font-weight: bold;
+	background-color: #E8E8E8;
+}
+tr.ungerade th {
+	background-color: #F0F0F0;
+}
+
+td {
+	padding: 3px 10px 3px 5px;
+}
+td p, th p{
+	margin-bottom:0;
+}
+tr.zwischenueberschrift td{
+	padding: 7px 5px 3px 5px;
+	font-weight: bold;
+}
+tr.zwischenueberschrift_2 td {
+	padding: 7px 5px 3px 5px;
+	font-weight:bold;
+}
+tr.zwischenueberschrift_3 td {
+	padding: 7px 5px 3px 5px;
+}
+.ohne_umbruch{
+	white-space:nowrap;
+}
+
+/* Formulare */
+form{
+	margin:0;
+	padding:0;
+}
+label {
+	cursor: pointer;
+}
+input[type=text], input[type=password], textarea {
+	border-width: 1px;
+	border-style: solid;
+	border-color: #AAAAAA #CCCCCC #CCCCCC #AAAAAA;
+	padding: 1px 2px;
+	font-family: Tahoma, Arial, Helvetica, sans-serif;
+	font-size: 100%;
+}
+input[type=submit], input[type=button], input[type=reset] {
+	font-size: 100%;
+	padding: 1px 2px;
+	cursor: pointer;
+}
+input[type=radio]{
+	padding:0 2px 0 0;
+	position:relative;
+	top:2px;
+}
+select {
+	border-width: 1px;
+	border-style: solid;
+	border-color: #AAAAAA #CCCCCC #CCCCCC #AAAAAA;
+	font-size: 100%;
+	padding: 1px 2px;
+}
+
+/* Sonstige */
+/* spezielle Elemente => gleiche Darstellung bei Druck und Bildschirm*/
+span.gehe_zu{
+	font-size: 15px;
+	font-family: Arial, Helvetica;
+	font-weight: bold;
+	margin: 0 1px;
+}
+span.weiter, span.zurueck{
+	width: 7px;
+	height: 8px;
+	white-space: nowrap;
+}
+span.weiter{
+	margin-left: 2px;
+}
+span.zurueck{
+	margin-right: 2px;
+}
+
+span.weiter img.png, span.zurueck img.png{
+	display: none;
+}
+span.weiter > img.png, span.zurueck > img.png{
+	display: inline !important;
+}
+span.weiter > img.gif, span.zurueck > img.gif{
+	display: none !important;
+}
+a.weiter:hover, a.zurueck:hover {
+	color: #333333 !important;
+}
+a.weiter:hover span.weiter img.png, a.zurueck:hover span.zurueck img.png{
+	background-color: #333333 !important;
+}
+
+div.code {
+	margin-bottom:1.6em;
+}
+div.code > pre {
+	width: 517px !important;
+}
+
+/* Styles für Bilder+Spalten */
+div.bild_spaltenbreite{
+	margin-bottom: 1.6em;
+}
+.beschriftung{
+	font-size: 91%;
+	color: #666666;
+	line-height: 1.2em;
+	overflow: hidden;
+	margin-top: 0.2em;
+	margin-bottom: 0.4em;
+}
+div.zwei_spalten {
+	float: left;
+}
+div.text_mit_bild {
+	clear:both;
+	margin-bottom: 1.6em;
+}
+ul div.text_mit_bild, dl div.text_mit_bild, div.hervorgehoben div.text_mit_bild{
+	margin-bottom: 0;
+}
+div.bild{
+	margin-top: 0.35em;
+	margin-bottom: 0.5em;
+}
+div.eine_spalte div.bild_rechts div.bild, div.extrabreite_spalte div.bild_rechts div.bild{
+	float: right;
+	margin-left: 19px;
+}
+div.eine_spalte div.bild_links div.bild, div.extrabreite_spalte div.bild_links div.bild{
+	float: left;
+	margin-right: 19px;
+}
+
+div.zwei_spalten div.bild_rechts div.bild{
+	float:right;
+	margin-left: 10px;
+}
+div.zwei_spalten div.bild_links div.bild{
+	float: left;
+	margin-right:10px;
+}
+div.bild_mitte{
+	margin-bottom: 0.5em;
+	text-align: center;
+}
+
+/* Styles in Marginalienspalte */
+div#rechte_marginalienspalte #institutionslogo img {
+	margin: 5px 0 5px 0;
+}
+div#rechte_marginalienspalte #zusaetzliche_logos img {
+	margin: 5px 10px 5px 0;
+}
+
+div#rechte_marginalienspalte h1 {
+	font-size: 109%;
+	padding-top: 10px;
+	padding-bottom: 3px;
+	margin-bottom: 0.2em;
+	border-bottom: 1px solid #E5E5E5;
+	line-height:100%;
+	clear: both;
+}
+div#rechte_marginalienspalte h2 {
+	font-size: 100%;
+	color: #333333;
+	font-weight:bold;
+	margin-top: 1em;
+	margin-bottom: 0.3em;
+}
+div#rechte_marginalienspalte h3 {
+	font-size: 100%;
+	color: #333333;
+	font-weight:normal;
+	margin-bottom: 0.2em;
+}
+
+div#rechte_marginalienspalte h1 + h2 {
+	margin-top: 0;
+}
+
+div#rechte_marginalienspalte p {
+	margin-bottom: 0.7em;
+}
+div#rechte_marginalienspalte dd p{
+	margin-bottom: 0;
+	margin-top: 0;
+}
+div#rechte_marginalienspalte div.bild_rechts{
+	float: right;
+	margin-left: 5px;
+	margin-bottom: 0.5em;
+}
+div#rechte_marginalienspalte div.bild_links{
+	float: left;
+	margin-right: 5px;
+	margin-bottom: 0.5em;
+}
+div#rechte_marginalienspalte div.rss_icon{
+	padding-top: 6px;
+}
+
+/* übergreifende Styles */
+.ohne_randabstand{
+	margin: 0 !important;
+}
+img.rahmen, div.rahmen {
+	border: 1px solid #cccccc;
+	margin-left:-1px;
+	margin-right:-1px;
+}
+
+table.rahmen {
+	border-collapse: collapse;
+	border-spacing: 0;
+	border-bottom: 1px solid #E5E5E5;
+}
+table.rahmen tr {
+	background-color: #FFFFFF;
+}
+table.rahmen th {
+	background-color: #FFFFFF !important;
+}
+table.rahmen td, table.rahmen th {
+	border-width: 1px 0 0 0;
+	border-style: solid;
+	border-color: #E5E5E5;
+}
+table.rahmen tr.erste_zeile th{
+	border-width: 0 !important;
+	vertical-align:bottom;
+}
+table.rahmen tr.zwischenueberschrift {
+	background-color: #E8E8E8;
+}
+table.rahmen tr.zwischenueberschrift td {
+	border: 1px solid #CCCCCC;
+}
+table.rahmen tr.zwischenueberschrift_2 td {
+	border-top-color: #CCCCCC;
+}
+table.rahmen tr.abstand td {
+	padding:0;
+	border:0;
+}
+
+table.ohne_rahmen {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+table.ohne_rahmen tr {
+	background-color: #FFFFFF;
+}
+table.ohne_rahmen th{
+	background-color: #FFFFFF;
+	vertical-align:bottom;
+	text-align:center;
+	padding: 0 10px 1px 0;
+}
+table.ohne_rahmen td{
+	padding: 0 10px 1px 0;
+	border-width: 0;
+}
+
+.versteckt{
+	display: none;
+}
+.rechts{
+	text-align: right;
+}
+.grau{
+	color: #666666;
+}
+.clear{
+	clear: both;
+}
+div.abstand{
+	clear: both;
+	margin-bottom: 1.6em;
+}
+div.trennlinie{
+	border-width: 1px 0 0 0;
+	border-style: solid;
+	border-color: #E5E5E5;
+	margin: 2px 0;
+}
+p.datum {
+	color:#666666;
+	margin-bottom: 0;
+}
+p.resultate {
+	color:#666666;
+	margin-bottom: 0.5em;
+}
+p.resultate a{
+	color:#333333;
+	margin-bottom: 0.5em;
+}
+
+div.seitenbrowser{
+	margin-bottom: 0.8em;
+}
+div.seitenbrowser a{
+	text-decoration: none;
+}
+div.seitenbrowser a:hover, div.seitenbrowser a:focus, div.seitenbrowser a:active{
+	text-decoration:underline;
+}
+div.seitenbrowser a:visited{
+	color:#333333;
+}
+
+/* Styles für FAQ */
+div.faq {
+	margin-bottom: 1.6em;
+}
+div.faq > p{
+	padding-bottom:0.5em;
+}
+div.faq div.faq_eintrag {
+	margin-bottom: 0.5em;
+}
+div.faq_eintrag h2 {
+	margin-top: 1em;	
+}
+div.faq p, div.faq ul, div.faq ol {
+	margin-top: 0;
+	margin-bottom: 0.25em;
+}
+div.faq div.frage {
+	font-weight: bold;
+}
+div.faq div.antwort {
+	margin-top: 0.25em;
+}
+
+/* Styles für Glossar*/
+div.glossar div.glossar_bereich {
+	margin-bottom: 0.5em;
+}
+div.glossar_bereich h2{
+	margin-top: 0.5em;
+	margin-bottom: 0.25em;
+}
+div.glossar p, div.glossar dd ul, div.glossar dd ol, div.glossar dd li {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+div.glossar div.eintrag {
+	margin-bottom: 0.8em;
+}
+div.glossar dt {
+	margin-top: 0.8em;
+}
+div.glossar h2 {
+	clear: both;
+}
+
+/* Styles für Linksammlung */
+ul.linksammlung {
+	list-style-position: inside;
+	list-style-type: none;
+}
+div#rechte_marginalienspalte ul.linksammlung {
+	margin: 0;
+	padding: 0;
+}
+div#rechte_marginalienspalte ul.linksammlung li{
+	margin-bottom: 0.4em;
+}
+
+/* Styles für Bildergalerie */
+ul.bildergalerie {
+	position: relative;
+	z-index:0;
+	margin:0;
+	padding:0;
+	list-style: none;
+}
+ul.bildergalerie li {
+	float:left;
+	display: inline;
+	margin: 0 10px 4px 0;
+	padding:0;
+	text-align:center;
+	height:145px;
+}
+ul.bildergalerie > li {
+	height:auto;
+}
+ul.bildergalerie div.bild_container{
+	border: 1px solid #E5E5E5;
+	padding: 3px;
+}
+ul.bildergalerie div.bild{
+	margin:0 !important;
+	width:100px;
+	height:100px;
+}
+ul.bildergalerie div.beschriftung{
+	width:106px;
+	line-height:100%;
+	height:32px;
+}
+
+ul.bildergalerie li:hover{
+	position:relative;
+}
+ul.bildergalerie a img.vorschau{
+	position: absolute;
+	left: -25px;
+	z-index:1;
+	background-color:#F0F0F0;
+	padding:3px;
+	border: 1px solid #CCCCCC;
+	display: none;
+}
+ul.bildergalerie a  img.hochformat{
+	top: -25px;
+}
+ul.bildergalerie a:hover img.vorschau, ul.bildergalerie a:focus img.vorschau{
+	display: block;
+}
+
+/* Styles für News */
+div.news{
+	clear: both;
+	border-bottom: 1px solid #E5E5E5;
+	margin-bottom: 1.6em;
+}
+div.rss_icon{
+	float: right;
+	width: 18px;
+}
+div.news_eintrag {
+	clear: both;
+	padding-bottom: 0.4em;
+	border-top: 1px solid #E5E5E5;
+	padding-top: 0.5em;
+}
+div.news_eintrag div.text_mit_bild{
+	clear: both;
+	margin-bottom: 0.5em;
+}
+div.news_eintrag  p.datum, div.news_details p.datum{
+	float: right;
+	width: 140px;
+	margin-left: 10px;
+	text-align: right;
+}
+div.news_eintrag h2, h3{
+	margin-top: 0;
+	margin-bottom: 0.25em;	
+}
+div.news_eintrag h3{
+	font-weight: normal;
+}
+div.news_eintrag p{
+	margin-top: 0;
+	margin-bottom: 0.1em;
+}
+div.news div.sticky {
+	border-left: 1px solid #E5E5E5;
+	border-right: 1px solid #E5E5E5;	
+	padding-left: 5px;
+	padding-right: 5px;
+	background-image: url(/media/corporate_design/cd_grafiken/schleier_40.png);
+}
+
+div.feed_eintrag {
+	margin-bottom: 0.8em;
+}
+div.feed_eintrag h2{
+	margin-bottom: 0;
+}
+
+div#rechte_marginalienspalte div.news{
+	clear: both;
+	margin-bottom: 0;
+	border-bottom: 0;
+}
+div#rechte_marginalienspalte div.news_eintrag, div#rechte_marginalienspalte div.feed_eintrag {
+	clear: both;
+	border: 0;
+	padding-top: 0;
+	padding-bottom: 0.7em;
+}
+div#rechte_marginalienspalte div.news_eintrag h2{
+	margin: 0;
+}
+div#rechte_marginalienspalte div.news_eintrag p, div#rechte_marginalienspalte div.feed_eintrag p{
+	margin-top: 0;
+	margin-bottom: 0;
+}
+div#rechte_marginalienspalte div.news_eintrag p.datum{
+	float:none;
+	margin:0;
+	width:auto;
+	text-align: left;
+}
+div#rechte_marginalienspalte div.feed_eintrag h2{
+	font-weight: normal;
+	margin: 0;
+}
+
+
+/* Styles für Stellenausschreibungen */
+div#stellenausschreibungen{
+	clear: both;
+	border-bottom: 1px solid #E5E5E5;
+	margin-bottom: 0.4em;
+}
+div.stellen_eintrag {
+	clear: both;
+	padding-bottom: 0.4em;
+	border-top: 1px solid #FFFFFF;
+}
+
+/* Styles für Publikationen */
+div#publikationen ul.standard li {
+	margin-bottom: 0.5em;
+}
+
+/* Styles für Suchergebnisseite */
+div#suchdetails {
+	margin-bottom: 1.6em;
+}
+div#suchdetails form {
+	margin-bottom:0.5em;
+}
+div#suchdetails form label{
+	display: none;
+}
+div#suchdetails form input#query{
+	width:250px;
+}
+div#suchdetails div.seitenbrowser{
+	margin-bottom: 0.5em;
+}
+div.suchergebnis div.eintrag {
+	margin-bottom: 1.2em;
+}
+div.suchergebnis div.eintrag h2 {
+	margin-top: 0;
+	margin-bottom: 0.3em;
+}
+div.suchergebnis div.eintrag h2 a{
+	text-decoration: none;
+}
+div.suchergebnis div.eintrag p {
+	margin-top: 0;
+	margin-bottom: 0.1em;
+}
+div.suchergebnis div.eintrag p.kurz {
+	display: none;
+}
+
+/* Styles für Sitemap */
+div#sitemap ul{
+	list-style-type:none;
+}
+div#sitemap ul li{
+	margin:0 0 1px 20px;
+	font-weight:normal;
+	padding:0 2px;
+	
+}
+div#sitemap ul li a{
+	text-decoration:none;
+	display:block;
+	color: #333333;
+	padding:1px 0;
+}
+div#sitemap ul li.ebene2 a, div#sitemap ul li.ebene3 a, div#sitemap ul li.ebene4 a, div#sitemap ul li.ebene5 a, div#sitemap ul li.ebene6 a{
+	padding:1px 4px;
+}
+div#sitemap ul a:visited{
+	color: #333333;
+}
+div#sitemap ul a:hover, div#sitemap ul a:focus, div#sitemap ul a:active{
+	text-decoration:underline;
+}
+div#sitemap ul li.ebene0, div#sitemap ul li.ebene1, div#sitemap ul li.ebene2{
+	margin-left:0 !important;
+	padding:0 !important;
+	font-weight:bold;	
+}
+div#sitemap ul li.ebene1{
+	border-top: 1px solid #E5E5E5;
+}
+div#sitemap ul li.ebene2{
+	background-color: #F8F8F8;
+}
+div#sitemap ul li.ebene3{
+	background-color: #F0F0F0;
+}
+div#sitemap ul li.ebene4{
+	background-color: #E8E8E8;
+}
+div#sitemap ul li.ebene5{
+	background-color: #E0E0E0;
+}
+div#sitemap ul li.ebene6{
+	background-color: #D8D8D8;
+}
+
+/* Loginbox */
+div#loginbox{
+	margin-bottom:1.5em;
+}
+div#loginbox label{
+	clear: both;
+	float: left;
+	min-width: 85px;
+}
+div#loginbox input[type=text], div#loginbox input[type=password] {
+	margin-bottom: 5px;
+	width: 120px;
+}
+div#loginbox input[type=submit] {
+	clear: both;
+}
+
+/* Styles für Einrichtungen*/
+div.einrichtungen h2 {
+	margin: 0em;	
+}
+div.einrichtungen p, div.einrichtungen ul, div.einrichtungen ol {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+div.einrichtungen div.einrichtung {
+	margin-bottom: 1.6em;
+}
+div.einrichtungen div.einrichtung div.sichtbar {
+	margin-top: 0.4em;
+	margin-bottom: 0.4em;
+}
+
+/* Styles für TU biblio */
+div#tu_biblio ul{
+	margin-left: 17px;	
+}
+div#tu_biblio .ep_toolbox{
+	border: 1px solid #E5E5E5;
+	padding-left: 5px;
+	padding-right: 5px;
+	background-image: url(/media/corporate_design/cd_grafiken/schleier_40.png);
+}
+div#tu_biblio .ep_view_blurb{
+	color: #666666;
+	margin-bottom: 0.8em;
+}
+div#tu_biblio td{
+	padding: 0;
+}
+div#tu_biblio td p{
+	margin-bottom: 0.4em;
+	padding-bottom: 0.4em;
+	border-bottom: 1px solid #E5E5E5;
+}
+div#tu_biblio .ep_view_timestamp{
+	color: #666666;	
+}
+
+
+/* Formulare */
+div.eingabeformular, div.uploadformular{
+	width: 100%;
+}
+div.eingabeformular div.feld{
+	clear: both;
+	width: 529px;
+	padding-bottom: 0.4em;
+	margin-bottom: 0.4em;
+	border-bottom: 1px solid #E5E5E5;
+}
+div.eingabeformular label{
+	float: left;
+	width: 150px;
+	margin-top: 2px;
+	margin-right: 10px;
+	font-weight: bold;
+	line-height: 1.1em;
+}
+div.uploadformular label{
+	float: left;
+	width: 90px;
+	margin-top: 4px;
+	margin-right: 10px;
+	font-weight: bold;
+	line-height: 1.1em;
+}
+div.uploadformular div.grau{
+	margin-left: 100px;
+}
+
+div.eingabeformular input[type=text], div.eingabeformular textarea{
+	width: 363px;
+	background-color: #F2F2F2;
+}
+div.eingabeformular select{
+	background-color: #F2F2F2;
+}
+div.eingabeformular input#datum_beginn, div.eingabeformular input#datum_ende{
+	width: 200px;
+}
+div.eingabeformular input[type=text]:active, div.eingabeformular input[type=text]:focus, div.eingabeformular input[type=text]:hover, div.eingabeformular textarea:active, div.eingabeformular textarea:focus, div.eingabeformular textarea:hover, div.eingabeformular select:active, div.eingabeformular select:hover, div.eingabeformular select:focus{
+	background-color: #FFFFFF;
+}
+
+div.eingabeformular input[type=text], div.eingabeformular textarea, div.eingabeformular input[type=radio], div.eingabeformular select{
+}
+div.eingabeformular input[type=submit]{
+	margin: 0 0 1.6em 160px;
+}
+div.uploadformular input[type=submit]{
+	margin: 0.8em 0 1.6em 100px;
+}
+
+div#rechte_marginalienspalte div.eingabeformular div.feld{
+	width: 182px;
+	margin-bottom: 0.4em;
+	border-bottom: 0;
+}
+div#rechte_marginalienspalte div.eingabeformular label{
+	float: none;
+	display:block;
+	width: 182px;
+	margin-top: 0;
+	margin-right: 0;
+	font-weight: normal;
+}
+div#rechte_marginalienspalte div.eingabeformular input[type=text], div#rechte_marginalienspalte div.eingabeformular textarea{
+	width: 176px;
+}
+div#rechte_marginalienspalte div.eingabeformular select{
+	max-width: 176px;
+	overflow: hidden;
+}
+div#rechte_marginalienspalte div.eingabeformular input[type=submit]{
+	margin: 0 0 0.8em 0px;
+}
+
+div.eingabeformular div.feld_no_border{
+	clear: both;
+	width: 529px;
+	padding-top: 0.2em;
+	padding-bottom: 0.2em;
+	margin-top: 0.2em;
+	margin-bottom: 0.2em;
+}
+div.eingabeformular div.feld_no_border label{
+	float: left;
+	width: 160px;
+	margin-top: 2px;
+	margin-right: 10px;
+	font-weight: bold;
+	line-height: 1.1em;
+}
+div.eingabeformular div.feld_no_border input[type=text]{
+	width: 353px;
+	background-color: #F2F2F2;
+}
+div.eingabeformular div.feld_no_border input[type=reset]{
+	margin: 0 0 0.2em 170px;
+}
+div.eingabeformular div.feld_no_border input[type=submit]{
+	margin: 0 0 0.2em 0;
+}
+
+/*FORM-EDIT*/
+.formular{
+	margin: 0 0 1.6em 0;
+}
+
+.formular fieldset#formHeadline{
+	padding: 0;
+	margin: 0;
+	border: 0;
+}
+.formular fieldset#formHeadline legend{
+	font-size: 109%;
+	font-weight: bold;
+	color: #666;
+	margin: 0 0 0.4em 0;
+}
+.formular fieldset#formHeadline fieldset{
+	padding: 0;
+	margin: 0 0 0.8em 0;
+	border-width: 1px 0 0 0;
+	border-style: solid;
+	border-color: #E5E5E5;
+}
+.formular label{
+	font-weight: bold;
+	width: 100%;
+	display: block;
+	line-height: 1.2em;
+}
+.formular input, .formular textarea, .formular select{
+	margin:0 0 0.8em 0;
+}
+.formular p{
+	margin-bottom: 0.8em;
+}
+.formular input[type=text], .formular textarea, .formular select{
+	background-color: #F2F2F2;
+}
+.formular input[type=text]:active, .formular input[type=text]:focus, .formular input[type=text]:hover, .formular textarea:active, .formular textarea:focus, .formular textarea:hover, .formular select:active, .formular select:hover, .formular select:focus{
+	background-color: #FFFFFF;
+}
+.formular .singleline{
+	float: left;
+	margin-right: 10px;
+	width: auto;
+}
+.formular .checkbox label{
+	display: inline;
+}
+.formular .checkbox input{
+	position: relative;
+	top: 1px;
+}
+.formular label.solo{
+	line-height: 1.6em;
+}

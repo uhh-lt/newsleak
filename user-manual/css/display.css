@@ -1,0 +1,94 @@
+td {  font-family: Arial, Helvetica, sans-serif; font-size: 12px}
+
+h1 { font-size: 19px; font-style: italic; font-weight: bold}
+h2 { font-size: 14px; font-weight: bold; margin-bottom: -1px}
+h3 { font-size: 13px; font-weight: bold; margin-bottom: -1px}
+h4 { font-size: 12px; font-weight: bold; margin-bottom: -1px}
+
+.title {
+	color: #333333;
+        font-weight: bold;
+        text-decoration: none;
+}
+
+.abstract { font-size: 9px }
+
+.footertext {  font-size: 9px}
+
+.contenttext {  font-family: Arial, Helvetica, sans-serif; font-size: 12px}
+.contenttext a:link {
+	color: #222222;
+	text-decoration: none;
+}
+.contenttext a:hover {
+	color: #222222;
+	text-decoration: none;
+	background-color: #DDDDDD;
+}
+.contenttext a:visited {
+
+	color: #444444;
+	text-decoration: none;
+}
+
+.menulinks1 {
+	font-size: 14px;
+	font-weight: bold;
+	line-height: 17px;
+
+}
+.menulinks1 a:link {
+	color: #333333;
+	text-decoration: none;
+}
+.menulinks1 a:visited {
+	color: #333333;
+	text-decoration: none;
+}
+.menulinks1 a:hover {
+        text-decoration: underline;
+	color: #333333;
+}
+.submenulink {
+	font-size: 12px;
+	font-style: italic;
+	font-weight: normal;
+	text-decoration: none;
+	color: #000000;
+
+}
+.submenulink a:link {
+	color: #010101;
+        text-decoration: none;
+}
+.submenulink a:visited {
+	color: #010101;
+        text-decoration: none;  
+}
+.submenulink a:hover {
+        text-decoration: underline;
+	color: #010101;
+}
+.titlelink {
+	font-size: 12px;
+	font-weight: bold;
+	text-decoration: none;
+	color: #444444;
+
+}
+.titlelink a:link {
+        font-weight: bold;
+	color: #444444;
+        text-decoration: underline;
+}
+.titlelink a:visited {
+        font-weight: bold;
+	color: #444444;
+        text-decoration: underline;  
+}
+.titlelink a:hover {
+        font-weight: bold;
+        text-decoration: none;
+	color: #444444;
+}
+

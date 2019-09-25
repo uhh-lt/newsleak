@@ -1,0 +1,78 @@
+body {
+	margin: 0px;
+	background-color: #FFFFFF;
+}
+
+div#seiten_container {
+	width: 731px;
+	border-top: 14px solid #B90F22;
+}
+
+div#seite {
+	position: absolute;
+	top: 16px;
+	width: 731px;
+}
+div#header {
+	position: relative;
+	width: 100%;
+	border-top: 1px solid #333333;
+}
+div#zum_inhalt {
+	display:none;
+}
+
+div#topnavigation {
+	display:none;
+}
+
+div#hauptnavigation_container {
+	display:none;
+}
+
+div#headerbild_container {
+	position: relative;
+	top: 0;
+	width: 100%;
+	text-align:right;
+	padding:5px 0;
+	background-color: #FFFFFF !important;
+}
+div#headerbild_container div#tudlogo {
+}
+div#headerbild_container div#headerbild{
+	display:none;
+}
+
+div#brotkrumen {
+	display:none;
+}
+
+div#spaltencontainer {
+	position: relative;
+	top: 0;
+	width: 100%;
+}
+
+div#navigationsspalte {
+	display:none;
+}
+div#zentrale_spalte{
+	position: relative;
+	top: 0;
+	float: left;
+	width: 548px;
+}
+div.extrabreite_spalte {
+	position: relative;
+	top: 0;
+	float: left;
+}
+
+div#fussbereich_container {
+	display: none;
+}
+
+.print_unsichtbar {
+	display: none;
+}

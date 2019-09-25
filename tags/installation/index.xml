@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>installation on new/s/leak</title>
+    <link>https://uhh-lt.github.io/newsleak/tags/installation/</link>
+    <description>Recent content in installation on new/s/leak</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    
+	<atom:link href="https://uhh-lt.github.io/newsleak/tags/installation/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title></title>
+      <link>https://uhh-lt.github.io/newsleak/devsetup/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://uhh-lt.github.io/newsleak/devsetup/</guid>
+      <description>Development setup  Follow the instructions for the user installation to get a working hoover and newsleak installation.
+ Clone the newsleak Github repository
+  git clone https://github.com/uhh-lt/newsleak.git  Preprocessing pipeline The preprocessing pipeline is a Java-based Maven project using Apache UIMA a base technology for information extraction.
+Start dev service containers Stop the newsleak containers from the docker user setup (step 1 above) and restart them with the dev container orchestration:</description>
+    </item>
+    
+  </channel>
+</rss>
