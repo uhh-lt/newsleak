@@ -26,23 +26,29 @@
     </md-tab-label>
 
     <md-tab-body>
-        <md-content flex layout-padding ng-init="keywords = retrieveKeywords(doc)">
+        <md-content flex layout-padding ng-init="keywords = retrieveKeywords(doc); links = retrieveLinks(doc)">
             <md-card>
-                <md-card-title>
-                    <md-card-title-text>
-                        <span class="md-headline">{{ doc.meta.Subject.join(', ') }}</span>
+                <md-card-header>
+                    <md-button class="md-icon-button" aria-label="Show-meta" ng-click="sourceShared.showMetaDialog($event, doc.meta)">
+                        <md-tooltip>
+                            Show Metadata
+                        </md-tooltip>
+                        <md-icon class="material-icons md-secondary">info</md-icon>
+                    </md-button>
+                    <md-card-header-text>
+                        <span class="md-title">{{ sourceShared.pluckMetaValues(doc.meta.Subject).join(', ') }}</span>
                         <md-chips
                                 ng-init="initTags(doc)"
                                 ng-model="tags[doc.id]"
                                 md-transform-chip="transformTag($chip, doc)"
                                 md-autocomplete-snap
-                                delete-button-label="Remove Tag"
-                                delete-hint="Press delete to remove tag"
+                                delete-button-label="Remove tag"
+                                delete-hint="Press delete to remove the tag"
                                 secondary-placeholder="+Tag"
                                 md-on-add="addTag($chip, doc)"
                                 md-on-remove="removeTag($chip)">
                             <md-autocomplete
-                                    placeholder="Enter a tag"
+                                    placeholder="Add a tag to remember the document"
                                     md-search-text="searchText"
                                     md-items="label in querySearch(doc, searchText)"
                                     md-item-text="label"
@@ -58,9 +64,70 @@
                             <b>Keywords: </b>
                             <span>{{ keywords.join(', ') }}</span>
                         </span>
+                        <span class="md-subhead" ng-repeat="(key, val) in links">
+                            <a target="_blank" href="{{ l.val }}" ng-repeat="l in val" onclick="return confirm('Are you sure to open this link?')">{{ l.val }}</a>
+                        </span>
+                    </md-card-header-text>
+                </md-card-header>
+                <md-card-title>
+                    <md-card-title-text>
+                        <span class="md-headline">Document Content</span>
                     </md-card-title-text>
                 </md-card-title>
-                <doc-content layout-padding document="doc"></doc-content>
+                <md-card-content>
+                    <doc-content layout-padding document="doc" ng-mouseup="showSelectedEntity(doc)"></doc-content>
+                    <script type="text/ng-template" id="whitelistModal.html">
+                      <md-toolbar class="modal-header" ng-hide="isEntityInDoc" ng-model="isEntityInDoc">
+                          <h3 class="modal-title" id="modal-title">Add {{isKeyword ? 'keyword' : 'entity'}}:
+                            <span ng-bind="entityName" class="selected-entity"></span>
+                          </h3>
+                      </md-toolbar>
+                      <md-toolbar class="modal-header md-warn" ng-show="isEntityInDoc" ng-model="isEntityInDoc">
+                          <md-icon class="material-icons ng-scope" role="img" aria-hidden="true">warning</md-icon>
+                      </md-toolbar>
+                      <md-content class="modal-body" id="modal-body">
+                        <form name="entityForm" ng-hide="isEntityInDoc" ng-model="isEntityInDoc">
+                          <div ng-hide="isKeyword" ng-model="isKeyword">
+                            <div ng-hide="isNewType" ng-model="isNewType">
+                              Select type:
+                              <div>
+                                <select required class="md-select" name="selectEntityType" id="selectEntityType" ng-model="selectedType">
+                                  <option ng-repeat="entityType in entityTypes">
+                                    {{ entityType.name }}
+                                  </option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                          <div ng-show="isNewType" ng-model="isNewType">
+                             <md-input-container class="md-block" flex-gt-sm>
+                               <label>New Type</label>
+                               <input required name="inputEntityType" ng-model="selectedType">
+                               <div ng-messages="entityForm.inputEntityType.$error">
+                                 <div ng-message="required">This is required.</div>
+                               </div>
+                             </md-input-container>
+                          </div>
+                          <div ng-hide="isKeyword" ng-model="isKeyword">
+                            <md-checkbox ng-model="isNewType" aria-label="Tags" ng-click="toggleType(isNewType)">
+                                New type?
+                            </md-checkbox>
+                          </div>
+                          <div ng-hide="isNewType" ng-model="isNewType">
+                            <md-checkbox ng-model="isKeyword" aria-label="Tags" ng-click="toggleKeyword(isKeyword)">
+                                Is Keyword?
+                            </md-checkbox>
+                          </div>
+                        </form>
+                        <div class="whitelist-warning" ng-show="isEntityInDoc" ng-model="isEntityInDoc" style="text-align:center">Selection cannot contain existing entity</div>
+                      </md-content>
+                      <md-dialog-actions layout="row" ng-hide="isEntityInDoc" ng-model="isEntityInDoc">
+                        <md-button class="md-primary md-raised" ng-disabled="selectedType == false" type="submit" ng-click="ok()">OK</md-button>
+                        <span flex></span>
+                        <md-button class="md-primary md-raised" type="button" ng-click="cancel()">Cancel</md-button>
+                      </md-dialog-actions>
+                    </script>
+                </md-card-content>
             </md-card>
         </md-content>
     </md-tab-body>

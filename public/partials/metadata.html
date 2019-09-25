@@ -16,34 +16,41 @@
   -->
 
 <div id="metadata" style="padding: 10px 0 0 10px;">
-    <p style="font-size:16px; display: inline-block">Frequency Overview</p>
+    <md-switch ng-model="reorder" aria-label="Ordering Mode" ng-change="resetMetadataView()" style="display: inline-block; padding: 10px 16px; margin: 0;">
+        Order by subset frequency
+    </md-switch>
     <md-tabs md-stretch-tabs="always" md-dynamic-height="true">
-            <md-tab label="Entities" md-on-select="updateHeight()">
-                <div id="entities_tab" class="tab-pane fade in">
-                <md-tabs>
-                    <md-tab
-                            ng-repeat="entityType in entityTypes"
-                            label="{{entityType}}">
-                        <div class="scroll-chart">
-                            <div id="chart_{{entityType| lowercase}}" class="meta-chart"></div>
-                        </div>
-                    </md-tab>
-                </md-tabs>
-                </div>
-
+            <md-tab md-on-select="updateHeight()">
+                <md-tab-label>
+                    <md-icon class-="material-icons">{{ historyFactory.getIcon('entity') }}</md-icon> Entity
+                </md-tab-label>
+                <md-tab-body>
+                    <div id="entities_tab" class="tab-pane fade in">
+                    <md-tabs>
+                        <md-tab ng-repeat="entityType in entityTypes" label="{{entityType}}">
+                            <div class="scroll-chart">
+                                <div id="chart_{{entityType| lowercase}}" class="meta-chart"></div>
+                            </div>
+                        </md-tab>
+                    </md-tabs>
+                    </div>
+                </md-tab-body>
             </md-tab>
-        <md-tab label="Metadata" md-on-select="updateHeight()">
-            <div id="metadata_tab" class="tab-pane fade in active">
-                <md-tabs>
-                    <md-tab
-                            ng-repeat="metaType in metadataTypes"
-                            label="{{metaType}}">
-                        <div class="scroll-chart">
-                            <div id="chart_{{metaType.replace('.','_') | lowercase}}" class="meta-chart"></div>
-                        </div>
-                    </md-tab>
-                </md-tabs>
-            </div>
+        <md-tab md-on-select="updateHeight()">
+            <md-tab-label>
+                <md-icon class-="material-icons">{{ historyFactory.getIcon('metadata') }}</md-icon> Metadata
+            </md-tab-label>
+            <md-tab-body>
+                <div id="metadata_tab" class="tab-pane fade in active">
+                    <md-tabs>
+                        <md-tab ng-repeat="metaType in metadataTypes" label="{{metaType}}">
+                            <div class="scroll-chart">
+                                <div id="chart_{{metaType.replace('.','_') | lowercase}}" class="meta-chart"></div>
+                            </div>
+                        </md-tab>
+                    </md-tabs>
+                </div>
+            </md-tab-body>
         </md-tab>
     </md-tabs>
 

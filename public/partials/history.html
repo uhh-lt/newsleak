@@ -25,28 +25,36 @@
 				<li class="list-group-item"><span>Tracker-Type:</span> {{ obj.type }}</li>
 				<li class="list-group-item"><span>Active:</span> {{ obj.active }}</li>
 			</ul>
-
-			<button ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" type="button" class="btn btn-primary" ng-click="removeItem(obj)">
-				<i class="glyphicon type-icon glyphicon-trash" ng-class=""></i> Remove
-			</button>
 		</div>
 	</script>
 
 	<md-content id="history" style="padding: 5px 5px 0 5px; background: white;" layout="row">
-		<p style="font-size:16px;"> History Tracker</p>
-		<div style="width: 210px;">
+		<p style="font-size:12px;"> History Tracker</p>
+		<div style="width: 350px;">
 			<md-checkbox id="show-history" ng-model="showHistory" aria-label="Show-full-history">
 				<md-tooltip>
 					Show every interaction including remove events
 				</md-tooltip>
 				Full history
 			</md-checkbox>
-			<md-button class="md-icon-button" aria-label="Reset">
+			<md-button class="md-icon-button" aria-label="Reset" ng-click="observer.reset()">
 				<md-tooltip>
 					Remove all filters
 				</md-tooltip>
-				<md-icon ng-click="observer.reset()" id="reset-history" class="material-icons md-secondary md-hue-3" style="color: red">cancel</md-icon>
+				<md-icon id="reset-history" class="material-icons md-secondary md-hue-3" style="color: red">cancel</md-icon>
 			</md-button>
+			<md-button class="md-icon-button" aria-label="Save" ng-click="saveHistory()">
+				<md-tooltip>
+					Save State
+				</md-tooltip>
+				<md-icon id="save-history" class="material-icons md-secondary md-hue-3" style="color: red">file_download</md-icon>
+			</md-button>
+			<file-field class="md-icon-button md-button md-ink-ripple" ng-model="uploadFile" ng-click="loadHistory()" aria-label="Load">
+				<md-tooltip>
+					Load State
+				</md-tooltip>
+				<md-icon id="load-history" class="material-icons" style="color: red">file_upload</md-icon>
+			</file-field>
 		</div>
 
 		<md-virtual-repeat-container md-orient-horizontal style="max-width: calc(100% - 40px); height: 60px; width: 100%; margin-right: 5px; background: #D3D3D3;">
@@ -66,18 +74,15 @@
 				 popover-append-to-body='true'
 				 popover-is-open="factory.popover.isOpen[{{ obj.id }}]">
 
-				<i class="glyphicon type-icon glyphicon-{{ getIcon(obj.type) }}" ng-class=""></i>
-				<i class="glyphicon action-icon glyphicon-{{ getActionIcon(obj.action) }}" ng-class=""></i>
-				{{ obj.data.description }}
-
-				<i ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" ng-click="removeItem(obj)" class="glyphicon action-icon glyphicon-remove-circle" ng-class="" ></i>
+				<!-- If there is no metadata type available e.g. "MISC", we take the tracker type e.g. "full-text" -->
+				<div ng-switch="!!obj.data.type">
+					<md-icon class="material-icons">{{ factory.getIcon(obj.type) }}</md-icon>
+					<md-icon class="material-icons">{{ factory.getActionIcon(obj.action) }}</md-icon>
+					<span class="md-caption" ng-switch-when="false">{{ obj.type.concat(': ', obj.data.description) | limitTo: 25 }}{{ obj.type.concat(obj.data.description).length > 25 ? '...' : ''}}</span>
+					<span class="md-caption" ng-switch-default>{{ obj.data.type.concat(': ', obj.data.description) | limitTo: 25 }}{{ obj.data.type.concat(obj.data.description).length > 25 ? '...' : ''}}</span>
+					<i ng-show="(obj.action == 'added' || obj.action == 'replaced') && obj.active" ng-click="removeItem(obj)" class="glyphicon action-icon glyphicon-remove-circle" ng-class="" ></i>
+				</div>
 			</div>
 		</md-virtual-repeat-container>
 	</md-content>
-
-	<!--<div class="checkbox">-->
-		<!--<md-button class="md-primary md-raised" type="button" id="reset-history" ng-click="observer.reset()">Reset filters</md-button>-->
-		<!--<md-button class="md-primary md-raised" type="button" id="save-history" ng-click="saveHistory()"><md-icon class="material-icons md-light">archive</md-icon> Save State</md-button>
-		<file-field class="md-button md-primary md-raised" ng-model="uploadFile" ng-click="loadHistory()"><md-icon class="material-icons md-light">unarchive</md-icon> Load State</file-field>-->
-	<!--</div>-->
 </div>

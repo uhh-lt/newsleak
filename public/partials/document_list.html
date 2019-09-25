@@ -16,9 +16,9 @@
   -->
 
 <div style="padding: 15px;" id="documents-view">
-    <p style="font-size:16px">
-        Document Overview:
-        <span ng-show="hits > 0"> <b>{{hits}}</b> hits out of <b>{{sourceShared.documentsInDB}}</b> docs
+    <p style="font-size:14px">
+        Documents:
+        <span ng-show="hits > 0"> <b>{{hits}}</b> ({{sourceShared.documentsInDB}} total)
         </span>
     </p>
 
@@ -51,11 +51,19 @@
                         md-virtual-repeat="item in virtualScroll"
                         md-on-demand="true"
                         md-item-size="50"
-                        class="repeated-item md-3-line md-long-text"
+                        class="repeated-item md-2-line"
                         ng-click="loadFullDocument(item)">
-                    <div class="md-body-2">{{ item.metadata.Subject.join(", ") }} #{{item.id}}</div>
-                    <md-button class="md-primary md-raised metadata-button" ng-click="showMetaDialog($event, item.metadata)">Metadata</md-button>
 
+                    <md-button class="md-icon-button metadata-button" aria-label="Show-meta" ng-click="sourceShared.showMetaDialog($event, item.metadata)">
+                        <md-tooltip>
+                            Show Metadata
+                        </md-tooltip>
+                        <md-icon class="material-icons">info</md-icon>
+                    </md-button>
+                    <div class="md-list-item-text" layout="column">
+                        <h3>{{ sourceShared.pluckMetaValues(item.metadata.Subject).join(", ") }}</h3>
+                        <p>Id: {{item.id}}</p>
+                    </div>
                     <md-divider ng-if="!$last"></md-divider>
 
                 </md-list-item>

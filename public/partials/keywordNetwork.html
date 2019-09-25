@@ -17,22 +17,26 @@
 
 <md-toolbar>
     <div class="md-toolbar-tools" md-theme="control-theme" style="margin-top: 10px;">
-        <md-input-container layout flex="10" ng-repeat="t in types">
+        <md-input-container layout flex="10" ng-repeat="t in keywordTypes">
             <label>#{{ t.name }}</label>
-            <input ng-model="t.sliderModel" ng-change="reloadGraph()" type="number" step="1" min="0" ng-model-options="{updateOn: 'default blur', debounce: {default: 300, blur: 0} }">
+            <input ng-model="t.sliderModel" ng-keydown="event = $event" ng-click="event = null" ng-change="checkChange(event)" type="number" step="1" min="0" ng-model-options="{updateOn: 'default blur', debounce: {default: 1000, blur: 0} }">
         </md-input-container>
 
         <div flex="20" layout layout-align="center center">
             <span class="md-body-1">Edge Importance</span>
         </div>
         <md-slider ng-disabled="loading" flex min="1" max="{{ maxEdgeImportance }}" step ="1" md-discrete ng-model="edgeImportance" aria-label="blue"></md-slider>
+
+        <md-checkbox ng-model="tagsSelected" ng-checked="getTagsSelected()" aria-label="Tags" ng-click="selectTags()">
+            Tags
+        </md-checkbox>
     </div>
 </md-toolbar>
 
 <!-- legend and network are rendered above each other -->
-<div id="legend" ng-controller="LegendController as ctrl" ng-if="showLegend">
+<div id="keywordLegend" ng-controller="KeywordLegendController as ctrl" ng-show="getToggleKeywordLegend()">
     <vis-network data="ctrl.legendData" options="ctrl.legendOptions" events="ctrl.legendEvents" layout-fill></vis-network>
 </div>
-<div id="mynetwork">
+<div id="mykeywordnetwork">
     <vis-network data="graphData" options="graphOptions" layout-fill events="graphEvents"></vis-network>
 </div>
