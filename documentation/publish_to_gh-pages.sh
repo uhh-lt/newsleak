@@ -11,16 +11,16 @@ then
 fi
 
 echo "Deleting old publication"
-rm -rf public
-mkdir public
+rm -rf newsleak.io
+mkdir newsleak.io
 git worktree prune
-rm -rf .git/worktrees/public/
+rm -rf .git/worktrees/newsleak.io/
 
-echo "Checking out gh-pages branch into public"
-git worktree add -B gh-pages public gh-pages
+echo "Checking out gh-pages branch into newsleak.io"
+git worktree add -B gh-pages newsleak.io gh-pages
 
 echo "Removing existing files"
-rm -rf public/*
+rm -rf newsleak.io/*
 
 echo "Generating site"
 cd documentation
@@ -28,4 +28,4 @@ hugo
 cd ..
 
 echo "Updating gh-pages branch"
-cd public && git add --all && git commit -m "Publishing to gh-pages"
+cd newsleak.io && git add --all && git commit -m "Publishing to gh-pages"
