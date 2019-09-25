@@ -1,7 +1,7 @@
 baseURL = "https://uhh-lt.github.io/newsleak/"
 RelativeURLs=true
 CanonifyURLs=true
-publishDir = "../public"
+publishDir = "../newsleak.io"
 
 languageCode = "en-us"
 title = "new/s/leak"
