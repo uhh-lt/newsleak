@@ -105,6 +105,7 @@ public class NewsleakCsvStreamReader extends NewsleakReader {
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		super.initialize(context);
+		logger = context.getLogger();
 		try {
 			File csvFile = new File(inputDir, documentFile);
 			csvReader = new FileReader(csvFile);
